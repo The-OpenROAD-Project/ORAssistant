@@ -1,0 +1,4 @@
+data/
+.git
+environment.yml
+backend/src/source_list.json
