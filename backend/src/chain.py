@@ -44,7 +44,7 @@ ensemble_retriever = EnsembleRetriever(
     weights = [0.5,0.5]
 )
 
-def format_docs(docs):
+def format_docs(docs) -> str:
     formatted_text = ""
     q_a = ""
     for d in docs:
