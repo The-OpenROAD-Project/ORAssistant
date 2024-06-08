@@ -1,7 +1,7 @@
 import json
 from langchain.docstore.document import Document as LangchainDocument
 
-def parse_json(json_object):
+def parse_json(json_object) -> str:
     parsed_text = "Infer knowledge from this conversation and use it to answer the given question.\n\t"
     for body in json_object['messages']:
         if 'user' in body:
@@ -11,7 +11,7 @@ def parse_json(json_object):
     
     return parsed_text
 
-def generate_knowledge_base(file_paths: list[str]):
+def generate_knowledge_base(file_paths: list[str]) -> list[str]:
     json_knowledge_base = []
     for file_path in file_paths:
         try:
