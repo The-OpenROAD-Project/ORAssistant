@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 source_dict = {}
 
-def download_markdown(url: str, folder_name: str):
+def download_markdown(url: str, folder_name: str) -> None:
     path = url.split('latest/')[-1]
     base_url = url.replace("latest/","latest/_sources/")
     path = path.replace("html","md")
@@ -25,7 +25,7 @@ def download_markdown(url: str, folder_name: str):
     else:
         print(f"{url} - ERROR - Status code: {response.status_code}")
     
-def get_href_list(url):
+def get_href_list(url) -> list[str]:
     try:
         hrefs = []
         response = requests.get(url)
@@ -39,8 +39,7 @@ def get_href_list(url):
         print("Error:", e)
         return []
     
-def scrape_url(url: str, folder_name: str):
-    
+def scrape_url(url: str, folder_name: str) -> None: 
     hrefs = get_href_list(url)
 
     print(f"{len(hrefs)} links found on", url, "are:")
