@@ -21,7 +21,7 @@ async def redirect_root_to_docs():
     return RedirectResponse("/docs")
 
 @app.post("/chatApp")
-async def get_response(userInput : UserInput):
+async def get_response(userInput : UserInput) -> str:
     links = []
     user_question = userInput.query
     result = llm_chain_with_source.invoke(user_question)
