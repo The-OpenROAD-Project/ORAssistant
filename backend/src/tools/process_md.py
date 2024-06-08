@@ -14,34 +14,34 @@ md_seperators = [
     "\n",
     " ",
     "",
+    "```"
 ]
 
-def chunk_markdown(embeddings_model_name: str , files_path: str):
+def chunk_markdown(embeddings_model_name: str , files_path: str, chunk_size: int):
     loader = DirectoryLoader(files_path, glob="**/*.md" ,show_progress=True)
     documents = loader.load()
 
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size, 
+        chunk_overlap=int(chunk_size/10), 
+        add_start_index=True, 
+        strip_whitespace=True,  
+        separators=md_seperators,
+    )
+   
     documents_knowledge_base = [
         LangchainDocument(page_content=doc.page_content, metadata=doc.metadata)
         for doc in (documents)
     ]
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500, 
-        chunk_overlap=50, 
-        add_start_index=True, 
-        strip_whitespace=True,  
-        separators=md_seperators,
-    )
-
-    docs_processed = []
+    docs_split = []
     for doc in documents_knowledge_base:
-        docs_processed += text_splitter.split_documents([doc])
+        docs_split.extend(text_splitter.split_documents([doc]))
 
-
-    docs_processed = recursive_chunking(
+    docs_chunked = recursive_chunking(
         256,
-        documents_knowledge_base,
+        docs_split,
         tokenizer_name=embeddings_model_name,
     )
 
-    return docs_processed
+    return docs_chunked 
