@@ -14,21 +14,21 @@ class FAISSVectorDatabase:
         self.print_progress = print_progress
         self.debug = debug
     
-    def process_md(self, folder_paths: list[str]):
+    def process_md(self, folder_paths: list[str]) -> FAISS:
         if(self.print_progress is True):
             print("Processing markdown files...")
 
         for files_path in folder_paths:
             if(self.print_progress is True):
                 print(f"Processing [{files_path}]...")
-            docs_processed = chunk_markdown(self.embeddings_model_name , files_path=files_path)
+            docs_processed = chunk_markdown(self.embeddings_model_name, files_path=files_path, chunk_size=500)
             md_vector_db = FAISS.from_documents(
                 docs_processed, self.embedding_model, distance_strategy=DistanceStrategy.COSINE
             )
         
         return md_vector_db
     
-    def process_json(self, folder_paths: list[str]):
+    def process_json(self, folder_paths: list[str]) -> FAISS:
         if(self.print_progress is True):
             print("Processing json files...")
             
@@ -39,7 +39,7 @@ class FAISSVectorDatabase:
         )
         return json_vector_db
         
-    def get_relevant_documents(self, query: str, k1: int = 2, k2: int = 4):
+    def get_relevant_documents(self, query: str, k1: int = 2, k2: int = 4) -> str:
         retrieved_docs = self.md_vector_db.similarity_search(query=query, k=k1)
         retrieved_text = ""
 
