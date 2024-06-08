@@ -17,7 +17,7 @@ md_seperators = [
     "```"
 ]
 
-def chunk_markdown(embeddings_model_name: str , files_path: str, chunk_size: int):
+def chunk_markdown(embeddings_model_name: str , files_path: str, chunk_size: int) -> list[LangchainDocument]:
     loader = DirectoryLoader(files_path, glob="**/*.md" ,show_progress=True)
     documents = loader.load()
 
