@@ -45,20 +45,21 @@ def scrape_url(url: str, folder_name: str) -> None:
     print(f"{len(hrefs)} links found on", url, "are:")
     for href in hrefs:
         download_markdown(href, folder_name)
-    
-os.makedirs("data/",exist_ok=True)
-os.makedirs("data/markdown/",exist_ok=True)
-os.makedirs("data/markdown/OR_docs",exist_ok=True)
-os.makedirs("data/markdown/ORFS_docs",exist_ok=True)
 
-url = 'https://openroad.readthedocs.io/en/latest'  
-scrape_url(url,"OR_docs")
+if __name__ == "__main__":    
+    os.makedirs("data/",exist_ok=True)
+    os.makedirs("data/markdown/",exist_ok=True)
+    os.makedirs("data/markdown/OR_docs",exist_ok=True)
+    os.makedirs("data/markdown/ORFS_docs",exist_ok=True)
 
-url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
-scrape_url(url,"ORFS_docs")
+    url = 'https://openroad.readthedocs.io/en/latest'  
+    scrape_url(url,"OR_docs")
 
-source_dict["data/json/OR-github_discussions.txt"] = "OpenROAD GitHub Discussions" 
-source_dict["data/json/OR-github_issues.txt"] = "OpenROAD GitHub Issues"
+    url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
+    scrape_url(url,"ORFS_docs")
 
-with open('src/source_list.json','w+') as src_file:
-    src_file.write(json.dumps(source_dict))
+    source_dict["data/json/OR-github_discussions.txt"] = "OpenROAD GitHub Discussions" 
+    source_dict["data/json/OR-github_issues.txt"] = "OpenROAD GitHub Issues"
+
+    with open('src/source_list.json','w+') as src_file:
+        src_file.write(json.dumps(source_dict))
