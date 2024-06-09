@@ -46,8 +46,6 @@ def scrape_url(url: str, folder_name: str) -> None:
     for href in hrefs:
         download_markdown(href, folder_name)
     
-    return
-
 os.makedirs("data/",exist_ok=True)
 os.makedirs("data/markdown/",exist_ok=True)
 os.makedirs("data/markdown/OR_docs",exist_ok=True)
