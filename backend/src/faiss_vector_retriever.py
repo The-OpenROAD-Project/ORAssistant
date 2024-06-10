@@ -7,26 +7,37 @@ from src.tools.process_json import generate_knowledge_base
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
+from typing import Union
+
 class FAISSVectorDatabase:
-    def __init__(self , embeddings_model_name: str , print_progress: bool = False, debug: bool = False):
+    def __init__(self , embeddings_model_name: str , print_progress: bool = False, debug: bool = False, use_cuda: bool = False):
         self.embeddings_model_name = embeddings_model_name
-        self.embedding_model = HuggingFaceEmbeddings(model_name=self.embeddings_model_name,multi_process=False,encode_kwargs={"normalize_embeddings": True})
+        if(use_cuda):
+            self.embedding_model = HuggingFaceEmbeddings(model_name=self.embeddings_model_name,multi_process=False,encode_kwargs={"normalize_embeddings": True},model_kwargs={'device': 'cuda'})
+        else:
+            self.embedding_model = HuggingFaceEmbeddings(model_name=self.embeddings_model_name,multi_process=False,encode_kwargs={"normalize_embeddings": True})
         self.print_progress = print_progress
         self.debug = debug
     
-    def process_md(self, folder_paths: list[str]) -> FAISS:
+    def process_md(self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False) -> Union[FAISS, tuple[FAISS, list]]:
         if(self.print_progress is True):
             print("Processing markdown files...")
 
-        for files_path in folder_paths:
+        docs_processed = []
+
+        for file_path in folder_paths:
             if(self.print_progress is True):
-                print(f"Processing [{files_path}]...")
-            docs_processed = chunk_markdown(self.embeddings_model_name, files_path=files_path, chunk_size=500)
-            md_vector_db = FAISS.from_documents(
-                docs_processed, self.embedding_model, distance_strategy=DistanceStrategy.COSINE
-            )
+                print(f"Processing [{file_path}]...")
+                docs_processed += chunk_markdown(embeddings_model_name=self.embeddings_model_name, files_path=file_path, chunk_size=chunk_size)
         
-        return md_vector_db
+        md_vector_db = FAISS.from_documents(
+            documents=docs_processed, embedding=self.embedding_model, distance_strategy=DistanceStrategy.COSINE
+        )
+
+        if(return_docs):
+            return md_vector_db,docs_processed
+        else:
+            return md_vector_db
     
     def process_json(self, folder_paths: list[str]) -> FAISS:
         if(self.print_progress is True):
