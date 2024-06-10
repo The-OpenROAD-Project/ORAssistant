@@ -1,13 +1,16 @@
 from dotenv import load_dotenv
 
 from langchain.prompts import ChatPromptTemplate
-from langchain.retrievers import EnsembleRetriever
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough,RunnableParallel
 
 from src.faiss_vector_retriever import FAISSVectorDatabase
+from src.tools.format_docs import format_docs
 
 import json
 
@@ -15,9 +18,13 @@ load_dotenv()
 
 llm = ChatGoogleGenerativeAI(model="gemini-pro",temperature=1)
 
-vector_db = FAISSVectorDatabase(embeddings_model_name="thenlper/gte-large" , print_progress=True)
+vector_db = FAISSVectorDatabase(embeddings_model_name="BAAI/bge-large-en-v1.5", print_progress=True, use_cuda=True)
 
 prompt_template_str = """Your task is to act as a knowledgeable assistant for users seeking information and guidance about the OpenROAD project. Avoid speculating or inventing information beyond the scope of the provided data. 
+
+Note that OR refers to OpenROAD and ORFS refers to OpenROAD-Flow-Scripts
+
+Identify the relevant documents for the given question from their titles.
 
 Use the following context:
 
@@ -30,33 +37,21 @@ Give a detailed answer to this question:
 {question}
 
 """
+
 prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
 
-or_docs_vector_db = vector_db.process_md(folder_paths=["./data/markdown/OR_docs"])
-orfs_docs_vector_db = vector_db.process_md(folder_paths=["data/markdown/ORFS_docs"])
+docs_vector_db,docs_processed = vector_db.process_md(folder_paths=["./data/markdown/OR_docs","./data/markdown/ORFS_docs"], chunk_size=2000, return_docs=True)
 
-k = [3,3,2]
-or_docs_retriever = or_docs_vector_db.as_retriever(search_kwargs={"k": k[0]})
-orfs_docs_retriever = orfs_docs_vector_db.as_retriever(search_kwargs={"k":k[1]})
+k = [5,5,2]
+
+similarity_retriever = docs_vector_db.as_retriever(search_type="similarity",search_kwargs={'k':k[0]})
+mmr_retriever = docs_vector_db.as_retriever(search_type="mmr",search_kwargs={'k':k[1]})
+bm25_retriever = BM25Retriever.from_documents(documents=docs_processed,search_kwargs={'k':k[2]})
 
 ensemble_retriever = EnsembleRetriever(
-    retrievers = [or_docs_retriever,orfs_docs_retriever],
-    weights = [0.5,0.5]
+    retrievers = [similarity_retriever,mmr_retriever,bm25_retriever],
+    weights = [0.4,0.4,0.2]
 )
-
-def format_docs(docs) -> str:
-    formatted_text = ""
-    q_a = ""
-    for d in docs:
-        if "Infer knowledge from this conversation and use it to answer the given question" in d.page_content:
-            q_a_summarized = llm.invoke("This is a conversation between User1 and User2. Infer knowledge from it and give me bullet points: " + d.page_content)
-            d.page_content = d.page_content.replace("\n","")
-            q_a += d.page_content + f"\nSummary:{q_a_summarized.content}" +"\nSource: " + str(d.metadata) + "\n\n"
-            continue
-        formatted_text = formatted_text + d.page_content + "\nSource: " + str(d.metadata) + "\n - - - - - - - - - -\n\n"
-    formatted_text = formatted_text + "\n" +q_a + "\n"
-
-    return formatted_text
 
 output_parser = StrOutputParser()
 
@@ -71,9 +66,6 @@ llm_chain_with_source = RunnableParallel(
     {"context": ensemble_retriever, "question": RunnablePassthrough()} 
 ).assign(answer=llm_chain)
 
-with open("src/source_list.json") as f:
-    src_dict = json.loads(f.read())
-
 if __name__ == "__main__":
     while(True):
         links = []
@@ -81,7 +73,7 @@ if __name__ == "__main__":
         result = llm_chain_with_source.invoke(user_question)
 
         for i in result['context']:
-            links.append(src_dict[i.metadata['source']])
+            links.append(i.metadata['url'])
         
         links = set(links)
 
