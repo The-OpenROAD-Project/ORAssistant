@@ -59,3 +59,8 @@ By default,
 The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
 
 Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
+
+## Use Cases
+
+- **Installation and Troubleshooting Assistance:** The chatbot will provide users with quick and accurate solutions to common installation issues and troubleshooting steps.
+- **Easy Access to Existing Resources:** The chatbot will be able to summarizing relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
