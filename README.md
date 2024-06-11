@@ -26,11 +26,11 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 - Follow **Step 1** and **Step 2** as mentioned above.
 - **Step 3**: To scrape OR/ORFS docs and populate the `data` folder, run
 ```bash
-  python src/tools/scrape_userguide.py
+  cd backend
+  python scrape_userguide.py
 ```
 - **Step 4**: To run the server,
 ```bash
-  cd backend
   python main.py
 ```
 
