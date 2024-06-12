@@ -1,5 +1,14 @@
 # OR-Assistant
 
+## Introduction
+The OpenROAD chat assistant aims to provide easy and quick access to information regarding tools, responses to questions and commonly occurring problems in OpenROAD and its native flow-OpenROAD-flow-scripts.
+
+The current architecture uses certain retrieval techniques on OpenROAD documentation and other online data sources. We aim to continuously improve the architecture and the associated the dataset to improve accuracy, coverage and robustness.
+
+### Use Cases
+- **Installation and Troubleshooting Assistance:** The chatbot will provide users with quick and accurate solutions to common installation issues and troubleshooting steps.
+- **Easy Access to Existing Resources:** The chatbot will be able to summarizing relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
+
 ## Setup
 
 ### Option 1 - Docker
@@ -59,8 +68,3 @@ By default,
 The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
 
 Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
-
-## Use Cases
-
-- **Installation and Troubleshooting Assistance:** The chatbot will provide users with quick and accurate solutions to common installation issues and troubleshooting steps.
-- **Easy Access to Existing Resources:** The chatbot will be able to summarizing relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
