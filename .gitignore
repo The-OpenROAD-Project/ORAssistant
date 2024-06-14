@@ -1,0 +1,4 @@
+__pycache__/
+.env
+data/
+backend/src/source_list.json

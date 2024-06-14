@@ -1,0 +1,6 @@
+services:
+  backend:
+    build: ./backend
+    container_name: "orassistant-backend"
+    ports:
+      - "8000:8000"
