@@ -36,13 +36,13 @@ async def get_response(userInput: UserInput) -> dict:
     if userInput.listSources and userInput.listContext:
         response = {
             "response": result["answer"],
-            "sources": str(links),
-            "context": str(context),
+            "sources": (links),
+            "context": (context),
         }
     elif userInput.listSources:
-        response = {"response": result["answer"], "sources": str(links)}
+        response = {"response": result["answer"], "sources": (links)}
     elif userInput.listContext:
-        response = {"response": result["answer"], "context": str(context)}
+        response = {"response": result["answer"], "context": (context)}
     else:
         response = {"response": result["answer"]}
 
