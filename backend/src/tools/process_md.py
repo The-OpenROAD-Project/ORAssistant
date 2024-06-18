@@ -6,12 +6,18 @@ from langchain_community.document_loaders import DirectoryLoader
 
 from .recursive_chunk import recursive_chunking
 
-
-def chunk_markdown(
+def chunk_md_docs(
     embeddings_model_name: str, files_path: str, chunk_size: int
 ) -> list[LangchainDocument]:
+    """
+    For processing OR/ORFS docs
+    """
     with open("src/source_list.json") as f:
         src_dict = json.loads(f.read())
+
+    loader = DirectoryLoader(files_path, glob="**/*.md", show_progress=True)
+    documents = loader.load()
+
 
     markdown_splitter = RecursiveCharacterTextSplitter.from_language(
         chunk_size=chunk_size,
@@ -20,9 +26,6 @@ def chunk_markdown(
         strip_whitespace=True,
         language=Language.PYTHON,
     )
-
-    loader = DirectoryLoader(files_path, glob="**/*.md", show_progress=True)
-    documents = loader.load()
 
     documents_knowledge_base = []
     for doc in documents:
@@ -45,3 +48,15 @@ def chunk_markdown(
     )
 
     return docs_chunked
+
+def chunk_md_manpages(
+    embeddings_model_name: str, files_path: str, chunk_size: int
+) -> list[LangchainDocument]:
+    """
+    For processing manpages
+    """
+
+    loader = DirectoryLoader(files_path, glob="**/*.md", show_progress=True)
+    documents_knowledge_base = loader.load()
+   
+    return documents_knowledge_base
