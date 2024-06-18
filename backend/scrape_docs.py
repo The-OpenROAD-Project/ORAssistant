@@ -45,7 +45,7 @@ def get_href_list(url) -> list[str]:
 
 
 def scrape_url(url: str, folder_name: str) -> None:
-    hrefs = get_href_list(url)
+    hrefs = set(get_href_list(url))
 
     print(f"{len(hrefs)} links found on", url, "are:")
     for href in hrefs:
