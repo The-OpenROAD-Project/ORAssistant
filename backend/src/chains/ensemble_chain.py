@@ -92,7 +92,8 @@ if __name__ == "__main__":
         result = llm_chain_with_source.invoke(user_question)
 
         for i in result["context"]:
-            links.append(i.metadata["url"])
+            if i.metadate["url"] is not None:
+                links.append(i.metadata["url"])
 
         links = set(links)
 
