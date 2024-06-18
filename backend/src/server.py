@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 
 from pydantic import BaseModel
 
-from .ensemble_chain import llm_chain_with_source
+from .chains.ensemble_chain import llm_chain_with_source
 
 
 class UserInput(BaseModel):
