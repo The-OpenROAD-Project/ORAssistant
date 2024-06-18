@@ -24,7 +24,7 @@ def chunk_md_docs(
         chunk_overlap=int(chunk_size / 10),
         add_start_index=True,
         strip_whitespace=True,
-        language=Language.PYTHON,
+        language=Language.MARKDOWN,
     )
 
     documents_knowledge_base = []
@@ -50,7 +50,7 @@ def chunk_md_docs(
     return docs_chunked
 
 def chunk_md_manpages(
-    embeddings_model_name: str, files_path: str, chunk_size: int
+    files_path: str
 ) -> list[LangchainDocument]:
     """
     For processing manpages
