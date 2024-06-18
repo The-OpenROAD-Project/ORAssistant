@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir --upgrade -r /ORAssistant-backend/requirements.tx
 
 COPY . .
 
-RUN python src/tools/scrape_docs.py 
+RUN python scrape_docs.py 
 
 EXPOSE 8000
 
