@@ -79,9 +79,7 @@ class FAISSVectorDatabase:
             if self.print_progress is True:
                 print(f"Processing [{file_path}]...")
                 docs_processed.extend(chunk_md_manpages(
-                    embeddings_model_name=self.embeddings_model_name,
                     files_path=file_path,
-                    chunk_size=chunk_size,
                 ))
 
         self._faiss_db.add_documents(docs_processed)
