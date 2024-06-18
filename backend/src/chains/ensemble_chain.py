@@ -87,18 +87,20 @@ llm_chain_with_source = RunnableParallel({
 
 if __name__ == "__main__":
     while True:
-        links = []
+        sources = []
         user_question = input("\n\nAsk a question: ")
         result = llm_chain_with_source.invoke(user_question)
 
         for i in result["context"]:
-            if i.metadate["url"] is not None:
-                links.append(i.metadata["url"])
+            if "url" in i.metadata:
+                sources.append(i.metadata["url"])
+            elif "source" in i.metadata:
+                sources.append(i.metadata["source"])
 
-        links = set(links)
+        sources = set(sources)
 
         print(result["answer"])
 
         print("\n\nSources:")
-        for i in links:
+        for i in sources:
             print(i)
