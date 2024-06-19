@@ -28,7 +28,10 @@ async def get_response(userInput: UserInput) -> dict:
     links = []
     context = []
     for i in result["context"]:
-        links.append(i.metadata["url"])
+        if "url" in i.metadata:
+            links.append(i.metadata["url"])
+        elif "source" in i.metadata:
+            links.append(i.metadata["source"])
         context.append(i.page_content)
 
     links = set(links)
