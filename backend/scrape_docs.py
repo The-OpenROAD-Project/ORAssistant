@@ -15,7 +15,7 @@ def download_markdown(url: str, folder_name: str) -> None:
 
     if response.status_code == 200:
         markdown_content = response.text
-        file_name = f"data/markdown/{folder_name}/{path.replace('/', '_')}"
+        file_name = f"data/markdown/{folder_name}/{path.replace("/", "_")}"
         if os.path.isfile(file_name):
             file_name, file_extension = os.path.splitext(file_name)
             file_name = file_name + "_1" + file_extension
