@@ -30,7 +30,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
         chunk_size: Optional[int] = 1000,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-    ):
+    ) -> None:
         if embedded_docs is None:
             super().create_vector_db()
             processed_docs, manpages_processed = (
