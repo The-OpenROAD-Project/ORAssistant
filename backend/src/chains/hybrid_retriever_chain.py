@@ -86,7 +86,7 @@ class HybridRetrieverChain(BaseChain):
 
         if self.contextual_rerank is True:
             compressor = CrossEncoderReranker(
-                model=HuggingFaceCrossEncoder(model_name=self.reranking_model), top_n=5
+                model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name), top_n=5
             )
             self.retriever = ContextualCompressionRetriever(
                 base_compressor=compressor, base_retriever=ensemble_retriever
