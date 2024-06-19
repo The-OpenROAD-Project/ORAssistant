@@ -6,9 +6,9 @@ def parse_json(json_object) -> str:
     parsed_text = "Infer knowledge from this conversation and use it to answer the given question.\n\t"
     for body in json_object["messages"]:
         if "user" in body:
-            parsed_text += f"\nUser1: {body['user'].strip()}"
+            parsed_text += f"\nUser1: {body["user"].strip()}"
         if "assistant" in body:
-            parsed_text += f"\nUser2: {body['assistant'].strip()}"
+            parsed_text += f"\nUser2: {body["assistant"].strip()}"
 
     return parsed_text
 
