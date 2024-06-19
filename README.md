@@ -13,7 +13,7 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 
 ### Building Manpages
 
-Build manpages as as per the instructions [here](https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs). Place the markdown files in `backend/data/markdown/manpages` before proceeding.
+Build manpages as per the instructions [here](https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs). Place the markdown files in `backend/data/markdown/manpages` before proceeding.
 
 ### Option 1 - Docker
 
