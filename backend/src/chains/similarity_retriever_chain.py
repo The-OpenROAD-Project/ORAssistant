@@ -1,7 +1,8 @@
 from .base_chain import BaseChain
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-
+from langchain_core.vectorstores import VectorStoreRetriever
+from langchain.docstore.document import Document as LangchainDocument
 
 from ..vectorstores.faiss import FAISSVectorDatabase
 from ..tools.format_docs import format_docs
@@ -38,7 +39,7 @@ class SimilarityRetrieverChain(BaseChain):
         manpages_path: Optional[list[str]] = None,
         chunk_size: Optional[int] = 1000,
         return_docs: Optional[bool] = False,
-    ):
+    ) -> tuple[list[LangchainDocument] | None, list[LangchainDocument] | None]:
         if docs_path is not None:
             self.processed_docs = self.vector_db.process_md_docs(
                 folder_paths=docs_path,
@@ -53,19 +54,20 @@ class SimilarityRetrieverChain(BaseChain):
 
         return self.processed_docs, self.processed_manpages
 
-    def create_vector_db(self):
+    def create_vector_db(self) -> None:
         self.vector_db = FAISSVectorDatabase(
             embeddings_model_name=self.embeddings_model_name,
             print_progress=True,
             use_cuda=self.use_cuda,
         )
+        return
 
-    def get_vector_db(self):
+    def get_vector_db(self) -> FAISSVectorDatabase:
         if self.vector_db is None:
             self.create_vector_db()
         return self.vector_db
 
-    def create_retriever(self, search_k: Optional[int] = 5):
+    def create_retriever(self, search_k: Optional[int] = 5) -> None:
         if self.processed_docs is None and self.processed_manpages is None:
             self.embed_docs()
         self.retriever = self.vector_db.faiss_db.as_retriever(
@@ -73,12 +75,12 @@ class SimilarityRetrieverChain(BaseChain):
         )
         return
 
-    def get_retriever(self):
+    def get_retriever(self) -> VectorStoreRetriever:
         if self.retriever is None:
             self.create_retriever()
         return self.retriever
 
-    def create_llm_chain(self):
+    def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
         self.create_vector_db()
