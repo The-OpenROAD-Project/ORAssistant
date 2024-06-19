@@ -1,7 +1,7 @@
 def format_docs(docs) -> str:
     formatted_text = ""
     for doc in docs:
-        if doc.metadata is not None:
+        if doc.metadata is not None and "source" in doc.metadata:
             title = str(doc.metadata["source"].split("data/markdown")[1])
             title = (
                 title.replace(".md", "")
