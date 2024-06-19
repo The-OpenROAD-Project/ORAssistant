@@ -18,15 +18,16 @@ from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from typing import Optional
 
 
-class EnsembleRetrieverChain(BaseChain):
+class HybridRetrieverChain(BaseChain):
     def __init__(
         self,
         llm_model: Optional[ChatGoogleGenerativeAI],
         prompt_template_str: Optional[str] = "",
         embeddings_model_name: Optional[str] = "",
+        reranking_model_name: Optional[str] = "",
         use_cuda: Optional[bool] = False,
-        search_k: Optional[list[int]] = [5,5,5],
-        weights: Optional[list[int]] = [0.33,0.33,0.33],
+        search_k: Optional[list[int]] = [5, 5, 5],
+        weights: Optional[list[int]] = [0.33, 0.33, 0.33],
         chunk_size: Optional[int] = 1000,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
@@ -38,6 +39,7 @@ class EnsembleRetrieverChain(BaseChain):
         )
 
         self.embeddings_model_name = embeddings_model_name
+        self.reranking_model_name = reranking_model_name
         self.use_cuda = use_cuda
 
         self.search_k = search_k
@@ -51,7 +53,7 @@ class EnsembleRetrieverChain(BaseChain):
 
         self.retriever = None
 
-    def create_retriever(self):
+    def create_retriever(self) -> None:
         similarity_retriever_chain = SimilarityRetrieverChain(
             embeddings_model_name=self.embeddings_model_name,
         )
@@ -83,7 +85,9 @@ class EnsembleRetrieverChain(BaseChain):
         )
 
         if self.contextual_rerank is True:
-            compressor = CrossEncoderReranker(model=HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-base"), top_n=5)
+            compressor = CrossEncoderReranker(
+                model=HuggingFaceCrossEncoder(model_name=self.reranking_model), top_n=5
+            )
             self.retriever = ContextualCompressionRetriever(
                 base_compressor=compressor, base_retriever=ensemble_retriever
             )
@@ -92,7 +96,7 @@ class EnsembleRetrieverChain(BaseChain):
 
         return
 
-    def create_llm_chain(self):
+    def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
         self.create_retriever()
@@ -119,7 +123,7 @@ if __name__ == "__main__":
     # llm = ChatVertexAI(model_name="gemini-1.5-pro")
 
     llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
-    
+
     prompt_template_str = """
         Use the following context:
 
@@ -134,7 +138,7 @@ if __name__ == "__main__":
 
         """
 
-    retriever = EnsembleRetrieverChain(
+    retriever = HybridRetrieverChain(
         llm_model=llm,
         prompt_template_str=prompt_template_str,
         embeddings_model_name="BAAI/bge-large-en-v1.5",
