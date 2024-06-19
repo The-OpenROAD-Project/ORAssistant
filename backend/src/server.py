@@ -7,6 +7,7 @@ from .chains.hybrid_retriever_chain import HybridRetrieverChain
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from dotenv import load_dotenv
 
 class UserInput(BaseModel):
     query: str
@@ -16,8 +17,8 @@ class UserInput(BaseModel):
 
 app = FastAPI()
 
+load_dotenv()
 llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
-
 prompt_template_str = """
     Use the following context:
 
@@ -36,6 +37,7 @@ retriever = HybridRetrieverChain(
     llm_model=llm,
     prompt_template_str=prompt_template_str,
     embeddings_model_name="BAAI/bge-large-en-v1.5",
+    reranking_model_name="BAAI/bge-reranker-base",
     contextual_rerank=True,
     use_cuda=True,
     docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
