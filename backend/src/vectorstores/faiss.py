@@ -3,11 +3,12 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.docstore.document import Document as LangchainDocument
 
-from ..tools.process_md import chunk_md_docs,chunk_md_manpages
+from ..tools.process_md import chunk_md_docs, chunk_md_manpages
 from ..tools.process_json import generate_knowledge_base
 
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_google_vertexai import VertexAIEmbeddings
+# from langchain_google_genai import GoogleGenerativeAIEmbeddings
+# from langchain_google_vertexai import VertexAIEmbeddings
+
 
 class FAISSVectorDatabase:
     def __init__(
@@ -34,15 +35,15 @@ class FAISSVectorDatabase:
         self.print_progress = print_progress
         self.debug = debug
         self.distance_strategy = distance_strategy
-        
+
         self._faiss_db = FAISS.from_documents(
             documents=[LangchainDocument(page_content="")],
             embedding=self.embedding_model,
             distance_strategy=self.distance_strategy,
         )
-    
+
     @property
-    def get_db(self) -> FAISS:
+    def faiss_db(self) -> FAISS:
         return self._faiss_db
 
     def process_md_docs(
@@ -56,17 +57,19 @@ class FAISSVectorDatabase:
         for file_path in folder_paths:
             if self.print_progress is True:
                 print(f"Processing [{file_path}]...")
-                docs_processed.extend(chunk_md_docs(
-                    embeddings_model_name=self.embeddings_model_name,
-                    files_path=file_path,
-                    chunk_size=chunk_size,
-                ))
+                docs_processed.extend(
+                    chunk_md_docs(
+                        embeddings_model_name=self.embeddings_model_name,
+                        files_path=file_path,
+                        chunk_size=chunk_size,
+                    )
+                )
 
         self._faiss_db.add_documents(docs_processed)
-        
+
         if return_docs:
             return docs_processed
-        
+
     def process_md_manpages(
         self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False
     ) -> list:
@@ -78,12 +81,14 @@ class FAISSVectorDatabase:
         for file_path in folder_paths:
             if self.print_progress is True:
                 print(f"Processing [{file_path}]...")
-                docs_processed.extend(chunk_md_manpages(
-                    files_path=file_path,
-                ))
+                docs_processed.extend(
+                    chunk_md_manpages(
+                        files_path=file_path,
+                    )
+                )
 
         self._faiss_db.add_documents(docs_processed)
-        
+
         if return_docs:
             return docs_processed
 
