@@ -29,7 +29,7 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         chunk_size: Optional[int] = 1000,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-    ):
+    ) -> None:
         if vector_db is None:
             super().create_vector_db()
             super().embed_docs(
