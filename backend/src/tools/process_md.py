@@ -6,6 +6,7 @@ from langchain_community.document_loaders import DirectoryLoader
 
 from .recursive_chunk import recursive_chunking
 
+
 def chunk_md_docs(
     embeddings_model_name: str, files_path: str, chunk_size: int
 ) -> list[LangchainDocument]:
@@ -17,7 +18,6 @@ def chunk_md_docs(
 
     loader = DirectoryLoader(files_path, glob="**/*.md", show_progress=True)
     documents = loader.load()
-
 
     markdown_splitter = RecursiveCharacterTextSplitter.from_language(
         chunk_size=chunk_size,
@@ -49,14 +49,13 @@ def chunk_md_docs(
 
     return docs_chunked
 
-def chunk_md_manpages(
-    files_path: str
-) -> list[LangchainDocument]:
+
+def chunk_md_manpages(files_path: str) -> list[LangchainDocument]:
     """
     For processing manpages
     """
 
     loader = DirectoryLoader(files_path, glob="**/*.md", show_progress=True)
     documents_knowledge_base = loader.load()
-   
+
     return documents_knowledge_base
