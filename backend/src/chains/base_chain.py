@@ -6,19 +6,25 @@ from langchain_core.output_parsers import StrOutputParser
 
 # from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from typing import Optional
 
 
 class BaseChain:
-    def __init__(self, llm_model, prompt_template_str):
+    def __init__(
+        self,
+        llm_model: Optional[ChatGoogleGenerativeAI],
+        prompt_template_str: Optional[str],
+    ):
         self.llm_model = llm_model
         self.prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
 
         self.llm_chain = None
 
-    def create_llm_chain(self):
+    def create_llm_chain(self) -> None:
         self.llm_chain = self.prompt_template | self.llm_model | StrOutputParser()
+        return
 
-    def get_llm_chain(self):
+    def get_llm_chain(self) -> ChatGoogleGenerativeAI:
         if self.llm_chain is None:
             self.create_llm_chain()
         return self.llm_chain
