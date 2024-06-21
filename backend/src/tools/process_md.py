@@ -1,4 +1,5 @@
 import json
+import os
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
 from langchain.docstore.document import Document as LangchainDocument
@@ -13,6 +14,11 @@ def chunk_md_docs(
     """
     For processing OR/ORFS docs
     """
+    # if no files in the directory
+    if not os.path.exists(files_path) or not os.listdir(files_path):
+        print(f"{files_path} is not populated, returning empty list.")
+        return []
+
     with open("src/source_list.json") as f:
         src_dict = json.loads(f.read())
 
@@ -54,6 +60,10 @@ def chunk_md_manpages(files_path: str) -> list[LangchainDocument]:
     """
     For processing manpages
     """
+    # if no files in the directory
+    if not os.path.exists(files_path) or not os.listdir(files_path):
+        print(f"{files_path} is not populated, returning empty list.")
+        return []
 
     loader = DirectoryLoader(files_path, glob="**/*.md", show_progress=True)
     documents_knowledge_base = loader.load()
