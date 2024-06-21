@@ -11,6 +11,10 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 
 ## Setup
 
+### Building Manpages
+
+Build manpages as per the instructions [here](https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs). Place the markdown files in `backend/data/markdown/manpages` before proceeding.
+
 ### Option 1 - Docker
 
 Ensure you have `docker` and `docker-compose` installed in your system.
@@ -35,7 +39,7 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 - Follow **Step 1** and **Step 2** as mentioned above.
 - **Step 3**: To scrape OR/ORFS docs and populate the `data` folder, run
 ```bash
-  python src/tools/scrape_userguide.py
+  python backend/scrape_userguide.py
 ```
 - **Step 4**: To run the server,
 ```bash
@@ -47,23 +51,25 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 
 Currently, documentation from OpenROAD and OpenROAD-flow-scripts is chunked recursively and embedded into FAISS Vector Databases.  
 
-Upon receiving a query, relevant documents are retrieved and reranked, using [LangChain's Ensemble Retriever](https://python.langchain.com/v0.1/docs/modules/data_connection/retrievers/ensemble/).
+Documents are first retrieved from the vectorstore using a hybrid retriever, combining vector and semantic search methods. These retrieved documents undergo reranking using a cross-encoder reranker model.
 
-Retrieved documents are then sent to the LLM as input context, for generating a response.
+Then top-n documents from the reranked set are then sent to the LLM as input context, for generating a response.
 
 ```mermaid
 flowchart LR
-    id1([Query]) --> id2([OR Docs])
-    id1([Query]) --> id3([ORFS Docs])
+    id0([Query]) --> id1
 
-    id2([OR Docs]) --> id4([Reranking]) 
-    id3([ORFS Docs]) --> id4([Reranking])
+    id1([Vectorstore]) --- id2([Semantic Retriever])
+    id1([Vectorstore]) --- id3([MMR Retriever])
+    id1([Vectorstore]) --- id4([BM25 Retriever])
 
-    id4([Reranking]) --> id5([LLM])
+    id2([Semantic Retriever]) -- Retrieved Docs ---> id5([Reranking]) 
+    id3([MMR Retriever]) -- Retrieved Docs ---> id5([Reranking])
+    id4([BM25 Retriever]) -- Retrieved Docs ---> id5([Reranking])
+
+    id5([Reranking]) -- top-n docs --> id6([LLM])
  
 ```
-
-By default,
 
 The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
 
