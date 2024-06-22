@@ -8,10 +8,9 @@ To configure the application, you'll need to set up the following environment va
 
 ```
 CHAT_ENDPOINT=<your-chat-endpoint> Defaults to http://localhost:8000/chatApp
-GOOGLE_CREDENTIALS_JSON=<path-to-your-google-credentials-json>
 ```
 
-## For Feedback Evaluation
+## For Feedback Evaluation (Optional)
 
 To collect feedback, you need to set up a Google Sheet and configure the necessary environment variables:
 
