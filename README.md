@@ -1,11 +1,13 @@
 # OR-Assistant
 
 ## Introduction
+
 The OpenROAD chat assistant aims to provide easy and quick access to information regarding tools, responses to questions and commonly occurring problems in OpenROAD and its native flow-OpenROAD-flow-scripts.
 
 The current architecture uses certain retrieval techniques on OpenROAD documentation and other online data sources. We aim to continuously improve the architecture and the associated the dataset to improve accuracy, coverage and robustness.
 
-### Use Cases
+## Use Cases
+
 - **Installation and Troubleshooting Assistance:** The chatbot will provide users with quick and accurate solutions to common installation issues and troubleshooting steps.
 - **Easy Access to Existing Resources:** The chatbot will be able to summarizing relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
 
@@ -20,30 +22,37 @@ Build manpages as per the instructions [here](https://github.com/The-OpenROAD-Pr
 Ensure you have `docker` and `docker-compose` installed in your system.
 
 - **Step 1**: Clone the repository:
+
 ```bash
   git clone https://github.com/The-OpenROAD-Project/ORAssistant.git
-``` 
+```
+
 - **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys. Get the [Google Gemini API Key](https://ai.google.dev) and add it to your env file, add other env vars as required.
+
 ```bash
   cd backend
   cp .env.example .env
 ```
 
-- **Step 3**: Start the server by running the following command,
+- **Step 3**: Start the server by running the following command:
+
 ```bash
   docker compose up
 ```
 
 ### Option 2 - Local Install
 
-- Follow **Step 1** and **Step 2** as mentioned above.
-- **Step 3**: To scrape OR/ORFS docs and populate the `data` folder, run
+- Prerequisites: Python 3.12, recommended to use a virtual environment like `conda`.
+- **Step 1**: `pip install -r backend/requirements.txt`
+- **Step 2**: Copy the `.env.example` file as shown above.
+- **Step 3**: To scrape OR/ORFS docs and populate the `data` folder, run:
+
 ```bash
-  python backend/scrape_userguide.py
+  cd backend && python scrape_docs.py
 ```
-- **Step 4**: To run the server,
+
+- **Step 4**: To run the server:
 ```bash
-  cd backend
   python main.py
 ```
 
