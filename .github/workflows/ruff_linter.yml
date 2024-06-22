@@ -1,4 +1,4 @@
-name: Lint and Commit
+name: Ruff Linter and Auto Fix
 
 on: [push, pull_request]
 
