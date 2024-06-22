@@ -1,9 +1,18 @@
 import os
 import requests
 import json
+import shutil
 from bs4 import BeautifulSoup
 
 source_dict = {}
+
+
+def check_and_purge_docs():
+    folder_paths = ["data/markdown/OR_docs", "data/markdown/ORFS_docs"]
+    for folder_path in folder_paths:
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path)
+            print(f"Purging existing docs, Folder {folder_path} deleted.")
 
 
 def download_markdown(url: str, folder_name: str) -> None:
@@ -53,6 +62,8 @@ def scrape_url(url: str, folder_name: str) -> None:
 
 
 if __name__ == "__main__":
+    check_and_purge_docs()
+
     os.makedirs("data/", exist_ok=True)
     os.makedirs("data/markdown/", exist_ok=True)
     os.makedirs("data/markdown/OR_docs", exist_ok=True)
