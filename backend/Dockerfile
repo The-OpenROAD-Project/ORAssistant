@@ -13,7 +13,7 @@ RUN pip install --upgrade -r /ORAssistant-backend/requirements.txt
 
 COPY . .
 
-RUN python scrape_docs.py 
+RUN python /ORAssistant-backend/scrape_docs.py 
 
 EXPOSE 8000
 
