@@ -49,13 +49,13 @@ class FAISSVectorDatabase:
     def process_md_docs(
         self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False
     ) -> list:
-        if self.print_progress is True:
+        if self.print_progress:
             print("Processing markdown docs...")
 
         docs_processed = []
 
         for file_path in folder_paths:
-            if self.print_progress is True:
+            if self.print_progress:
                 print(f"Processing [{file_path}]...")
                 docs_processed.extend(
                     chunk_md_docs(
@@ -70,16 +70,17 @@ class FAISSVectorDatabase:
         if return_docs:
             return docs_processed
 
+    # TODO: `chunk_size` not used -> remove?
     def process_md_manpages(
         self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False
     ) -> list:
-        if self.print_progress is True:
+        if self.print_progress:
             print("Processing markdown manpages...")
 
         docs_processed = []
 
         for file_path in folder_paths:
-            if self.print_progress is True:
+            if self.print_progress:
                 print(f"Processing [{file_path}]...")
                 docs_processed.extend(
                     chunk_md_manpages(
@@ -87,13 +88,15 @@ class FAISSVectorDatabase:
                     )
                 )
 
-        self._faiss_db.add_documents(docs_processed)
+        # Only add if docs were processed
+        if docs_processed:
+            self._faiss_db.add_documents(docs_processed)
 
         if return_docs:
             return docs_processed
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
-        if self.print_progress is True:
+        if self.print_progress:
             print("Processing json files...")
 
         embeddings = self.embedding_model
@@ -114,8 +117,7 @@ class FAISSVectorDatabase:
         for doc in retrieved_json_docs:
             retrieved_text += doc.page_content + "\n\n"
 
-        if self.debug is True:
-            print("Retrieved text: ", retrieved_text)
-            print()
+        if self.debug:
+            print(f"Retrieved text: {retrieved_text}\n")
 
         return retrieved_text
