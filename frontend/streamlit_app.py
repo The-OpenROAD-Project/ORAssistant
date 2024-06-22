@@ -132,7 +132,7 @@ question_dict = {
     for i, interaction in enumerate(st.session_state.chat_history)
     if interaction["role"] == "user"
 }
-if question_dict:
+if question_dict and os.getenv('FEEDBACK_SHEET_ID'):
     if "feedback_button" not in st.session_state:
         st.session_state.feedback_button = False
 
