@@ -1,4 +1,3 @@
-[tool.ruff]
 exclude = [
     ".bzr",
     ".direnv",
@@ -33,21 +32,36 @@ indent-width = 4
 
 target-version = "py312"
 
-[tool.ruff.lint]
+[lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`) codes by default.
 select = ["E4", "E7", "E9", "F"]
 ignore = []
 
+# Allow fix for all enabled rules (when `--fix` is provided).
 fixable = ["ALL"]
 unfixable = []
 
+# Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-[tool.ruff.format]
+[format]
+# Like Black, use double quotes for strings.
 quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
 indent-style = "space"
+
+# Like Black, respect magic trailing commas.
 skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
 line-ending = "auto"
+
+# Enable auto-formatting of code examples in docstrings.
 docstring-code-format = false
+
+# Dynamic line length limit for formatting code snippets in docstrings.
 docstring-code-line-length = "dynamic"
 
+# Enable preview features
 preview = true
