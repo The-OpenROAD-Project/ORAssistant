@@ -48,7 +48,7 @@ class FAISSVectorDatabase:
 
     def process_md_docs(
         self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False
-    ) -> list:
+    ) -> list | None:
         if self.print_progress:
             print("Processing markdown docs...")
 
@@ -69,11 +69,12 @@ class FAISSVectorDatabase:
 
         if return_docs:
             return docs_processed
+        return None
 
     # TODO: `chunk_size` not used -> remove?
     def process_md_manpages(
         self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False
-    ) -> list:
+    ) -> list | None:
         if self.print_progress:
             print("Processing markdown manpages...")
 
@@ -94,6 +95,7 @@ class FAISSVectorDatabase:
 
         if return_docs:
             return docs_processed
+        return None
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
         if self.print_progress:
@@ -107,12 +109,14 @@ class FAISSVectorDatabase:
         return json_vector_db
 
     def get_relevant_documents(self, query: str, k1: int = 2, k2: int = 4) -> str:
+        # TODO: Missing self.md_vector_db?
         retrieved_docs = self.md_vector_db.similarity_search_(query=query, k=k1)
         retrieved_text = ""
 
         for doc in retrieved_docs:
             retrieved_text += doc.page_content.replace("\n", "") + "\n\n"
 
+        # TODO: Missing self.json_vector_db?
         retrieved_json_docs = self.json_vector_db.similarity_search(query=query, k=k2)
         for doc in retrieved_json_docs:
             retrieved_text += doc.page_content + "\n\n"

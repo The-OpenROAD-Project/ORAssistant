@@ -1,5 +1,8 @@
 import json
+
+# TODO: Why use LangchainDocument instead of Document?
 from langchain.docstore.document import Document as LangchainDocument
+from langchain.docstore.document import Document
 
 
 def parse_json(json_object) -> str:
@@ -13,7 +16,7 @@ def parse_json(json_object) -> str:
     return parsed_text
 
 
-def generate_knowledge_base(file_paths: list[str]) -> list[str]:
+def generate_knowledge_base(file_paths: list[str]) -> list[Document]:
     json_knowledge_base = []
     for file_path in file_paths:
         try:

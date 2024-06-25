@@ -83,3 +83,30 @@ flowchart LR
 The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
 
 Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
+
+
+## Tests
+
+1) Ruff (TODO)
+
+2) Mypy: A static type checker for python
+
+```
+pip install mypy 
+mypy .
+```
+
+Alternatively create a file called `.git/hooks/pre-commit`, 
+and `chmod +x .git/hooks/pre-commit` to make it run pre-commit
+hooks before every commit.
+
+```
+#!/bin/bash
+
+# Run mypy
+echo "Running mypy..."
+if ! mypy .; then
+    echo "Mypy found type errors. Commit aborted."
+    exit 1
+fi
+```
