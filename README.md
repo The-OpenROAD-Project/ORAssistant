@@ -96,17 +96,9 @@ pip install mypy
 mypy .
 ```
 
-Alternatively create a file called `.git/hooks/pre-commit`, 
-and `chmod +x .git/hooks/pre-commit` to make it run pre-commit
-hooks before every commit.
-
+To install it as a pre-commit hook:
 ```
-#!/bin/bash
-
-# Run mypy
-echo "Running mypy..."
-if ! mypy .; then
-    echo "Mypy found type errors. Commit aborted."
-    exit 1
-fi
+pip install pre-commit
+pre-commit install
 ```
+
