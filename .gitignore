@@ -1,8 +1,8 @@
 .env
 __pycache__/
 *.pyc
-frontend/secrets.json  
-evaluation/human_evaluation/secrets.json  
-secrets.json
+frontend/*.json  
+evaluation/human_evaluation/*.json  
+*.json
 venv/
 .ruff_cache/
