@@ -7,7 +7,6 @@ import os
 
 load_dotenv()
 
-
 def get_sheet_title_by_gid(spreadsheet_metadata: dict, gid: int) -> str:
     """
     Get the sheet title by Sheet GID
@@ -25,6 +24,33 @@ def get_sheet_title_by_gid(spreadsheet_metadata: dict, gid: int) -> str:
             return sheet["properties"]["title"]
     return None
 
+def format_sources(sources) -> str:
+    """
+    Format the sources into a string suitable for Google Sheets.
+
+    Args:
+    - sources (list): List of source URLs.
+
+    Returns:
+    - str: Formatted sources string.
+    """
+    if isinstance(sources, list):
+        return "\n".join(sources)
+    return str(sources)
+
+def format_context(context) -> str:
+    """
+    Format the context into a string suitable for Google Sheets.
+
+    Args:
+    - context (list): List of context strings.
+
+    Returns:
+    - str: Formatted context string.
+    """
+    if isinstance(context, list):
+        return "\n".join(context)
+    return str(context)
 
 def submit_feedback_to_google_sheet(
     question: str, answer: str, sources: str, context: str, issue: str, version: str
@@ -49,7 +75,7 @@ def submit_feedback_to_google_sheet(
         )
 
     if not os.getenv("FEEDBACK_SHEET_ID"):
-        raise ValueError("The SHEET_ID environment variable is not set or is empty.")
+        raise ValueError("The FEEDBACK_SHEET_ID environment variable is not set or is empty.")
 
     if not os.getenv("RAG_VERSION"):
         raise ValueError("The RAG_VERSION environment variable is not set or is empty.")
@@ -75,7 +101,9 @@ def submit_feedback_to_google_sheet(
     if sheet_title:
         sheet = spreadsheet.worksheet(sheet_title)
         timestamp = datetime.now(timezone.utc).isoformat()
-        data_to_append = [question, answer, sources, context, issue, timestamp, version]
+        formatted_sources = format_sources(sources)
+        formatted_context = format_context(context)
+        data_to_append = [question, answer, formatted_sources, formatted_context, issue, timestamp, version]
 
         if not sheet.row_values(1):
             sheet.format("A1:G1", {"textFormat": {"bold": True}})
@@ -97,7 +125,6 @@ def submit_feedback_to_google_sheet(
     else:
         st.sidebar.error(f"Sheet with GID {target_gid} not found.")
 
-
 def show_feedback_form(questions: dict, metadata: dict, interactions: list) -> None:
     """
     Display feedback form in the sidebar.
@@ -105,7 +132,7 @@ def show_feedback_form(questions: dict, metadata: dict, interactions: list) -> N
     Args:
     - questions (dict): Dictionary of questions and indices.
     - metadata (dict): Metadata contains sources and context for each question.
-    - interactions (list): List of chat interactions from  st.session_state.chat_history
+    - interactions (list): List of chat interactions from st.session_state.chat_history
 
     Returns:
     - None
