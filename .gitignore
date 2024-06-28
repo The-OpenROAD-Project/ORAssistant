@@ -3,4 +3,5 @@ __pycache__/
 data/
 backend/src/source_list.json
 .ruff_cache
+.mypy_cache
 backend/src/secret.json
