@@ -1,5 +1,8 @@
 .env
 __pycache__/
+data/
+backend/src/source_list.json
+backend/src/secret.json
 *.pyc
 frontend/*.json  
 evaluation/human_evaluation/*.json  
