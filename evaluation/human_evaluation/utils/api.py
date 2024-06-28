@@ -1,6 +1,5 @@
 import requests
 import os
-import ast
 from typing import List, Any
 
 API_URL = os.getenv("CHAT_ENDPOINT", "http://localhost:8000/chatApp")
@@ -36,8 +35,7 @@ def get_responses(
                 data = response.json()
                 response_text = data.get("response", "No response")
 
-                sources_str = data.get("sources", "")
-                sources = ast.literal_eval(sources_str) if sources_str else set()
+                sources = data.get("sources", [])
                 formatted_sources = "\n".join(sources)
 
                 combined_response_sources = (
@@ -51,5 +49,6 @@ def get_responses(
 
         progress.progress((i + 1) / len(questions))
         status_text.text(f"Processing {i + 1}/{len(questions)}...")
+
 
     return responses
