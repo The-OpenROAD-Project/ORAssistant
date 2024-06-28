@@ -88,7 +88,7 @@ This project helps populate a Google Form for human evaluation based on question
 
     ```
 
-5. **Setup Google Cloud Service Account**:
+5. **Setup Google Cloud Service Account [Mentioned in Automatic Sheet & Form Creation](#automatic-sheet-form-creation):**
    - Open Google Cloud Console, enable the Sheets API, Form API, Drive API and create a service account.
    - Give access to this service account email.
    - Export credentials as JSON and add its path in the environment variable.
@@ -103,4 +103,4 @@ This project helps populate a Google Form for human evaluation based on question
     
 ### License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](../../LICENSE) file for details.
