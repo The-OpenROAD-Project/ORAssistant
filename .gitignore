@@ -1,6 +1,10 @@
-__pycache__/
 .env
+__pycache__/
 data/
-backend/src/source_list.json
-.ruff_cache
-backend/src/secret.json
+backend/src/*.json
+*.pyc
+frontend/*.json  
+evaluation/human_evaluation/*.json  
+/*.json
+venv/
+.ruff_cache/
