@@ -1,4 +1,5 @@
 import os
+import argparse
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 import gspread
@@ -108,51 +109,31 @@ def update_env_file(updates: Dict[str, str]) -> None:
     with open(env_file, "w") as file:
         file.writelines(new_lines)
 
-
 def main() -> None:
-    """
-    Main function to create Google Form and/or Google Sheet, and update the .env file accordingly based on user input.
-    """
-    create_form = input("Do you want to create a Google Form? [y/n]: ").strip().lower()
-    create_sheet = (
-        input(
-            "Do you want to create a Google Sheet with columns [Questions, Generated Answers]? [y/n]: "
-        )
-        .strip()
-        .lower()
-    )
-    user_email = input(
-        "Enter your email address to share the created resources with: "
-    ).strip()
+    parser = argparse.ArgumentParser(description="Create Google Form and/or Google Sheet, and update .env file.")
+    parser.add_argument('--create-form', action='store_true', help='Create a Google Form')
+    parser.add_argument('--create-sheet', action='store_true', help='Create a Google Sheet')
+    parser.add_argument('--user-email', type=str, required=True, help="Email address to share the created resources with")
+    parser.add_argument('--form-title', type=str, default='OR Assistant Feedback Form', help='Title for the Google Form')
+    parser.add_argument('--sheet-title', type=str, default='OR Assistant Evaluation Sheet', help='Title for the Google Sheet')
+
+    args = parser.parse_args()
 
     updates = {}
 
-    if create_form == "y":
-        form_title = input(
-            "Enter the title for the Google Form (leave blank for default 'OR Assistant Feedback Form'):"
-        ).strip()
-        form_title = form_title if form_title else "OR Assistant Feedback Form"
-        form_id = create_google_form(form_title, user_email)
-        print(
-            f"Form created successfully. View form at: https://docs.google.com/forms/d/{form_id}/edit"
-        )
+    if args.create_form:
+        form_id = create_google_form(args.form_title, args.user_email)
+        print(f"Form created successfully. View form at: https://docs.google.com/forms/d/{form_id}/edit")
         updates["GOOGLE_FORM_ID"] = form_id
 
-    if create_sheet == "y":
-        sheet_title = input(
-            "Enter the title for the Google Sheet (leave blank for default 'OR Assistant Evaluation Sheet'): "
-        ).strip()
-        sheet_title = sheet_title if sheet_title else "OR Assistant Evaluation Sheet"
-        sheet_id = create_google_sheet(sheet_title, user_email)
-        print(
-            f"Google Sheet created successfully. View sheet at: https://docs.google.com/spreadsheets/d/{sheet_id}/edit"
-        )
-        updates["SHEET_ID"] = sheet_id
+    if args.create_sheet:
+        sheet_id = create_google_sheet(args.sheet_title, args.user_email)
+        print(f"Google Sheet created successfully. View sheet at: https://docs.google.com/spreadsheets/d/{sheet_id}/edit")
+        updates["GOOGLE_SHEET_ID"] = sheet_id
 
     if updates:
         update_env_file(updates)
         print("The .env file has been updated with the new IDs.")
-
 
 if __name__ == "__main__":
     main()
