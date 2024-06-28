@@ -16,25 +16,21 @@ This project helps populate a Google Form for human evaluation based on question
     ```
 
 2. **Run the Setup Script**:
-    - Execute the setup script to create Google Sheets and Forms automatically based on your needs:
+
+    #### Script Arguments
+
+    - `--create-form`: Create a Google Form.
+    - `--create-sheet`: Create a Google Sheet.
+    - `--user-email`: Email address to share the created resources with (required).
+    - `--form-title`: Title for the Google Form (optional, default is `OR Assistant Feedback Form`).
+    - `--sheet-title`: Title for the Google Sheet (optional, default is `OR Assistant Evaluation Sheet`).
+
+    #### Example Usage
+
+    To create both Google Form and Google Sheet with custom titles and share them with a specified email, use the following command:
+
     ```sh
-    python setup.py
-    ```
-    - You will be prompted:
-        ```plaintext
-        Do you want to create a Google Form? [y/n]:
-        ```
-        Choose `y` or `n` according to your needs.
-    - Another prompt will ask:
-        ```plaintext
-        Do you want to create a Google Sheet with columns [Questions, Generated Answers]? [y/n]:
-        ```
-        Choose `y` or `n` as required.
-    - Provide your email address to give it edit access to the file:
-        ```plaintext
-        Enter your email address to share the created resources with:
-        ```
-    - The script will automatically update the `.env` file with the sheet ID and form ID.
+    python or_assistant.py --create-form --create-sheet --user-email example@domain.com --form-title "Custom Form Title" --sheet-title "Custom Sheet Title"
 
 
 ### Steps
