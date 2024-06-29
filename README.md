@@ -83,3 +83,22 @@ flowchart LR
 The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
 
 Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
+
+
+## Tests
+
+1) Ruff (TODO)
+
+2) Mypy: A static type checker for python
+
+```
+pip install mypy 
+mypy .
+```
+
+To install it as a pre-commit hook:
+```
+pip install pre-commit
+pre-commit install
+```
+

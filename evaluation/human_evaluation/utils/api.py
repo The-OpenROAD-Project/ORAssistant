@@ -1,25 +1,24 @@
 import requests
 import os
-from typing import List, Any
+from typing import Any
 
 API_URL = os.getenv("CHAT_ENDPOINT", "http://localhost:8000/chatApp")
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 
-
 def get_responses(
-    questions: List[str], progress: Any, status_text: Any, current_question_text: Any
-) -> List[str]:
+    questions: list[str], progress: Any, status_text: Any, current_question_text: Any
+) -> list[str]:
     """
     Fetch responses from AI for a list of questions.
 
     Args:
-    - questions (List[str]): List of questions to query the AI.
+    - questions (list[str]): List of questions to query the AI.
     - progress (Any): Streamlit progress bar object.
     - status_text (Any): Streamlit text object for status updates.
     - current_question_text (Any): Streamlit text object for current question display.
 
     Returns:
-    - List[str]: List of responses from the AI combined with sources.
+    - list[str]: List of responses from the AI combined with sources.
     """
     responses = []
 
@@ -49,6 +48,5 @@ def get_responses(
 
         progress.progress((i + 1) / len(questions))
         status_text.text(f"Processing {i + 1}/{len(questions)}...")
-
 
     return responses

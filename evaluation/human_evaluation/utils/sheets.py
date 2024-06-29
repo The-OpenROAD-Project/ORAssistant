@@ -5,7 +5,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import gspread
 from dotenv import load_dotenv
-from typing import List, Tuple
 
 load_dotenv()
 
@@ -27,7 +26,7 @@ client = gspread.authorize(creds)
 service = build("sheets", "v4", credentials=creds)
 
 
-def read_questions_and_answers() -> Tuple[List[str], int]:
+def read_questions_and_answers() -> tuple[list[str], int]:
     """
     Read questions from the Google Sheet.
 
@@ -50,7 +49,7 @@ def read_questions_and_answers() -> Tuple[List[str], int]:
         return [], 0
 
 
-def find_new_questions(question_count: int) -> List[int]:
+def find_new_questions(question_count: int) -> list[int]:
     """
     Find rows with no answers in the Google Sheet.
 
@@ -76,13 +75,13 @@ def find_new_questions(question_count: int) -> List[int]:
         return []
 
 
-def write_responses(responses: List[str], row_numbers: List[int]) -> int:
+def write_responses(responses: list[str], row_numbers: list[int]) -> int:
     """
     Write generated responses back to the Google Sheet.
 
     Args:
-    - responses (List[str]): List of generated responses.
-    - row_numbers (List[int]): List of row numbers corresponding to the responses.
+    - responses (list[str]): List of generated responses.
+    - row_numbers (list[int]): List of row numbers corresponding to the responses.
 
     Returns:
     - The total number of cells updated.

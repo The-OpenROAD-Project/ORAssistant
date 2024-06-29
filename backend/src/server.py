@@ -9,10 +9,11 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dotenv import load_dotenv
 
+
 class UserInput(BaseModel):
     query: str
-    listSources: bool = False
-    listContext: bool = False
+    list_sources: bool = False
+    list_context: bool = False
 
 
 app = FastAPI()
@@ -53,8 +54,8 @@ async def redirect_root_to_docs():
 
 
 @app.post("/chatApp")
-async def get_response(userInput: UserInput) -> dict:
-    user_question = userInput.query
+async def get_response(user_input: UserInput) -> dict:
+    user_question = user_input.query
     result = retriever_chain.invoke(user_question)
 
     links = []
@@ -66,17 +67,17 @@ async def get_response(userInput: UserInput) -> dict:
             links.append(i.metadata["source"])
         context.append(i.page_content)
 
-    links = set(links)
+    links_set = set(links)
 
-    if userInput.listSources and userInput.listContext:
+    if user_input.list_sources and user_input.list_context:
         response = {
             "response": result["answer"],
-            "sources": (links),
+            "sources": (links_set),
             "context": (context),
         }
-    elif userInput.listSources:
-        response = {"response": result["answer"], "sources": (links)}
-    elif userInput.listContext:
+    elif user_input.list_sources:
+        response = {"response": result["answer"], "sources": (links_set)}
+    elif user_input.list_context:
         response = {"response": result["answer"], "context": (context)}
     else:
         response = {"response": result["answer"]}

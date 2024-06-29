@@ -3,8 +3,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from dotenv import load_dotenv
-from typing import List, Dict, Any
-
+from typing import Any
 import os
 
 load_dotenv()
@@ -24,7 +23,7 @@ sheets_service = build("sheets", "v4", credentials=creds)
 forms_service = build("forms", "v1", credentials=creds)
 
 
-def parse_custom_input(custom_input: str, max_value: int) -> List[int]:
+def parse_custom_input(custom_input: str, max_value: int) -> list[int]:
     """
     Parse custom input for row ranges and return a sorted list of row numbers.
 
@@ -33,9 +32,9 @@ def parse_custom_input(custom_input: str, max_value: int) -> List[int]:
     - max_value (int): The maximum row number available.
 
     Returns:
-    - List[int]: A sorted list of row numbers.
+    - list[int]: A sorted list of row numbers.
     """
-    result: List[int] = []
+    result: list[int] = []
     ranges = custom_input.split(",")
     for r in ranges:
         if "-" in r:
@@ -49,19 +48,19 @@ def parse_custom_input(custom_input: str, max_value: int) -> List[int]:
 
 
 def selected_questions(
-    questions: List[Dict[str, Any]], parsed_values: List[int]
-) -> List[Dict[str, Any]]:
+    questions: list[dict[str, Any]], parsed_values: list[int]
+) -> list[dict[str, Any]]:
     """
     Select questions based on parsed values.
 
     Args:
-    - questions (List[Dict[str, Any]]): List of questions.
-    - parsed_values (List[int]): List of parsed row numbers from the parse_custom_input function.
+    - questions (list[dict[str, Any]]): List of questions.
+    - parsed_values (list[int]): List of parsed row numbers from the parse_custom_input function.
 
     Returns:
-    - List[Dict[str, Any]]: List of selected questions.
+    - list[dict[str, Any]]: List of selected questions.
     """
-    selected_questions: List[Dict[str, Any]] = []
+    selected_questions: list[dict[str, Any]] = []
     for index in parsed_values:
         zero_based_index = index - 2
         if 0 <= zero_based_index < len(questions):
@@ -69,12 +68,12 @@ def selected_questions(
     return selected_questions
 
 
-def read_question_and_description() -> List[Dict[str, str]]:
+def read_question_and_description() -> list[dict[str, str]]:
     """
     Read questions and descriptions from Google Sheets.
 
     Returns:
-    - List[Dict[str, str]]: List of dictionaries containing questions and descriptions.
+    - list[dict[str, str]]: List of dictionaries containing questions and descriptions.
     """
     try:
         sheet = sheets_service.spreadsheets()
@@ -83,7 +82,7 @@ def read_question_and_description() -> List[Dict[str, str]]:
         )
         values = result.get("values", [])
 
-        questions_and_descriptions: List[Dict[str, str]] = []
+        questions_and_descriptions: list[dict[str, str]] = []
         for row in values:
             question = row[0] if len(row) > 0 else None
             description = row[1] if len(row) > 1 else ""
@@ -101,18 +100,18 @@ def read_question_and_description() -> List[Dict[str, str]]:
         return []
 
 
-def update_gform(questions_descriptions: List[Dict[str, str]]) -> None:
+def update_gform(questions_descriptions: list[dict[str, str]]) -> None:
     """
     Update Google Form with provided questions and descriptions.
 
     Args:
-    - questions_descriptions (List[Dict[str, str]]): List of dictionaries containing questions and descriptions.
+    - questions_descriptions (list[dict[str, str]]): List of dictionaries containing questions and descriptions.
     """
     try:
         form = forms_service.forms().get(formId=GOOGLE_FORM_ID).execute()
         items = form.get("items", [])
 
-        requests: List[Dict[str, Any]] = []
+        requests: list[dict[str, Any]] = []
         # Using Gform API to update the form with the new questions and descriptions in radio button format
         for i, qd in enumerate(questions_descriptions):
             if i < len(items):

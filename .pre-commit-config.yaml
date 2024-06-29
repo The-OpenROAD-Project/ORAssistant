@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Run mypy
+# echo "Running mypy..."
+# if ! mypy --config-file mypy.ini .; then
+#     echo "mypy failed"
+#     exit 1
+# fi

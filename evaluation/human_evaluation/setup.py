@@ -4,7 +4,6 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 import gspread
 from dotenv import load_dotenv
-from typing import Dict
 
 load_dotenv()
 
@@ -82,12 +81,12 @@ def create_google_sheet(sheet_title: str, user_email: str) -> str:
     return sheet_id
 
 
-def update_env_file(updates: Dict[str, str]) -> None:
+def update_env_file(updates: dict[str, str]) -> None:
     """
     Update settings in .env file with the Sheet ID and Form ID.
 
     Args:
-    - updates (Dict[str, str]): Dictionary of updates to be made in the .env file.
+    - updates (dict[str, str]): Dictionary of updates to be made in the .env file.
     """
     env_file = ".env"
     if not os.path.exists(env_file):
