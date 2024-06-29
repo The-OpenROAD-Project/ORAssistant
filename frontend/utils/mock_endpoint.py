@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, Response
-from typing import Dict, Any
+from typing import Any
 
 app = Flask(__name__)
 
@@ -11,7 +11,7 @@ def chat_app() -> Response:
     Returns:
     - A JSON response containing the Mock Endpoint API response, sources, and context based on user input.
     """
-    data: Dict[str, Any] = request.get_json()
+    data: dict[str, Any] = request.get_json()
     user_query: str = data.get("query", "")
     list_sources: bool = data.get("listSources", False)
     list_context: bool = data.get("listContext", False)

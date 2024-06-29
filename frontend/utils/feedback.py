@@ -4,16 +4,16 @@ import gspread
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 import os
-from typing import Dict, List, Optional
+from typing import Optional
 
 load_dotenv()
 
-def get_sheet_title_by_gid(spreadsheet_metadata: Dict, gid: int) -> Optional[str]:
+def get_sheet_title_by_gid(spreadsheet_metadata: dict, gid: int) -> Optional[str]:
     """
     Get the sheet title by Sheet GID
 
     Args:
-    - spreadsheet_metadata (Dict): Metadata dictionary of the Google Sheet.
+    - spreadsheet_metadata (dict): Metadata dictionary of the Google Sheet.
     - gid (int): The Grid ID of the sheet.
 
     Returns:
@@ -25,12 +25,12 @@ def get_sheet_title_by_gid(spreadsheet_metadata: Dict, gid: int) -> Optional[str
             return sheet["properties"]["title"]
     return None
 
-def format_sources(sources: List[str]) -> str:
+def format_sources(sources: list[str]) -> str:
     """
     Format the sources into a string suitable for Google Sheets.
 
     Args:
-    - sources (List[str]): List of source URLs.
+    - sources (list[str]): List of source URLs.
 
     Returns:
     - str: Formatted sources string.
@@ -39,12 +39,12 @@ def format_sources(sources: List[str]) -> str:
         return "\n".join(sources)
     return str(sources)
 
-def format_context(context: List[str]) -> str:
+def format_context(context: list[str]) -> str:
     """
     Format the context into a string suitable for Google Sheets.
 
     Args:
-    - context (List[str]): List of context strings.
+    - context (list[str]): List of context strings.
 
     Returns:
     - str: Formatted context string.
@@ -131,14 +131,14 @@ def submit_feedback_to_google_sheet(
     else:
         st.sidebar.error(f"Sheet with GID {target_gid} not found.")
 
-def show_feedback_form(questions: Dict[str, int], metadata: Dict[str, Dict[str, str]], interactions: List[Dict[str, str]]) -> None:
+def show_feedback_form(questions: dict[str, int], metadata: dict[str, dict[str, str]], interactions: list[dict[str, str]]) -> None:
     """
     Display feedback form in the sidebar.
 
     Args:
-    - questions (Dict[str, int]): Dictionary of questions and indices.
-    - metadata (Dict[str, Dict[str, str]]): Metadata contains sources and context for each question.
-    - interactions (List[Dict[str, str]]): List of chat interactions from st.session_state.chat_history
+    - questions (dict[str, int]): Dictionary of questions and indices.
+    - metadata (dict[str, dict[str, str]]): Metadata contains sources and context for each question.
+    - interactions (list[dict[str, str]]): List of chat interactions from st.session_state.chat_history
 
     Returns:
     - None

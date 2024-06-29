@@ -8,9 +8,8 @@ import ast
 from PIL import Image
 from utils.feedback import show_feedback_form
 from dotenv import load_dotenv
-from typing import Tuple
 
-def response_generator(user_input: str) -> Tuple[str, str]:
+def response_generator(user_input: str) -> tuple[str, str]:
     """
     Use the chat endpoint to generate a response to the user's query.
 
@@ -52,7 +51,7 @@ def response_generator(user_input: str) -> Tuple[str, str]:
         st.error(f"Request failed: {e}")
         return None, None
 
-def main():
+def main() -> None:
     load_dotenv()
 
     img = Image.open("assets/or_logo.png")
