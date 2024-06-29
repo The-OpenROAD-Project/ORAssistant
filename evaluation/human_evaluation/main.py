@@ -12,7 +12,7 @@ from utils.utils import (
     read_question_and_description,
 )
 
-def main():
+def main() -> None:
     load_dotenv()
 
     GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
