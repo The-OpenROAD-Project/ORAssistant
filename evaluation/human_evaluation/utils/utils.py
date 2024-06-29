@@ -113,7 +113,7 @@ def update_gform(questions_descriptions: List[Dict[str, str]]) -> None:
         items = form.get("items", [])
 
         requests: List[Dict[str, Any]] = []
-
+        # Using Gform API to update the form with the new questions and descriptions in radio button format
         for i, qd in enumerate(questions_descriptions):
             if i < len(items):
                 item_id = items[i]["itemId"]
@@ -143,7 +143,7 @@ def update_gform(questions_descriptions: List[Dict[str, str]]) -> None:
                     },
                 }
                 requests.append(update_request)
-            else:
+            else: #If update is not required, create a new question and description
                 create_request = {
                     "createItem": {
                         "item": {
