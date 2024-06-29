@@ -107,8 +107,8 @@ def submit_feedback_to_google_sheet(
     if sheet_title:
         sheet = spreadsheet.worksheet(sheet_title)
         timestamp = datetime.now(timezone.utc).isoformat()
-        formatted_sources = format_sources(sources.split('\n')) 
-        formatted_context = format_context(context.split('\n'))  
+        formatted_sources = format_sources(sources) 
+        formatted_context = format_context(context)  
         data_to_append = [question, answer, formatted_sources, formatted_context, issue, timestamp, version]
 
         if not sheet.row_values(1):
