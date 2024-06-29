@@ -4,18 +4,24 @@ This project helps populate a Google Form for human evaluation based on question
 
 ## Setup Guide
 
-### Automatic Sheet & Form Creation
+### Google Cloud Service Account Setup
 
 1. **Setup Google Cloud Service Account**:
-   - Open Google Cloud Console, enable the Sheets API, Form API, Drive API and create a service account.
+   - Open Google Cloud Console and enable the following APIs:
+     - [Google Sheets API](https://console.cloud.google.com/marketplace/product/google/sheets.googleapis.com)
+     - [Google Drive API](https://console.cloud.google.com/marketplace/product/google/drive.googleapis.com)
+     - [Google Forms API](https://console.cloud.google.com/marketplace/product/google/forms.googleapis.com)
+   - Create a service account by navigating to the [Service Accounts page](https://console.cloud.google.com/iam-admin/serviceaccounts).
    - Give access to this service account email.
-   - Export credentials as JSON and add its path in the environment variable.
+   - Export credentials as JSON and add its path in the environment variable:
 
     ```plaintext
     GOOGLE_CREDENTIALS_JSON=<path-to-your-google-credentials-json>
     ```
 
-2. **Run the Setup Script**:
+### Automatic Sheet & Form Creation
+
+1. **Run the Setup Script**:
 
     #### Script Arguments
 
@@ -31,7 +37,7 @@ This project helps populate a Google Form for human evaluation based on question
 
     ```sh
     python or_assistant.py --create-form --create-sheet --user-email example@domain.com --form-title "Custom Form Title" --sheet-title "Custom Sheet Title"
-
+    ```
 
 ### Steps
 
@@ -84,15 +90,7 @@ This project helps populate a Google Form for human evaluation based on question
 
     ```
 
-5. **Setup Google Cloud Service Account [Mentioned in Automatic Sheet & Form Creation](#automatic-sheet-form-creation):**
-   - Open Google Cloud Console, enable the Sheets API, Form API, Drive API and create a service account.
-   - Give access to this service account email.
-   - Export credentials as JSON and add its path in the environment variable.
-
-    ```plaintext
-    GOOGLE_CREDENTIALS_JSON=<path-to-your-google-credentials-json>
-    ```
-6. **Run the Streamlit Application**:
+5. **Run the Streamlit Application**:
     ```sh
     streamlit run main.py
     ```
@@ -100,3 +98,4 @@ This project helps populate a Google Form for human evaluation based on question
 ### License
 
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](../../LICENSE) file for details.
+
