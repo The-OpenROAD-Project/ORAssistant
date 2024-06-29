@@ -1,90 +1,84 @@
 from .base_chain import BaseChain
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-from langchain_core.vectorstores import VectorStoreRetriever
-from langchain.docstore.document import Document as LangchainDocument
+from langchain.docstore.document import Document
 
 from ..vectorstores.faiss import FAISSVectorDatabase
 from ..tools.format_docs import format_docs
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import Optional
+from typing import Optional, Tuple, Any
 
 
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,
         llm_model: Optional[ChatGoogleGenerativeAI] = None,
-        prompt_template_str: Optional[str] = "",
-        embeddings_model_name: Optional[str] = "",
-        use_cuda: Optional[bool] = False,
+        prompt_template_str: Optional[str] = None,
+        docs_path: Optional[list[str]] = None,
+        manpages_path: Optional[list[str]] = None,
+        embeddings_model_name: Optional[str] = None,
+        use_cuda: bool = False,
+        chunk_size: int = 1000,
     ):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
         )
 
-        self.embeddings_model_name = embeddings_model_name
-        self.use_cuda = use_cuda
+        self.embeddings_model_name: Optional[str] = embeddings_model_name
+        self.use_cuda: bool = use_cuda
 
-        self.processed_docs = None
-        self.processed_manpages = None
+        self.docs_path: Optional[list[str]] = docs_path
+        self.manpages_path: Optional[list[str]] = manpages_path
+        self.chunk_size: int = chunk_size
 
-        self.vector_db = None
-        self.retriever = None
+        self.processed_docs: Optional[list[Document]] = []
+        self.processed_manpages: Optional[list[Document]] = []
+
+        self.vector_db: Optional[FAISSVectorDatabase] = None
+        self.retriever: Any  # This is Any for now as certain child classes (eg. bm25_retriever_chain) have a different retriever.
 
     def embed_docs(
         self,
-        docs_path: Optional[list[str]] = None,
-        manpages_path: Optional[list[str]] = None,
-        chunk_size: Optional[int] = 1000,
-        return_docs: Optional[bool] = False,
-    ) -> tuple[list[LangchainDocument] | None, list[LangchainDocument] | None]:
-        if docs_path is not None:
+        return_docs: bool = False,
+    ) -> Tuple[Optional[list[Document]], Optional[list[Document]]]:
+        if self.vector_db is None:
+            self.create_vector_db()
+
+        if self.docs_path is not None and self.vector_db is not None:
             self.processed_docs = self.vector_db.process_md_docs(
-                folder_paths=docs_path,
-                chunk_size=chunk_size,
+                folder_paths=self.docs_path,
+                chunk_size=self.chunk_size,
                 return_docs=return_docs,
             )
 
-        if manpages_path is not None:
+        if self.manpages_path is not None and self.vector_db is not None:
             self.processed_manpages = self.vector_db.process_md_manpages(
-                folder_paths=manpages_path, return_docs=return_docs
+                folder_paths=self.manpages_path, return_docs=return_docs
             )
 
-        return self.processed_docs, self.processed_manpages
+        return self.processed_docs,self.processed_manpages
 
-    def create_vector_db(self) -> None:
+    def create_vector_db(self):
         self.vector_db = FAISSVectorDatabase(
             embeddings_model_name=self.embeddings_model_name,
             print_progress=True,
             use_cuda=self.use_cuda,
         )
-        return
 
-    def get_vector_db(self) -> FAISSVectorDatabase:
-        if self.vector_db is None:
-            self.create_vector_db()
-        return self.vector_db
-
-    def create_retriever(self, search_k: Optional[int] = 5) -> None:
-        if self.processed_docs is None and self.processed_manpages is None:
+    def create_similarity_retriever(self, search_k: Optional[int] = 5):
+        if self.processed_docs == [] and self.processed_manpages == []:
             self.embed_docs()
-        self.retriever = self.vector_db.faiss_db.as_retriever(
-            search_type="similarity", search_kwargs={"k": search_k}
-        )
-        return
 
-    def get_retriever(self) -> VectorStoreRetriever:
-        if self.retriever is None:
-            self.create_retriever()
-        return self.retriever
+        if self.vector_db is not None:
+            self.retriever = self.vector_db.faiss_db.as_retriever(
+                search_type="similarity",
+                search_kwargs={"k": search_k},
+            )
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
-
-        self.create_vector_db()
-        self.create_retriever()
 
         self.llm_chain = (
             RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))

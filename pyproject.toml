@@ -34,8 +34,10 @@ indent-width = 4
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F"]
+select = ["E4", "E7", "E9","E301","E304","E305","E401","E223","E224","E242", "F","N"]
+extend-select = ["D203", "D204"]
 ignore = []
+preview = true
 
 fixable = ["ALL"]
 unfixable = []
@@ -47,7 +49,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
-docstring-code-format = false
+docstring-code-format = true
 docstring-code-line-length = "dynamic"
-
 preview = true
