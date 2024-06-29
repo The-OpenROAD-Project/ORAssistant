@@ -113,11 +113,9 @@ def main():
             if sources:
                 with st.expander("Sources:"):
                     try:
-                        print(sources)
                         if isinstance(sources, str):
                             cleaned_sources = sources.replace("{", "[").replace("}", "]")
                             parsed_sources = ast.literal_eval(cleaned_sources)
-                            print(parsed_sources)
                         else:
                             parsed_sources = sources
                         if isinstance(parsed_sources, (list, set)):
