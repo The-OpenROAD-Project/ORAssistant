@@ -1,0 +1,10 @@
+streamlit==1.35.0
+requests==2.32.3
+requests-oauthlib==2.0.0
+Pillow==10.3.0
+pytz==2024.1
+google-auth==2.30.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
+gspread==6.1.2
+python-dotenv==1.0.1
