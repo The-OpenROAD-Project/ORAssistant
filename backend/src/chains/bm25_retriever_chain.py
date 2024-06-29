@@ -1,52 +1,52 @@
 from .similarity_retriever_chain import SimilarityRetrieverChain
 
 from langchain_community.retrievers import BM25Retriever
+from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.docstore.document import Document as LangchainDocument
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from typing import Optional
+from typing import Optional, Iterable, Union
 
 
 class BM25RetrieverChain(SimilarityRetrieverChain):
     def __init__(
         self,
         llm_model: Optional[ChatGoogleGenerativeAI] = None,
-        prompt_template_str: Optional[str] = "",
-        embeddings_model_name: Optional[str] = "",
-        use_cuda: Optional[bool] = False,
+        prompt_template_str: Optional[str] = None,
+        docs_path: Optional[list[str]] = None,
+        manpages_path: Optional[list[str]] = None,
+        embeddings_model_name: Optional[str] = None,
+        use_cuda: bool = False,
+        chunk_size: int = 1000,
     ):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
             embeddings_model_name=embeddings_model_name,
+            docs_path=docs_path,
+            manpages_path=manpages_path,
+            chunk_size=chunk_size,
             use_cuda=use_cuda,
         )
 
-    def create_retriever(
+        self.retriever: Optional[Union[VectorStoreRetriever, BM25Retriever]] = None
+
+    def create_bm25_retriever(
         self,
-        embedded_docs: Optional[list[LangchainDocument]] = None,
-        search_k: Optional[int] = 5,
-        chunk_size: Optional[int] = 1000,
-        docs_path: Optional[list[str]] = None,
-        manpages_path: Optional[list[str]] = None,
-    ) -> None:
+        embedded_docs: Optional[Iterable[LangchainDocument]],
+        search_k: int = 5,
+    ):
         if embedded_docs is None:
             super().create_vector_db()
-            processed_docs, manpages_processed = (
-                super()
-                .super()
-                .embed_docs(
-                    docs_path=docs_path,
-                    manpages_path=manpages_path,
-                    chunk_size=chunk_size,
-                    return_docs=True,
-                )
-            )
-            embedded_docs = processed_docs + manpages_processed
+            processed_docs, processed_manpages = super().embed_docs(return_docs=True)
+
+            embedded_docs = []
+            if processed_docs is not None:
+                embedded_docs += processed_docs
+            if processed_manpages is not None:
+                embedded_docs += processed_manpages
 
         self.retriever = BM25Retriever.from_documents(
             documents=embedded_docs, search_kwargs={"k": search_k}
         )
-
-        return

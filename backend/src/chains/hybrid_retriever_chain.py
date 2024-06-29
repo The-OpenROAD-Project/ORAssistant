@@ -15,92 +15,107 @@ from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class HybridRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI],
-        prompt_template_str: Optional[str] = "",
-        embeddings_model_name: Optional[str] = "",
-        reranking_model_name: Optional[str] = "",
-        use_cuda: Optional[bool] = False,
-        search_k: Optional[list[int]] = [5, 5, 5],
-        weights: Optional[list[int]] = [0.33, 0.33, 0.33],
-        chunk_size: Optional[int] = 1000,
+        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        contextual_rerank: Optional[bool] = False,
+        embeddings_model_name: Optional[str] = None,
+        reranking_model_name: Optional[str] = None,
+        use_cuda: bool = False,
+        search_k: list[int] = [5, 5, 5],
+        weights: list[float] = [0.33, 0.33, 0.33],
+        chunk_size: int = 1000,
+        contextual_rerank: bool = False,
     ):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
         )
+        self.embeddings_model_name: Optional[str] = embeddings_model_name
+        self.reranking_model_name: Optional[str] = reranking_model_name
+        self.use_cuda: bool = use_cuda
 
-        self.embeddings_model_name = embeddings_model_name
-        self.reranking_model_name = reranking_model_name
-        self.use_cuda = use_cuda
+        self.search_k: list[int] = search_k
+        self.weights: list[float] = weights
 
-        self.search_k = search_k
-        self.weights = weights
+        self.chunk_size: int = chunk_size
+        self.docs_path: Optional[list[str]] = docs_path
+        self.manpages_path: Optional[list[str]] = manpages_path
 
-        self.chunk_size = chunk_size
-        self.docs_path = docs_path
-        self.manpages_path = manpages_path
+        self.contextual_rerank: bool = contextual_rerank
+        self.retriever: Optional[
+            Union[EnsembleRetriever, ContextualCompressionRetriever]
+        ] = None
 
-        self.contextual_rerank = contextual_rerank
-
-        self.retriever = None
-
-    def create_retriever(self) -> None:
+    def create_retriever(
+        self,
+    ) -> Union[EnsembleRetriever, ContextualCompressionRetriever]:
         similarity_retriever_chain = SimilarityRetrieverChain(
+            llm_model=None,
+            prompt_template_str=None,
             embeddings_model_name=self.embeddings_model_name,
-        )
-        faiss_db = similarity_retriever_chain.get_vector_db()
-        processed_docs, processed_manpages = similarity_retriever_chain.embed_docs(
             docs_path=self.docs_path,
             manpages_path=self.manpages_path,
             chunk_size=self.chunk_size,
-            return_docs=True,
         )
-        similarity_retriever_chain.create_retriever(search_k=5)
-        similarity_retriever = similarity_retriever_chain.get_retriever()
+
+        processed_docs, processed_manpages = similarity_retriever_chain.embed_docs(
+            return_docs=True
+        )
+        faiss_db = similarity_retriever_chain.vector_db
+        similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        similarity_retriever = similarity_retriever_chain.retriever
 
         mmr_retriever_chain = MMRRetrieverChain()
-        mmr_retriever_chain.create_retriever(
+        mmr_retriever_chain.create_mmr_retriever(
             vector_db=faiss_db, search_k=5, lambda_mult=0.9
         )
-        mmr_retriever = mmr_retriever_chain.get_retriever()
+        mmr_retriever = mmr_retriever_chain.retriever
+
+        embedded_docs = []
+        if processed_docs is not None:
+            embedded_docs += processed_docs
+        if processed_manpages is not None:
+            embedded_docs += processed_manpages
 
         bm25_retriever_chain = BM25RetrieverChain()
-        bm25_retriever_chain.create_retriever(
-            embedded_docs=(processed_docs + processed_manpages), search_k=5
+        bm25_retriever_chain.create_bm25_retriever(
+            embedded_docs=embedded_docs, search_k=5
         )
-        bm25_retriever = bm25_retriever_chain.get_retriever()
+        bm25_retriever = bm25_retriever_chain.retriever
 
-        ensemble_retriever = EnsembleRetriever(
-            retrievers=[similarity_retriever, mmr_retriever, bm25_retriever],
-            weights=[0.33, 0.33, 0.33],
-        )
+        if (
+            similarity_retriever is not None
+            and mmr_retriever is not None
+            and bm25_retriever is not None
+        ):
+            ensemble_retriever = EnsembleRetriever(
+                retrievers=[similarity_retriever, mmr_retriever, bm25_retriever],
+                weights=[0.33, 0.33, 0.33],
+            )
 
         if self.contextual_rerank:
             compressor = CrossEncoderReranker(
-                model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name), top_n=5
+                model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name),
+                top_n=5,
             )
-            self.retriever = ContextualCompressionRetriever(
+            retriever = ContextualCompressionRetriever(
                 base_compressor=compressor, base_retriever=ensemble_retriever
             )
         else:
-            self.retriever = ensemble_retriever
+            return ensemble_retriever
 
-        return
+        return retriever
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
-
-        self.create_retriever()
-
+        self.retriever = self.create_retriever()
         self.llm_chain = (
             RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
             | self.llm_chain
@@ -142,12 +157,11 @@ if __name__ == "__main__":
         llm_model=llm,
         prompt_template_str=prompt_template_str,
         embeddings_model_name="BAAI/bge-large-en-v1.5",
+        reranking_model_name="BAAI/bge-reranker-base",
         use_cuda=True,
         docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
         manpages_path=["./data/markdown/manpages"],
-        search_k=3,
     )
-
     retriever_chain = retriever.get_llm_chain()
 
     while True:
@@ -161,10 +175,8 @@ if __name__ == "__main__":
             elif "source" in i.metadata:
                 sources.append(i.metadata["source"])
 
-        sources = set(sources)
-
         print(result["answer"])
 
         print("\n\nSources:")
-        for i in sources:
+        for i in set(sources):
             print(i)
