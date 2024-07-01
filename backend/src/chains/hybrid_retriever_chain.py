@@ -53,9 +53,9 @@ class HybridRetrieverChain(BaseChain):
             Union[EnsembleRetriever, ContextualCompressionRetriever]
         ] = None
 
-    def create_retriever(
+    def create_hybrid_retriever(
         self,
-    ) -> Union[EnsembleRetriever, ContextualCompressionRetriever]:
+    ):
         similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
@@ -97,7 +97,7 @@ class HybridRetrieverChain(BaseChain):
         ):
             ensemble_retriever = EnsembleRetriever(
                 retrievers=[similarity_retriever, mmr_retriever, bm25_retriever],
-                weights=[0.33, 0.33, 0.33],
+                weights=self.weights,
             )
 
         if self.contextual_rerank:
@@ -105,17 +105,15 @@ class HybridRetrieverChain(BaseChain):
                 model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name),
                 top_n=5,
             )
-            retriever = ContextualCompressionRetriever(
+            self.retriever = ContextualCompressionRetriever(
                 base_compressor=compressor, base_retriever=ensemble_retriever
             )
         else:
-            return ensemble_retriever
-
-        return retriever
+            self.retriever = ensemble_retriever
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
-        self.retriever = self.create_retriever()
+
         self.llm_chain = (
             RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
             | self.llm_chain
@@ -153,7 +151,7 @@ if __name__ == "__main__":
 
         """
 
-    retriever = HybridRetrieverChain(
+    hybrid_retriever_chain = HybridRetrieverChain(
         llm_model=llm,
         prompt_template_str=prompt_template_str,
         embeddings_model_name="BAAI/bge-large-en-v1.5",
@@ -162,7 +160,8 @@ if __name__ == "__main__":
         docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
         manpages_path=["./data/markdown/manpages"],
     )
-    retriever_chain = retriever.get_llm_chain()
+    hybrid_retriever_chain.create_hybrid_retriever()
+    retriever_chain = hybrid_retriever_chain.get_llm_chain()
 
     while True:
         user_question = input("\n\nAsk a question: ")
