@@ -4,7 +4,7 @@ from langchain.docstore.document import Document as LangchainDocument
 from transformers import AutoTokenizer
 
 
-def recursive_chunking(
+def chunk_documents(
     chunk_size: int, knowledge_base: list[LangchainDocument], tokenizer_name: str
 ) -> list[LangchainDocument]:
     text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
