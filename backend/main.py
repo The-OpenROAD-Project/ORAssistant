@@ -1,4 +1,4 @@
-from src.server import app
+from src.api.main import app
 import uvicorn
 
 
