@@ -59,9 +59,7 @@ class MultiRetrieverChain(BaseChain):
             docs_path=self.docs_path,
             chunk_size=self.chunk_size,
         )
-        docs_similarity_retriever_chain.embed_docs(
-            return_docs=False
-        )
+        docs_similarity_retriever_chain.embed_docs(return_docs=False)
         docs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
         docs_similarity_retriever = docs_similarity_retriever_chain.retriever
 
@@ -72,16 +70,11 @@ class MultiRetrieverChain(BaseChain):
             manpages_path=self.manpages_path,
             chunk_size=self.chunk_size,
         )
-        manpages_similarity_retriever_chain.embed_docs(
-            return_docs=False
-        )
+        manpages_similarity_retriever_chain.embed_docs(return_docs=False)
         manpages_similarity_retriever_chain.create_similarity_retriever(search_k=5)
         manpages_similarity_retriever = docs_similarity_retriever_chain.retriever
 
-        if (
-            docs_similarity_retriever is not None
-            and manpages_similarity_retriever
-        ):
+        if docs_similarity_retriever is not None and manpages_similarity_retriever:
             self.retriever = EnsembleRetriever(
                 retrievers=[docs_similarity_retriever, manpages_similarity_retriever],
                 weights=self.weights,
