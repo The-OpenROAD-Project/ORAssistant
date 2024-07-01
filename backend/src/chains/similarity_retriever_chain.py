@@ -11,6 +11,7 @@ from typing import Optional, Tuple, Any
 
 from dotenv import load_dotenv
 
+
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,
@@ -20,7 +21,7 @@ class SimilarityRetrieverChain(BaseChain):
         manpages_path: Optional[list[str]] = None,
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
-        chunk_size: int = 1000,
+        chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -59,7 +60,7 @@ class SimilarityRetrieverChain(BaseChain):
                 folder_paths=self.manpages_path, return_docs=return_docs
             )
 
-        return self.processed_docs,self.processed_manpages
+        return self.processed_docs, self.processed_manpages
 
     def create_vector_db(self):
         self.vector_db = FAISSVectorDatabase(

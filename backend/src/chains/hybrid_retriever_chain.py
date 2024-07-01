@@ -30,7 +30,7 @@ class HybridRetrieverChain(BaseChain):
         use_cuda: bool = False,
         search_k: list[int] = [5, 5, 5],
         weights: list[float] = [0.33, 0.33, 0.33],
-        chunk_size: int = 1000,
+        chunk_size: int = 500,
         contextual_rerank: bool = False,
     ):
         super().__init__(

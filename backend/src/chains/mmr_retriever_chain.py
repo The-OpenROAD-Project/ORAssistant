@@ -17,7 +17,7 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         manpages_path: Optional[list[str]] = None,
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
-        chunk_size: int = 1000,
+        chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -30,7 +30,7 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         )
 
         self.retriever: Optional[VectorStoreRetriever] = None
-        
+
     def create_mmr_retriever(
         self,
         vector_db: Optional[FAISSVectorDatabase],

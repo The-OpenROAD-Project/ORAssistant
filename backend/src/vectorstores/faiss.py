@@ -49,7 +49,7 @@ class FAISSVectorDatabase:
         return self._faiss_db
 
     def process_md_docs(
-        self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False
+        self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
             print("Processing markdown docs...")

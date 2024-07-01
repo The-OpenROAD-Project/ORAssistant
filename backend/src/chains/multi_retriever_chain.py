@@ -23,7 +23,7 @@ class MultiRetrieverChain(BaseChain):
         use_cuda: bool = False,
         search_k: list[int] = [5, 5],
         weights: list[float] = [0.5, 0.5],
-        chunk_size: int = 1000,
+        chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -39,7 +39,7 @@ class MultiRetrieverChain(BaseChain):
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
 
-        self.retriever:EnsembleRetriever = None
+        self.retriever: EnsembleRetriever = None
 
     def create_multi_retriever(
         self,
@@ -66,7 +66,10 @@ class MultiRetrieverChain(BaseChain):
         manpages_similarity_retriever_chain.create_similarity_retriever(search_k=5)
         manpages_similarity_retriever = docs_similarity_retriever_chain.retriever
 
-        if docs_similarity_retriever is not None and manpages_similarity_retriever is not None:
+        if (
+            docs_similarity_retriever is not None
+            and manpages_similarity_retriever is not None
+        ):
             self.retriever = EnsembleRetriever(
                 retrievers=[docs_similarity_retriever, manpages_similarity_retriever],
                 weights=self.weights,
