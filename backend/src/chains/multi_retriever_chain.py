@@ -1,7 +1,5 @@
 from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain
-from .mmr_retriever_chain import MMRRetrieverChain
-from .bm25_retriever_chain import BM25RetrieverChain
 
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -11,11 +9,7 @@ from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain.retrievers import EnsembleRetriever
 from ..tools.format_docs import format_docs
 
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import CrossEncoderReranker
-from langchain_community.cross_encoders import HuggingFaceCrossEncoder
-
-from typing import Optional, Union
+from typing import Optional
 
 
 class MultiRetrieverChain(BaseChain):
@@ -45,13 +39,11 @@ class MultiRetrieverChain(BaseChain):
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
 
-        self.retriever: Optional[
-            Union[EnsembleRetriever, ContextualCompressionRetriever]
-        ] = None
+        self.retriever:EnsembleRetriever = None
 
     def create_multi_retriever(
         self,
-    ) -> Union[EnsembleRetriever, ContextualCompressionRetriever]:
+    ) -> EnsembleRetriever:
         docs_similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
@@ -74,12 +66,11 @@ class MultiRetrieverChain(BaseChain):
         manpages_similarity_retriever_chain.create_similarity_retriever(search_k=5)
         manpages_similarity_retriever = docs_similarity_retriever_chain.retriever
 
-        if docs_similarity_retriever is not None and manpages_similarity_retriever:
+        if docs_similarity_retriever is not None and manpages_similarity_retriever is not None:
             self.retriever = EnsembleRetriever(
                 retrievers=[docs_similarity_retriever, manpages_similarity_retriever],
                 weights=self.weights,
             )
-        return retriever
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
@@ -121,7 +112,7 @@ if __name__ == "__main__":
 
         """
 
-    retriever = MultiRetrieverChain(
+    multi_retriever_chain = MultiRetrieverChain(
         llm_model=llm,
         prompt_template_str=prompt_template_str,
         embeddings_model_name="BAAI/bge-large-en-v1.5",
@@ -129,11 +120,12 @@ if __name__ == "__main__":
         docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
         manpages_path=["./data/markdown/manpages"],
     )
-    retriever_chain = retriever.get_llm_chain()
+    multi_retriever_chain.create_multi_retriever()
+    llm_chain = multi_retriever_chain.get_llm_chain()
 
     while True:
         user_question = input("\n\nAsk a question: ")
-        result = retriever_chain.invoke(user_question)
+        result = llm_chain.invoke(user_question)
 
         sources = []
         for i in result["context"]:
