@@ -1,5 +1,7 @@
 import json
 import os
+import glob
+from tqdm import tqdm
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
 from langchain.docstore.document import Document as LangchainDocument
@@ -22,8 +24,13 @@ def chunk_md_docs(
     with open("src/source_list.json") as f:
         src_dict = json.loads(f.read())
 
-    loader = DirectoryLoader(files_path, glob="**/*.md", show_progress=True)
-    documents = loader.load()
+    md_files = glob.glob(os.path.join(files_path, "**/*.md"), recursive=True)
+    documents = []
+    for file_path in tqdm(md_files, desc="Loading Markdown files"):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            metadata = {"source": file_path[2:]}
+            documents.append(LangchainDocument(page_content=content, metadata=metadata))
 
     markdown_splitter = RecursiveCharacterTextSplitter.from_language(
         chunk_size=chunk_size,
