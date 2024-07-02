@@ -8,7 +8,7 @@ import markdown as md
 
 from langchain.docstore.document import Document as LangchainDocument
 
-from .recursive_chunk import chunk_documents
+from .chunk_documents import chunk_documents
 
 
 def md_to_text(md_content):
