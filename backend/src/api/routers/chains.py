@@ -18,9 +18,7 @@ class UserInput(BaseModel):
 
 load_dotenv()
 
-
 llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
-
 
 router = APIRouter(prefix="/chains", tags=["chains"])
 
@@ -73,7 +71,9 @@ multi_retriever_chain = MultiRetrieverChain(
 multi_retriever_chain.create_multi_retriever()
 multi_llm_chain = multi_retriever_chain.get_llm_chain()
 
-
+@router.get("/listAll")
+async def list_all_chains() -> list:
+    return ["/chains/hybrid","/chains/sim","/chains/ensemble"]
 
 @router.post("/hybrid")
 async def get_hybrid_response(user_input: UserInput) -> dict:
