@@ -8,8 +8,19 @@ import ast
 from PIL import Image
 from utils.feedback import show_feedback_form
 from dotenv import load_dotenv
+from typing import Callable, Any
 
-def response_generator(user_input: str) -> tuple[str, str]:
+def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, float]]:
+    def wrapper(*args: Any, **kwargs: Any) -> tuple[Any, float]:
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        response_time = (end_time - start_time) * 1000  # In milliseconds
+        return result, response_time
+    return wrapper
+
+@measure_response_time
+def response_generator(user_input: str) -> tuple[tuple[str, str], float]:
     """
     Use the chat endpoint to generate a response to the user's query.
 
@@ -19,7 +30,7 @@ def response_generator(user_input: str) -> tuple[str, str]:
     Returns:
     - tuple: Contains the AI response and sources.
     """
-    url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000/chatApp")
+    url = f"{st.session_state.base_url}{st.session_state.selected_endpoint}"
 
     headers = {"accept": "application/json", "Content-Type": "application/json"}
 
@@ -34,7 +45,6 @@ def response_generator(user_input: str) -> tuple[str, str]:
             if not isinstance(data, dict):
                 st.error("Invalid response format")
                 return None, None
-
         except ValueError:
             st.error("Failed to decode JSON response")
             return None, None
@@ -51,6 +61,18 @@ def response_generator(user_input: str) -> tuple[str, str]:
         st.error(f"Request failed: {e}")
         return None, None
 
+def fetch_endpoints() -> tuple[str, list]:
+    base_url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
+    url = f"{base_url}/chains/listAll"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        endpoints = response.json()
+        return base_url, endpoints
+    except requests.exceptions.RequestException as e:
+        st.error(f"Failed to fetch endpoints: {e}")
+        return base_url, []
+
 def main() -> None:
     load_dotenv()
 
@@ -62,9 +84,26 @@ def main() -> None:
 
     st.title("OR Assistant")
 
+    base_url, endpoints = fetch_endpoints()
+    
+    selected_endpoint = st.selectbox(
+        "Select preferred architecture",
+        options=endpoints,
+        index=0,
+        format_func=lambda x: x.split('/')[-1].capitalize()
+    )
+
+    if 'selected_endpoint' not in st.session_state:
+        st.session_state.selected_endpoint = selected_endpoint
+    else:
+        st.session_state.selected_endpoint = selected_endpoint
+        
+    if 'base_url' not in st.session_state:
+        st.session_state.base_url = base_url
+
     if not os.getenv("CHAT_ENDPOINT"):
         st.warning(
-            "The CHAT_ENDPOINT environment variable is not set or is empty. DEFAULT: http://localhost:8000/chatApp"
+            "The CHAT_ENDPOINT environment variable is not set or is empty. DEFAULT: http://localhost:8000"
         )
 
     if "chat_history" not in st.session_state:
@@ -90,7 +129,7 @@ def main() -> None:
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        response, sources = response_generator(user_input)
+        (response, sources), response_time = response_generator(user_input)
         if response is not None:
             response_buffer = ""
 
@@ -106,6 +145,10 @@ def main() -> None:
                     time.sleep(0.05)
 
                 message_placeholder.markdown(response_buffer)
+            
+            response_time_color = "green" if response_time < 5000 else "orange" if response_time < 10000 else "red"
+            st.markdown(f"<p style='color:{response_time_color};'>Response Time: {response_time / 1000:.2f} seconds</p>", unsafe_allow_html=True)
+
             st.session_state.chat_history.append(
                 {"content": response_buffer, "role": "ai"})
 
