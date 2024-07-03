@@ -6,7 +6,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 import markdown as md
 
-from langchain.docstore.document import Document as LangchainDocument
+from langchain.docstore.document import Document
 
 from .chunk_documents import chunk_documents
 
@@ -17,20 +17,20 @@ def md_to_text(md_content):
     return soup.get_text()
 
 
-def load_docs(files_path: str) -> list[LangchainDocument]:
+def load_docs(files_path: str) -> list[Document]:
     md_files = glob.glob(os.path.join(files_path, "**/*.md"), recursive=True)
     documents = []
     for file_path in tqdm(md_files, desc="Loading Markdown files"):
         with open(file_path, "r", encoding="utf-8") as file:
             content = md_to_text(file.read())
             metadata = {"source": file_path[2:]}
-            documents.append(LangchainDocument(page_content=content, metadata=metadata))
+            documents.append(Document(page_content=content, metadata=metadata))
     return documents
 
 
 def process_md_docs(
     embeddings_model_name: str, files_path: str, chunk_size: int
-) -> list[LangchainDocument]:
+) -> list[Document]:
     """
     For processing OR/ORFS docs
     """
@@ -56,7 +56,7 @@ def process_md_docs(
             "source": doc.metadata["source"],
         }
         documents_knowledge_base.append(
-            LangchainDocument(page_content=doc.page_content, metadata=new_metadata)
+            Document(page_content=doc.page_content, metadata=new_metadata)
         )
 
     docs_chunked = chunk_documents(
@@ -68,7 +68,7 @@ def process_md_docs(
     return docs_chunked
 
 
-def process_md_manpages(files_path: str) -> list[LangchainDocument]:
+def process_md_manpages(files_path: str) -> list[Document]:
     """
     For processing manpages
     """
