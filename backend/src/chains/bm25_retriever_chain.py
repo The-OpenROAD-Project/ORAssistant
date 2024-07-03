@@ -2,7 +2,7 @@ from .similarity_retriever_chain import SimilarityRetrieverChain
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.vectorstores import VectorStoreRetriever
-from langchain.docstore.document import Document as LangchainDocument
+from langchain.docstore.document import Document
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -34,7 +34,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
 
     def create_bm25_retriever(
         self,
-        embedded_docs: Optional[Iterable[LangchainDocument]],
+        embedded_docs: Optional[Iterable[Document]],
         search_k: int = 5,
     ):
         if embedded_docs is None:
