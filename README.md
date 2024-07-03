@@ -13,11 +13,15 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 
 ## Setup
 
-### Building Manpages
+This setup involves the setting of both the frontend and backend components. We shall begin with backend: 
+
+### Backend Setup
+
+#### Building Manpages
 
 Build manpages as per the instructions [here](https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs). Place the markdown files in `backend/data/markdown/manpages` before proceeding.
 
-### Option 1 - Docker
+#### Option 1 - Docker
 
 Ensure you have `docker` and `docker-compose` installed in your system.
 
@@ -40,7 +44,7 @@ Ensure you have `docker` and `docker-compose` installed in your system.
   docker compose up
 ```
 
-### Option 2 - Local Install
+#### Option 2 - Local Install
 
 - Prerequisites: Python 3.12, recommended to use a virtual environment like `conda`.
 - **Step 1**: `pip install -r backend/requirements.txt`
@@ -54,6 +58,26 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 - **Step 4**: To run the server:
 ```bash
   python main.py
+```
+
+### Frontend Setup
+
+**Note**: Please refer to the frontend [README](./frontend/README.md) for more detailed instructions.
+
+- **Step 1**: Setup the `.env` as per the instructions in the frontend [README](./frontend/README.md). Get the [Google Sheet API Key](https://developers.google.com/sheets/api/guides/concepts)
+```bash
+cd frontend
+cp .env.example .env
+```
+
+- **Step 2**: Install the necessary requirements. You are encouraged to use a virtual environment for this.
+```bash
+pip install -r requirements.txt
+```
+
+- **Step 3**: Run streamlit application
+```bash
+streamlit run streamlit_app.py
 ```
 
 ## Architecture Overview
