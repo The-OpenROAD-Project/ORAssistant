@@ -3,10 +3,12 @@ name: MyPy
 on:
   push:
     branches:
-      - feat/mypy-ci
+      - feat/mypy-ci # TODO: remove.
+      - master
   pull_request:
     branches:
-      - feat/mypy-ci
+      - feat/mypy-ci # TODO: remove.
+      - master
 
 jobs:
   build:
@@ -23,9 +25,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
       - name: Run MyPy
         run: |
           python -m mypy --strict backend
+          # python -m mypy --strict frontend # TODO.
+          # python -m mypy --strict evaluation # TODO.
