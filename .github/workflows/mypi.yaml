@@ -3,10 +3,10 @@ name: MyPy
 on:
   push:
     branches:
-      - main
+      - feat/mypy-ci
   pull_request:
     branches:
-      - main
+      - feat/mypy-ci
 
 jobs:
   build:
