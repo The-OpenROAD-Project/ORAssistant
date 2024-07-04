@@ -134,5 +134,6 @@ def main() -> None:
         update_env_file(updates)
         print("The .env file has been updated with the new IDs.")
 
+
 if __name__ == "__main__":
     main()
