@@ -20,7 +20,7 @@ def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, 
     return wrapper
 
 @measure_response_time
-def response_generator(user_input: str) -> tuple[tuple[str, str], float]:
+def response_generator(user_input: str) -> tuple[tuple[str, str]]:
     """
     Use the chat endpoint to generate a response to the user's query.
 
@@ -34,7 +34,7 @@ def response_generator(user_input: str) -> tuple[tuple[str, str], float]:
 
     headers = {"accept": "application/json", "Content-Type": "application/json"}
 
-    payload = {"query": user_input, "listSources": True, "listContext": True}
+    payload = {"query": user_input, "list_sources": True, "list_context": True}
 
     try:
         response = requests.post(url, headers=headers, json=payload)
@@ -129,48 +129,54 @@ def main() -> None:
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        (response, sources), response_time = response_generator(user_input)
-        if response is not None:
-            response_buffer = ""
-
-            with st.chat_message("ai"):
-                message_placeholder = st.empty()
-
+        response_tuple, response_time = response_generator(user_input)
+        
+        # Validate the response tuple
+        if response_tuple and isinstance(response_tuple, tuple) and len(response_tuple) == 2:
+            response, sources = response_tuple
+            if response is not None:
                 response_buffer = ""
-                for chunk in response.split(' '):
-                    response_buffer += chunk + ' '
-                    if chunk.endswith('\n'):
-                        response_buffer += ' '
+
+                with st.chat_message("ai"):
+                    message_placeholder = st.empty()
+
+                    response_buffer = ""
+                    for chunk in response.split(' '):
+                        response_buffer += chunk + ' '
+                        if chunk.endswith('\n'):
+                            response_buffer += ' '
+                        message_placeholder.markdown(response_buffer)
+                        time.sleep(0.05)
+
                     message_placeholder.markdown(response_buffer)
-                    time.sleep(0.05)
+                
+                response_time_text = f"Response Time: {response_time / 1000:.2f} seconds"
+                response_time_colored = f":{'green' if response_time < 5000 else 'orange' if response_time < 10000 else 'red'}[{response_time_text}]"
+                st.markdown(response_time_colored)
+                st.session_state.chat_history.append(
+                    {"content": response_buffer, "role": "ai"})
 
-                message_placeholder.markdown(response_buffer)
-            
-            response_time_color = "green" if response_time < 5000 else "orange" if response_time < 10000 else "red"
-            st.markdown(f"<p style='color:{response_time_color};'>Response Time: {response_time / 1000:.2f} seconds</p>", unsafe_allow_html=True)
-
-            st.session_state.chat_history.append(
-                {"content": response_buffer, "role": "ai"})
-
-            if sources:
-                with st.expander("Sources:"):
-                    try:
-                        if isinstance(sources, str):
-                            cleaned_sources = sources.replace("{", "[").replace("}", "]")
-                            parsed_sources = ast.literal_eval(cleaned_sources)
-                        else:
-                            parsed_sources = sources
-                        if isinstance(parsed_sources, (list, set)):
-                            sources_list = "\n".join(
-                                f"- [{link}]({link})"
-                                for link in parsed_sources
-                                if link.strip()
-                            )
-                            st.markdown(sources_list)
-                        else:
-                            st.markdown("No valid sources found.")
-                    except (ValueError, SyntaxError) as e:
-                        st.markdown(f"Failed to parse sources: {e}")
+                if sources:
+                    with st.expander("Sources:"):
+                        try:
+                            if isinstance(sources, str):
+                                cleaned_sources = sources.replace("{", "[").replace("}", "]")
+                                parsed_sources = ast.literal_eval(cleaned_sources)
+                            else:
+                                parsed_sources = sources
+                            if isinstance(parsed_sources, (list, set)):
+                                sources_list = "\n".join(
+                                    f"- [{link}]({link})"
+                                    for link in parsed_sources
+                                    if link.strip()
+                                )
+                                st.markdown(sources_list)
+                            else:
+                                st.markdown("No valid sources found.")
+                        except (ValueError, SyntaxError) as e:
+                            st.markdown(f"Failed to parse sources: {e}")
+        else:
+            st.error("Invalid response from the API")
 
     question_dict = {
         interaction["content"]: i
@@ -194,6 +200,7 @@ def main() -> None:
                 )
             except Exception as e:
                 st.error(f"Failed to load feedback form: {e}")
+
 
 if __name__ == "__main__":
     main()
