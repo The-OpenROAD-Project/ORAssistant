@@ -86,13 +86,13 @@ def submit_feedback_to_google_sheet(
     if not os.getenv("RAG_VERSION"):
         raise ValueError("The RAG_VERSION environment variable is not set or is empty.")
 
-    SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_CREDENTIALS_JSON")
-    SCOPE = [
+    service_account_file = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive",
     ]
 
-    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPE)
+    creds = Credentials.from_service_account_file(service_account_file, scopes=scope)
     client = gspread.authorize(creds)
 
     sheet_id = os.getenv("FEEDBACK_SHEET_ID")
