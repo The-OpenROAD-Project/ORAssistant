@@ -9,6 +9,8 @@ from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain.retrievers import EnsembleRetriever
 from ..tools.format_docs import format_docs
 
+from ..prompts.answer_prompts import summarise_prompt_template
+
 from typing import Optional
 
 
@@ -101,19 +103,7 @@ if __name__ == "__main__":
 
     llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
 
-    prompt_template_str = """
-        Use the following context:
-
-        {context}
-
-        -------------------------------------------------------------------------------------------------
-        Your task is to act as a knowledgeable assistant for users seeking information and guidance about the OpenROAD project. Avoid speculating or inventing information beyond the scope of the provided data.
-        Note that OR refers to OpenROAD and ORFS refers to OpenROAD-Flow-Scripts
-
-        Give a detailed answer to this question: 
-        {question}
-
-        """
+    prompt_template_str = summarise_prompt_template
 
     multi_retriever_chain = MultiRetrieverChain(
         llm_model=llm,

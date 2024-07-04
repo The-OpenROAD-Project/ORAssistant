@@ -9,6 +9,10 @@ from ..tools.format_docs import format_docs
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Optional, Tuple, Any
 
+
+from ..prompts.answer_prompts import summarise_prompt_template
+
+
 from dotenv import load_dotenv
 
 
@@ -105,19 +109,7 @@ if __name__ == "__main__":
 
     llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
 
-    prompt_template_str = """
-        Use the following context:
-
-        {context}
-
-        -------------------------------------------------------------------------------------------------
-        Your task is to act as a knowledgeable assistant for users seeking information and guidance about the OpenROAD project. Avoid speculating or inventing information beyond the scope of the provided data.
-        Note that OR refers to OpenROAD and ORFS refers to OpenROAD-Flow-Scripts
-
-        Give a detailed answer to this question: 
-        {question}
-
-        """
+    prompt_template_str = summarise_prompt_template
 
     sim_retriever_chain = SimilarityRetrieverChain(
         llm_model=llm,

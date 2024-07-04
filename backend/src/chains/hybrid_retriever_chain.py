@@ -15,6 +15,8 @@ from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
+from ..prompts.answer_prompts import summarise_prompt_template
+
 from typing import Optional, Union
 
 
@@ -137,19 +139,7 @@ if __name__ == "__main__":
 
     llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
 
-    prompt_template_str = """
-        Use the following context:
-
-        {context}
-
-        -------------------------------------------------------------------------------------------------
-        Your task is to act as a knowledgeable assistant for users seeking information and guidance about the OpenROAD project. Avoid speculating or inventing information beyond the scope of the provided data.
-        Note that OR refers to OpenROAD and ORFS refers to OpenROAD-Flow-Scripts
-
-        Give a detailed answer to this question: 
-        {question}
-
-        """
+    prompt_template_str = summarise_prompt_template
 
     hybrid_retriever_chain = HybridRetrieverChain(
         llm_model=llm,
