@@ -14,14 +14,14 @@ from utils.utils import (
 def main() -> None:
     load_dotenv()
 
-    GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
-    GOOGLE_FORM_ID = os.getenv("GOOGLE_FORM_ID")
+    google_sheet_id = os.getenv("GOOGLE_SHEET_ID")
+    google_form_id = os.getenv("GOOGLE_FORM_ID")
 
     st.title("OR Assistant: Populate Human Evaluation Form")
 
     st.write(f"""
     Add questions to be tested by OR Assistant in this Google Sheet:
-    [Google Sheet Link](https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/edit)
+    [Google Sheet Link](https://docs.google.com/spreadsheets/d/{google_sheet_id}/edit)
     """)
 
     options = ["", "All", "All New Questions", "Custom"]
@@ -106,10 +106,11 @@ def main() -> None:
                 questions_descriptions = read_question_and_description()
                 update_gform(questions_descriptions)
                 st.success(
-                    f"{updated_cells} cells updated successfully! Here is the Google Form: [Google Form Link](https://docs.google.com/forms/d/{GOOGLE_FORM_ID})"
+                    f"{updated_cells} cells updated successfully! Here is the Google Form: [Google Form Link](https://docs.google.com/forms/d/{google_form_id})"
                 )
         else:
             st.error("No questions found in the Google Sheet.")
+
 
 if __name__ == "__main__":
     main()
