@@ -34,7 +34,7 @@ def response_generator(user_input: str) -> tuple[tuple[str, str]]:
 
     headers = {"accept": "application/json", "Content-Type": "application/json"}
 
-    payload = {"query": user_input, "listSources": True, "listContext": True}
+    payload = {"query": user_input, "list_sources": True, "list_context": True}
 
     try:
         response = requests.post(url, headers=headers, json=payload)
