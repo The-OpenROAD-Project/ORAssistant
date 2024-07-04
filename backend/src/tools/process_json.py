@@ -1,6 +1,5 @@
 import json
 
-# TODO: Why use Document instead of Document?
 from langchain.docstore.document import Document
 
 
