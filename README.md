@@ -11,6 +11,13 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 - **Installation and Troubleshooting Assistance:** The chatbot will provide users with quick and accurate solutions to common installation issues and troubleshooting steps.
 - **Easy Access to Existing Resources:** The chatbot will be able to summarizing relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
 
+## Components
+
+We have divided our app into three components, each of which can be hosted on a separate machine for scalability. 
+- Backend: Generates the necessary chat endpoints for users to communicate.
+- Frontend: We use Streamlit to communicate with a chat endpoint, provides a user-friendly chat interface.
+- Evaluation: Besides the vanilla chat interface, we also have a human evaluation interface for research and development.
+
 ## Setup
 
 This setup involves the setting of both the frontend and backend components. We shall begin with backend: 
