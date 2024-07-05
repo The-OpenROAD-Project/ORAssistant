@@ -11,7 +11,7 @@ from langchain.docstore.document import Document
 from .chunk_documents import chunk_documents
 
 
-def md_to_text(md_content):
+def md_to_text(md_content: str) -> str:
     html = md.markdown(md_content)
     soup = BeautifulSoup(html, features="html.parser")
     return soup.get_text()
