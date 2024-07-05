@@ -3,7 +3,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.docstore.document import Document
 
-from ..tools.process_md import chunk_md_docs, chunk_md_manpages
+from ..tools.process_md import process_md_docs, process_md_manpages
 from ..tools.process_json import generate_knowledge_base
 
 from typing import Optional
@@ -47,9 +47,9 @@ class FAISSVectorDatabase:
     @property
     def faiss_db(self) -> FAISS:
         return self._faiss_db
-    
+
     def process_md_docs(
-        self, folder_paths: list[str], chunk_size: int = 1000, return_docs: bool = False
+        self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
             print("Processing markdown docs...")
@@ -60,7 +60,7 @@ class FAISSVectorDatabase:
             if self.print_progress:
                 print(f"Processing [{file_path}]...")
                 docs_processed.extend(
-                    chunk_md_docs(
+                    process_md_docs(
                         embeddings_model_name=self.embeddings_model_name,
                         files_path=file_path,
                         chunk_size=chunk_size,
@@ -86,7 +86,7 @@ class FAISSVectorDatabase:
             if self.print_progress:
                 print(f"Processing [{file_path}]...")
                 docs_processed.extend(
-                    chunk_md_manpages(
+                    process_md_manpages(
                         files_path=file_path,
                     )
                 )

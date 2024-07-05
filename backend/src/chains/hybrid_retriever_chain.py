@@ -15,6 +15,8 @@ from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
+from ..prompts.answer_prompts import summarise_prompt_template
+
 from typing import Optional, Union
 
 
@@ -30,7 +32,7 @@ class HybridRetrieverChain(BaseChain):
         use_cuda: bool = False,
         search_k: list[int] = [5, 5, 5],
         weights: list[float] = [0.33, 0.33, 0.33],
-        chunk_size: int = 1000,
+        chunk_size: int = 500,
         contextual_rerank: bool = False,
     ):
         super().__init__(
@@ -53,9 +55,9 @@ class HybridRetrieverChain(BaseChain):
             Union[EnsembleRetriever, ContextualCompressionRetriever]
         ] = None
 
-    def create_retriever(
+    def create_hybrid_retriever(
         self,
-    ) -> Union[EnsembleRetriever, ContextualCompressionRetriever]:
+    ):
         similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
@@ -97,7 +99,7 @@ class HybridRetrieverChain(BaseChain):
         ):
             ensemble_retriever = EnsembleRetriever(
                 retrievers=[similarity_retriever, mmr_retriever, bm25_retriever],
-                weights=[0.33, 0.33, 0.33],
+                weights=self.weights,
             )
 
         if self.contextual_rerank:
@@ -105,17 +107,15 @@ class HybridRetrieverChain(BaseChain):
                 model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name),
                 top_n=5,
             )
-            retriever = ContextualCompressionRetriever(
+            self.retriever = ContextualCompressionRetriever(
                 base_compressor=compressor, base_retriever=ensemble_retriever
             )
         else:
-            return ensemble_retriever
-
-        return retriever
+            self.retriever = ensemble_retriever
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
-        self.retriever = self.create_retriever()
+
         self.llm_chain = (
             RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
             | self.llm_chain
@@ -139,21 +139,9 @@ if __name__ == "__main__":
 
     llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
 
-    prompt_template_str = """
-        Use the following context:
+    prompt_template_str = summarise_prompt_template
 
-        {context}
-
-        -------------------------------------------------------------------------------------------------
-        Your task is to act as a knowledgeable assistant for users seeking information and guidance about the OpenROAD project. Avoid speculating or inventing information beyond the scope of the provided data.
-        Note that OR refers to OpenROAD and ORFS refers to OpenROAD-Flow-Scripts
-
-        Give a detailed answer to this question: 
-        {question}
-
-        """
-
-    retriever = HybridRetrieverChain(
+    hybrid_retriever_chain = HybridRetrieverChain(
         llm_model=llm,
         prompt_template_str=prompt_template_str,
         embeddings_model_name="BAAI/bge-large-en-v1.5",
@@ -162,7 +150,8 @@ if __name__ == "__main__":
         docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
         manpages_path=["./data/markdown/manpages"],
     )
-    retriever_chain = retriever.get_llm_chain()
+    hybrid_retriever_chain.create_hybrid_retriever()
+    retriever_chain = hybrid_retriever_chain.get_llm_chain()
 
     while True:
         user_question = input("\n\nAsk a question: ")

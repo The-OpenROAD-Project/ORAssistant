@@ -1,7 +1,5 @@
 import json
 
-# TODO: Why use LangchainDocument instead of Document?
-from langchain.docstore.document import Document as LangchainDocument
 from langchain.docstore.document import Document
 
 
@@ -26,7 +24,7 @@ def generate_knowledge_base(file_paths: list[str]) -> list[Document]:
                     try:
                         json_object = json.loads(line)
                         json_knowledge_base.append(
-                            LangchainDocument(
+                            Document(
                                 page_content=str(parse_json(json_object)),
                                 metadata={"source": file_path},
                             )

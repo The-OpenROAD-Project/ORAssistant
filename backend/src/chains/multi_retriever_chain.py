@@ -1,22 +1,20 @@
 from .base_chain import BaseChain
+from .similarity_retriever_chain import SimilarityRetrieverChain
+
+from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-from langchain.docstore.document import Document
 
-from ..vectorstores.faiss import FAISSVectorDatabase
+from langchain.retrievers import EnsembleRetriever
 from ..tools.format_docs import format_docs
-
-from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import Optional, Tuple, Any
-
 
 from ..prompts.answer_prompts import summarise_prompt_template
 
+from typing import Optional
 
-from dotenv import load_dotenv
 
-
-class SimilarityRetrieverChain(BaseChain):
+class MultiRetrieverChain(BaseChain):
     def __init__(
         self,
         llm_model: Optional[ChatGoogleGenerativeAI] = None,
@@ -25,62 +23,58 @@ class SimilarityRetrieverChain(BaseChain):
         manpages_path: Optional[list[str]] = None,
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
+        search_k: list[int] = [5, 5],
+        weights: list[float] = [0.5, 0.5],
         chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
         )
-
         self.embeddings_model_name: Optional[str] = embeddings_model_name
         self.use_cuda: bool = use_cuda
 
+        self.search_k: list[int] = search_k
+        self.weights: list[float] = weights
+
+        self.chunk_size: int = chunk_size
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
-        self.chunk_size: int = chunk_size
 
-        self.processed_docs: Optional[list[Document]] = []
-        self.processed_manpages: Optional[list[Document]] = []
+        self.retriever: EnsembleRetriever = None
 
-        self.vector_db: Optional[FAISSVectorDatabase] = None
-        self.retriever: Any  # This is Any for now as certain child classes (eg. bm25_retriever_chain) have a different retriever.
-
-    def embed_docs(
+    def create_multi_retriever(
         self,
-        return_docs: bool = False,
-    ) -> Tuple[Optional[list[Document]], Optional[list[Document]]]:
-        if self.vector_db is None:
-            self.create_vector_db()
-
-        if self.docs_path is not None and self.vector_db is not None:
-            self.processed_docs = self.vector_db.process_md_docs(
-                folder_paths=self.docs_path,
-                chunk_size=self.chunk_size,
-                return_docs=return_docs,
-            )
-
-        if self.manpages_path is not None and self.vector_db is not None:
-            self.processed_manpages = self.vector_db.process_md_manpages(
-                folder_paths=self.manpages_path, return_docs=return_docs
-            )
-
-        return self.processed_docs, self.processed_manpages
-
-    def create_vector_db(self):
-        self.vector_db = FAISSVectorDatabase(
+    ) -> EnsembleRetriever:
+        docs_similarity_retriever_chain = SimilarityRetrieverChain(
+            llm_model=None,
+            prompt_template_str=None,
             embeddings_model_name=self.embeddings_model_name,
-            print_progress=True,
-            use_cuda=self.use_cuda,
+            docs_path=self.docs_path,
+            chunk_size=self.chunk_size,
         )
+        docs_similarity_retriever_chain.embed_docs(return_docs=False)
+        docs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        docs_similarity_retriever = docs_similarity_retriever_chain.retriever
 
-    def create_similarity_retriever(self, search_k: Optional[int] = 5):
-        if self.processed_docs == [] and self.processed_manpages == []:
-            self.embed_docs()
+        manpages_similarity_retriever_chain = SimilarityRetrieverChain(
+            llm_model=None,
+            prompt_template_str=None,
+            embeddings_model_name=self.embeddings_model_name,
+            manpages_path=self.manpages_path,
+            chunk_size=self.chunk_size,
+        )
+        manpages_similarity_retriever_chain.embed_docs(return_docs=False)
+        manpages_similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        manpages_similarity_retriever = docs_similarity_retriever_chain.retriever
 
-        if self.vector_db is not None:
-            self.retriever = self.vector_db.faiss_db.as_retriever(
-                search_type="similarity",
-                search_kwargs={"k": search_k},
+        if (
+            docs_similarity_retriever is not None
+            and manpages_similarity_retriever is not None
+        ):
+            self.retriever = EnsembleRetriever(
+                retrievers=[docs_similarity_retriever, manpages_similarity_retriever],
+                weights=self.weights,
             )
 
     def create_llm_chain(self) -> None:
@@ -111,7 +105,7 @@ if __name__ == "__main__":
 
     prompt_template_str = summarise_prompt_template
 
-    sim_retriever_chain = SimilarityRetrieverChain(
+    multi_retriever_chain = MultiRetrieverChain(
         llm_model=llm,
         prompt_template_str=prompt_template_str,
         embeddings_model_name="BAAI/bge-large-en-v1.5",
@@ -119,8 +113,8 @@ if __name__ == "__main__":
         docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
         manpages_path=["./data/markdown/manpages"],
     )
-    sim_retriever_chain.create_similarity_retriever()
-    llm_chain = sim_retriever_chain.get_llm_chain()
+    multi_retriever_chain.create_multi_retriever()
+    llm_chain = multi_retriever_chain.get_llm_chain()
 
     while True:
         user_question = input("\n\nAsk a question: ")
