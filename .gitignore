@@ -10,3 +10,5 @@ venv/
 .ruff_cache/
 .mypy_cache/
 
+# docs
+documents.txt
