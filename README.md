@@ -87,7 +87,12 @@ Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
 
 ## Tests
 
-1) Ruff (TODO)
+1) Ruff: Auto-formatter and checker for python
+
+```
+pip install ruff
+ruff format && ruff check
+```
 
 2) Mypy: A static type checker for python
 
