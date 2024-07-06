@@ -8,4 +8,7 @@ google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.0
 gspread==6.1.2
 python-dotenv==1.0.1
+mypy
 flask
+types-pytz
+types-requests
