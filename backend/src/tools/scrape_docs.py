@@ -27,7 +27,7 @@ def download_markdown(url: str, folder_name: str) -> None:
         print(f"{url} - ERROR - Status code: {response.status_code}")
 
 
-def get_href_list(url) -> list[str]:
+def get_href_list(url: str) -> list[str]:
     try:
         hrefs = []
         response = requests.get(url)
