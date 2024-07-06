@@ -5,6 +5,7 @@ from typing import Any
 API_BASE_URL = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 
+<<<<<<< HEAD
 def fetch_endpoints() -> list[str]:
     url = f"{API_BASE_URL}/chains/listAll"
     try:
@@ -13,6 +14,8 @@ def fetch_endpoints() -> list[str]:
         return list(response.json())
     except requests.exceptions.RequestException:
         return []
+=======
+>>>>>>> 1a469f2 (fix ruff)
 
 def get_responses(
     questions: list[str], progress: Any, status_text: Any, current_question_text: Any, selected_endpoint: str

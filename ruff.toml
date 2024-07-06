@@ -33,8 +33,8 @@ indent-width = 4
 target-version = "py312"
 
 [lint]
-# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`) codes by default.
-select = ["E4", "E7", "E9", "F"]
+select = ["E4", "E7", "E9","E301","E304","E305","E401","E223","E224","E242", "F","N"]
+extend-select = ["D203", "D204"]
 ignore = []
 preview = true
 

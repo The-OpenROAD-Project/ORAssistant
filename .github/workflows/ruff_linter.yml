@@ -28,5 +28,5 @@ jobs:
 
     - name: Run Ruff Check 
       run: |
-        ruff check --output-format json
+        ruff check
  
