@@ -23,6 +23,13 @@ def download_markdown(url: str, folder_name: str) -> None:
     response = requests.get(dl_url)
 
     if response.status_code == 200:
+        file_name = path.replace("/", "_")
+
+        if "build" in file_name.lower():
+            folder_name += "/installation"
+        elif "main_src" in file_name.lower():
+            folder_name += "/tools"
+
         markdown_content = response.text
         file_name = f"data/markdown/{folder_name}/{path.replace("/", "_")}"
         if os.path.isfile(file_name):
@@ -67,7 +74,10 @@ if __name__ == "__main__":
     os.makedirs("data/", exist_ok=True)
     os.makedirs("data/markdown/", exist_ok=True)
     os.makedirs("data/markdown/OR_docs", exist_ok=True)
+    os.makedirs("data/markdown/OR_docs/installation", exist_ok=True)
+    os.makedirs("data/markdown/OR_docs/tools", exist_ok=True)
     os.makedirs("data/markdown/ORFS_docs", exist_ok=True)
+    os.makedirs("data/markdown/ORFS_docs/installation", exist_ok=True)
 
     url = "https://openroad.readthedocs.io/en/latest"
     scrape_url(url, "OR_docs")
