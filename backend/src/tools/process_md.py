@@ -51,8 +51,13 @@ def process_md_docs(
 
     documents_knowledge_base = []
     for doc in documents:
+        try:
+            url = src_dict[doc.metadata["source"]]
+        except Exception as e:
+            url = ""
+
         new_metadata = {
-            "url": src_dict[doc.metadata["source"]],
+            "url": url,
             "source": doc.metadata["source"],
         }
         documents_knowledge_base.append(
