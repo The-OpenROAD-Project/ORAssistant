@@ -30,7 +30,7 @@ class HybridRetrieverChain(BaseChain):
         embeddings_model_name: Optional[str] = None,
         reranking_model_name: Optional[str] = None,
         use_cuda: bool = False,
-        search_k: list[int] = [5, 5, 5],
+        search_k: int = 5,
         weights: list[float] = [0.33, 0.33, 0.33],
         chunk_size: int = 500,
         contextual_rerank: bool = False,
@@ -43,7 +43,7 @@ class HybridRetrieverChain(BaseChain):
         self.reranking_model_name: Optional[str] = reranking_model_name
         self.use_cuda: bool = use_cuda
 
-        self.search_k: list[int] = search_k
+        self.search_k: int = search_k
         self.weights: list[float] = weights
 
         self.chunk_size: int = chunk_size
@@ -71,12 +71,12 @@ class HybridRetrieverChain(BaseChain):
             return_docs=True
         )
         faiss_db = similarity_retriever_chain.vector_db
-        similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        similarity_retriever_chain.create_similarity_retriever(search_k=10)
         similarity_retriever = similarity_retriever_chain.retriever
 
         mmr_retriever_chain = MMRRetrieverChain()
         mmr_retriever_chain.create_mmr_retriever(
-            vector_db=faiss_db, search_k=5, lambda_mult=0.9
+            vector_db=faiss_db, search_k=10, lambda_mult=0.7
         )
         mmr_retriever = mmr_retriever_chain.retriever
 
@@ -88,7 +88,7 @@ class HybridRetrieverChain(BaseChain):
 
         bm25_retriever_chain = BM25RetrieverChain()
         bm25_retriever_chain.create_bm25_retriever(
-            embedded_docs=embedded_docs, search_k=5
+            embedded_docs=embedded_docs, search_k=10
         )
         bm25_retriever = bm25_retriever_chain.retriever
 
@@ -105,7 +105,7 @@ class HybridRetrieverChain(BaseChain):
         if self.contextual_rerank:
             compressor = CrossEncoderReranker(
                 model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name),
-                top_n=5,
+                top_n=self.search_k,
             )
             self.retriever = ContextualCompressionRetriever(
                 base_compressor=compressor, base_retriever=ensemble_retriever
