@@ -17,6 +17,14 @@ def main() -> None:
     google_sheet_id = os.getenv("GOOGLE_SHEET_ID")
     google_form_id = os.getenv("GOOGLE_FORM_ID")
 
+    if not google_sheet_id:
+        st.error("GOOGLE_SHEET_ID is not set in the environment variables.")
+        return
+
+    if not google_form_id:
+        st.error("GOOGLE_FORM_ID is not set in the environment variables.")
+        return
+        
     st.title("OR Assistant: Populate Human Evaluation Form")
 
     st.write(f"""
