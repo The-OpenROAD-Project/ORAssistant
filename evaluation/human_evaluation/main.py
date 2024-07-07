@@ -24,7 +24,7 @@ def main() -> None:
     [Google Sheet Link](https://docs.google.com/spreadsheets/d/{google_sheet_id}/edit)
     """)
 
-    base_url, endpoints = fetch_endpoints()
+    endpoints = fetch_endpoints()
     
     selected_endpoint = st.selectbox(
         "Select preferred architecture",
