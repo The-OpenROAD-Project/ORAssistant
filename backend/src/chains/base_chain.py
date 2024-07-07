@@ -5,13 +5,14 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import Optional, Any
+from langchain_google_vertexai import ChatVertexAI
+from typing import Optional, Union, Any
 
 
 class BaseChain:
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
     ):
         self.llm_model = llm_model
