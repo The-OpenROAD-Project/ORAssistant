@@ -10,12 +10,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Initialize .env
-      run: |
-        cp backend/.env.example backend/.env
-        sed -i 's/{{GOOGLE_API_KEY}}/${{ secrets.GOOGLE_API_KEY }}/' backend/.env
-        cat backend/.env
-      
     - name: Build image
       uses: docker/build-push-action@v2
       with:
@@ -24,4 +18,5 @@ jobs:
         push: false
         tags: ${{ secrets.DOCKERHUB_USERNAME }}
 
-    # TODO: Deploy action on self-hosted?
+    # TODO: Deploy action on self-hosted VM
+    # TODO: Add secrets 
