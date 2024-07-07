@@ -16,6 +16,6 @@ def format_docs(docs) -> str:
                 + "\n- - - - - -  - - - - - - - - - - - - - - - -\n\n"
             )
         else:
-            formatted_text = doc.page_content
+            formatted_text += doc.page_content
 
     return formatted_text
