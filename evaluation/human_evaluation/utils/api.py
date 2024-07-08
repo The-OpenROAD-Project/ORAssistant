@@ -10,7 +10,7 @@ def fetch_endpoints() -> list[str]:
     try:
         response = requests.get(url)
         response.raise_for_status()
-        return response.json()
+        return list(response.json())
     except requests.exceptions.RequestException:
         return []
 
