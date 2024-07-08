@@ -2,11 +2,20 @@ import requests
 import os
 from typing import Any
 
-API_URL = os.getenv("CHAT_ENDPOINT", "http://localhost:8000/chatApp")
+API_BASE_URL = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 
+def fetch_endpoints() -> list[str]:
+    url = f"{API_BASE_URL}/chains/listAll"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return list(response.json())
+    except requests.exceptions.RequestException:
+        return []
+
 def get_responses(
-    questions: list[str], progress: Any, status_text: Any, current_question_text: Any
+    questions: list[str], progress: Any, status_text: Any, current_question_text: Any, selected_endpoint: str
 ) -> list[str]:
     """
     Fetch responses from AI for a list of questions.
@@ -16,6 +25,7 @@ def get_responses(
     - progress (Any): Streamlit progress bar object.
     - status_text (Any): Streamlit text object for status updates.
     - current_question_text (Any): Streamlit text object for current question display.
+    - selected_endpoint (str): The selected endpoint to use for the API call.
 
     Returns:
     - list[str]: List of responses from the AI combined with sources.
@@ -24,10 +34,11 @@ def get_responses(
 
     for i, question in enumerate(questions):
         current_question_text.text(f"Current question: {question}")
-        payload = {"query": question, "listSources": True}
+        payload = {"query": question, "list_sources": True}
 
         try:
-            response = requests.post(API_URL, headers=HEADERS, json=payload)
+            url = f"{API_BASE_URL}/{selected_endpoint}"
+            response = requests.post(url, headers=HEADERS, json=payload)
             response.raise_for_status()
 
             try:
