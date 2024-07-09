@@ -10,6 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dotenv import load_dotenv
 
+
 class UserInput(BaseModel):
     query: str
     list_sources: bool = False
@@ -39,7 +40,6 @@ rg.initialize()
 
 @router.post("/agent-retriever")
 async def get_agent_response(user_input: UserInput) -> dict:
-
     user_question = user_input.query
     inputs = {
         "messages": [
@@ -49,7 +49,7 @@ async def get_agent_response(user_input: UserInput) -> dict:
 
     output = list(rg.graph.stream(inputs))
 
-    tool = output[0]["agent"]["tools"][0]['name']
+    tool = output[0]["agent"]["tools"][0]["name"]
 
     context = output[1][tool]["context"]
     sources = output[1][tool]["sources"]
@@ -69,5 +69,3 @@ async def get_agent_response(user_input: UserInput) -> dict:
         response = {"response": response}
 
     return response
-
-

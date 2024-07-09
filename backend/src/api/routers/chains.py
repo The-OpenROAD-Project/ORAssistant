@@ -74,7 +74,12 @@ multi_llm_chain = multi_retriever_chain.get_llm_chain()
 
 @router.get("/listAll")
 async def list_all_chains() -> list:
-    return ["/graphs/agent-retriever","/chains/hybrid", "/chains/sim", "/chains/ensemble"]
+    return [
+        "/graphs/agent-retriever",
+        "/chains/hybrid",
+        "/chains/sim",
+        "/chains/ensemble",
+    ]
 
 
 @router.post("/hybrid")
