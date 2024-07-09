@@ -35,7 +35,6 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
     def create_bm25_retriever(
         self,
         embedded_docs: Optional[Iterable[Document]],
-        embedded_docs: Optional[Iterable[Document]],
         search_k: int = 5,
     ):
         if embedded_docs is None:
