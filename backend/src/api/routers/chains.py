@@ -8,7 +8,7 @@ from ...chains.similarity_retriever_chain import SimilarityRetrieverChain
 from ...chains.multi_retriever_chain import MultiRetrieverChain
 
 from ...prompts.answer_prompts import summarise_prompt_template
-
+from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dotenv import load_dotenv
@@ -21,11 +21,18 @@ class UserInput(BaseModel):
 
 
 load_dotenv()
+
 use_cuda = os.getenv("USE_CUDA")
 
-llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
-hf_embdeddings = "BAAI/bge-large-en-v1.5"
-hf_reranker = "BAAI/bge-reranker-base"
+if os.getenv("GOOGLE_GEMINI") == "1_pro":
+    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
+elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
+    llm = ChatVertexAI(model_name="gemini-1.5-flash")
+elif os.getenv("GOOGLE_GEMINI") == "1.5_pro":
+    llm = ChatVertexAI(model_name="gemini-1.5-pro")
+
+hf_embdeddings = os.getenv("HF_EMBEDDINGS")
+hf_reranker = os.getenv("HF_RERANKER")
 
 router = APIRouter(prefix="/chains", tags=["chains"])
 
@@ -67,7 +74,7 @@ multi_llm_chain = multi_retriever_chain.get_llm_chain()
 
 @router.get("/listAll")
 async def list_all_chains() -> list:
-    return ["/chains/hybrid", "/chains/sim", "/chains/ensemble"]
+    return ["/graphs/agent-retriever","/chains/hybrid", "/chains/sim", "/chains/ensemble"]
 
 
 @router.post("/hybrid")
