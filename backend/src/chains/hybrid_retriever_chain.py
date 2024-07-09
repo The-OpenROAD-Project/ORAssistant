@@ -2,28 +2,26 @@ from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain
 from .mmr_retriever_chain import MMRRetrieverChain
 from .bm25_retriever_chain import BM25RetrieverChain
-
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-
-from langchain.retrievers import EnsembleRetriever
+from ..prompts.answer_prompts import summarise_prompt_template
 from ..tools.format_docs import format_docs
 
+from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import CrossEncoderReranker
-from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
-from ..prompts.answer_prompts import summarise_prompt_template
+from langchain_core.runnables import RunnableParallel, RunnablePassthrough
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
+from langchain_google_vertexai import ChatVertexAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from typing import Optional, Union
+from dotenv import load_dotenv
 
 
 class HybridRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,

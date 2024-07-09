@@ -2,6 +2,7 @@ from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain
 
 from dotenv import load_dotenv
+from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
@@ -11,13 +12,13 @@ from ..tools.format_docs import format_docs
 
 from ..prompts.answer_prompts import summarise_prompt_template
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class MultiRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,

@@ -5,9 +5,9 @@ from langchain.docstore.document import Document
 
 from ..vectorstores.faiss import FAISSVectorDatabase
 from ..tools.format_docs import format_docs
-
+from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, Union
 
 
 from ..prompts.answer_prompts import summarise_prompt_template
@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
