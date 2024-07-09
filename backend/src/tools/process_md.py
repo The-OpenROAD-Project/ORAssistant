@@ -44,11 +44,6 @@ def process_md_docs(
 
     documents = load_docs(files_path=files_path)
 
-    with open("documents.txt", "w") as f:
-        for i, doc in enumerate(documents):
-            f.write(f"Doc ID: {i + 1}\n")
-            f.write(str(doc.page_content) + "\n")
-
     documents_knowledge_base = []
     for doc in documents:
         try:
