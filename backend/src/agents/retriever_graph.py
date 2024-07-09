@@ -103,28 +103,4 @@ class RetrieverGraph:
 
         self.graph = workflow.compile()
 
-
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-
-    load_dotenv()
-
-    #llm = ChatVertexAI(model_name="gemini-1.5-flash")
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
-
-    rg = RetrieverGraph(llm_model=llm)
-    rg.initialize()
-
-    inputs = {
-        "messages": [
-            ("user", "Whaz?"),
-        ]
-    }
-
-    print(list(rg.graph.stream(inputs))[-1]["generate"]["sources"])
-    print(list(rg.graph.stream(inputs))[-1]["generate"]["context"])
-    # for output in rg.graph.stream(inputs):
-    #     for key, value in output.items():
-    #         print(f"Output from node '{key}':")
-    #         print(value)
-    #     print("\n---\n")
+        return
