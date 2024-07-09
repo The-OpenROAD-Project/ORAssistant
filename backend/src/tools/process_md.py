@@ -29,37 +29,7 @@ def load_docs(files_path: str) -> list[Document]:
 
 
 def process_md_docs(
-import glob
-from tqdm import tqdm
-
-from bs4 import BeautifulSoup
-import markdown as md
-
-from langchain.docstore.document import Document
-
-from .chunk_documents import chunk_documents
-
-
-def md_to_text(md_content: str) -> str:
-    html = md.markdown(md_content)
-    soup = BeautifulSoup(html, features="html.parser")
-    return soup.get_text()
-
-
-def load_docs(files_path: str) -> list[Document]:
-    md_files = glob.glob(os.path.join(files_path, "**/*.md"), recursive=True)
-    documents = []
-    for file_path in tqdm(md_files, desc="Loading Markdown files"):
-        with open(file_path, "r", encoding="utf-8") as file:
-            content = md_to_text(file.read())
-            metadata = {"source": file_path[2:]}
-            documents.append(Document(page_content=content, metadata=metadata))
-    return documents
-
-
-def process_md_docs(
     embeddings_model_name: str, files_path: str, chunk_size: int
-) -> list[Document]:
 ) -> list[Document]:
     """
     For processing OR/ORFS docs
@@ -87,12 +57,8 @@ def process_md_docs(
         }
         documents_knowledge_base.append(
             Document(page_content=doc.page_content, metadata=new_metadata)
-            Document(page_content=doc.page_content, metadata=new_metadata)
         )
 
-    docs_chunked = chunk_documents(
-        chunk_size,
-        documents_knowledge_base,
     docs_chunked = chunk_documents(
         chunk_size,
         documents_knowledge_base,
@@ -103,7 +69,6 @@ def process_md_docs(
 
 
 def process_md_manpages(files_path: str) -> list[Document]:
-def process_md_manpages(files_path: str) -> list[Document]:
     """
     For processing manpages
     """
@@ -113,7 +78,5 @@ def process_md_manpages(files_path: str) -> list[Document]:
         return []
 
     documents = load_docs(files_path=files_path)
-    documents = load_docs(files_path=files_path)
 
-    return documents
     return documents
