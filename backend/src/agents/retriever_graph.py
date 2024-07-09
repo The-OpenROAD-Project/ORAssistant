@@ -39,7 +39,6 @@ class RetrieverGraph:
         self.llm = llm_model
         self.retriever_agent: RetrieverAgent = RetrieverAgent()
         self.graph: Optional[StateGraph] = None
-        load_dotenv()
 
     def agent(self, state: AgentState):
         print("--CALL AGENT--")
