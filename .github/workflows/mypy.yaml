@@ -1,32 +1,20 @@
 name: MyPy
 
-on:
-  push:
-    branches:
-      - feat/mypy-ci # TODO: remove.
-      - master
-  pull_request:
-    branches:
-      - feat/mypy-ci # TODO: remove.
-      - master
+on: [push, pull_request]
 
 jobs:
   backend:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12
-
       - name: Install dependencies
         run: |
           pip install -r backend/requirements-test.txt
-
       - name: Run MyPy
         run: |
           python -m mypy --strict backend
@@ -35,17 +23,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12
-  
       - name: Install dependencies
         run: |
           pip install -r frontend/requirements-test.txt
-      
       - name: Run MyPy
         run: |
           python -m mypy --strict frontend
-          # python -m mypy --strict evaluation # TODO.
