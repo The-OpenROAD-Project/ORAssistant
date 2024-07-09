@@ -14,6 +14,8 @@ from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from ..prompts.answer_prompts import summarise_prompt_template
+
 from typing import Optional, Union
 from dotenv import load_dotenv
 

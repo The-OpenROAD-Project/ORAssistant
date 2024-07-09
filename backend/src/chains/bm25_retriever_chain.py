@@ -19,6 +19,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
+        chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -34,6 +35,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
 
     def create_bm25_retriever(
         self,
+        embedded_docs: Optional[Iterable[Document]],
         embedded_docs: Optional[Iterable[Document]],
         search_k: int = 5,
     ):
