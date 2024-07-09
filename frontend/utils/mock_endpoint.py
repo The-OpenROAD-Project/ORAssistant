@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify, Response
-from typing import Any 
+from typing import Any
 
 app = Flask(__name__)
+
 
 @app.route("/chains/listAll")
 def list_all_chains() -> Response:
@@ -12,6 +13,7 @@ def list_all_chains() -> Response:
     - A JSON response containing a list of available chains.
     """
     return jsonify(["/chains/mock"])
+
 
 @app.route("/chains/mock", methods=["POST"])
 def chat_app() -> Response:
@@ -31,9 +33,11 @@ def chat_app() -> Response:
         "sources": [
             "https://mocksource1.com",
             "https://mocksource2.com",
-            "https://mocksource3.com"
-        ] if list_sources else [],
-        "context": ["This is Mock Context"] if list_context else []
+            "https://mocksource3.com",
+        ]
+        if list_sources
+        else [],
+        "context": ["This is Mock Context"] if list_context else [],
     }
 
     return jsonify(response)
