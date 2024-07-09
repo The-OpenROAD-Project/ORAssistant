@@ -15,7 +15,7 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 
 We have divided our app into three components, each of which can be hosted on a separate machine for scalability. 
 - Backend: Generates the necessary chat endpoints for users to communicate.
-- Frontend: We use Streamlit to communicate with a chat endpoint, provides a user-friendly chat interface.
+- Frontend: We use Streamlit to communicate with a chat endpoint, providing a user-friendly chat interface.
 - Evaluation: Besides the vanilla chat interface, we also have a human evaluation interface for research and development.
 
 ## Setup
