@@ -16,12 +16,6 @@ from ..prompts.answer_prompts import summarise_prompt_template
 from dotenv import load_dotenv
 
 
-from ..prompts.answer_prompts import summarise_prompt_template
-
-
-from dotenv import load_dotenv
-
-
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,

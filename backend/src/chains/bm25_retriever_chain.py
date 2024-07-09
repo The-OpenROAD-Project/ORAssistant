@@ -19,7 +19,6 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
-        chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,

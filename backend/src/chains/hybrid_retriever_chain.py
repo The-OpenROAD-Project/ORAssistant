@@ -2,7 +2,7 @@ from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain
 from .mmr_retriever_chain import MMRRetrieverChain
 from .bm25_retriever_chain import BM25RetrieverChain
-from ..prompts.answer_prompts import summarise_prompt_template
+
 from ..tools.format_docs import format_docs
 
 from langchain.retrievers import EnsembleRetriever
