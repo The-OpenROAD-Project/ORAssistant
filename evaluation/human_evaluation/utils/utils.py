@@ -142,7 +142,7 @@ def update_gform(questions_descriptions: list[dict[str, str]]) -> None:
                     },
                 }
                 requests.append(update_request)
-            else: #If update is not required, create a new question and description
+            else:  # If update is not required, create a new question and description
                 create_request = {
                     "createItem": {
                         "item": {
