@@ -98,7 +98,7 @@ def submit_feedback_to_google_sheet(
         "https://www.googleapis.com/auth/drive",
     ]
 
-    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPE) # type: ignore
+    creds = Credentials.from_service_account_file(service_account_file, scopes=scope) # type: ignore
     client = gspread.authorize(creds) # type: ignore
 
     sheet_id = os.getenv("FEEDBACK_SHEET_ID", "")
