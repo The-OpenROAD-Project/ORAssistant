@@ -22,7 +22,7 @@ class UserInput(BaseModel):
 
 
 load_dotenv()
-use_cuda = True if os.getenv("USE_CUDA") == "false" else False
+use_cuda = True if os.getenv("USE_CUDA", "") == "true" else False
 
 llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
 hf_embdeddings = "BAAI/bge-large-en-v1.5"
