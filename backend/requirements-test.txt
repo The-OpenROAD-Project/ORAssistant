@@ -7,6 +7,7 @@ fastapi==0.111.0
 faiss-cpu==1.8.0
 markdown==3.0.0
 rank-bm25==0.2.2
+torch==2.3.0
 mypy==1.0.1
 types-Markdown==3.6.0.20240316
 types-requests==2.32.0.20240622
