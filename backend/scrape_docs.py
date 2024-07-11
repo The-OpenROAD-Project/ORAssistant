@@ -84,7 +84,7 @@ def get_manpages() -> None:
     command = f"git clone {or_url} --depth 1 {target_dir}"
     res = subprocess.run(command, shell=True, capture_output=True)
     if res.returncode != 0:
-        print(f"Error in cloning OpenROAD: {res.stderr}")
+        print(f"Error in cloning OpenROAD: {res.stderr.decode('utf-8')}")
         sys.exit(1)
     print("Cloned OpenROAD successfully.")
 
@@ -105,7 +105,7 @@ def get_manpages() -> None:
         os.chdir(path)
         res = subprocess.run(command, shell=True, capture_output=True)
         if res.returncode != 0:
-            print(f"Error in finding messages for {module}: {res.stderr}")
+            print(f"Error in finding messages for {module}: {res.stderr.decode('utf-8')}")
             continue
     os.chdir(os.path.join(cur_dir, "OpenROAD/docs"))
     num_cores = os.cpu_count()
