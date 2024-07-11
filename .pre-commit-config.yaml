@@ -9,9 +9,9 @@ repos:
     -   id: check-symlinks
     -   id: check-executables-have-shebangs
     -   id: check-shebang-scripts-are-executable
-    -   id: check-added-large-files
     -   id: detect-private-key
     -   id: double-quote-string-fixer
+    -   id: check-added-large-files
         args:
         - --maxkb=120
         - --enforce-all
