@@ -23,7 +23,7 @@ class SimilarityRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: Optional[str] = None,
+        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -32,7 +32,7 @@ class SimilarityRetrieverChain(BaseChain):
             prompt_template_str=prompt_template_str,
         )
 
-        self.embeddings_model_name: Optional[str] = embeddings_model_name
+        self.embeddings_model_name: str = embeddings_model_name
         self.use_cuda: bool = use_cuda
 
         self.docs_path: Optional[list[str]] = docs_path
@@ -66,14 +66,14 @@ class SimilarityRetrieverChain(BaseChain):
 
         return self.processed_docs, self.processed_manpages
 
-    def create_vector_db(self):
+    def create_vector_db(self) -> None:
         self.vector_db = FAISSVectorDatabase(
             embeddings_model_name=self.embeddings_model_name,
             print_progress=True,
             use_cuda=self.use_cuda,
         )
 
-    def create_similarity_retriever(self, search_k: Optional[int] = 5):
+    def create_similarity_retriever(self, search_k: Optional[int] = 5) -> None:
         if self.processed_docs == [] and self.processed_manpages == []:
             self.embed_docs()
 

@@ -23,7 +23,7 @@ def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, 
 
 
 @measure_response_time
-def response_generator(user_input: str) -> tuple[tuple[str, str]]:
+def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
     """
     Use the chat endpoint to generate a response to the user's query.
 
@@ -64,8 +64,7 @@ def response_generator(user_input: str) -> tuple[tuple[str, str]]:
         st.error(f"Request failed: {e}")
         return None, None
 
-
-def fetch_endpoints() -> tuple[str, list]:
+def fetch_endpoints() -> tuple[str, list[str]]:
     base_url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
     url = f"{base_url}/chains/listAll"
     try:

@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 source_dict = {}
 
 
-def check_and_purge_docs():
+def check_and_purge_docs() -> None:
     folder_paths = ["data/markdown/OR_docs", "data/markdown/ORFS_docs"]
     for folder_path in folder_paths:
         if os.path.exists(folder_path):
@@ -36,7 +36,7 @@ def download_markdown(url: str, folder_name: str) -> None:
         print(f"{url} - ERROR - Status code: {response.status_code}")
 
 
-def get_href_list(url) -> list[str]:
+def get_href_list(url: str) -> list[str]:
     try:
         hrefs = []
         response = requests.get(url)
