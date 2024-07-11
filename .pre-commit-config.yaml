@@ -3,7 +3,6 @@ repos:
     rev: v4.6.0
     hooks:
     -   id: check-ast
-    -   id: check-json
     -   id: check-toml
     -   id: check-yaml
     -   id: check-merge-conflict
@@ -11,6 +10,8 @@ repos:
     -   id: check-executables-have-shebangs
     -   id: check-shebang-scripts-are-executable
     -   id: check-added-large-files
+    -   id: detect-private-key
+    -   id: double-quote-string-fixer
         args:
         - --maxkb=120
         - --enforce-all
