@@ -42,11 +42,11 @@ class MultiRetrieverChain(BaseChain):
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
 
-        self.retriever: EnsembleRetriever = None
+        self.retriever: Optional[EnsembleRetriever] = None
 
     def create_multi_retriever(
         self,
-    ) -> EnsembleRetriever:
+    ):
         docs_similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
@@ -94,42 +94,3 @@ class MultiRetrieverChain(BaseChain):
         self.llm_chain = llm_chain_with_source
 
         return
-
-
-if __name__ == "__main__":
-    load_dotenv()
-
-    # from langchain_google_vertexai import ChatVertexAI
-    # llm = ChatVertexAI(model_name="gemini-1.5-pro")
-
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
-
-    prompt_template_str = summarise_prompt_template
-
-    multi_retriever_chain = MultiRetrieverChain(
-        llm_model=llm,
-        prompt_template_str=prompt_template_str,
-        embeddings_model_name="BAAI/bge-large-en-v1.5",
-        use_cuda=True,
-        docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
-        manpages_path=["./data/markdown/manpages"],
-    )
-    multi_retriever_chain.create_multi_retriever()
-    llm_chain = multi_retriever_chain.get_llm_chain()
-
-    while True:
-        user_question = input("\n\nAsk a question: ")
-        result = llm_chain.invoke(user_question)
-
-        sources = []
-        for i in result["context"]:
-            if "url" in i.metadata:
-                sources.append(i.metadata["url"])
-            elif "source" in i.metadata:
-                sources.append(i.metadata["source"])
-
-        print(result["answer"])
-
-        print("\n\nSources:")
-        for i in set(sources):
-            print(i)
