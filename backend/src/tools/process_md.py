@@ -49,7 +49,7 @@ def process_md_docs(
         try:
             url = src_dict[doc.metadata["source"]]
         except Exception as e:
-            print(f"Cound not find source for {doc.metadata['source']}")
+            print(f"Cound not find source for {doc.metadata["source"]}")
             url = ""
 
         new_metadata = {
