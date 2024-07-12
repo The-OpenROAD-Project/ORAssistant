@@ -13,6 +13,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dotenv import load_dotenv
 
+from typing import Union
+
 
 class UserInput(BaseModel):
     query: str
@@ -22,17 +24,22 @@ class UserInput(BaseModel):
 
 load_dotenv()
 
-use_cuda = os.getenv("USE_CUDA")
+use_cuda: bool = os.getenv("USE_CUDA")
+llm_temp: float = os.getenv("GEMINI_TEMP")
+hf_embdeddings: str = os.getenv("HF_EMBEDDINGS")
+hf_reranker: str = os.getenv("HF_RERANKER")
+
+if use_cuda is None or llm_temp is None or hf_embdeddings is None or hf_reranker is None:
+    raise ValueError("One or more environment variables are not set.")
+
+llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 
 if os.getenv("GOOGLE_GEMINI") == "1_pro":
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
+    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=llm_temp)
 elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
-    llm = ChatVertexAI(model_name="gemini-1.5-flash")
+    llm = ChatVertexAI(model_name="gemini-1.5-flash", temperature=llm_temp)
 elif os.getenv("GOOGLE_GEMINI") == "1.5_pro":
-    llm = ChatVertexAI(model_name="gemini-1.5-pro")
-
-hf_embdeddings = os.getenv("HF_EMBEDDINGS")
-hf_reranker = os.getenv("HF_RERANKER")
+    llm = ChatVertexAI(model_name="gemini-1.5-pro", temperature=llm_temp)
 
 router = APIRouter(prefix="/chains", tags=["chains"])
 
@@ -73,7 +80,7 @@ multi_llm_chain = multi_retriever_chain.get_llm_chain()
 
 
 @router.get("/listAll")
-async def list_all_chains() -> list:
+async def list_all_chains() -> list[str]:
     return [
         "/graphs/agent-retriever",
         "/chains/hybrid",
@@ -96,7 +103,7 @@ async def get_hybrid_response(user_input: UserInput) -> dict:
             links.append(i.metadata["source"])
         context.append(i.page_content)
 
-    links = set(links)
+    links = list(set(links))
 
     if user_input.list_sources and user_input.list_context:
         response = {
@@ -160,7 +167,7 @@ async def get_response(user_input: UserInput) -> dict:
             links.append(i.metadata["source"])
         context.append(i.page_content)
 
-    links = set(links)
+    links = list(set(links))
 
     if user_input.list_sources and user_input.list_context:
         response = {

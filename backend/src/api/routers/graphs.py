@@ -10,6 +10,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dotenv import load_dotenv
 
+from typing import Union
+
 
 class UserInput(BaseModel):
     query: str
@@ -19,18 +21,24 @@ class UserInput(BaseModel):
 
 load_dotenv()
 
-use_cuda = os.getenv("USE_CUDA")
+required_env_vars = ["USE_CUDA", "GEMINI_TEMP", "HF_EMBEDDINGS", "HF_RERANKER", "GOOGLE_GEMINI"]
+
+if any(os.getenv(var) is None for var in required_env_vars):
+    raise ValueError("One or more environment variables are not set.")
+
+use_cuda: bool = os.getenv("USE_CUDA")
+llm_temp: float = os.getenv("GEMINI_TEMP")
+hf_embdeddings: str = os.getenv("HF_EMBEDDINGS")
+hf_reranker: str = os.getenv("HF_RERANKER")
+
+llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 
 if os.getenv("GOOGLE_GEMINI") == "1_pro":
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
+    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=llm_temp)
 elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
-    llm = ChatVertexAI(model_name="gemini-1.5-flash")
+    llm = ChatVertexAI(model_name="gemini-1.5-flash", temperature=llm_temp)
 elif os.getenv("GOOGLE_GEMINI") == "1.5_pro":
-    llm = ChatVertexAI(model_name="gemini-1.5-pro")
-
-hf_embdeddings = os.getenv("HF_EMBEDDINGS")
-hf_reranker = os.getenv("HF_RERANKER")
-
+    llm = ChatVertexAI(model_name="gemini-1.5-pro", temperature=llm_temp)
 
 router = APIRouter(prefix="/graphs", tags=["graphs"])
 
