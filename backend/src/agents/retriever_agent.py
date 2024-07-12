@@ -79,11 +79,8 @@ class RetrieverAgent:
 
         doc_text = ""
         doc_srcs = []
-
         for doc in docs:
-            doc_text += "\n\n- - - - - - - - - - - - - - - \n\n"
-            doc_text += doc.page_content
-
+            doc_text += f"\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}"
             if "url" in doc.metadata:
                 doc_srcs.append(doc.metadata["url"])
             elif "source" in doc.metadata:
@@ -103,9 +100,7 @@ class RetrieverAgent:
         doc_text = ""
         doc_srcs = []
         for doc in docs:
-            doc_text += "\n\n- - - - - - - - - - - - - - - \n\n"
-            doc_text += doc.page_content
-
+            doc_text += f"\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}"
             if "url" in doc.metadata:
                 doc_srcs.append(doc.metadata["url"])
             elif "source" in doc.metadata:
@@ -121,12 +116,11 @@ class RetrieverAgent:
         """
         if RetrieverAgent.install_retriever is not None:
             docs = RetrieverAgent.install_retriever.invoke(input=query)
+        
         doc_text = ""
         doc_srcs = []
         for doc in docs:
-            doc_text += "\n\n- - - - - - - - - - - - - - - \n\n"
-            doc_text += doc.page_content
-
+            doc_text += f"\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}"
             if "url" in doc.metadata:
                 doc_srcs.append(doc.metadata["url"])
             elif "source" in doc.metadata:
