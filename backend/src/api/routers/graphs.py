@@ -21,7 +21,13 @@ class UserInput(BaseModel):
 
 load_dotenv()
 
-required_env_vars = ["USE_CUDA", "GEMINI_TEMP", "HF_EMBEDDINGS", "HF_RERANKER", "GOOGLE_GEMINI"]
+required_env_vars = [
+    "USE_CUDA",
+    "GEMINI_TEMP",
+    "HF_EMBEDDINGS",
+    "HF_RERANKER",
+    "GOOGLE_GEMINI",
+]
 
 if any(os.getenv(var) is None for var in required_env_vars):
     raise ValueError("One or more environment variables are not set.")
@@ -44,7 +50,12 @@ else:
 
 router = APIRouter(prefix="/graphs", tags=["graphs"])
 
-rg = RetrieverGraph(llm_model=llm)
+rg = RetrieverGraph(
+    llm_model=llm,
+    embeddings_model_name=hf_embdeddings,
+    reranking_model_name=hf_reranker,
+    use_cuda=use_cuda,
+)
 rg.initialize()
 
 

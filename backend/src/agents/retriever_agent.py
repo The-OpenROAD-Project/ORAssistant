@@ -11,16 +11,14 @@ class RetrieverAgent:
     def __init__(self):
         pass
 
-    embeddings_model_name: str = "thenlper/gte-large"
-    reranking_model_name: str = "BAAI/bge-reranker-base"
+    embeddings_model_name: str = ""
+    reranking_model_name: str = ""
     use_cuda: bool = False
 
     install_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
-    cmds_retriever: Optional[
-        Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    cmds_retriever: Optional[Union[EnsembleRetriever, ContextualCompressionRetriever]]
     general_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]

@@ -34,27 +34,42 @@ class ToolNode:
 class RetrieverGraph:
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
+        llm_model: Union[ChatGoogleGenerativeAI, ChatVertexAI],
+        embeddings_model_name: str,
+        reranking_model_name: str,
+        use_cuda: bool = False,
     ):
         self.llm = llm_model
         self.retriever_agent: RetrieverAgent = RetrieverAgent()
+        self.retriever_agent.embeddings_model_name = embeddings_model_name
+        self.retriever_agent.reranking_model_name = reranking_model_name
+        self.retriever_agent.use_cuda = use_cuda
         self.graph: Optional[StateGraph] = None
 
-    def agent(self, state: AgentState):
-        print("--CALL AGENT--")
+    def agent(self, state: AgentState) -> Optional[dict]:
         messages = state["messages"][-1].content
+
+        if self.llm is None:
+            return {"tools": []}
+
         model = self.llm.bind_tools([
             self.retriever_agent.retrieve_cmds,
             self.retriever_agent.retrieve_install,
             self.retriever_agent.retrieve_general,
         ])
         response = model.invoke(messages)
+
+        if response is None:
+            return {"tools": []}
+
+        if response.tool_calls is None:
+            return {"tools": []}
+
         return {"tools": response.tool_calls}
 
-    def generate(self, state: AgentState):
-        print("--GENERATE--")
+    def generate(self, state: AgentState) -> Optional[dict]:
         query = state["messages"][-1].content
-        context = state["context"][-1].content
+        context = state["context"][-1]
         llm_chain = BaseChain(
             llm_model=self.llm,
             prompt_template_str=summarise_prompt_template,
@@ -63,8 +78,7 @@ class RetrieverGraph:
         ans = llm_chain.invoke({"context": context, "question": query})
         return {"messages": [ans]}
 
-    def route(self, state: AgentState):
-        print("--ROUTE--")
+    def route(self, state: AgentState) -> list[str]:
         tools = state["tools"]
         tool_names = []
         if tools == []:
