@@ -1,4 +1,4 @@
-from src.chains.hybrid_retriever_chain import HybridRetrieverChain
+from ..chains.hybrid_retriever_chain import HybridRetrieverChain
 
 from langchain_core.tools import tool
 from langchain.retrievers import EnsembleRetriever
@@ -18,7 +18,9 @@ class RetrieverAgent:
     install_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
-    cmds_retriever: Optional[Union[EnsembleRetriever, ContextualCompressionRetriever]]
+    cmds_retriever: Optional[
+        Union[EnsembleRetriever, ContextualCompressionRetriever]
+    ]
     general_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
@@ -72,8 +74,9 @@ class RetrieverAgent:
         """
         Retrieve any general information related to OpenROAD and OpenROAD-flow-scripts
         """
-        docs = RetrieverAgent.general_retriever.invoke(input=query)
-        print(len(docs))
+        if RetrieverAgent.general_retriever is not None:
+            docs = RetrieverAgent.general_retriever.invoke(input=query)
+
         doc_text = ""
         doc_srcs = []
 
@@ -94,7 +97,9 @@ class RetrieverAgent:
         """
         Retrieve information related to the commands and tools in OpenROAD and OpenROAD-flow-scripts
         """
-        docs = RetrieverAgent.cmds_retriever.invoke(input=query)
+        if RetrieverAgent.cmds_retriever is not None:
+            docs = RetrieverAgent.cmds_retriever.invoke(input=query)
+
         doc_text = ""
         doc_srcs = []
         for doc in docs:
@@ -114,7 +119,8 @@ class RetrieverAgent:
         """
         Retrieve information related to the installation of OpenROAD and OpenROAD-flow-scripts
         """
-        docs = RetrieverAgent.install_retriever.invoke(input=query)
+        if RetrieverAgent.install_retriever is not None:
+            docs = RetrieverAgent.install_retriever.invoke(input=query)
         doc_text = ""
         doc_srcs = []
         for doc in docs:
