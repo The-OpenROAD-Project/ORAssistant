@@ -18,7 +18,9 @@ class RetrieverAgent:
     install_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
-    cmds_retriever: Optional[Union[EnsembleRetriever, ContextualCompressionRetriever]]
+    cmds_retriever: Optional[
+        Union[EnsembleRetriever, ContextualCompressionRetriever]
+    ]
     general_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
@@ -28,7 +30,7 @@ class RetrieverAgent:
     install_retriever_chain = HybridRetrieverChain(
         embeddings_model_name=embeddings_model_name,
         reranking_model_name=reranking_model_name,
-        use_cuda=True,
+        use_cuda=use_cuda,
         docs_path=[
             "./data/markdown/ORFS_docs/installation",
             "./data/markdown/OR_docs/installation",
