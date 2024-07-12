@@ -1,4 +1,4 @@
-name: MyPy
+name: Mypy & pre-commit
 
 on: [push, pull_request]
 
@@ -18,6 +18,9 @@ jobs:
       - name: Run MyPy
         run: |
           python -m mypy --strict backend
+      - name: Run pre-commit
+        run: |
+          pre-commit run --files backend/*
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -33,3 +36,6 @@ jobs:
       - name: Run MyPy
         run: |
           python -m mypy --strict frontend
+      - name: Run pre-commit
+        run: |
+          pre-commit run --files frontend/*
