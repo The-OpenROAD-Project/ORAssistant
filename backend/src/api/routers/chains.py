@@ -24,13 +24,15 @@ class UserInput(BaseModel):
 
 load_dotenv()
 
+required_env_vars = ["USE_CUDA", "GEMINI_TEMP", "HF_EMBEDDINGS", "HF_RERANKER", "GOOGLE_GEMINI"]
+
+if any(os.getenv(var) is None for var in required_env_vars):
+    raise ValueError("One or more environment variables are not set.")
+
 use_cuda: bool = os.getenv("USE_CUDA")
 llm_temp: float = os.getenv("GEMINI_TEMP")
 hf_embdeddings: str = os.getenv("HF_EMBEDDINGS")
 hf_reranker: str = os.getenv("HF_RERANKER")
-
-if use_cuda is None or llm_temp is None or hf_embdeddings is None or hf_reranker is None:
-    raise ValueError("One or more environment variables are not set.")
 
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 
@@ -40,6 +42,8 @@ elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
     llm = ChatVertexAI(model_name="gemini-1.5-flash", temperature=llm_temp)
 elif os.getenv("GOOGLE_GEMINI") == "1.5_pro":
     llm = ChatVertexAI(model_name="gemini-1.5-pro", temperature=llm_temp)
+else:
+    raise ValueError("GOOGLE_GEMINI environment variable not set to a valid value.")
 
 router = APIRouter(prefix="/chains", tags=["chains"])
 

@@ -39,6 +39,8 @@ elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
     llm = ChatVertexAI(model_name="gemini-1.5-flash", temperature=llm_temp)
 elif os.getenv("GOOGLE_GEMINI") == "1.5_pro":
     llm = ChatVertexAI(model_name="gemini-1.5-pro", temperature=llm_temp)
+else:
+    raise ValueError("GOOGLE_GEMINI environment variable not set to a valid value.")
 
 router = APIRouter(prefix="/graphs", tags=["graphs"])
 
