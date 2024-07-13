@@ -8,10 +8,6 @@ from ..tools.process_json import generate_knowledge_base
 
 from typing import Optional
 
-# from langchain_google_genai import GoogleGenerativeAIEmbeddings
-# from langchain_google_vertexai import VertexAIEmbeddings
-
-
 class FAISSVectorDatabase:
     def __init__(
         self,
@@ -30,9 +26,6 @@ class FAISSVectorDatabase:
             encode_kwargs={"normalize_embeddings": True},
             model_kwargs=model_kwargs,
         )
-
-        # self.embedding_model = GoogleGenerativeAIEmbeddings.model()
-        # self.embedding_model = VertexAIEmbeddings(model_name="textembedding-gecko@001")
 
         self.print_progress = print_progress
         self.debug = debug
