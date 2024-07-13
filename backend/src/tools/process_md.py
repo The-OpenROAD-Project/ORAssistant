@@ -48,7 +48,7 @@ def process_md_docs(
     for doc in documents:
         try:
             url = src_dict[doc.metadata["source"]]
-        except Exception as e:
+        except KeyError:
             print(f"Cound not find source for {doc.metadata["source"]}")
             url = ""
 
