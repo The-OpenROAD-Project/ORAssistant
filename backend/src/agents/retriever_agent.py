@@ -11,10 +11,6 @@ class RetrieverAgent:
     def __init__(self):
         pass
 
-    embeddings_model_name: str = ""
-    reranking_model_name: str = ""
-    use_cuda: bool = False
-
     install_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
@@ -25,48 +21,52 @@ class RetrieverAgent:
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
 
-    tools = None
+    def initialize(
+        self,
+        embeddings_model_name: str,
+        reranking_model_name: str,
+        use_cuda: bool = False,
+    ):
+        install_retriever_chain = HybridRetrieverChain(
+            embeddings_model_name=embeddings_model_name,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            docs_path=[
+                "./data/markdown/ORFS_docs/installation",
+                "./data/markdown/OR_docs/installation",
+            ],
+            contextual_rerank=True,
+            search_k=10,
+        )
+        install_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.install_retriever = install_retriever_chain.retriever
 
-    install_retriever_chain = HybridRetrieverChain(
-        embeddings_model_name=embeddings_model_name,
-        reranking_model_name=reranking_model_name,
-        use_cuda=use_cuda,
-        docs_path=[
-            "./data/markdown/ORFS_docs/installation",
-            "./data/markdown/OR_docs/installation",
-        ],
-        contextual_rerank=True,
-        search_k=10,
-    )
-    install_retriever_chain.create_hybrid_retriever()
-    install_retriever = install_retriever_chain.retriever
+        cmds_retriever_chain = HybridRetrieverChain(
+            embeddings_model_name=embeddings_model_name,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            docs_path=["./data/markdown/OR_docs/tools"],
+            manpages_path=["./data/markdown/manpages"],
+            contextual_rerank=True,
+            search_k=10,
+        )
+        cmds_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.cmds_retriever = cmds_retriever_chain.retriever
 
-    cmds_retriever_chain = HybridRetrieverChain(
-        embeddings_model_name=embeddings_model_name,
-        reranking_model_name=reranking_model_name,
-        use_cuda=use_cuda,
-        docs_path=["./data/markdown/OR_docs/tools"],
-        manpages_path=["./data/markdown/manpages"],
-        contextual_rerank=True,
-        search_k=10,
-    )
-    cmds_retriever_chain.create_hybrid_retriever()
-    cmds_retriever = cmds_retriever_chain.retriever
-
-    general_retriever_chain = HybridRetrieverChain(
-        embeddings_model_name=embeddings_model_name,
-        reranking_model_name=reranking_model_name,
-        use_cuda=use_cuda,
-        docs_path=[
-            "./data/markdown/ORFS_docs",
-            "./data/markdown/OR_docs",
-        ],
-        manpages_path=["./data/markdown/manpages"],
-        contextual_rerank=True,
-        search_k=10,
-    )
-    general_retriever_chain.create_hybrid_retriever()
-    general_retriever = general_retriever_chain.retriever
+        general_retriever_chain = HybridRetrieverChain(
+            embeddings_model_name=embeddings_model_name,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            docs_path=[
+                "./data/markdown/ORFS_docs",
+                "./data/markdown/OR_docs",
+            ],
+            manpages_path=["./data/markdown/manpages"],
+            contextual_rerank=True,
+            search_k=10,
+        )
+        general_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.general_retriever = general_retriever_chain.retriever
 
     @staticmethod
     @tool
@@ -116,7 +116,7 @@ class RetrieverAgent:
         """
         if RetrieverAgent.install_retriever is not None:
             docs = RetrieverAgent.install_retriever.invoke(input=query)
-        
+
         doc_text = ""
         doc_srcs = []
         for doc in docs:
