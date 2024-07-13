@@ -27,6 +27,8 @@ class ToolNode:
 
     def get_node(self, state):
         query = state["messages"][-1].content
+        if query is None:
+            raise ValueError("Query is None")
         response, sources = self.tool_fn(query)
         return {"context": [response], "sources": sources}
 
@@ -41,9 +43,11 @@ class RetrieverGraph:
     ):
         self.llm = llm_model
         self.retriever_agent: RetrieverAgent = RetrieverAgent()
-        self.retriever_agent.embeddings_model_name = embeddings_model_name
-        self.retriever_agent.reranking_model_name = reranking_model_name
-        self.retriever_agent.use_cuda = use_cuda
+        self.retriever_agent.initialize(
+            embeddings_model_name=embeddings_model_name,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+        ) 
         self.graph: Optional[StateGraph] = None
 
     def agent(self, state: AgentState) -> Optional[dict]:
