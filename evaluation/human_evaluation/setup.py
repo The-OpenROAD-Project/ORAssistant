@@ -108,13 +108,35 @@ def update_env_file(updates: dict[str, str]) -> None:
     with open(env_file, "w") as file:
         file.writelines(new_lines)
 
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Create Google Form and/or Google Sheet, and update .env file.")
-    parser.add_argument('--create-form', action='store_true', help='Create a Google Form')
-    parser.add_argument('--create-sheet', action='store_true', help='Create a Google Sheet')
-    parser.add_argument('--user-email', type=str, required=True, help="Email address to share the created resources with")
-    parser.add_argument('--form-title', type=str, default='OR Assistant Feedback Form', help='Title for the Google Form')
-    parser.add_argument('--sheet-title', type=str, default='OR Assistant Evaluation Sheet', help='Title for the Google Sheet')
+    parser = argparse.ArgumentParser(
+        description="Create Google Form and/or Google Sheet, and update .env file."
+    )
+    parser.add_argument(
+        "--create-form", action="store_true", help="Create a Google Form"
+    )
+    parser.add_argument(
+        "--create-sheet", action="store_true", help="Create a Google Sheet"
+    )
+    parser.add_argument(
+        "--user-email",
+        type=str,
+        required=True,
+        help="Email address to share the created resources with",
+    )
+    parser.add_argument(
+        "--form-title",
+        type=str,
+        default="OR Assistant Feedback Form",
+        help="Title for the Google Form",
+    )
+    parser.add_argument(
+        "--sheet-title",
+        type=str,
+        default="OR Assistant Evaluation Sheet",
+        help="Title for the Google Sheet",
+    )
 
     args = parser.parse_args()
 
@@ -122,17 +144,22 @@ def main() -> None:
 
     if args.create_form:
         form_id = create_google_form(args.form_title, args.user_email)
-        print(f"Form created successfully. View form at: https://docs.google.com/forms/d/{form_id}/edit")
+        print(
+            f"Form created successfully. View form at: https://docs.google.com/forms/d/{form_id}/edit"
+        )
         updates["GOOGLE_FORM_ID"] = form_id
 
     if args.create_sheet:
         sheet_id = create_google_sheet(args.sheet_title, args.user_email)
-        print(f"Google Sheet created successfully. View sheet at: https://docs.google.com/spreadsheets/d/{sheet_id}/edit")
+        print(
+            f"Google Sheet created successfully. View sheet at: https://docs.google.com/spreadsheets/d/{sheet_id}/edit"
+        )
         updates["GOOGLE_SHEET_ID"] = sheet_id
 
     if updates:
         update_env_file(updates)
         print("The .env file has been updated with the new IDs.")
+
 
 if __name__ == "__main__":
     main()

@@ -1,9 +1,10 @@
 import json
 
 from langchain.docstore.document import Document
+from typing import Any
 
 
-def parse_json(json_object) -> str:
+def parse_json(json_object: dict[str, Any]) -> str:
     parsed_text = "Infer knowledge from this conversation and use it to answer the given question.\n\t"
     for body in json_object["messages"]:
         if "user" in body:

@@ -1,0 +1,19 @@
+name: Build Backend Docker Image 
+
+on: [push, pull_request]
+
+jobs:
+  build-backend-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build image
+      uses: docker/build-push-action@v6
+      with:
+        context: backend
+        file: backend/Dockerfile
+        push: false
+        tags: ${{ github.sha }}

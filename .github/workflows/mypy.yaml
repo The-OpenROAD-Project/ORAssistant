@@ -1,0 +1,41 @@
+name: Mypy & pre-commit
+
+on: [push, pull_request]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements-test.txt
+      - name: Run MyPy
+        run: |
+          python -m mypy --strict backend
+      - name: Run pre-commit
+        run: |
+          pre-commit run --files backend/*
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Install dependencies
+        run: |
+          pip install -r frontend/requirements-test.txt
+      - name: Run MyPy
+        run: |
+          python -m mypy --strict frontend
+      - name: Run pre-commit
+        run: |
+          pre-commit run --files frontend/*

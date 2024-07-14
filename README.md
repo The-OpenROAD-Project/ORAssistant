@@ -11,13 +11,24 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 - **Installation and Troubleshooting Assistance:** The chatbot will provide users with quick and accurate solutions to common installation issues and troubleshooting steps.
 - **Easy Access to Existing Resources:** The chatbot will be able to summarizing relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
 
+## Components
+
+We have divided our app into three components, each of which can be hosted on a separate machine for scalability. 
+- Backend: Generates the necessary chat endpoints for users to communicate.
+- Frontend: We use Streamlit to communicate with a chat endpoint, providing a user-friendly chat interface.
+- Evaluation: Besides the vanilla chat interface, we also have a human evaluation interface for research and development.
+
 ## Setup
 
-### Building Manpages
+This setup involves the setting of both the frontend and backend components. We shall begin with backend: 
+
+### Backend Setup
+
+#### Building Manpages
 
 Build manpages as per the instructions [here](https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs). Place the markdown files in `backend/data/markdown/manpages` before proceeding.
 
-### Option 1 - Docker
+#### Option 1 - Docker
 
 Ensure you have `docker` and `docker-compose` installed in your system.
 
@@ -40,7 +51,7 @@ Ensure you have `docker` and `docker-compose` installed in your system.
   docker compose up
 ```
 
-### Option 2 - Local Install
+#### Option 2 - Local Install
 
 - Prerequisites: Python 3.12, recommended to use a virtual environment like `conda`.
 - **Step 1**: `pip install -r backend/requirements.txt`
@@ -54,6 +65,26 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 - **Step 4**: To run the server:
 ```bash
   python main.py
+```
+
+### Frontend Setup
+
+**Note**: Please refer to the frontend [README](./frontend/README.md) for more detailed instructions.
+
+- **Step 1**: Setup the `.env` as per the instructions in the frontend [README](./frontend/README.md). Get the [Google Sheet API Key](https://developers.google.com/sheets/api/guides/concepts)
+```bash
+cd frontend
+cp .env.example .env
+```
+
+- **Step 2**: Install the necessary requirements. You are encouraged to use a virtual environment for this.
+```bash
+pip install -r requirements.txt
+```
+
+- **Step 3**: Run streamlit application
+```bash
+streamlit run streamlit_app.py
 ```
 
 ## Architecture Overview
@@ -87,7 +118,12 @@ Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
 
 ## Tests
 
-1) Ruff (TODO)
+1) Ruff: Auto-formatter and checker for python
+
+```
+pip install ruff
+ruff format && ruff check
+```
 
 2) Mypy: A static type checker for python
 

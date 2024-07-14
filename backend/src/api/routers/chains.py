@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -105,7 +106,7 @@ async def list_all_chains() -> list[str]:
 
 
 @router.post("/hybrid")
-async def get_hybrid_response(user_input: UserInput) -> dict:
+async def get_hybrid_response(user_input: UserInput) -> dict[str, Any]:
     user_question = user_input.query
     result = hybrid_llm_chain.invoke(user_question)
 
@@ -118,6 +119,7 @@ async def get_hybrid_response(user_input: UserInput) -> dict:
             links.append(i.metadata["source"])
         context.append(i.page_content)
 
+    links = list(set(links))
     links = list(set(links))
 
     if user_input.list_sources and user_input.list_context:
@@ -137,7 +139,7 @@ async def get_hybrid_response(user_input: UserInput) -> dict:
 
 
 @router.post("/sim")
-async def get_sim_response(user_input: UserInput) -> dict:
+async def get_sim_response(user_input: UserInput) -> dict[str, Any]:
     user_question = user_input.query
     result = hybrid_llm_chain.invoke(user_question)
 
@@ -169,7 +171,7 @@ async def get_sim_response(user_input: UserInput) -> dict:
 
 
 @router.post("/ensemble")
-async def get_response(user_input: UserInput) -> dict:
+async def get_response(user_input: UserInput) -> dict[str, Any]:
     user_question = user_input.query
     result = hybrid_llm_chain.invoke(user_question)
 
@@ -182,6 +184,7 @@ async def get_response(user_input: UserInput) -> dict:
             links.append(i.metadata["source"])
         context.append(i.page_content)
 
+    links = list(set(links))
     links = list(set(links))
 
     if user_input.list_sources and user_input.list_context:

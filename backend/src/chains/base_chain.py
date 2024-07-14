@@ -21,9 +21,8 @@ class BaseChain:
 
         self.llm_chain: Any = None
 
-    def create_llm_chain(self):
-        self.llm_chain = self.prompt_template | self.llm_model | StrOutputParser()
-        return
+    def create_llm_chain(self) -> None:
+        self.llm_chain = self.prompt_template | self.llm_model | StrOutputParser() # type: ignore
 
     def get_llm_chain(self) -> Any:
         if self.llm_chain is None:

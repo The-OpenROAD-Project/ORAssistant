@@ -1,4 +1,6 @@
-def format_docs(docs) -> str:
+from langchain.docstore.document import Document
+
+def format_docs(docs: list[Document]) -> str:
     formatted_text = ""
     for doc in docs:
         if doc.metadata is not None and "source" in doc.metadata:

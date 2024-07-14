@@ -4,11 +4,14 @@ import gspread
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 import os
-from typing import Optional
+from typing import Optional, Any
 
 load_dotenv()
 
-def get_sheet_title_by_gid(spreadsheet_metadata: dict, gid: int) -> Optional[str]:
+def get_sheet_title_by_gid(
+    spreadsheet_metadata: dict[str, Any], 
+    gid: int
+) -> Optional[str]:
     """
     Get the sheet title by Sheet GID
 
@@ -22,8 +25,9 @@ def get_sheet_title_by_gid(spreadsheet_metadata: dict, gid: int) -> Optional[str
     sheets = spreadsheet_metadata["sheets"]
     for sheet in sheets:
         if sheet["properties"]["sheetId"] == int(gid):
-            return sheet["properties"]["title"]
+            return str(sheet["properties"]["title"])
     return None
+
 
 def format_sources(sources: list[str]) -> str:
     """
@@ -35,9 +39,9 @@ def format_sources(sources: list[str]) -> str:
     Returns:
     - str: Formatted sources string.
     """
-    if isinstance(sources, list):
-        return "\n".join(sources)
-    return str(sources)
+    assert isinstance(sources, list), "Sources should be a list of strings."
+    return "\n".join(sources)
+
 
 def format_context(context: list[str]) -> str:
     """
@@ -49,15 +53,15 @@ def format_context(context: list[str]) -> str:
     Returns:
     - str: Formatted context string.
     """
-    if isinstance(context, list):
-        return "\n".join(context)
-    return str(context)
+    assert isinstance(context, list), "Context should be a list of strings."
+    return "\n".join(context)
+
 
 def submit_feedback_to_google_sheet(
     question: str,
     answer: str,
-    sources: str,
-    context: str,
+    sources: list[str],
+    context: list[str],
     issue: str,
     version: str
 ) -> None:
@@ -67,8 +71,8 @@ def submit_feedback_to_google_sheet(
     Args:
     - question (str): The question for which feedback is being submitted.
     - answer (str): The generated answer to the question.
-    - sources (str): Source data used for the answer.
-    - context (str): Additional context from the RAG.
+    - sources (list[str]): Source data used for the answer.
+    - context (list[str]): Additional context from the RAG.
     - issue (str): Details about the issue.
     - version (str): Version information.
 
@@ -81,35 +85,44 @@ def submit_feedback_to_google_sheet(
         )
 
     if not os.getenv("FEEDBACK_SHEET_ID"):
-        raise ValueError("The FEEDBACK_SHEET_ID environment variable is not set or is empty.")
+        raise ValueError(
+            "The FEEDBACK_SHEET_ID environment variable is not set or is empty."
+        )
 
     if not os.getenv("RAG_VERSION"):
         raise ValueError("The RAG_VERSION environment variable is not set or is empty.")
 
-    SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_CREDENTIALS_JSON")
-    SCOPE = [
+    service_account_file = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive",
     ]
 
-    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPE)
-    client = gspread.authorize(creds)
+    creds = Credentials.from_service_account_file(service_account_file, scopes=scope) # type: ignore
+    client = gspread.authorize(creds) # type: ignore
 
-    sheet_id = os.getenv("FEEDBACK_SHEET_ID")
-    target_gid = 0
-    if os.getenv("FEEDBACK_SHEET_GID"):
-        target_gid = os.getenv("FEEDBACK_SHEET_GID")
+    sheet_id = os.getenv("FEEDBACK_SHEET_ID", "")
+    target_gid = int(os.getenv("FEEDBACK_SHEET_GID", "0"))
 
     spreadsheet = client.open_by_key(sheet_id)
     sheet_metadata = spreadsheet.fetch_sheet_metadata()
+    sheet_metadata_dict = dict(sheet_metadata)
 
-    sheet_title = get_sheet_title_by_gid(sheet_metadata, target_gid)
+    sheet_title = get_sheet_title_by_gid(sheet_metadata_dict, target_gid)
     if sheet_title:
         sheet = spreadsheet.worksheet(sheet_title)
         timestamp = datetime.now(timezone.utc).isoformat()
-        formatted_sources = format_sources(sources) 
-        formatted_context = format_context(context)  
-        data_to_append = [question, answer, formatted_sources, formatted_context, issue, timestamp, version]
+        formatted_sources = format_sources(sources)
+        formatted_context = format_context(context)
+        data_to_append = [
+            question,
+            answer,
+            formatted_sources,
+            formatted_context,
+            issue,
+            timestamp,
+            version,
+        ]
 
         if not sheet.row_values(1):
             sheet.format("A1:G1", {"textFormat": {"bold": True}})
@@ -123,7 +136,7 @@ def submit_feedback_to_google_sheet(
                     "Timestamp",
                     "Version",
                 ],
-                1,
+                1, # type: ignore
             )
 
         sheet.append_row(data_to_append)
@@ -131,7 +144,11 @@ def submit_feedback_to_google_sheet(
     else:
         st.sidebar.error(f"Sheet with GID {target_gid} not found.")
 
-def show_feedback_form(questions: dict[str, int], metadata: dict[str, dict[str, str]], interactions: list[dict[str, str]]) -> None:
+def show_feedback_form(
+    questions: dict[str, int], 
+    metadata: dict[str, dict[str, str]], 
+    interactions: list[dict[str, str]]
+) -> None:
     """
     Display feedback form in the sidebar.
 
@@ -155,8 +172,8 @@ def show_feedback_form(questions: dict[str, int], metadata: dict[str, dict[str, 
     feedback = st.sidebar.text_area("Please provide your feedback or report an issue:")
 
     if selected_question:
-        sources = metadata[selected_question].get("sources", "N/A")
-        context = metadata[selected_question].get("context", "N/A")
+        sources = [metadata[selected_question].get("sources", "N/A")]
+        context = [metadata[selected_question].get("context", "N/A")]
 
         if st.sidebar.button("Submit"):
             selected_index = questions[selected_question]

@@ -27,8 +27,8 @@ class HybridRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: Optional[str] = None,
         reranking_model_name: Optional[str] = None,
+        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
         use_cuda: bool = False,
         search_k: int = 5,
         weights: list[float] = [0.33, 0.33, 0.33],
@@ -39,7 +39,7 @@ class HybridRetrieverChain(BaseChain):
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
         )
-        self.embeddings_model_name: Optional[str] = embeddings_model_name
+        self.embeddings_model_name: str = embeddings_model_name
         self.reranking_model_name: Optional[str] = reranking_model_name
         self.use_cuda: bool = use_cuda
 
@@ -55,9 +55,7 @@ class HybridRetrieverChain(BaseChain):
             Union[EnsembleRetriever, ContextualCompressionRetriever]
         ] = None
 
-    def create_hybrid_retriever(
-        self,
-    ):
+    def create_hybrid_retriever(self) -> None:
         similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
@@ -124,7 +122,7 @@ class HybridRetrieverChain(BaseChain):
         llm_chain_with_source = RunnableParallel({
             "context": self.retriever,
             "question": RunnablePassthrough(),
-        }).assign(answer=self.llm_chain)
+        }).assign(answer=self.llm_chain) # type: ignore
 
         self.llm_chain = llm_chain_with_source
 
@@ -133,9 +131,6 @@ class HybridRetrieverChain(BaseChain):
 
 if __name__ == "__main__":
     load_dotenv()
-
-    # from langchain_google_vertexai import ChatVertexAI
-    # llm = ChatVertexAI(model_name="gemini-1.5-pro")
 
     llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
 

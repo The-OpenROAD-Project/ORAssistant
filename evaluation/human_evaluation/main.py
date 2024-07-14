@@ -11,6 +11,7 @@ from utils.utils import (
     read_question_and_description,
 )
 
+
 def main() -> None:
     load_dotenv()
 
