@@ -1,9 +1,9 @@
-langchain==0.2.6
-langchain-community==0.2.6
+langchain==0.2.7
+langchain-community==0.2.7
 langchain-huggingface==0.0.3
 langchain-google-genai==1.0.7
-langchain-google-vertexai==1.0.5
-langgraph==0.1.5
+langchain-google-vertexai==1.0.6
+langgraph==0.1.8
 beautifulsoup4==4.12.3
 fastapi==0.111.0
 faiss-cpu==1.8.0
