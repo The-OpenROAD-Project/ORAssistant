@@ -77,7 +77,7 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
     }
 
     if rg.graph is not None:
-        output = list(rg.graph.stream(inputs)) # type: ignore
+        output = list(rg.graph.stream(inputs))
     else:
         raise ValueError("RetrieverGraph not initialized.")
     

@@ -1,9 +1,10 @@
 from .retriever_agent import RetrieverAgent
 
-from typing import TypedDict, Annotated, Union, Optional
+from typing import TypedDict, Annotated, Union, Optional, Any
 from langchain_core.messages import AnyMessage
 
-from langgraph.graph import START, StateGraph, END
+from langgraph.graph import START, END, StateGraph
+from langgraph.graph.graph import CompiledGraph
 from langgraph.graph.message import add_messages
 
 from ..chains.base_chain import BaseChain
@@ -22,10 +23,10 @@ class AgentState(TypedDict):
 
 
 class ToolNode:
-    def __init__(self, tool_fn):
+    def __init__(self, tool_fn: Any) -> None:
         self.tool_fn = tool_fn
 
-    def get_node(self, state):
+    def get_node(self, state: AgentState) -> dict[str, list[str]]:
         query = state["messages"][-1].content
         if query is None:
             raise ValueError("Query is None")
@@ -48,9 +49,9 @@ class RetrieverGraph:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
         ) 
-        self.graph: Optional[StateGraph] = None
+        self.graph: Optional[CompiledGraph] = None
 
-    def agent(self, state: AgentState) -> dict:
+    def agent(self, state: AgentState) -> dict[str, list[str]]:
         messages = state["messages"][-1].content
 
         if self.llm is None:
@@ -68,7 +69,7 @@ class RetrieverGraph:
         
         return {"tools": []}
 
-    def generate(self, state: AgentState) -> dict:
+    def generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
         query = state["messages"][-1].content
         context = state["context"][-1]
         llm_chain = BaseChain(
@@ -85,7 +86,6 @@ class RetrieverGraph:
     
     def route(self, state: AgentState) -> list[str]:
         tools = state["tools"]
-        tool_names = []
 
         if not tools:
             return ["retrieve_general"]
@@ -94,7 +94,7 @@ class RetrieverGraph:
             
         return tool_names
 
-    def initialize(self):
+    def initialize(self) -> None:
         workflow = StateGraph(AgentState)
 
         commands = ToolNode(self.retriever_agent.retrieve_cmds)
@@ -111,7 +111,7 @@ class RetrieverGraph:
         workflow.add_edge(START, "agent")
         workflow.add_conditional_edges(
             "agent",
-            self.route,
+            self.route, # type: ignore
             ["retrieve_cmds", "retrieve_install", "retrieve_general"],
         )
 
