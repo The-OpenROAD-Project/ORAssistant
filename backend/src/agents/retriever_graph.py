@@ -1,6 +1,6 @@
 from .retriever_agent import RetrieverAgent
 
-from typing import TypedDict, Annotated, Union, Optional
+from typing import TypedDict, Annotated, Union, Optional, List
 from langchain_core.messages import AnyMessage
 
 from langgraph.graph import START, StateGraph, END
@@ -50,7 +50,7 @@ class RetrieverGraph:
         ) 
         self.graph: Optional[StateGraph] = None
 
-    def agent(self, state: AgentState) -> Optional[dict]:
+    def agent(self, state: AgentState) -> dict:
         messages = state["messages"][-1].content
 
         if self.llm is None:
@@ -63,15 +63,12 @@ class RetrieverGraph:
         ])
         response = model.invoke(messages)
 
-        if response is None:
-            return {"tools": []}
+        if response is None or response.tool_calls is None: # type: ignore
+            return {"tools": response.tool_calls} # type: ignore
+        
+        return {"tools": []}
 
-        if response.tool_calls is None:
-            return {"tools": []}
-
-        return {"tools": response.tool_calls}
-
-    def generate(self, state: AgentState) -> Optional[dict]:
+    def generate(self, state: AgentState) -> dict:
         query = state["messages"][-1].content
         context = state["context"][-1]
         llm_chain = BaseChain(
@@ -80,15 +77,21 @@ class RetrieverGraph:
         ).get_llm_chain()
 
         ans = llm_chain.invoke({"context": context, "question": query})
-        return {"messages": [ans]}
 
-    def route(self, state: AgentState) -> list[str]:
+        if ans is not None:                
+            return {"messages": [ans]}
+        
+        return {"messages": []}
+    
+    def route(self, state: AgentState) -> List[str]:
         tools = state["tools"]
         tool_names = []
-        if tools == []:
+
+        if not tools:
             return ["retrieve_general"]
-        for tool in tools:
-            tool_names.append(tool["name"])
+        
+        tool_names = [tool["name"] for tool in tools if "name" in tool] # type: ignore
+            
         return tool_names
 
     def initialize(self):

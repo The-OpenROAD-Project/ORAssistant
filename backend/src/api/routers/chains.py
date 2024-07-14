@@ -37,14 +37,18 @@ required_env_vars = [
 if any(os.getenv(var) is None for var in required_env_vars):
     raise ValueError("One or more environment variables are not set.")
 
-if os.getenv("USE_CUDA").lower() in ("true"):
-    use_cuda: bool = True
-else:
-    use_cuda: bool = False
+use_cuda:bool = False
+llm_temp:float = 0.0
 
-llm_temp: float = os.getenv("GEMINI_TEMP")
-hf_embdeddings: str = os.getenv("HF_EMBEDDINGS")
-hf_reranker: str = os.getenv("HF_RERANKER")
+if str(os.getenv("USE_CUDA")).lower() in ("true"):
+    use_cuda = True
+
+llm_temp_str = os.getenv("GEMINI_TEMP")
+if llm_temp_str is not None:
+    llm_temp = float(llm_temp_str)
+
+hf_embdeddings: str = str(os.getenv("HF_EMBEDDINGS"))
+hf_reranker: str = str(os.getenv("HF_RERANKER"))
 
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 

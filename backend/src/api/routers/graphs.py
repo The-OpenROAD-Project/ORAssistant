@@ -32,13 +32,18 @@ required_env_vars = [
 if any(os.getenv(var) is None for var in required_env_vars):
     raise ValueError("One or more environment variables are not set.")
 
-if os.getenv("USE_CUDA").lower() in ("true"):
-    use_cuda: bool = True
-else:
-    use_cuda: bool = False
-llm_temp: float = os.getenv("GEMINI_TEMP")
-hf_embdeddings: str = os.getenv("HF_EMBEDDINGS")
-hf_reranker: str = os.getenv("HF_RERANKER")
+use_cuda:bool = False
+llm_temp:float = 0.0
+
+if str(os.getenv("USE_CUDA")).lower() in ("true"):
+    use_cuda = True
+
+llm_temp_str = os.getenv("GEMINI_TEMP")
+if llm_temp_str is not None:
+    llm_temp = float(llm_temp_str)
+
+hf_embdeddings: str = str(os.getenv("HF_EMBEDDINGS"))
+hf_reranker: str = str(os.getenv("HF_RERANKER"))
 
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 
@@ -63,7 +68,7 @@ rg.initialize()
 
 
 @router.post("/agent-retriever")
-async def get_agent_response(user_input: UserInput) -> dict:
+async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list[str]]]:
     user_question = user_input.query
     inputs = {
         "messages": [
@@ -71,25 +76,27 @@ async def get_agent_response(user_input: UserInput) -> dict:
         ]
     }
 
-    output = list(rg.graph.stream(inputs))
-
-    tool = output[0]["agent"]["tools"][0]["name"]
-
+    if rg.graph is not None:
+        output = list(rg.graph.stream(inputs)) # type: ignore
+    else:
+        raise ValueError("RetrieverGraph not initialized.")
+    
+    tool = list(output)[0]["agent"]["tools"][0]["name"]
     context = output[1][tool]["context"]
     sources = output[1][tool]["sources"]
-    response = output[2]["generate"]["messages"][0]
+    llm_response = output[2]["generate"]["messages"][0]
 
     if user_input.list_sources and user_input.list_context:
         response = {
-            "response": response,
+            "response": llm_response,
             "sources": (sources),
             "context": (context),
         }
     elif user_input.list_sources:
-        response = {"response": response, "sources": (sources)}
+        response = {"response": llm_response, "sources": (sources)}
     elif user_input.list_context:
-        response = {"response": response, "context": (context)}
+        response = {"response": llm_response, "context": (context)}
     else:
-        response = {"response": response}
+        response = {"response": llm_response}
 
     return response

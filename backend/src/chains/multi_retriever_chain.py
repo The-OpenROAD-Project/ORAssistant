@@ -41,7 +41,6 @@ class MultiRetrieverChain(BaseChain):
         self.manpages_path: Optional[list[str]] = manpages_path
 
         self.retriever: Optional[EnsembleRetriever] = None
-        self.retriever: Optional[EnsembleRetriever] = None
 
     def create_multi_retriever(
         self,
