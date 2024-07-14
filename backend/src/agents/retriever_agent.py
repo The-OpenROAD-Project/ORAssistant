@@ -8,7 +8,7 @@ from typing import Tuple, Optional, Union
 
 
 class RetrieverAgent:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     install_retriever: Optional[
@@ -26,7 +26,7 @@ class RetrieverAgent:
         embeddings_model_name: str,
         reranking_model_name: str,
         use_cuda: bool = False,
-    ):
+    ) -> None:
         install_retriever_chain = HybridRetrieverChain(
             embeddings_model_name=embeddings_model_name,
             reranking_model_name=reranking_model_name,
@@ -70,7 +70,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_general(query: str) -> Tuple[str, list]:
+    def retrieve_general(query: str) -> Tuple[str, list[str]]:
         """
         Retrieve any general information related to OpenROAD and OpenROAD-flow-scripts
         """
@@ -90,7 +90,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_cmds(query: str) -> Tuple[str, list]:
+    def retrieve_cmds(query: str) -> Tuple[str, list[str]]:
         """
         Retrieve information related to the commands and tools in OpenROAD and OpenROAD-flow-scripts
         """
@@ -110,7 +110,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_install(query: str) -> Tuple[str, list]:
+    def retrieve_install(query: str) -> Tuple[str, list[str]]:
         """
         Retrieve information related to the installation of OpenROAD and OpenROAD-flow-scripts
         """

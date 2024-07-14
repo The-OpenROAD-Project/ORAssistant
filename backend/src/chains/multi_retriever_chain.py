@@ -42,9 +42,7 @@ class MultiRetrieverChain(BaseChain):
 
         self.retriever: Optional[EnsembleRetriever] = None
 
-    def create_multi_retriever(
-        self,
-    ):
+    def create_multi_retriever(self) -> None:
         docs_similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,

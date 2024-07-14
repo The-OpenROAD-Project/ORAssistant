@@ -7,7 +7,7 @@ from ..tools.format_docs import format_docs
 
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import CrossEncoderReranker
+from langchain.retrievers.document_compressors.cross_encoder_rerank import CrossEncoderReranker
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
