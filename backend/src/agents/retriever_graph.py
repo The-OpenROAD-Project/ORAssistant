@@ -1,6 +1,6 @@
 from .retriever_agent import RetrieverAgent
 
-from typing import TypedDict, Annotated, Union, Optional, List
+from typing import TypedDict, Annotated, Union, Optional
 from langchain_core.messages import AnyMessage
 
 from langgraph.graph import START, StateGraph, END
@@ -83,7 +83,7 @@ class RetrieverGraph:
         
         return {"messages": []}
     
-    def route(self, state: AgentState) -> List[str]:
+    def route(self, state: AgentState) -> list[str]:
         tools = state["tools"]
         tool_names = []
 
