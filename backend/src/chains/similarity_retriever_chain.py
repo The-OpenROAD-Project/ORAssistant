@@ -5,25 +5,19 @@ from langchain.docstore.document import Document
 
 from ..vectorstores.faiss import FAISSVectorDatabase
 from ..tools.format_docs import format_docs
-
+from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import Optional, Tuple, Any
-
-
-from ..prompts.answer_prompts import summarise_prompt_template
-
-
-from dotenv import load_dotenv
+from typing import Optional, Tuple, Any, Union
 
 
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
+        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -79,62 +73,23 @@ class SimilarityRetrieverChain(BaseChain):
 
         if self.vector_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
-                search_type="similarity",
-                search_kwargs={"k": search_k},
+                search_type='similarity',
+                search_kwargs={'k': search_k},
             )
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
         self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
+            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
             | self.llm_chain
         )
 
         llm_chain_with_source = RunnableParallel({
-            "context": self.retriever,
-            "question": RunnablePassthrough(),
+            'context': self.retriever,
+            'question': RunnablePassthrough(),
         }).assign(answer=self.llm_chain)
 
         self.llm_chain = llm_chain_with_source
 
         return
-
-
-if __name__ == "__main__":
-    load_dotenv()
-
-    # from langchain_google_vertexai import ChatVertexAI
-    # llm = ChatVertexAI(model_name="gemini-1.5-pro")
-
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
-
-    prompt_template_str = summarise_prompt_template
-
-    sim_retriever_chain = SimilarityRetrieverChain(
-        llm_model=llm,
-        prompt_template_str=prompt_template_str,
-        embeddings_model_name="BAAI/bge-large-en-v1.5",
-        use_cuda=True,
-        docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
-        manpages_path=["./data/markdown/manpages"],
-    )
-    sim_retriever_chain.create_similarity_retriever()
-    llm_chain = sim_retriever_chain.get_llm_chain()
-
-    while True:
-        user_question = input("\n\nAsk a question: ")
-        result = llm_chain.invoke(user_question)
-
-        sources = []
-        for i in result["context"]:
-            if "url" in i.metadata:
-                sources.append(i.metadata["url"])
-            elif "source" in i.metadata:
-                sources.append(i.metadata["source"])
-
-        print(result["answer"])
-
-        print("\n\nSources:")
-        for i in set(sources):
-            print(i)

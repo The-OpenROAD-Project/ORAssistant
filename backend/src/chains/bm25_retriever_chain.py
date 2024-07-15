@@ -3,7 +3,7 @@ from .similarity_retriever_chain import SimilarityRetrieverChain
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.docstore.document import Document
-
+from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from typing import Optional, Iterable, Union
@@ -12,11 +12,11 @@ from typing import Optional, Iterable, Union
 class BM25RetrieverChain(SimilarityRetrieverChain):
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
+        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -48,5 +48,5 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
                 embedded_docs += processed_manpages
 
         self.retriever = BM25Retriever.from_documents(
-            documents=embedded_docs, search_kwargs={"k": search_k}
+            documents=embedded_docs, search_kwargs={'k': search_k}
         )

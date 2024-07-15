@@ -1,21 +1,21 @@
 from .similarity_retriever_chain import SimilarityRetrieverChain
-
+from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from ..vectorstores.faiss import FAISSVectorDatabase
 
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class MMRRetrieverChain(SimilarityRetrieverChain):
     def __init__(
         self,
-        llm_model: Optional[ChatGoogleGenerativeAI] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
+        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -46,6 +46,6 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
 
         if self.vector_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
-                search_type="mmr",
-                search_kwargs={"k": search_k, "lambda_mult": lambda_mult},
+                search_type='mmr',
+                search_kwargs={'k': search_k, 'lambda_mult': lambda_mult},
             )

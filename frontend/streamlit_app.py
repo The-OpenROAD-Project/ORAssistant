@@ -33,7 +33,7 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
     Returns:
     - tuple: Contains the AI response and sources.
     """
-    url = f"{st.session_state.base_url}{st.session_state.selected_endpoint}"
+    url = f'{st.session_state.base_url}{st.session_state.selected_endpoint}'
 
     headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
 
@@ -61,19 +61,20 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
         return data.get('response', ''), sources
 
     except requests.exceptions.RequestException as e:
-        st.error(f"Request failed: {e}")
+        st.error(f'Request failed: {e}')
         return None, None
+
 
 def fetch_endpoints() -> tuple[str, list[str]]:
     base_url = os.getenv('CHAT_ENDPOINT', 'http://localhost:8000')
-    url = f"{base_url}/chains/listAll"
+    url = f'{base_url}/chains/listAll'
     try:
         response = requests.get(url)
         response.raise_for_status()
         endpoints = response.json()
         return base_url, endpoints
     except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch endpoints: {e}")
+        st.error(f'Failed to fetch endpoints: {e}')
         return base_url, []
 
 
@@ -84,7 +85,7 @@ def main() -> None:
     st.set_page_config(page_title='OR Assistant', page_icon=img)
 
     deployment_time = datetime.datetime.now(pytz.timezone('UTC'))
-    st.info(f'Deployment time: {deployment_time.strftime("%m/%d/%Y %H:%M")} UTC')
+    st.info(f'Deployment time: {deployment_time.strftime('%m/%d/%Y %H:%M')} UTC')
 
     st.title('OR Assistant')
 
@@ -159,9 +160,9 @@ def main() -> None:
                     message_placeholder.markdown(response_buffer)
 
                 response_time_text = (
-                    f"Response Time: {response_time / 1000:.2f} seconds"
+                    f'Response Time: {response_time / 1000:.2f} seconds'
                 )
-                response_time_colored = f":{"green" if response_time < 5000 else "orange" if response_time < 10000 else "red"}[{response_time_text}]"
+                response_time_colored = f":{'green' if response_time < 5000 else 'orange' if response_time < 10000 else 'red'}[{response_time_text}]"
                 st.markdown(response_time_colored)
                 st.session_state.chat_history.append({
                     'content': response_buffer,
@@ -180,7 +181,7 @@ def main() -> None:
                                 parsed_sources = sources
                             if isinstance(parsed_sources, (list, set)):
                                 sources_list = '\n'.join(
-                                    f"- [{link}]({link})"
+                                    f'- [{link}]({link})'
                                     for link in parsed_sources
                                     if link.strip()
                                 )
@@ -188,7 +189,7 @@ def main() -> None:
                             else:
                                 st.markdown('No valid sources found.')
                         except (ValueError, SyntaxError) as e:
-                            st.markdown(f"Failed to parse sources: {e}")
+                            st.markdown(f'Failed to parse sources: {e}')
         else:
             st.error('Invalid response from the API')
 
@@ -218,7 +219,7 @@ def main() -> None:
                     st.session_state.chat_history,
                 )
             except Exception as e:
-                st.error(f"Failed to load feedback form: {e}")
+                st.error(f'Failed to load feedback form: {e}')
 
 
 if __name__ == '__main__':

@@ -89,7 +89,16 @@ streamlit run streamlit_app.py
 
 ## Architecture Overview
 
-Currently, documentation from OpenROAD and OpenROAD-flow-scripts is chunked recursively and embedded into FAISS Vector Databases.  
+OpenROAD manpages, OpenROAD documentation and OpenROAD-flow-scripts documentation is chunked and embedded into FAISS Vector Databases.  
+
+Currently, there are three seperate retrievers, each for answering queries about 
+1. OR/ORFS installation
+2. OR tools and commands
+3. General information
+
+The retrievers act a seperate tools and can be accessed by the LLM's tool-calling capabilities.
+
+Upon recieveing a query, 
 
 Documents are first retrieved from the vectorstore using a hybrid retriever, combining vector and semantic search methods. These retrieved documents undergo reranking using a cross-encoder reranker model.
 
