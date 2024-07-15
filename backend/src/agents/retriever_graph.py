@@ -65,9 +65,9 @@ class RetrieverGraph:
         response = model.invoke(messages)
 
         if response is None or response.tool_calls is None:  # type: ignore
-            return {'tools': []}  # type: ignore
+            return {'tools': []}
 
-        return {'tools': response.tool_calls}
+        return {'tools': response.tool_calls} # type: ignore
 
     def generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
         query = state['messages'][-1].content
