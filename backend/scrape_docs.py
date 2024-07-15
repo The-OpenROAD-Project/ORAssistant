@@ -12,7 +12,7 @@ def check_and_purge_docs() -> None:
     for folder_path in folder_paths:
         if os.path.exists(folder_path):
             shutil.rmtree(folder_path)
-            print(f"Purging existing docs, Folder {folder_path} deleted.")
+            print(f'Purging existing docs, Folder {folder_path} deleted.')
 
 
 def download_markdown(url: str, folder_name: str) -> None:
@@ -23,24 +23,24 @@ def download_markdown(url: str, folder_name: str) -> None:
     response = requests.get(dl_url)
 
     if response.status_code == 200:
-        file_name = path.replace("/", "_")
+        file_name = path.replace('/', '_')
 
-        if "build" in file_name.lower():
-            folder_name += "/installation"
-        elif "main_src" in file_name.lower():
-            folder_name += "/tools"
+        if 'build' in file_name.lower():
+            folder_name += '/installation'
+        elif 'main_src' in file_name.lower():
+            folder_name += '/tools'
 
         markdown_content = response.text
-        file_name = f"data/markdown/{folder_name}/{path.replace("/", "_")}"
+        file_name = f"data/markdown/{folder_name}/{path.replace('/', '_')}"
         if os.path.isfile(file_name):
             file_name, file_extension = os.path.splitext(file_name)
             file_name = file_name + '_1' + file_extension
         with open(file_name, 'w+', encoding='utf-8') as file:
             file.write(markdown_content)
-        print(f"{url} - Saved OK - {file_name}")
+        print(f'{url} - Saved OK - {file_name}')
         source_dict[file_name] = url
     else:
-        print(f"{url} - ERROR - Status code: {response.status_code}")
+        print(f'{url} - ERROR - Status code: {response.status_code}')
 
 
 def get_href_list(url: str) -> list[str]:
@@ -53,7 +53,7 @@ def get_href_list(url: str) -> list[str]:
             if (
                 'https' not in a and '#' not in a and 'mailto' not in a
             ):  # remove external links and heading links
-                hrefs.append(f"{url}/{a}")
+                hrefs.append(f'{url}/{a}')
         return hrefs
     except Exception as e:
         print('Error:', e)
@@ -63,7 +63,7 @@ def get_href_list(url: str) -> list[str]:
 def scrape_url(url: str, folder_name: str) -> None:
     hrefs = set(get_href_list(url))
 
-    print(f"{len(hrefs)} links found on", url, 'are:')
+    print(f'{len(hrefs)} links found on', url, 'are:')
     for href in hrefs:
         download_markdown(href, folder_name)
 
@@ -71,13 +71,13 @@ def scrape_url(url: str, folder_name: str) -> None:
 if __name__ == '__main__':
     check_and_purge_docs()
 
-    os.makedirs("data/", exist_ok=True)
-    os.makedirs("data/markdown/", exist_ok=True)
-    os.makedirs("data/markdown/OR_docs", exist_ok=True)
-    os.makedirs("data/markdown/OR_docs/installation", exist_ok=True)
-    os.makedirs("data/markdown/OR_docs/tools", exist_ok=True)
-    os.makedirs("data/markdown/ORFS_docs", exist_ok=True)
-    os.makedirs("data/markdown/ORFS_docs/installation", exist_ok=True)
+    os.makedirs('data/', exist_ok=True)
+    os.makedirs('data/markdown/', exist_ok=True)
+    os.makedirs('data/markdown/OR_docs', exist_ok=True)
+    os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
+    os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
+    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
+    os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
 
     url = 'https://openroad.readthedocs.io/en/latest'
     scrape_url(url, 'OR_docs')

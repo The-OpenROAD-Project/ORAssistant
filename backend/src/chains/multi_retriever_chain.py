@@ -20,7 +20,7 @@ class MultiRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
+        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         search_k: list[int] = [5, 5],
         weights: list[float] = [0.5, 0.5],
@@ -78,14 +78,14 @@ class MultiRetrieverChain(BaseChain):
         super().create_llm_chain()
 
         self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
+            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
             | self.llm_chain
         )
 
         llm_chain_with_source = RunnableParallel({
-            "context": self.retriever,
-            "question": RunnablePassthrough(),
-        }).assign(answer=self.llm_chain) # type: ignore
+            'context': self.retriever,
+            'question': RunnablePassthrough(),
+        }).assign(answer=self.llm_chain)  # type: ignore
 
         self.llm_chain = llm_chain_with_source
 

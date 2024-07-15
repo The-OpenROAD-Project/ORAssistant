@@ -8,6 +8,7 @@ from ..tools.process_json import generate_knowledge_base
 
 from typing import Optional
 
+
 class FAISSVectorDatabase:
     def __init__(
         self,
@@ -19,11 +20,11 @@ class FAISSVectorDatabase:
     ):
         self.embeddings_model_name = embeddings_model_name
 
-        model_kwargs = {"device": "cuda"} if use_cuda else {}
+        model_kwargs = {'device': 'cuda'} if use_cuda else {}
         self.embedding_model = HuggingFaceEmbeddings(
             model_name=self.embeddings_model_name,
             multi_process=False,
-            encode_kwargs={"normalize_embeddings": True},
+            encode_kwargs={'normalize_embeddings': True},
             model_kwargs=model_kwargs,
         )
 
@@ -32,7 +33,7 @@ class FAISSVectorDatabase:
         self.distance_strategy = distance_strategy
 
         self._faiss_db = FAISS.from_documents(
-            documents=[Document(page_content="")],
+            documents=[Document(page_content='')],
             embedding=self.embedding_model,
             distance_strategy=self.distance_strategy,
         )
@@ -45,13 +46,13 @@ class FAISSVectorDatabase:
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
-            print("Processing markdown docs...")
+            print('Processing markdown docs...')
 
         docs_processed = []
 
         for file_path in folder_paths:
             if self.print_progress:
-                print(f"Processing [{file_path}]...")
+                print(f'Processing [{file_path}]...')
                 docs_processed.extend(
                     process_md_docs(
                         embeddings_model_name=self.embeddings_model_name,
@@ -71,13 +72,13 @@ class FAISSVectorDatabase:
         self, folder_paths: list[str], return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
-            print("Processing markdown manpages...")
+            print('Processing markdown manpages...')
 
         docs_processed = []
 
         for file_path in folder_paths:
             if self.print_progress:
-                print(f"Processing [{file_path}]...")
+                print(f'Processing [{file_path}]...')
                 docs_processed.extend(
                     process_md_manpages(
                         files_path=file_path,
@@ -95,7 +96,7 @@ class FAISSVectorDatabase:
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
         if self.print_progress:
-            print("Processing json files...")
+            print('Processing json files...')
 
         embeddings = self.embedding_model
         json_docs_processed = generate_knowledge_base(folder_paths)
@@ -106,9 +107,9 @@ class FAISSVectorDatabase:
 
     def get_relevant_documents(self, query: str, k: int = 2) -> str:
         retrieved_docs = self._faiss_db.similarity_search(query=query, k=k)
-        retrieved_text = ""
+        retrieved_text = ''
 
         for doc in retrieved_docs:
-            retrieved_text += doc.page_content.replace("\n", "") + "\n\n"
+            retrieved_text += doc.page_content.replace('\n', '') + '\n\n'
 
         return retrieved_text

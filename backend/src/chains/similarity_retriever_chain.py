@@ -10,8 +10,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Optional, Tuple, Any, Union
 
 
-
-
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,
@@ -19,7 +17,7 @@ class SimilarityRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
+        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -75,21 +73,21 @@ class SimilarityRetrieverChain(BaseChain):
 
         if self.vector_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
-                search_type="similarity",
-                search_kwargs={"k": search_k},
+                search_type='similarity',
+                search_kwargs={'k': search_k},
             )
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
         self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
+            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
             | self.llm_chain
         )
 
         llm_chain_with_source = RunnableParallel({
-            "context": self.retriever,
-            "question": RunnablePassthrough(),
+            'context': self.retriever,
+            'question': RunnablePassthrough(),
         }).assign(answer=self.llm_chain)
 
         self.llm_chain = llm_chain_with_source

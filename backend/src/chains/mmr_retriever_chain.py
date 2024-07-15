@@ -15,7 +15,7 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
+        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -46,6 +46,6 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
 
         if self.vector_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
-                search_type="mmr",
-                search_kwargs={"k": search_k, "lambda_mult": lambda_mult},
+                search_type='mmr',
+                search_kwargs={'k': search_k, 'lambda_mult': lambda_mult},
             )

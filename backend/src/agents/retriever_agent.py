@@ -14,9 +14,7 @@ class RetrieverAgent:
     install_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
-    cmds_retriever: Optional[
-        Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    cmds_retriever: Optional[Union[EnsembleRetriever, ContextualCompressionRetriever]]
     general_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
@@ -32,8 +30,8 @@ class RetrieverAgent:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             docs_path=[
-                "./data/markdown/ORFS_docs/installation",
-                "./data/markdown/OR_docs/installation",
+                './data/markdown/ORFS_docs/installation',
+                './data/markdown/OR_docs/installation',
             ],
             contextual_rerank=True,
             search_k=10,
@@ -45,8 +43,8 @@ class RetrieverAgent:
             embeddings_model_name=embeddings_model_name,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            docs_path=["./data/markdown/OR_docs/tools"],
-            manpages_path=["./data/markdown/manpages"],
+            docs_path=['./data/markdown/OR_docs/tools'],
+            manpages_path=['./data/markdown/manpages'],
             contextual_rerank=True,
             search_k=10,
         )
@@ -58,10 +56,10 @@ class RetrieverAgent:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             docs_path=[
-                "./data/markdown/ORFS_docs",
-                "./data/markdown/OR_docs",
+                './data/markdown/ORFS_docs',
+                './data/markdown/OR_docs',
             ],
-            manpages_path=["./data/markdown/manpages"],
+            manpages_path=['./data/markdown/manpages'],
             contextual_rerank=True,
             search_k=10,
         )
@@ -77,14 +75,14 @@ class RetrieverAgent:
         if RetrieverAgent.general_retriever is not None:
             docs = RetrieverAgent.general_retriever.invoke(input=query)
 
-        doc_text = ""
+        doc_text = ''
         doc_srcs = []
         for doc in docs:
-            doc_text += f"\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}"
-            if "url" in doc.metadata:
-                doc_srcs.append(doc.metadata["url"])
-            elif "source" in doc.metadata:
-                doc_srcs.append(doc.metadata["source"])
+            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
+            if 'url' in doc.metadata:
+                doc_srcs.append(doc.metadata['url'])
+            elif 'source' in doc.metadata:
+                doc_srcs.append(doc.metadata['source'])
 
         return doc_text, doc_srcs
 
@@ -97,14 +95,14 @@ class RetrieverAgent:
         if RetrieverAgent.cmds_retriever is not None:
             docs = RetrieverAgent.cmds_retriever.invoke(input=query)
 
-        doc_text = ""
+        doc_text = ''
         doc_srcs = []
         for doc in docs:
-            doc_text += f"\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}"
-            if "url" in doc.metadata:
-                doc_srcs.append(doc.metadata["url"])
-            elif "source" in doc.metadata:
-                doc_srcs.append(doc.metadata["source"])
+            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
+            if 'url' in doc.metadata:
+                doc_srcs.append(doc.metadata['url'])
+            elif 'source' in doc.metadata:
+                doc_srcs.append(doc.metadata['source'])
 
         return doc_text, doc_srcs
 
@@ -117,13 +115,13 @@ class RetrieverAgent:
         if RetrieverAgent.install_retriever is not None:
             docs = RetrieverAgent.install_retriever.invoke(input=query)
 
-        doc_text = ""
+        doc_text = ''
         doc_srcs = []
         for doc in docs:
-            doc_text += f"\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}"
-            if "url" in doc.metadata:
-                doc_srcs.append(doc.metadata["url"])
-            elif "source" in doc.metadata:
-                doc_srcs.append(doc.metadata["source"])
+            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
+            if 'url' in doc.metadata:
+                doc_srcs.append(doc.metadata['url'])
+            elif 'source' in doc.metadata:
+                doc_srcs.append(doc.metadata['source'])
 
         return doc_text, doc_srcs

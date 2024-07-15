@@ -7,7 +7,9 @@ from ..tools.format_docs import format_docs
 
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors.cross_encoder_rerank import CrossEncoderReranker
+from langchain.retrievers.document_compressors.cross_encoder_rerank import (
+    CrossEncoderReranker,
+)
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
@@ -28,7 +30,7 @@ class HybridRetrieverChain(BaseChain):
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         reranking_model_name: Optional[str] = None,
-        embeddings_model_name: str = "BAAI/bge-large-en-v1.5",
+        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         search_k: int = 5,
         weights: list[float] = [0.33, 0.33, 0.33],
@@ -115,52 +117,52 @@ class HybridRetrieverChain(BaseChain):
         super().create_llm_chain()
 
         self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
+            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
             | self.llm_chain
         )
 
         llm_chain_with_source = RunnableParallel({
-            "context": self.retriever,
-            "question": RunnablePassthrough(),
-        }).assign(answer=self.llm_chain) # type: ignore
+            'context': self.retriever,
+            'question': RunnablePassthrough(),
+        }).assign(answer=self.llm_chain)  # type: ignore
 
         self.llm_chain = llm_chain_with_source
 
         return
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     load_dotenv()
 
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
+    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=1)
 
     prompt_template_str = summarise_prompt_template
 
     hybrid_retriever_chain = HybridRetrieverChain(
         llm_model=llm,
         prompt_template_str=prompt_template_str,
-        embeddings_model_name="BAAI/bge-large-en-v1.5",
-        reranking_model_name="BAAI/bge-reranker-base",
+        embeddings_model_name='BAAI/bge-large-en-v1.5',
+        reranking_model_name='BAAI/bge-reranker-base',
         use_cuda=True,
-        docs_path=["./data/markdown/ORFS_docs", "./data/markdown/OR_docs"],
-        manpages_path=["./data/markdown/manpages"],
+        docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
+        manpages_path=['./data/markdown/manpages'],
     )
     hybrid_retriever_chain.create_hybrid_retriever()
     retriever_chain = hybrid_retriever_chain.get_llm_chain()
 
     while True:
-        user_question = input("\n\nAsk a question: ")
+        user_question = input('\n\nAsk a question: ')
         result = retriever_chain.invoke(user_question)
 
         sources = []
-        for i in result["context"]:
-            if "url" in i.metadata:
-                sources.append(i.metadata["url"])
-            elif "source" in i.metadata:
-                sources.append(i.metadata["source"])
+        for i in result['context']:
+            if 'url' in i.metadata:
+                sources.append(i.metadata['url'])
+            elif 'source' in i.metadata:
+                sources.append(i.metadata['source'])
 
-        print(result["answer"])
+        print(result['answer'])
 
-        print("\n\nSources:")
+        print('\n\nSources:')
         for i in set(sources):
             print(i)

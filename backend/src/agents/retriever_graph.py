@@ -27,11 +27,11 @@ class ToolNode:
         self.tool_fn = tool_fn
 
     def get_node(self, state: AgentState) -> dict[str, list[str]]:
-        query = state["messages"][-1].content
+        query = state['messages'][-1].content
         if query is None:
-            raise ValueError("Query is None")
+            raise ValueError('Query is None')
         response, sources = self.tool_fn(query)
-        return {"context": [response], "sources": sources}
+        return {'context': [response], 'sources': sources}
 
 
 class RetrieverGraph:
@@ -48,14 +48,14 @@ class RetrieverGraph:
             embeddings_model_name=embeddings_model_name,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-        ) 
+        )
         self.graph: Optional[CompiledGraph] = None
 
     def agent(self, state: AgentState) -> dict[str, list[str]]:
-        messages = state["messages"][-1].content
+        messages = state['messages'][-1].content
 
         if self.llm is None:
-            return {"tools": []}
+            return {'tools': []}
 
         model = self.llm.bind_tools([
             self.retriever_agent.retrieve_cmds,
@@ -64,34 +64,34 @@ class RetrieverGraph:
         ])
         response = model.invoke(messages)
 
-        if response is None or response.tool_calls is None: # type: ignore
-            return {"tools": response.tool_calls} # type: ignore
-        
-        return {"tools": []}
+        if response is None or response.tool_calls is None:  # type: ignore
+            return {'tools': response.tool_calls}  # type: ignore
+
+        return {'tools': []}
 
     def generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
-        query = state["messages"][-1].content
-        context = state["context"][-1]
+        query = state['messages'][-1].content
+        context = state['context'][-1]
         llm_chain = BaseChain(
             llm_model=self.llm,
             prompt_template_str=summarise_prompt_template,
         ).get_llm_chain()
 
-        ans = llm_chain.invoke({"context": context, "question": query})
+        ans = llm_chain.invoke({'context': context, 'question': query})
 
-        if ans is not None:                
-            return {"messages": [ans]}
-        
-        return {"messages": []}
-    
+        if ans is not None:
+            return {'messages': [ans]}
+
+        return {'messages': []}
+
     def route(self, state: AgentState) -> list[str]:
-        tools = state["tools"]
+        tools = state['tools']
 
         if not tools:
-            return ["retrieve_general"]
-        
-        tool_names = [tool["name"] for tool in tools if "name" in tool] # type: ignore
-            
+            return ['retrieve_general']
+
+        tool_names = [tool['name'] for tool in tools if 'name' in tool]  # type: ignore
+
         return tool_names
 
     def initialize(self) -> None:
@@ -101,25 +101,25 @@ class RetrieverGraph:
         install = ToolNode(self.retriever_agent.retrieve_install)
         general = ToolNode(self.retriever_agent.retrieve_general)
 
-        workflow.add_node("agent", self.agent)
-        workflow.add_node("generate", self.generate)
+        workflow.add_node('agent', self.agent)
+        workflow.add_node('generate', self.generate)
 
-        workflow.add_node("retrieve_cmds", commands.get_node)
-        workflow.add_node("retrieve_install", install.get_node)
-        workflow.add_node("retrieve_general", general.get_node)
+        workflow.add_node('retrieve_cmds', commands.get_node)
+        workflow.add_node('retrieve_install', install.get_node)
+        workflow.add_node('retrieve_general', general.get_node)
 
-        workflow.add_edge(START, "agent")
+        workflow.add_edge(START, 'agent')
         workflow.add_conditional_edges(
-            "agent",
-            self.route, # type: ignore
-            ["retrieve_cmds", "retrieve_install", "retrieve_general"],
+            'agent',
+            self.route,  # type: ignore
+            ['retrieve_cmds', 'retrieve_install', 'retrieve_general'],
         )
 
-        workflow.add_edge("retrieve_cmds", "generate")
-        workflow.add_edge("retrieve_install", "generate")
-        workflow.add_edge("retrieve_general", "generate")
+        workflow.add_edge('retrieve_cmds', 'generate')
+        workflow.add_edge('retrieve_install', 'generate')
+        workflow.add_edge('retrieve_general', 'generate')
 
-        workflow.add_edge("generate", END)
+        workflow.add_edge('generate', END)
 
         self.graph = workflow.compile()
 

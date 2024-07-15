@@ -22,7 +22,7 @@ class BaseChain:
         self.llm_chain: Any = None
 
     def create_llm_chain(self) -> None:
-        self.llm_chain = self.prompt_template | self.llm_model | StrOutputParser() # type: ignore
+        self.llm_chain = self.prompt_template | self.llm_model | StrOutputParser()  # type: ignore
 
     def get_llm_chain(self) -> Any:
         if self.llm_chain is None:
@@ -30,9 +30,9 @@ class BaseChain:
         return self.llm_chain
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     load_dotenv()
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=1)
+    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=1)
     prompt_template_str = """
     Give a detailed answer to this question: 
     {question}
@@ -43,6 +43,6 @@ if __name__ == "__main__":
     basechain_llmchain = basechain.llm_chain
 
     while True:
-        user_question = input("\n\nAsk a question: ")
+        user_question = input('\n\nAsk a question: ')
         result = basechain_llmchain.invoke(user_question)
         print(result)

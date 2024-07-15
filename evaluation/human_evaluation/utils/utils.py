@@ -8,19 +8,19 @@ import os
 
 load_dotenv()
 
-SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_CREDENTIALS_JSON")
-GOOGLE_FORM_ID = os.getenv("GOOGLE_FORM_ID")
-GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+SERVICE_ACCOUNT_FILE = os.getenv('GOOGLE_CREDENTIALS_JSON')
+GOOGLE_FORM_ID = os.getenv('GOOGLE_FORM_ID')
+GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
 
 SCOPES = [
-    "https://www.googleapis.com/auth/forms.body",
-    "https://www.googleapis.com/auth/forms.responses.readonly",
-    "https://www.googleapis.com/auth/spreadsheets",
+    'https://www.googleapis.com/auth/forms.body',
+    'https://www.googleapis.com/auth/forms.responses.readonly',
+    'https://www.googleapis.com/auth/spreadsheets',
 ]
 
 creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-sheets_service = build("sheets", "v4", credentials=creds)
-forms_service = build("forms", "v1", credentials=creds)
+sheets_service = build('sheets', 'v4', credentials=creds)
+forms_service = build('forms', 'v1', credentials=creds)
 
 
 def parse_custom_input(custom_input: str, max_value: int) -> list[int]:
@@ -35,10 +35,10 @@ def parse_custom_input(custom_input: str, max_value: int) -> list[int]:
     - list[int]: A sorted list of row numbers.
     """
     result: list[int] = []
-    ranges = custom_input.split(",")
+    ranges = custom_input.split(',')
     for r in ranges:
-        if "-" in r:
-            start, end = r.split("-")
+        if '-' in r:
+            start, end = r.split('-')
             start = int(start) if start else 2
             end = int(end) if end else max_value + 1
             result.extend(range(start, end + 1))
@@ -78,25 +78,25 @@ def read_question_and_description() -> list[dict[str, str]]:
     try:
         sheet = sheets_service.spreadsheets()
         result = (
-            sheet.values().get(spreadsheetId=GOOGLE_SHEET_ID, range="A2:B").execute()
+            sheet.values().get(spreadsheetId=GOOGLE_SHEET_ID, range='A2:B').execute()
         )
-        values = result.get("values", [])
+        values = result.get('values', [])
 
         questions_and_descriptions: list[dict[str, str]] = []
         for row in values:
             question = row[0] if len(row) > 0 else None
-            description = row[1] if len(row) > 1 else ""
+            description = row[1] if len(row) > 1 else ''
             if question:
                 questions_and_descriptions.append({
-                    "question": question,
-                    "description": description,
+                    'question': question,
+                    'description': description,
                 })
             else:
                 pass
         return questions_and_descriptions
     except HttpError as error:
-        st.error("Rate Limited! Please try after a few seconds.")
-        st.error(f"An error occurred: {error}")
+        st.error('Rate Limited! Please try after a few seconds.')
+        st.error(f'An error occurred: {error}')
         return []
 
 
@@ -109,72 +109,72 @@ def update_gform(questions_descriptions: list[dict[str, str]]) -> None:
     """
     try:
         form = forms_service.forms().get(formId=GOOGLE_FORM_ID).execute()
-        items = form.get("items", [])
+        items = form.get('items', [])
 
         requests: list[dict[str, Any]] = []
         # Using Gform API to update the form with the new questions and descriptions in radio button format
         for i, qd in enumerate(questions_descriptions):
             if i < len(items):
-                item_id = items[i]["itemId"]
+                item_id = items[i]['itemId']
                 update_request = {
-                    "updateItem": {
-                        "item": {
-                            "itemId": item_id,
-                            "title": qd.get("question", ""),
-                            "description": qd.get("description", ""),
-                            "questionItem": {
-                                "question": {
-                                    "required": True,
-                                    "choiceQuestion": {
-                                        "type": "RADIO",
-                                        "options": [
-                                            {"value": "Accept"},
-                                            {"value": "Reject"},
-                                            {"isOther": True},
+                    'updateItem': {
+                        'item': {
+                            'itemId': item_id,
+                            'title': qd.get('question', ''),
+                            'description': qd.get('description', ''),
+                            'questionItem': {
+                                'question': {
+                                    'required': True,
+                                    'choiceQuestion': {
+                                        'type': 'RADIO',
+                                        'options': [
+                                            {'value': 'Accept'},
+                                            {'value': 'Reject'},
+                                            {'isOther': True},
                                         ],
-                                        "shuffle": False,
+                                        'shuffle': False,
                                     },
                                 }
                             },
                         },
-                        "location": {"index": i},
-                        "updateMask": "*",
+                        'location': {'index': i},
+                        'updateMask': '*',
                     },
                 }
                 requests.append(update_request)
             else:  # If update is not required, create a new question and description
                 create_request = {
-                    "createItem": {
-                        "item": {
-                            "title": qd.get("question", ""),
-                            "description": qd.get("description", ""),
-                            "questionItem": {
-                                "question": {
-                                    "required": True,
-                                    "choiceQuestion": {
-                                        "type": "RADIO",
-                                        "options": [
-                                            {"value": "Accept"},
-                                            {"value": "Reject"},
-                                            {"isOther": True},
+                    'createItem': {
+                        'item': {
+                            'title': qd.get('question', ''),
+                            'description': qd.get('description', ''),
+                            'questionItem': {
+                                'question': {
+                                    'required': True,
+                                    'choiceQuestion': {
+                                        'type': 'RADIO',
+                                        'options': [
+                                            {'value': 'Accept'},
+                                            {'value': 'Reject'},
+                                            {'isOther': True},
                                         ],
-                                        "shuffle": False,
+                                        'shuffle': False,
                                     },
                                 }
                             },
                         },
-                        "location": {"index": i},
+                        'location': {'index': i},
                     }
                 }
                 requests.append(create_request)
 
-        form_body = {"requests": requests}
+        form_body = {'requests': requests}
         forms_service.forms().batchUpdate(
             formId=GOOGLE_FORM_ID, body=form_body
         ).execute()
 
-        st.success("Google Form updated successfully.")
+        st.success('Google Form updated successfully.')
     except HttpError as error:
-        st.error(f"An error occurred while updating the form: {error}")
+        st.error(f'An error occurred while updating the form: {error}')
     except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
+        st.error(f'An unexpected error occurred: {e}')
