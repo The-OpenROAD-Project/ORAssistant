@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 import requests
 import json
 import shutil
@@ -8,7 +10,11 @@ source_dict = {}
 
 
 def check_and_purge_docs() -> None:
-    folder_paths = ['data/markdown/OR_docs', 'data/markdown/ORFS_docs']
+    folder_paths = [
+        'data/markdown/OR_docs',
+        'data/markdown/ORFS_docs',
+        'data/markdown/manpages',
+    ]
     for folder_path in folder_paths:
         if os.path.exists(folder_path):
             shutil.rmtree(folder_path)
@@ -68,25 +74,88 @@ def scrape_url(url: str, folder_name: str) -> None:
         download_markdown(href, folder_name)
 
 
+def get_manpages() -> None:
+    print('Starting manpages build...')
+
+    # clone repo
+    or_url = 'https://github.com/The-OpenROAD-Project/OpenROAD'
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    target_dir = os.path.join(cur_dir, 'OpenROAD')
+    command = f"git clone {or_url} --depth 1 {target_dir}"
+    res = subprocess.run(command, shell=True, capture_output=True)
+    if res.returncode != 0:
+        print(f"Error in cloning OpenROAD: {res.stderr.decode('utf-8')}")
+        sys.exit(1)
+    print('Cloned OpenROAD successfully.')
+
+    # check if pandoc is installed, if not error out.
+    res = subprocess.run('pandoc --version', shell=True, capture_output=True)
+    if res.returncode != 0:
+        print('Pandoc is not installed. Please install it.')
+        sys.exit(1)
+    print('Pandoc is installed.')
+
+    # generate manpages
+    command = '../../etc/find_messages.py > messages.txt'
+    for module in os.listdir(os.path.join(cur_dir, 'OpenROAD/src')):
+        path = os.path.join(cur_dir, 'OpenROAD/src', module)
+        if not os.path.isdir(path):
+            continue
+        print('Processing module:', module)
+        os.chdir(path)
+        res = subprocess.run(command, shell=True, capture_output=True)
+        if res.returncode != 0:
+            print(f"Error in finding messages for {module}: {res.stderr.decode('utf-8')}")
+            continue
+    os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
+    num_cores = os.cpu_count()
+    command = f"make clean && make preprocess && make -j{num_cores}"
+    res = subprocess.run(command, shell=True, capture_output=True)
+    print('Finished building manpages.')
+
+    # copy folder contents to data/markdown/manpages
+    src_dir = os.path.join(cur_dir, 'OpenROAD/docs/md')
+    dest_dir = os.path.join(cur_dir, 'data/markdown/manpages')
+    shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
+    print('Copied manpages to data/markdown/manpages.')
+
+    # update source_dict
+    for root, _, files in os.walk(dest_dir):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_name = os.path.basename(file_path)
+            source_dict[file_path] = file_name
+
+    # change back to the file directory
+    os.chdir(cur_dir)
+    shutil.rmtree('OpenROAD')
+    print('Removed OpenROAD temp directory.')
+
+
 if __name__ == '__main__':
     check_and_purge_docs()
 
-    os.makedirs('data/', exist_ok=True)
-    os.makedirs('data/markdown/', exist_ok=True)
     os.makedirs('data/markdown/OR_docs', exist_ok=True)
+    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
+    os.makedirs('data/markdown/manpages', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
     os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
 
+    # OR docs
     url = 'https://openroad.readthedocs.io/en/latest'
     scrape_url(url, 'OR_docs')
 
+    # ORFS docs
     url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
     scrape_url(url, 'ORFS_docs')
 
+    # Json
     source_dict['data/json/OR-github_discussions.txt'] = 'OpenROAD GitHub Discussions'
     source_dict['data/json/OR-github_issues.txt'] = 'OpenROAD GitHub Issues'
+
+    # Manpages
+    get_manpages()
 
     with open('src/source_list.json', 'w+') as src_file:
         src_file.write(json.dumps(source_dict))
