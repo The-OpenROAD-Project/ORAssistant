@@ -7,9 +7,16 @@ from bs4 import BeautifulSoup
 import markdown as md
 
 from langchain.docstore.document import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from .chunk_documents import chunk_documents
 
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=4000,
+    chunk_overlap=200,
+    length_function=len,
+    is_separator_regex=False,
+)
 
 def md_to_text(md_content: str) -> str:
     html = md.markdown(md_content)
@@ -43,6 +50,7 @@ def process_md_docs(
         src_dict = json.loads(f.read())
 
     documents = load_docs(files_path=files_path)
+    documents = text_splitter.split_documents(documents)
 
     documents_knowledge_base = []
     for doc in documents:
