@@ -138,6 +138,9 @@ if __name__ == '__main__':
     os.makedirs('data/markdown/OR_docs', exist_ok=True)
     os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
     os.makedirs('data/markdown/manpages', exist_ok=True)
+    os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
+    os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
+    os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
 
     # OR docs
     url = 'https://openroad.readthedocs.io/en/latest'
