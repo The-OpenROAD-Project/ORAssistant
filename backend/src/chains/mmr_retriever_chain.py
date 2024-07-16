@@ -15,7 +15,8 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
+        pdfs_path: Optional[list[str]] = None,
+        embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -25,6 +26,7 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
             embeddings_model_name=embeddings_model_name,
             docs_path=docs_path,
             manpages_path=manpages_path,
+            pdfs_path=pdfs_path,
             chunk_size=chunk_size,
             use_cuda=use_cuda,
         )

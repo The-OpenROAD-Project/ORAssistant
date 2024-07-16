@@ -16,7 +16,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
+        embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -39,13 +39,17 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
     ) -> None:
         if embedded_docs is None:
             super().create_vector_db()
-            processed_docs, processed_manpages = super().embed_docs(return_docs=True)
+            processed_docs, processed_manpages, processed_pdfs = super().embed_docs(
+                return_docs=True
+            )
 
             embedded_docs = []
             if processed_docs is not None:
                 embedded_docs += processed_docs
             if processed_manpages is not None:
                 embedded_docs += processed_manpages
+            if processed_pdfs is not None:
+                embedded_docs += processed_pdfs
 
         self.retriever = BM25Retriever.from_documents(
             documents=embedded_docs, search_kwargs={'k': search_k}

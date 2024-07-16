@@ -20,17 +20,18 @@ class MultiRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
+        pdfs_path: Optional[list[str]] = None,
+        embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
-        search_k: list[int] = [5, 5],
-        weights: list[float] = [0.5, 0.5],
+        search_k: list[int] = [5, 5, 5],
+        weights: list[float] = [0.4, 0.4, 0.1],
         chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
         )
-        self.embeddings_model_name: str = embeddings_model_name
+        self.embeddings_model_name: Optional[str] = embeddings_model_name
         self.use_cuda: bool = use_cuda
 
         self.search_k: list[int] = search_k
@@ -39,6 +40,7 @@ class MultiRetrieverChain(BaseChain):
         self.chunk_size: int = chunk_size
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
+        self.pdfs_path: Optional[list[str]] = pdfs_path
 
         self.retriever: Optional[EnsembleRetriever] = None
 
@@ -65,12 +67,27 @@ class MultiRetrieverChain(BaseChain):
         manpages_similarity_retriever_chain.create_similarity_retriever(search_k=5)
         manpages_similarity_retriever = docs_similarity_retriever_chain.retriever
 
+        pdfs_similarity_retriever_chain = SimilarityRetrieverChain(
+            llm_model=None,
+            prompt_template_str=None,
+            embeddings_model_name=self.embeddings_model_name,
+            pdfs_path=self.pdfs_path,
+            chunk_size=self.chunk_size,
+        )
+        pdfs_similarity_retriever_chain.embed_docs(return_docs=False)
+        pdfs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        pdfs_similarity_retriever = pdfs_similarity_retriever_chain.retriever
+
         if (
             docs_similarity_retriever is not None
             and manpages_similarity_retriever is not None
         ):
             self.retriever = EnsembleRetriever(
-                retrievers=[docs_similarity_retriever, manpages_similarity_retriever],
+                retrievers=[
+                    docs_similarity_retriever,
+                    manpages_similarity_retriever,
+                    pdfs_similarity_retriever,
+                ],
                 weights=self.weights,
             )
 

@@ -25,12 +25,13 @@ from dotenv import load_dotenv
 class HybridRetrieverChain(BaseChain):
     def __init__(
         self,
+        embeddings_model_name: str,
         llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
+        pdfs_path: Optional[list[str]] = None,
         reranking_model_name: Optional[str] = None,
-        embeddings_model_name: str = 'BAAI/bge-large-en-v1.5',
         use_cuda: bool = False,
         search_k: int = 5,
         weights: list[float] = [0.33, 0.33, 0.33],
@@ -48,9 +49,11 @@ class HybridRetrieverChain(BaseChain):
         self.search_k: int = search_k
         self.weights: list[float] = weights
 
-        self.chunk_size: int = chunk_size
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
+        self.pdfs_path: Optional[list[str]] = pdfs_path
+
+        self.chunk_size: int = chunk_size
 
         self.contextual_rerank: bool = contextual_rerank
         self.retriever: Optional[
@@ -64,11 +67,12 @@ class HybridRetrieverChain(BaseChain):
             embeddings_model_name=self.embeddings_model_name,
             docs_path=self.docs_path,
             manpages_path=self.manpages_path,
+            pdfs_path=self.pdfs_path,
             chunk_size=self.chunk_size,
         )
 
-        processed_docs, processed_manpages = similarity_retriever_chain.embed_docs(
-            return_docs=True
+        processed_docs, processed_manpages, processed_pdfs = (
+            similarity_retriever_chain.embed_docs(return_docs=True)
         )
         faiss_db = similarity_retriever_chain.vector_db
         similarity_retriever_chain.create_similarity_retriever(search_k=10)
@@ -85,6 +89,8 @@ class HybridRetrieverChain(BaseChain):
             embedded_docs += processed_docs
         if processed_manpages is not None:
             embedded_docs += processed_manpages
+        if processed_pdfs is not None:
+            embedded_docs += processed_pdfs
 
         bm25_retriever_chain = BM25RetrieverChain()
         bm25_retriever_chain.create_bm25_retriever(
@@ -134,7 +140,7 @@ class HybridRetrieverChain(BaseChain):
 if __name__ == '__main__':
     load_dotenv()
 
-    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=1)
+    llm = ChatVertexAI(model_name='gemini-1.5-flash', temperature=1.0)
 
     prompt_template_str = summarise_prompt_template
 
@@ -146,6 +152,7 @@ if __name__ == '__main__':
         use_cuda=True,
         docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
         manpages_path=['./data/markdown/manpages'],
+        pdfs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
     )
     hybrid_retriever_chain.create_hybrid_retriever()
     retriever_chain = hybrid_retriever_chain.get_llm_chain()
