@@ -53,7 +53,7 @@ hf_reranker: str = str(os.getenv('HF_RERANKER'))
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 
 if os.getenv('GOOGLE_GEMINI') == '1_pro':
-    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)
+    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)  # type: ignore
 elif os.getenv('GOOGLE_GEMINI') == '1.5_flash':
     llm = ChatVertexAI(model_name='gemini-1.5-flash', temperature=llm_temp)
 elif os.getenv('GOOGLE_GEMINI') == '1.5_pro':
@@ -72,6 +72,7 @@ hybrid_retriever = HybridRetrieverChain(
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
+    pdfs_path=['./data/pdf/OpenSTA/OpenSTA_docs.py'],
 )
 hybrid_retriever.create_hybrid_retriever()
 hybrid_llm_chain = hybrid_retriever.get_llm_chain()
@@ -83,6 +84,7 @@ sim_retriever_chain = SimilarityRetrieverChain(
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
+    pdfs_path=['./data/pdf/OpenSTA/OpenSTA_docs.py'],
 )
 sim_retriever_chain.create_similarity_retriever()
 sim_llm_chain = sim_retriever_chain.get_llm_chain()
