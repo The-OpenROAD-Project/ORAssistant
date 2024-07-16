@@ -4,6 +4,7 @@ from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.docstore.document import Document
 
 from ..tools.process_md import process_md_docs, process_md_manpages
+from ..tools.process_pdf import process_pdf_docs
 from ..tools.process_json import generate_knowledge_base
 
 from typing import Optional
@@ -42,7 +43,7 @@ class FAISSVectorDatabase:
     def faiss_db(self) -> FAISS:
         return self._faiss_db
 
-    def process_md_docs(
+    def add_md_docs(
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
@@ -50,25 +51,28 @@ class FAISSVectorDatabase:
 
         docs_processed = []
 
-        for file_path in folder_paths:
+        for folder_path in folder_paths:
             if self.print_progress:
-                print(f'Processing [{file_path}]...')
-                docs_processed.extend(
-                    process_md_docs(
-                        embeddings_model_name=self.embeddings_model_name,
-                        files_path=file_path,
-                        chunk_size=chunk_size,
-                    )
+                print(f'Processing [{folder_path}]...')
+            docs_processed.extend(
+                process_md_docs(
+                    embeddings_model_name=self.embeddings_model_name,
+                    folder_path=folder_path,
+                    chunk_size=chunk_size,
                 )
+            )
 
-        self._faiss_db.add_documents(docs_processed)
+        if docs_processed:
+            self._faiss_db.add_documents(docs_processed)
+        else:
+            raise ValueError('No markdown documents processed.')
 
         if return_docs:
             return docs_processed
 
         return None
 
-    def process_md_manpages(
+    def add_md_manpages(
         self, folder_paths: list[str], return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
@@ -79,15 +83,39 @@ class FAISSVectorDatabase:
         for file_path in folder_paths:
             if self.print_progress:
                 print(f'Processing [{file_path}]...')
-                docs_processed.extend(
-                    process_md_manpages(
-                        files_path=file_path,
-                    )
+            docs_processed.extend(
+                process_md_manpages(
+                    folder_path=file_path,
                 )
+            )
 
-        # Only add if docs were processed
         if docs_processed:
             self._faiss_db.add_documents(docs_processed)
+        else:
+            raise ValueError('No manpages documents processed.')
+
+        if return_docs:
+            return docs_processed
+
+        return None
+
+    def add_pdf_docs(
+        self, file_paths: list[str], return_docs: bool = False
+    ) -> Optional[list[Document]]:
+        if self.print_progress:
+            print('Processing pdf docs...')
+
+        docs_processed = []
+
+        for file_path in file_paths:
+            if self.print_progress:
+                print(f'Processing [{file_path}]...')
+            docs_processed.extend(process_pdf_docs(file_path=file_path))
+
+        if docs_processed:
+            self._faiss_db.add_documents(docs_processed)
+        else:
+            raise ValueError('No PDF documents processed.')
 
         if return_docs:
             return docs_processed
