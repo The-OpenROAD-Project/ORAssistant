@@ -12,11 +12,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from .chunk_documents import chunk_documents
 
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=4000,
+    chunk_size=2000,
     chunk_overlap=200,
     length_function=len,
     is_separator_regex=False,
 )
+
 
 def md_to_text(md_content: str) -> str:
     html = md.markdown(md_content)
@@ -24,8 +25,8 @@ def md_to_text(md_content: str) -> str:
     return soup.get_text()
 
 
-def load_docs(files_path: str) -> list[Document]:
-    md_files = glob.glob(os.path.join(files_path, '**/*.md'), recursive=True)
+def load_docs(folder_path: str) -> list[Document]:
+    md_files = glob.glob(os.path.join(folder_path, '**/*.md'), recursive=True)
     documents = []
     for file_path in tqdm(md_files, desc='Loading Markdown files'):
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -36,20 +37,20 @@ def load_docs(files_path: str) -> list[Document]:
 
 
 def process_md_docs(
-    embeddings_model_name: str, files_path: str, chunk_size: int
+    embeddings_model_name: str, folder_path: str, chunk_size: int
 ) -> list[Document]:
     """
     For processing OR/ORFS docs
     """
     # if no files in the directory
-    if not os.path.exists(files_path) or not os.listdir(files_path):
-        print(f'{files_path} is not populated, returning empty list.')
+    if not os.path.exists(folder_path) or not os.listdir(folder_path):
+        print(f'{folder_path} is not populated, returning empty list.')
         return []
 
     with open('src/source_list.json') as f:
         src_dict = json.loads(f.read())
 
-    documents = load_docs(files_path=files_path)
+    documents = load_docs(folder_path=folder_path)
     documents = text_splitter.split_documents(documents)
 
     documents_knowledge_base = []
@@ -77,15 +78,15 @@ def process_md_docs(
     return docs_chunked
 
 
-def process_md_manpages(files_path: str) -> list[Document]:
+def process_md_manpages(folder_path: str) -> list[Document]:
     """
     For processing manpages
     """
     # if no files in the directory
-    if not os.path.exists(files_path) or not os.listdir(files_path):
-        print(f'{files_path} is not populated, returning empty list.')
+    if not os.path.exists(folder_path) or not os.listdir(folder_path):
+        print(f'{folder_path} is not populated, returning empty list.')
         return []
 
-    documents = load_docs(files_path=files_path)
+    documents = load_docs(folder_path=folder_path)
 
     return documents
