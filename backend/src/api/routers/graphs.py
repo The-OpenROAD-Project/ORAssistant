@@ -48,7 +48,7 @@ hf_reranker: str = str(os.getenv('HF_RERANKER'))
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 
 if os.getenv('GOOGLE_GEMINI') == '1_pro':
-    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)
+    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)  # type: ignore
 elif os.getenv('GOOGLE_GEMINI') == '1.5_flash':
     llm = ChatVertexAI(model_name='gemini-1.5-flash', temperature=llm_temp)
 elif os.getenv('GOOGLE_GEMINI') == '1.5_pro':
@@ -81,10 +81,40 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
     else:
         raise ValueError('RetrieverGraph not initialized.')
 
-    tool = list(output)[0]['agent']['tools'][0]['name']
-    context = output[1][tool]['context']
-    sources = output[1][tool]['sources']
-    llm_response = output[2]['generate']['messages'][0]
+    if (
+        isinstance(output, list)
+        and len(output) > 0
+        and 'agent' in output[0]
+        and 'tools' in output[0]['agent']
+        and len(output[0]['agent']['tools']) > 0
+    ):
+        tool = output[0]['agent']['tools'][0].get('name', '')
+    else:
+        print('Tool name extraction failed')
+
+    if tool and isinstance(output, list) and len(output) > 1 and tool in output[1]:
+        if 'context' in output[1][tool]:
+            context = output[1][tool].get('context', '')
+        else:
+            print('Context extraction failed')
+
+        if 'sources' in output[1][tool]:
+            sources = output[1][tool].get('sources', '')
+        else:
+            print('Sources extraction failed')
+
+    if (
+        isinstance(output, list)
+        and len(output) > 2
+        and 'generate' in output[2]
+        and 'messages' in output[2]['generate']
+        and len(output[2]['generate']['messages']) > 0
+    ):
+        llm_response = output[2]['generate']['messages'][0]
+    else:
+        print('LLM response extraction failed')
+
+    sources = list(set(sources))
 
     if user_input.list_sources and user_input.list_context:
         response = {
