@@ -7,8 +7,8 @@ import json
 from distutils.dir_util import copy_tree
 from shutil import copyfile
 
-source_dict = {}
-cur_dir = os.getcwd()
+source_dict: dict[str,str] = {}
+cur_dir: str = os.getcwd()
 
 
 def purge_folders(folder_paths: list[str]) -> None:
