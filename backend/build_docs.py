@@ -19,6 +19,7 @@ def purge_folders(folder_paths: list[str]) -> None:
 
 
 def update_source_dict(dir_path: str) -> None:
+    print(f'Updating source_dict for {dir_path}...')
     for root, _, files in os.walk(dir_path):
         for file in files:
             file_path = os.path.join(root, file)
@@ -190,6 +191,8 @@ if __name__ == '__main__':
     build_or_docs()
     build_orfs_docs()
     build_manpages()
+
+    os.chdir(cur_dir)
     get_opensta_docs()
 
     update_source_dict('data/markdown/OR_docs')
@@ -199,8 +202,6 @@ if __name__ == '__main__':
     update_source_dict('data/markdown/ORFS_docs/installation')
     update_source_dict('data/markdown/manpages')
     update_source_dict('data/pdf/OpenSTA')
-
-    os.chdir(cur_dir)
 
     repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
     purge_folders(folder_paths=repo_paths)
