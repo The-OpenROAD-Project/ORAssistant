@@ -43,8 +43,14 @@ def build_or_docs() -> None:
     os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
     subprocess.run('make html', shell=True, capture_output=True)
 
+    print('Copying OR docs...')
     os.chdir(cur_dir)
     md_or_docs = os.path.join(cur_dir, 'OpenROAD/docs/build/html/_sources')
+
+    if not os.path.isdir(md_or_docs):
+        print(f'Directory {md_or_docs} does not exist. Exiting.')
+        sys.exit(1)
+
     copy_tree(f'{md_or_docs}/user', f'{cur_dir}/data/markdown/OR_docs/installation')
     copy_tree(f'{md_or_docs}/main/src', f'{cur_dir}/data/markdown/OR_docs/tools')
     copy_tree(f'{md_or_docs}/tutorials', f'{cur_dir}/data/markdown/OR_docs')
@@ -66,10 +72,16 @@ def build_orfs_docs() -> None:
 
     subprocess.run('make html', shell=True, capture_output=True)
 
+    print('Copying ORFS docs...')
     os.chdir(cur_dir)
     md_orfs_docs = os.path.join(
         cur_dir, 'OpenROAD-flow-scripts/docs/build/html/_sources'
     )
+
+    if not os.path.isdir(md_orfs_docs):
+        print(f'Directory {md_orfs_docs} does not exist. Exiting.')
+        sys.exit(1)
+
     copy_tree(f'{md_orfs_docs}/tutorials', f'{cur_dir}/data/markdown/ORFS_docs')
     copy_tree(f'{md_orfs_docs}/contrib', f'{cur_dir}/data/markdown/ORFS_docs')
 
