@@ -9,7 +9,7 @@ RUN pip install --upgrade -r /ORAssistant-backend/requirements.txt
 COPY . .
 
 # Prereqs
-RUN apt-get update && apt-get install -y pandoc git
+RUN apt-get update && apt-get install -y pandoc git make
 
 RUN python /ORAssistant-backend/build_docs.py 
 
