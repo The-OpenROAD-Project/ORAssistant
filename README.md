@@ -9,7 +9,7 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 ## Use Cases
 
 - **Installation and Troubleshooting Assistance:** The chatbot will provide users with quick and accurate solutions to common installation issues and troubleshooting steps.
-- **Easy Access to Existing Resources:** The chatbot will be able to summarizing relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
+- **Easy Access to Existing Resources:** The chatbot will be able to summarize relevant information from OpenROAD documentation, user guides, and online resources to provide concise and actionable answers to user queries.
 
 ## Components
 
