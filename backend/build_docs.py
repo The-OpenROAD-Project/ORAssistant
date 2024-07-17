@@ -4,7 +4,7 @@ import requests
 import sys
 import shutil
 import json
-from distutils.dir_util import copy_tree  # type: ignore
+from distutils.dir_util import copy_tree
 from shutil import copyfile
 
 source_dict = {}

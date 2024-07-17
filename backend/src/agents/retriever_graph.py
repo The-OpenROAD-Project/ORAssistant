@@ -61,9 +61,9 @@ class RetrieverGraph:
             self.retriever_agent.retrieve_install,
             self.retriever_agent.retrieve_general,
             self.retriever_agent.retrieve_opensta,
-        ])  # type: ignore
+        ])
 
-        response = model.invoke(messages)  # type: ignore
+        response = model.invoke(messages)
 
         if response is None or response.tool_calls is None:  # type: ignore
             return {'tools': []}
