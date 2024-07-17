@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The OpenROAD chat assistant aims to provide easy and quick access to information regarding tools, responses to questions and commonly occurring problems in OpenROAD and its native flow-OpenROAD-flow-scripts.
+The OpenROAD chat assistant aims to provide easy and quick access to information regarding tools, responses to questions and commonly occurring problems in OpenROAD and its native flow OpenROAD-flow-scripts.
 
 The current architecture uses certain retrieval techniques on OpenROAD documentation and other online data sources. We aim to continuously improve the architecture and the associated the dataset to improve accuracy, coverage and robustness.
 
@@ -23,10 +23,6 @@ We have divided our app into three components, each of which can be hosted on a 
 This setup involves the setting of both the frontend and backend components. We shall begin with backend: 
 
 ### Backend Setup
-
-#### Building Manpages
-
-Build manpages as per the instructions [here](https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs). Place the markdown files in `backend/data/markdown/manpages` before proceeding.
 
 #### Option 1 - Docker
 
@@ -53,13 +49,13 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 
 #### Option 2 - Local Install
 
-- Prerequisites: Python 3.12, recommended to use a virtual environment like `conda`.
+- Prerequisites: Python 3.12, recommended using a virtual environment like `conda`.
 - **Step 1**: `pip install -r backend/requirements.txt`
 - **Step 2**: Copy the `.env.example` file as shown above.
 - **Step 3**: To scrape OR/ORFS docs and populate the `data` folder, run:
 
 ```bash
-  cd backend && python scrape_docs.py
+  cd backend && python build_docs.py
 ```
 
 - **Step 4**: To run the server:
@@ -67,11 +63,15 @@ Ensure you have `docker` and `docker-compose` installed in your system.
   python main.py
 ```
 
+The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
+
+Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
+
 ### Frontend Setup
 
 **Note**: Please refer to the frontend [README](./frontend/README.md) for more detailed instructions.
 
-- **Step 1**: Setup the `.env` as per the instructions in the frontend [README](./frontend/README.md). Get the [Google Sheet API Key](https://developers.google.com/sheets/api/guides/concepts)
+- **Step 1**: Set up the `.env` as per the instructions in the frontend [README](./frontend/README.md). Get the [Google Sheet API Key](https://developers.google.com/sheets/api/guides/concepts)
 ```bash
 cd frontend
 cp .env.example .env
@@ -89,21 +89,9 @@ streamlit run streamlit_app.py
 
 ## Architecture Overview
 
-OpenROAD manpages, OpenROAD documentation and OpenROAD-flow-scripts documentation is chunked and embedded into FAISS Vector Databases.  
+OpenROAD documentation, OpenROAD-flow-scripts documentation, manpages and OpenSTA documentation is chunked and embedded into FAISS Vector Databases.  
 
-Currently, there are three seperate retrievers, each for answering queries about 
-1. OR/ORFS installation
-2. OR tools and commands
-3. General information
-
-The retrievers act a seperate tools and can be accessed by the LLM's tool-calling capabilities.
-
-Upon recieveing a query, 
-
-Documents are first retrieved from the vectorstore using a hybrid retriever, combining vector and semantic search methods. These retrieved documents undergo reranking using a cross-encoder reranker model.
-
-Then top-n documents from the reranked set are then sent to the LLM as input context, for generating a response.
-
+Documents are first retrieved from the vectorstore using a hybrid retriever, combining vector and semantic search methods. These retrieved documents undergo re-ranking using a cross-encoder re-ranker model.
 ```mermaid
 flowchart LR
     id0([Query]) --> id1
@@ -116,14 +104,33 @@ flowchart LR
     id3([MMR Retriever]) -- Retrieved Docs ---> id5([Reranking])
     id4([BM25 Retriever]) -- Retrieved Docs ---> id5([Reranking])
 
-    id5([Reranking]) -- top-n docs --> id6([LLM])
+    id5([Reranking]) ---> id6(top-n docs)
  
+``` 
+
+Currently, there are four separate retrievers, each for answering queries about 
+1. OR/ORFS installation
+2. OR tools and commands
+3. OpenSTA tools and commands
+4. General information
+
+The retrievers act a separate tools and can be accessed by the LLM's tool-calling capabilities.
+
+The `langgraph` framework has been used to make effective use of the multiple retriever tools. Upon receiving a query, a routing LLM call classifies the query and forwards it to the corresponding retriever tool. Relevant documents are the queried from the vectorstore by the tool and sent to the LLM for response generation.
+
+```mermaid
+graph TD
+    __start__ --> router_agent
+    router_agent -.-> retrieve_cmds
+    router_agent -.-> retrieve_general
+    router_agent -.-> retrieve_install
+    router_agent -.-> retrieve_opensta
+    retrieve_cmds --> generate
+    retrieve_general --> generate
+    retrieve_install --> generate
+    retrieve_opensta --> generate
+    generate --> __end__
 ```
-
-The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
-
-Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
-
 
 ## Tests
 
