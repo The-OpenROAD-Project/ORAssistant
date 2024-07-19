@@ -34,7 +34,7 @@ class RetrieverAgent:
             embeddings_model_name=embeddings_model_name,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            pdfs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+            other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
             contextual_rerank=True,
             search_k=10,
         )

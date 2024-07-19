@@ -16,6 +16,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
+        other_docs_path: Optional[list[str]] = None,
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
@@ -26,6 +27,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
             embeddings_model_name=embeddings_model_name,
             docs_path=docs_path,
             manpages_path=manpages_path,
+            other_docs_path=other_docs_path,
             chunk_size=chunk_size,
             use_cuda=use_cuda,
         )
@@ -39,7 +41,7 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
     ) -> None:
         if embedded_docs is None:
             super().create_vector_db()
-            processed_docs, processed_manpages, processed_pdfs = super().embed_docs(
+            processed_docs, processed_manpages, processed_other_docs = super().embed_docs(
                 return_docs=True
             )
 
@@ -48,8 +50,8 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
                 embedded_docs += processed_docs
             if processed_manpages is not None:
                 embedded_docs += processed_manpages
-            if processed_pdfs is not None:
-                embedded_docs += processed_pdfs
+            if processed_other_docs is not None:
+                embedded_docs += processed_other_docs
 
         self.retriever = BM25Retriever.from_documents(
             documents=embedded_docs, search_kwargs={'k': search_k}

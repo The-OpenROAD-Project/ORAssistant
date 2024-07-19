@@ -72,7 +72,7 @@ hybrid_retriever = HybridRetrieverChain(
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
-    pdfs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
 hybrid_retriever.create_hybrid_retriever()
 hybrid_llm_chain = hybrid_retriever.get_llm_chain()
@@ -84,7 +84,7 @@ sim_retriever_chain = SimilarityRetrieverChain(
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
-    pdfs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
 sim_retriever_chain.create_similarity_retriever()
 sim_llm_chain = sim_retriever_chain.get_llm_chain()

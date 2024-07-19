@@ -30,7 +30,7 @@ class HybridRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        pdfs_path: Optional[list[str]] = None,
+        other_docs_path: Optional[list[str]] = None,
         reranking_model_name: Optional[str] = None,
         use_cuda: bool = False,
         search_k: int = 5,
@@ -51,7 +51,7 @@ class HybridRetrieverChain(BaseChain):
 
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
-        self.pdfs_path: Optional[list[str]] = pdfs_path
+        self.other_docs_path: Optional[list[str]] = other_docs_path
 
         self.chunk_size: int = chunk_size
 
@@ -67,7 +67,7 @@ class HybridRetrieverChain(BaseChain):
             embeddings_model_name=self.embeddings_model_name,
             docs_path=self.docs_path,
             manpages_path=self.manpages_path,
-            pdfs_path=self.pdfs_path,
+            other_docs_path=self.other_docs_path,
             chunk_size=self.chunk_size,
         )
 
@@ -152,7 +152,7 @@ if __name__ == '__main__':
         use_cuda=True,
         docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
         manpages_path=['./data/markdown/manpages'],
-        pdfs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+        other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
     )
     hybrid_retriever_chain.create_hybrid_retriever()
     retriever_chain = hybrid_retriever_chain.get_llm_chain()

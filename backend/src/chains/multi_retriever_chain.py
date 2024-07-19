@@ -20,11 +20,11 @@ class MultiRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        pdfs_path: Optional[list[str]] = None,
+        other_docs_path: Optional[list[str]] = None,
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
         search_k: list[int] = [5, 5, 5],
-        weights: list[float] = [0.4, 0.4, 0.1],
+        weights: list[float] = [0.4, 0.4, 0.2],
         chunk_size: int = 500,
     ):
         super().__init__(
@@ -40,7 +40,7 @@ class MultiRetrieverChain(BaseChain):
         self.chunk_size: int = chunk_size
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
-        self.pdfs_path: Optional[list[str]] = pdfs_path
+        self.other_docs_path: Optional[list[str]] = other_docs_path
 
         self.retriever: Optional[EnsembleRetriever] = None
 
@@ -71,7 +71,7 @@ class MultiRetrieverChain(BaseChain):
             llm_model=None,
             prompt_template_str=None,
             embeddings_model_name=self.embeddings_model_name,
-            pdfs_path=self.pdfs_path,
+            other_docs_path=self.other_docs_path,
             chunk_size=self.chunk_size,
         )
         pdfs_similarity_retriever_chain.embed_docs(return_docs=False)

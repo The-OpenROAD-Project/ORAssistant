@@ -17,7 +17,7 @@ class SimilarityRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        pdfs_path: Optional[list[str]] = None,
+        other_docs_path: Optional[list[str]] = None,
         embeddings_model_name: Optional[str] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
@@ -31,8 +31,8 @@ class SimilarityRetrieverChain(BaseChain):
         self.use_cuda: bool = use_cuda
 
         self.docs_path: Optional[list[str]] = docs_path
+        self.other_docs_path: Optional[list[str]] = other_docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
-        self.pdfs_path: Optional[list[str]] = pdfs_path
 
         self.chunk_size: int = chunk_size
 
@@ -64,11 +64,15 @@ class SimilarityRetrieverChain(BaseChain):
                 folder_paths=self.manpages_path, return_docs=return_docs
             )
 
-        if self.pdfs_path is not None and self.vector_db is not None:
-            self.processed_pdfs = self.vector_db.add_pdf_docs(
-                file_paths=self.pdfs_path, return_docs=return_docs
-            )
-
+        if self.other_docs_path is not None and self.vector_db is not None:
+            for other_docs_path in self.other_docs_path:
+                if other_docs_path.endswith('.pdf'):
+                    self.processed_pdfs = self.vector_db.add_documents(
+                        file_paths=[other_docs_path], file_type="pdf", return_docs=return_docs
+                    )
+                else:
+                    raise ValueError('File type not supported.')
+                
         return self.processed_docs, self.processed_manpages, self.processed_pdfs
 
     def create_vector_db(self) -> None:
