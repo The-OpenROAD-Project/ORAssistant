@@ -7,6 +7,8 @@ import json
 from distutils.dir_util import copy_tree
 from shutil import copyfile
 
+from typing import Optional
+
 source_dict: dict[str,str] = {}
 cur_dir: str = os.getcwd()
 
@@ -27,7 +29,7 @@ def update_source_dict(dir_path: str) -> None:
             source_dict[file_path] = file_name
 
 
-def clone_repo(url: str, folder_name: str) -> None:
+def clone_repo(url: str, folder_name: str, commit_hash:Optional[str] = None) -> None:
     target_dir = os.path.join(cur_dir, folder_name)
     print(f'Cloning repo from {url} to {target_dir}...')
     command = f'git clone {url} --depth 1 {target_dir}'
@@ -35,6 +37,13 @@ def clone_repo(url: str, folder_name: str) -> None:
     if res.returncode != 0:
         print(f"Error in cloning repo: {res.stderr.decode('utf-8')}")
         sys.exit(1)
+    if commit_hash:
+        os.chdir(target_dir)
+        command = f'git checkout {commit_hash}'
+        res = subprocess.run(command, shell=True, capture_output=True)
+        if res.returncode != 0:
+            print(f"Error in checking out commit hash: {res.stderr.decode('utf-8')}")
+            sys.exit(1)
     print('Cloned repo successfully.')
 
 
@@ -86,11 +95,7 @@ def build_orfs_docs() -> None:
     copy_tree(f'{md_orfs_docs}/tutorials', f'{cur_dir}/data/markdown/ORFS_docs')
     copy_tree(f'{md_orfs_docs}/contrib', f'{cur_dir}/data/markdown/ORFS_docs')
 
-    for file in os.listdir(f'{md_orfs_docs}'):
-        if file.endswith('.md'):
-            copyfile(
-                f'{md_orfs_docs}/{file}', f'{cur_dir}/data/markdown/ORFS_docs/{file}'
-            )
+    os.makedirs(f'{cur_dir}/data/markdown/ORFS_docs/installation', exist_ok=True)
 
     for file in os.listdir(f'{md_orfs_docs}/user'):
         if file.endswith('.md'):
@@ -105,6 +110,11 @@ def build_orfs_docs() -> None:
                     f'{cur_dir}/data/markdown/ORFS_docs/{file}',
                 )
 
+    for file in os.listdir(f'{md_orfs_docs}'):
+        if file.endswith('.md'):
+            copyfile(
+                f'{md_orfs_docs}/{file}', f'{cur_dir}/data/markdown/ORFS_docs/{file}'
+            )
     print('Finished building ORFS docs.')
 
     return
@@ -173,10 +183,12 @@ if __name__ == '__main__':
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
+        commit_hash='d48987e36206795f5790e2f48b2e69a03d9029d4',
         folder_name='OpenROAD',
     )
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
+        commit_hash='3395328e1dd9952de67871f6c4d5963788082fcc',
         folder_name='OpenROAD-flow-scripts',
     )
 
@@ -185,7 +197,6 @@ if __name__ == '__main__':
     os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
 
     build_or_docs()
