@@ -88,7 +88,7 @@ class RetrieverGraph:
     def route(self, state: AgentState) -> list[str]:
         tools = state['tools']
 
-        if not tools:
+        if tools == []:
             return ['retrieve_general']
 
         tool_names = [tool['name'] for tool in tools if 'name' in tool]  # type: ignore

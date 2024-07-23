@@ -81,27 +81,8 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
     else:
         raise ValueError('RetrieverGraph not initialized.')
 
-    if (
-        isinstance(output, list)
-        and len(output) > 0
-        and 'agent' in output[0]
-        and 'tools' in output[0]['agent']
-        and len(output[0]['agent']['tools']) > 0
-    ):
-        tool = output[0]['agent']['tools'][0].get('name', '')
-    else:
-        print('Tool name extraction failed')
-
-    if tool and isinstance(output, list) and len(output) > 1 and tool in output[1]:
-        if 'context' in output[1][tool]:
-            context = output[1][tool].get('context', '')
-        else:
-            print('Context extraction failed')
-
-        if 'sources' in output[1][tool]:
-            sources = output[1][tool].get('sources', '')
-        else:
-            print('Sources extraction failed')
+    sources = []
+    context = []
 
     if (
         isinstance(output, list)
