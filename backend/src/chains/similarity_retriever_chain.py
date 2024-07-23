@@ -68,11 +68,13 @@ class SimilarityRetrieverChain(BaseChain):
             for other_docs_path in self.other_docs_path:
                 if other_docs_path.endswith('.pdf'):
                     self.processed_pdfs = self.vector_db.add_documents(
-                        file_paths=[other_docs_path], file_type="pdf", return_docs=return_docs
+                        file_paths=[other_docs_path],
+                        file_type='pdf',
+                        return_docs=return_docs,
                     )
                 else:
                     raise ValueError('File type not supported.')
-                
+
         return self.processed_docs, self.processed_manpages, self.processed_pdfs
 
     def create_vector_db(self) -> None:

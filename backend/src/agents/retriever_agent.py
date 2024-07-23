@@ -134,7 +134,7 @@ class RetrieverAgent:
             Parasitics Extraction
             Restructure
             Gate Resizer
-            Rectilinear Steiner Tree 
+            Rectilinear Steiner Tree
             TapCell
             Read Unified Power Format
             Utilities
@@ -185,7 +185,7 @@ class RetrieverAgent:
     @tool
     def retrieve_opensta(query: str) -> Tuple[str, list[str]]:
         """
-        The OpenSTA Information Retriever tool is designed to provide detailed and comprehensive information about OpenSTA and its various commands. 
+        The OpenSTA Information Retriever tool is designed to provide detailed and comprehensive information about OpenSTA and its various commands.
         This tool aids users by offering clear, accurate, and relevant details, helping them effectively utilize OpenSTA for their timing analysis needs. The tool covers the following aspects:
 
         Command Line Arguments: Detailed information about the different command line arguments that can be used with OpenSTA.

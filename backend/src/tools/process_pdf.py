@@ -8,8 +8,8 @@ import os
 
 load_dotenv()
 
-chunk_size:int = int(os.getenv('CHUNK_SIZE', 4000))
-chunk_overlap:int = int(os.getenv('CHUNK_OVERLAP', 400))
+chunk_size: int = int(os.getenv('CHUNK_SIZE', 4000))
+chunk_overlap: int = int(os.getenv('CHUNK_OVERLAP', 400))
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=chunk_size,

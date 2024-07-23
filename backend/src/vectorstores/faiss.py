@@ -100,7 +100,7 @@ class FAISSVectorDatabase:
         return None
 
     def add_documents(
-        self, file_paths: list[str], file_type: str ,return_docs: bool = False
+        self, file_paths: list[str], file_type: str, return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
             print('Processing docs...')
@@ -114,7 +114,7 @@ class FAISSVectorDatabase:
                 docs_processed.extend(process_pdf_docs(file_path=file_path))
             else:
                 raise ValueError('File type not supported.')
-            
+
         if docs_processed:
             self._faiss_db.add_documents(docs_processed)
         else:

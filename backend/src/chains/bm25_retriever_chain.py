@@ -41,8 +41,8 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
     ) -> None:
         if embedded_docs is None:
             super().create_vector_db()
-            processed_docs, processed_manpages, processed_other_docs = super().embed_docs(
-                return_docs=True
+            processed_docs, processed_manpages, processed_other_docs = (
+                super().embed_docs(return_docs=True)
             )
 
             embedded_docs = []

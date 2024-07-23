@@ -9,7 +9,7 @@ from shutil import copyfile
 
 from typing import Optional
 
-source_dict: dict[str,str] = {}
+source_dict: dict[str, str] = {}
 cur_dir: str = os.getcwd()
 
 
@@ -29,7 +29,7 @@ def update_source_dict(dir_path: str) -> None:
             source_dict[file_path] = file_name
 
 
-def clone_repo(url: str, folder_name: str, commit_hash:Optional[str] = None) -> None:
+def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) -> None:
     target_dir = os.path.join(cur_dir, folder_name)
     print(f'Cloning repo from {url} to {target_dir}...')
     command = f'git clone {url} --depth 1 {target_dir}'

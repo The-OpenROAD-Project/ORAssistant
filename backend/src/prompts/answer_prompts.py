@@ -24,4 +24,3 @@ Provide a structured, detailed and informative answer to this following question
 {question}
 
 """
-
