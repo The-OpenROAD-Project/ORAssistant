@@ -4,11 +4,13 @@ import requests
 import sys
 import shutil
 import json
+
 from distutils.dir_util import copy_tree
 from shutil import copyfile
-
+from dotenv import load_dotenv
 from typing import Optional
 
+load_dotenv()
 source_dict: dict[str, str] = {}
 cur_dir: str = os.getcwd()
 
@@ -39,7 +41,7 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
         sys.exit(1)
     if commit_hash:
         os.chdir(target_dir)
-        command = f'git checkout {commit_hash}'
+        command = f'git fetch origin {commit_hash} && git checkout {commit_hash}'
         res = subprocess.run(command, shell=True, capture_output=True)
         if res.returncode != 0:
             print(f"Error in checking out commit hash: {res.stderr.decode('utf-8')}")
@@ -183,12 +185,12 @@ if __name__ == '__main__':
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
-        commit_hash='d48987e36206795f5790e2f48b2e69a03d9029d4',
+        commit_hash=os.getenv('OR_REPO_COMMIT','ffc5760f2df639cd184c40ceba253c7e02a006d5'),
         folder_name='OpenROAD',
     )
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
-        commit_hash='3395328e1dd9952de67871f6c4d5963788082fcc',
+        commit_hash=os.getenv('ORFS_REPO_COMMIT','b94834df01cb58915bc0e8dabf85a314fbd8fb9e'),
         folder_name='OpenROAD-flow-scripts',
     )
 
