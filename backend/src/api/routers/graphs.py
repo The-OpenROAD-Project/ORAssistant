@@ -81,8 +81,8 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
     else:
         raise ValueError('RetrieverGraph not initialized.')
 
-    sources = []
-    context = []
+    sources: list[str] = []
+    context: list[str] = []
 
     if (
         isinstance(output, list)
