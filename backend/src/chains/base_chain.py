@@ -1,5 +1,3 @@
-from dotenv import load_dotenv
-
 from langchain.prompts import ChatPromptTemplate
 
 from langchain_core.output_parsers import StrOutputParser
@@ -28,21 +26,3 @@ class BaseChain:
         if self.llm_chain is None:
             self.create_llm_chain()
         return self.llm_chain
-
-
-if __name__ == '__main__':
-    load_dotenv()
-    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=1)
-    prompt_template_str = """
-    Give a detailed answer to this question: 
-    {question}
-    """
-
-    basechain = BaseChain(llm_model=llm, prompt_template_str=prompt_template_str)
-
-    basechain_llmchain = basechain.llm_chain
-
-    while True:
-        user_question = input('\n\nAsk a question: ')
-        result = basechain_llmchain.invoke(user_question)
-        print(result)

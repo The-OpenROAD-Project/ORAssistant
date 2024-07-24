@@ -10,7 +10,6 @@ from langgraph.graph.message import add_messages
 from ..chains.base_chain import BaseChain
 from ..prompts.answer_prompts import summarise_prompt_template
 
-
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -61,7 +60,9 @@ class RetrieverGraph:
             self.retriever_agent.retrieve_cmds,
             self.retriever_agent.retrieve_install,
             self.retriever_agent.retrieve_general,
+            self.retriever_agent.retrieve_opensta,
         ])
+
         response = model.invoke(messages)
 
         if response is None or response.tool_calls is None:  # type: ignore
@@ -87,7 +88,7 @@ class RetrieverGraph:
     def route(self, state: AgentState) -> list[str]:
         tools = state['tools']
 
-        if not tools:
+        if tools == []:
             return ['retrieve_general']
 
         tool_names = [tool['name'] for tool in tools if 'name' in tool]  # type: ignore
@@ -100,6 +101,7 @@ class RetrieverGraph:
         commands = ToolNode(self.retriever_agent.retrieve_cmds)
         install = ToolNode(self.retriever_agent.retrieve_install)
         general = ToolNode(self.retriever_agent.retrieve_general)
+        opensta = ToolNode(self.retriever_agent.retrieve_opensta)
 
         workflow.add_node('agent', self.agent)
         workflow.add_node('generate', self.generate)
@@ -107,17 +109,24 @@ class RetrieverGraph:
         workflow.add_node('retrieve_cmds', commands.get_node)
         workflow.add_node('retrieve_install', install.get_node)
         workflow.add_node('retrieve_general', general.get_node)
+        workflow.add_node('retrieve_opensta', opensta.get_node)
 
         workflow.add_edge(START, 'agent')
         workflow.add_conditional_edges(
             'agent',
             self.route,  # type: ignore
-            ['retrieve_cmds', 'retrieve_install', 'retrieve_general'],
+            [
+                'retrieve_cmds',
+                'retrieve_install',
+                'retrieve_general',
+                'retrieve_opensta',
+            ],
         )
 
         workflow.add_edge('retrieve_cmds', 'generate')
         workflow.add_edge('retrieve_install', 'generate')
         workflow.add_edge('retrieve_general', 'generate')
+        workflow.add_edge('retrieve_opensta', 'generate')
 
         workflow.add_edge('generate', END)
 

@@ -53,7 +53,7 @@ hf_reranker: str = str(os.getenv('HF_RERANKER'))
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
 
 if os.getenv('GOOGLE_GEMINI') == '1_pro':
-    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)
+    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)  # type: ignore
 elif os.getenv('GOOGLE_GEMINI') == '1.5_flash':
     llm = ChatVertexAI(model_name='gemini-1.5-flash', temperature=llm_temp)
 elif os.getenv('GOOGLE_GEMINI') == '1.5_pro':
@@ -63,7 +63,7 @@ else:
 
 router = APIRouter(prefix='/chains', tags=['chains'])
 
-hybrid_retriever = HybridRetrieverChain(
+hybrid_retriever_chain = HybridRetrieverChain(
     llm_model=llm,
     prompt_template_str=summarise_prompt_template,
     embeddings_model_name=hf_embdeddings,
@@ -72,9 +72,11 @@ hybrid_retriever = HybridRetrieverChain(
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
+    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
-hybrid_retriever.create_hybrid_retriever()
-hybrid_llm_chain = hybrid_retriever.get_llm_chain()
+hybrid_retriever_chain.create_hybrid_retriever()
+hybrid_retriever = hybrid_retriever_chain.retriever
+hybrid_llm_chain = hybrid_retriever_chain.get_llm_chain()
 
 sim_retriever_chain = SimilarityRetrieverChain(
     llm_model=llm,
@@ -83,6 +85,7 @@ sim_retriever_chain = SimilarityRetrieverChain(
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
+    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
 sim_retriever_chain.create_similarity_retriever()
 sim_llm_chain = sim_retriever_chain.get_llm_chain()
@@ -138,6 +141,60 @@ async def get_hybrid_response(user_input: UserInput) -> dict[str, Any]:
         response = {'response': result['answer'], 'context': (context)}
     else:
         response = {'response': result['answer']}
+
+    return response
+
+
+@router.post('/hybrid/get_chunks')
+async def get_hybrid_chunks(user_input: UserInput) -> dict[str, Any]:
+    user_question = user_input.query
+    print(user_question)
+    if hybrid_retriever is not None:
+        doc_chunks = hybrid_retriever.invoke(input='placement')
+        response = {
+            'response': [
+                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
+                for doc in doc_chunks
+            ]
+        }
+    else:
+        raise ValueError('Hybrid retriever not initialized')
+
+    return response
+
+
+@router.post('/sim/get_chunks')
+async def get_sim_chunks(user_input: UserInput) -> dict[str, Any]:
+    user_question = user_input.query
+
+    if sim_retriever_chain.retriever is not None:
+        doc_chunks = sim_retriever_chain.retriever.invoke(input=user_question)
+        response = {
+            'response': [
+                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
+                for doc in doc_chunks
+            ]
+        }
+    else:
+        raise ValueError('Similarity retriever not initialized')
+
+    return response
+
+
+@router.post('/ensemble/get_chunks')
+async def get_ensemble_chunks(user_input: UserInput) -> dict[str, Any]:
+    user_question = user_input.query
+
+    if multi_retriever_chain.retriever is not None:
+        doc_chunks = multi_retriever_chain.retriever.invoke(input=user_question)
+        response = {
+            'response': [
+                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
+                for doc in doc_chunks
+            ]
+        }
+    else:
+        raise ValueError('Ensemble retriever not initialized')
 
     return response
 

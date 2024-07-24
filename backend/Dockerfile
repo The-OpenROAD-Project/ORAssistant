@@ -11,7 +11,9 @@ COPY . .
 # Prereqs
 RUN apt-get update && apt-get install -y pandoc git
 
-RUN python /ORAssistant-backend/scrape_docs.py 
+RUN if ! command -v make &> /dev/null; then apt-get install -y make; fi
+
+RUN python /ORAssistant-backend/build_docs.py
 
 EXPOSE 8000
 
