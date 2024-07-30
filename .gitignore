@@ -9,6 +9,7 @@ evaluation/human_evaluation/*.json
 venv/
 .ruff_cache/
 .mypy_cache/
+.vscode/
 
 # docs
 documents.txt
