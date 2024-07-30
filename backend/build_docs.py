@@ -185,12 +185,16 @@ if __name__ == '__main__':
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
-        commit_hash=os.getenv('OR_REPO_COMMIT','ffc5760f2df639cd184c40ceba253c7e02a006d5'),
+        commit_hash=os.getenv(
+            'OR_REPO_COMMIT', 'ffc5760f2df639cd184c40ceba253c7e02a006d5'
+        ),
         folder_name='OpenROAD',
     )
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
-        commit_hash=os.getenv('ORFS_REPO_COMMIT','b94834df01cb58915bc0e8dabf85a314fbd8fb9e'),
+        commit_hash=os.getenv(
+            'ORFS_REPO_COMMIT', 'b94834df01cb58915bc0e8dabf85a314fbd8fb9e'
+        ),
         folder_name='OpenROAD-flow-scripts',
     )
 
