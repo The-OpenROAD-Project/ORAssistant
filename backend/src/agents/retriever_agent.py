@@ -23,15 +23,18 @@ class RetrieverAgent:
     commands_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
+    errinfo_retriever: Optional[
+        Union[EnsembleRetriever, ContextualCompressionRetriever]
+    ]
 
     def initialize(
         self,
-        embeddings_model_name: str,
+        embeddings_config: dict[str, str],
         reranking_model_name: str,
         use_cuda: bool = False,
     ) -> None:
         opensta_retriever_chain = HybridRetrieverChain(
-            embeddings_model_name=embeddings_model_name,
+            embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
@@ -42,7 +45,7 @@ class RetrieverAgent:
         RetrieverAgent.opensta_retriever = opensta_retriever_chain.retriever
 
         install_retriever_chain = HybridRetrieverChain(
-            embeddings_model_name=embeddings_model_name,
+            embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             docs_path=[
@@ -56,11 +59,14 @@ class RetrieverAgent:
         RetrieverAgent.install_retriever = install_retriever_chain.retriever
 
         commands_retriever_chain = HybridRetrieverChain(
-            embeddings_model_name=embeddings_model_name,
+            embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             docs_path=['./data/markdown/OR_docs/tools'],
-            manpages_path=['./data/markdown/manpages'],
+            manpages_path=[
+                './data/markdown/manpages/man1',
+                './data/markdown/manpages/man2',
+            ],
             contextual_rerank=True,
             search_k=10,
         )
@@ -68,19 +74,33 @@ class RetrieverAgent:
         RetrieverAgent.commands_retriever = commands_retriever_chain.retriever
 
         general_retriever_chain = HybridRetrieverChain(
-            embeddings_model_name=embeddings_model_name,
+            embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             docs_path=[
                 './data/markdown/ORFS_docs',
                 './data/markdown/OR_docs',
             ],
-            manpages_path=['./data/markdown/manpages'],
+            manpages_path=[
+                './data/markdown/manpages/man1',
+                './data/markdown/manpages/man2',
+            ],
             contextual_rerank=True,
             search_k=10,
         )
         general_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.general_retriever = general_retriever_chain.retriever
+
+        errinfo_retriever_chain = HybridRetrieverChain(
+            embeddings_config=embeddings_config,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            docs_path=['./data/markdown/manpages/man3'],
+            contextual_rerank=True,
+            search_k=10,
+        )
+        errinfo_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.errinfo_retriever = errinfo_retriever_chain.retriever
 
     @staticmethod
     @tool
@@ -109,35 +129,36 @@ class RetrieverAgent:
     @tool
     def retrieve_cmds(query: str) -> Tuple[str, list[str]]:
         """
-        The Command Retriever Tool is designed to provide detailed and comprehensive information on the commands and tools available in the OpenROAD project and OpenROAD-Flow-Scripts. This includes descriptions, usage guidelines, command syntax, examples, and best practices. The tool assists users by delivering clear, accurate, and relevant details to help them effectively utilize the following commands and tools within OpenROAD and OpenROAD-Flow-Scripts:
+        The Command Retriever Tool is designed to provide detailed and comprehensive information on the commands and tools available in the OpenROAD project and OpenROAD-Flow-Scripts. This includes descriptions, usage guidelines, command syntax, examples, and best practices.
+        The tool assists users by delivering clear, accurate, and relevant details to help them effectively utilize the following commands and tools within OpenROAD and OpenROAD-Flow-Scripts:
 
-            Antenna Rule Checker
-            Clock Tree Synthesis
-            Design For Testing
-            Detailed Placement
-            Detailed Routing
-            Metal Fill
-            Floorplanning
-            Global Placement
-            Global Routing
-            Graphical User Interface
-            Initialize Floorplan
-            Macro Placement
-            Hierarchical Macro Placement
-            OpenDB
+            Antenna Rule Checker (ANT)
+            Clock Tree Synthesis (CTS)
+            Design For Testing (DFT)
+            Detailed Placement (DPL)
+            Detailed Routing (DRT)
+            Metal Fill (FIN)
+            Global Floorplanning
+            Global Placement (GPL)
+            Global Routing (GRT)
+            Graphical User Interface (GUI)
+            Initialize Floorplan (IFP)
+            Macro Placement (MPL)
+            Hierarchical Macro Placement (MPL)
+            OpenDB (ODB)
             Chip-level Connections
-            Pad
-            Partition Manager
-            Power Distribution Network
-            Pin Placement
-            IR Drop Analysis
-            Parasitics Extraction
-            Restructure
-            Gate Resizer
-            Rectilinear Steiner Tree
-            TapCell
-            Read Unified Power Format
-            Utilities
+            Pad (PAD)
+            Partition Manager (PAR)
+            Power Distribution Network (PDN)
+            Pin Placement (PPL)
+            IR Drop Analysis (PSM)
+            Parasitics Extraction (RSX)
+            Restructure (RMP)
+            Gate Resizer (RSZ)
+            Rectilinear Steiner Tree (STT)
+            TapCell (TAP)
+            Read Unified Power Format (UPF)
+            Utilities (UTL)
 
         This tool aims to be an essential resource for users, providing all necessary information to maximize their productivity and efficiency when working with OpenROAD and OpenROAD-Flow-Scripts.
         """
@@ -202,6 +223,29 @@ class RetrieverAgent:
         """
         if RetrieverAgent.opensta_retriever is not None:
             docs = RetrieverAgent.opensta_retriever.invoke(input=query)
+
+        doc_text = ''
+        doc_srcs = []
+        for doc in docs:
+            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
+            if 'url' in doc.metadata:
+                doc_srcs.append(doc.metadata['url'])
+            elif 'source' in doc.metadata:
+                doc_srcs.append(doc.metadata['source'])
+
+        return doc_text, doc_srcs
+
+    @staticmethod
+    @tool
+    def retrieve_errinfo(query: str) -> Tuple[str, list[str]]:
+        """
+        Retrieve descriptions and details regarding the various warning/error messages encountered while using the OpenROAD.
+        An error code usually is identified by the tool, followed by a number.
+        Examples: ANT-0001, CTS-0014 etc.
+        """
+
+        if RetrieverAgent.errinfo_retriever is not None:
+            docs = RetrieverAgent.errinfo_retriever.invoke(input=query)
 
         doc_text = ''
         doc_srcs = []
