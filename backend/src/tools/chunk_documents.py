@@ -1,9 +1,6 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 
-from transformers import AutoTokenizer
-
-
 def chunk_documents(
     chunk_size: int, knowledge_base: list[Document], tokenizer_name: str
 ) -> list[Document]:
