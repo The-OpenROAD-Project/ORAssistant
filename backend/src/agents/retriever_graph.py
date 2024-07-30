@@ -37,14 +37,14 @@ class RetrieverGraph:
     def __init__(
         self,
         llm_model: Union[ChatGoogleGenerativeAI, ChatVertexAI],
-        embeddings_model_name: str,
+        embeddings_config: dict[str, str],
         reranking_model_name: str,
         use_cuda: bool = False,
     ):
         self.llm = llm_model
         self.retriever_agent: RetrieverAgent = RetrieverAgent()
         self.retriever_agent.initialize(
-            embeddings_model_name=embeddings_model_name,
+            embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
         )
@@ -61,7 +61,8 @@ class RetrieverGraph:
             self.retriever_agent.retrieve_install,
             self.retriever_agent.retrieve_general,
             self.retriever_agent.retrieve_opensta,
-        ])
+            self.retriever_agent.retrieve_errinfo,
+        ])  # type: ignore
 
         response = model.invoke(messages)
 
@@ -102,6 +103,7 @@ class RetrieverGraph:
         install = ToolNode(self.retriever_agent.retrieve_install)
         general = ToolNode(self.retriever_agent.retrieve_general)
         opensta = ToolNode(self.retriever_agent.retrieve_opensta)
+        errinfo = ToolNode(self.retriever_agent.retrieve_errinfo)
 
         workflow.add_node('agent', self.agent)
         workflow.add_node('generate', self.generate)
@@ -110,6 +112,7 @@ class RetrieverGraph:
         workflow.add_node('retrieve_install', install.get_node)
         workflow.add_node('retrieve_general', general.get_node)
         workflow.add_node('retrieve_opensta', opensta.get_node)
+        workflow.add_node('retrieve_errinfo', errinfo.get_node)
 
         workflow.add_edge(START, 'agent')
         workflow.add_conditional_edges(
@@ -120,6 +123,7 @@ class RetrieverGraph:
                 'retrieve_install',
                 'retrieve_general',
                 'retrieve_opensta',
+                'retrieve_errinfo',
             ],
         )
 
@@ -127,6 +131,7 @@ class RetrieverGraph:
         workflow.add_edge('retrieve_install', 'generate')
         workflow.add_edge('retrieve_general', 'generate')
         workflow.add_edge('retrieve_opensta', 'generate')
+        workflow.add_edge('retrieve_errinfo', 'generate')
 
         workflow.add_edge('generate', END)
 

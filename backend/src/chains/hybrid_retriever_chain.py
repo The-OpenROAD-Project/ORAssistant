@@ -16,16 +16,13 @@ from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from ..prompts.answer_prompts import summarise_prompt_template
-
 from typing import Optional, Union
-from dotenv import load_dotenv
 
 
 class HybridRetrieverChain(BaseChain):
     def __init__(
         self,
-        embeddings_model_name: str,
+        embeddings_config: Optional[dict[str, str]] = None,
         llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
@@ -42,7 +39,8 @@ class HybridRetrieverChain(BaseChain):
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
         )
-        self.embeddings_model_name: str = embeddings_model_name
+        self.embeddings_config: Optional[dict[str, str]] = embeddings_config
+
         self.reranking_model_name: Optional[str] = reranking_model_name
         self.use_cuda: bool = use_cuda
 
@@ -64,7 +62,7 @@ class HybridRetrieverChain(BaseChain):
         similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
-            embeddings_model_name=self.embeddings_model_name,
+            embeddings_config=self.embeddings_config,
             docs_path=self.docs_path,
             manpages_path=self.manpages_path,
             other_docs_path=self.other_docs_path,
@@ -135,41 +133,3 @@ class HybridRetrieverChain(BaseChain):
         self.llm_chain = llm_chain_with_source
 
         return
-
-
-if __name__ == '__main__':
-    load_dotenv()
-
-    llm = ChatVertexAI(model_name='gemini-1.5-flash', temperature=1.0)
-
-    prompt_template_str = summarise_prompt_template
-
-    hybrid_retriever_chain = HybridRetrieverChain(
-        llm_model=llm,
-        prompt_template_str=prompt_template_str,
-        embeddings_model_name='BAAI/bge-large-en-v1.5',
-        reranking_model_name='BAAI/bge-reranker-base',
-        use_cuda=True,
-        docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
-        manpages_path=['./data/markdown/manpages'],
-        other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
-    )
-    hybrid_retriever_chain.create_hybrid_retriever()
-    retriever_chain = hybrid_retriever_chain.get_llm_chain()
-
-    while True:
-        user_question = input('\n\nAsk a question: ')
-        result = retriever_chain.invoke(user_question)
-
-        sources = []
-        for i in result['context']:
-            if 'url' in i.metadata:
-                sources.append(i.metadata['url'])
-            elif 'source' in i.metadata:
-                sources.append(i.metadata['source'])
-
-        print(result['answer'])
-
-        print('\n\nSources:')
-        for i in set(sources):
-            print(i)

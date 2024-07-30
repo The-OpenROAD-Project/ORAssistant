@@ -16,14 +16,14 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
-        embeddings_model_name: Optional[str] = None,
+        embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
-            embeddings_model_name=embeddings_model_name,
+            embeddings_config=embeddings_config,
             docs_path=docs_path,
             manpages_path=manpages_path,
             other_docs_path=other_docs_path,

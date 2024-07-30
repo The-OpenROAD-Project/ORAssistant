@@ -42,7 +42,15 @@ llm_temp_str = os.getenv('GEMINI_TEMP')
 if llm_temp_str is not None:
     llm_temp = float(llm_temp_str)
 
-hf_embdeddings: str = str(os.getenv('HF_EMBEDDINGS'))
+embeddings_type: str = str(os.getenv('EMBEDDINGS_TYPE'))
+
+if embeddings_type == 'HF':
+    embeddings_model_name = str(os.getenv('HF_EMBEDDINGS'))
+elif embeddings_type == 'GOOGLE':
+    embeddings_model_name = str(os.getenv('GOOGLE_EMBEDDINGS'))
+
+embeddings_config = {'type': embeddings_type, 'name': embeddings_model_name}
+
 hf_reranker: str = str(os.getenv('HF_RERANKER'))
 
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
@@ -60,7 +68,7 @@ router = APIRouter(prefix='/graphs', tags=['graphs'])
 
 rg = RetrieverGraph(
     llm_model=llm,
-    embeddings_model_name=hf_embdeddings,
+    embeddings_config=embeddings_config,
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
 )

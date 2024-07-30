@@ -47,7 +47,15 @@ llm_temp_str = os.getenv('GEMINI_TEMP')
 if llm_temp_str is not None:
     llm_temp = float(llm_temp_str)
 
-hf_embdeddings: str = str(os.getenv('HF_EMBEDDINGS'))
+embeddings_type: str = str(os.getenv('EMBEDDINGS_TYPE'))
+
+if embeddings_type == 'HF':
+    embeddings_model_name = str(os.getenv('HF_EMBEDDINGS'))
+elif embeddings_type == 'GOOGLE':
+    embeddings_model_name = str(os.getenv('GOOGLE_EMBEDDINGS'))
+
+embeddings_config = {'type': embeddings_type, 'name': embeddings_model_name}
+
 hf_reranker: str = str(os.getenv('HF_RERANKER'))
 
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
@@ -66,8 +74,7 @@ router = APIRouter(prefix='/chains', tags=['chains'])
 hybrid_retriever_chain = HybridRetrieverChain(
     llm_model=llm,
     prompt_template_str=summarise_prompt_template,
-    embeddings_model_name=hf_embdeddings,
-    reranking_model_name=hf_reranker,
+    embeddings_config=embeddings_config,
     contextual_rerank=True,
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
@@ -81,7 +88,7 @@ hybrid_llm_chain = hybrid_retriever_chain.get_llm_chain()
 sim_retriever_chain = SimilarityRetrieverChain(
     llm_model=llm,
     prompt_template_str=summarise_prompt_template,
-    embeddings_model_name=hf_embdeddings,
+    embeddings_config=embeddings_config,
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
@@ -93,7 +100,7 @@ sim_llm_chain = sim_retriever_chain.get_llm_chain()
 multi_retriever_chain = MultiRetrieverChain(
     llm_model=llm,
     prompt_template_str=summarise_prompt_template,
-    embeddings_model_name=hf_embdeddings,
+    embeddings_config=embeddings_config,
     use_cuda=use_cuda,
     docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],

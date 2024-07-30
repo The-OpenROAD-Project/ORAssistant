@@ -18,7 +18,7 @@ class SimilarityRetrieverChain(BaseChain):
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
-        embeddings_model_name: Optional[str] = None,
+        embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -27,7 +27,7 @@ class SimilarityRetrieverChain(BaseChain):
             prompt_template_str=prompt_template_str,
         )
 
-        self.embeddings_model_name: Optional[str] = embeddings_model_name
+        self.embeddings_config: Optional[dict[str, str]] = embeddings_config
         self.use_cuda: bool = use_cuda
 
         self.docs_path: Optional[list[str]] = docs_path
@@ -78,14 +78,19 @@ class SimilarityRetrieverChain(BaseChain):
         return self.processed_docs, self.processed_manpages, self.processed_pdfs
 
     def create_vector_db(self) -> None:
-        if self.embeddings_model_name is not None:
+        if (
+            self.embeddings_config is not None
+            and self.embeddings_config['name'] is not None
+            and self.embeddings_config['type'] is not None
+        ):
             self.vector_db = FAISSVectorDatabase(
-                embeddings_model_name=self.embeddings_model_name,
+                embeddings_model_name=self.embeddings_config['name'],
+                embeddings_type=self.embeddings_config['type'],
                 print_progress=True,
                 use_cuda=self.use_cuda,
             )
         else:
-            raise ValueError('Embeddings model name not provided.')
+            raise ValueError('Embeddings model config not provided correctly.')
 
     def create_similarity_retriever(self, search_k: Optional[int] = 5) -> None:
         if (

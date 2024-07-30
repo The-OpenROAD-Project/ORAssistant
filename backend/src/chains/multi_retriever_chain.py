@@ -21,7 +21,7 @@ class MultiRetrieverChain(BaseChain):
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
-        embeddings_model_name: Optional[str] = None,
+        embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         search_k: list[int] = [5, 5, 5],
         weights: list[float] = [0.4, 0.4, 0.2],
@@ -31,7 +31,7 @@ class MultiRetrieverChain(BaseChain):
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
         )
-        self.embeddings_model_name: Optional[str] = embeddings_model_name
+        self.embeddings_config: Optional[dict[str, str]] = embeddings_config
         self.use_cuda: bool = use_cuda
 
         self.search_k: list[int] = search_k
@@ -48,7 +48,7 @@ class MultiRetrieverChain(BaseChain):
         docs_similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
-            embeddings_model_name=self.embeddings_model_name,
+            embeddings_config=self.embeddings_config,
             docs_path=self.docs_path,
             chunk_size=self.chunk_size,
         )
@@ -59,7 +59,7 @@ class MultiRetrieverChain(BaseChain):
         manpages_similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
-            embeddings_model_name=self.embeddings_model_name,
+            embeddings_config=self.embeddings_config,
             manpages_path=self.manpages_path,
             chunk_size=self.chunk_size,
         )
@@ -70,7 +70,7 @@ class MultiRetrieverChain(BaseChain):
         pdfs_similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
-            embeddings_model_name=self.embeddings_model_name,
+            embeddings_config=self.embeddings_config,
             other_docs_path=self.other_docs_path,
             chunk_size=self.chunk_size,
         )
