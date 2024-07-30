@@ -1,18 +1,20 @@
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.docstore.document import Document
 
-from ..tools.process_md import process_md_docs, process_md_manpages
+from ..tools.process_md import process_md
 from ..tools.process_pdf import process_pdf_docs
 from ..tools.process_json import generate_knowledge_base
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class FAISSVectorDatabase:
     def __init__(
         self,
+        embeddings_type: str,
         embeddings_model_name: str,
         distance_strategy: DistanceStrategy = DistanceStrategy.COSINE,
         print_progress: bool = False,
@@ -22,12 +24,25 @@ class FAISSVectorDatabase:
         self.embeddings_model_name = embeddings_model_name
 
         model_kwargs = {'device': 'cuda'} if use_cuda else {}
-        self.embedding_model = HuggingFaceEmbeddings(
-            model_name=self.embeddings_model_name,
-            multi_process=False,
-            encode_kwargs={'normalize_embeddings': True},
-            model_kwargs=model_kwargs,
-        )
+
+        self.embedding_model: Union[HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings]
+
+        if embeddings_type == 'GOOGLE':
+            self.embedding_model = GoogleGenerativeAIEmbeddings(
+                model=self.embeddings_model_name,
+                task_type='retrieval_document',
+            )  # type: ignore
+
+        elif embeddings_type == 'HF':
+            self.embedding_model = HuggingFaceEmbeddings(
+                model_name=self.embeddings_model_name,
+                multi_process=False,
+                encode_kwargs={'normalize_embeddings': True},
+                model_kwargs=model_kwargs,
+            )
+
+        else:
+            raise ValueError('Invalid embdeddings type specified.')
 
         self.print_progress = print_progress
         self.debug = debug
@@ -55,10 +70,11 @@ class FAISSVectorDatabase:
             if self.print_progress:
                 print(f'Processing [{folder_path}]...')
             docs_processed.extend(
-                process_md_docs(
+                process_md(
                     embeddings_model_name=self.embeddings_model_name,
                     folder_path=folder_path,
                     chunk_size=chunk_size,
+                    split_text=True,
                 )
             )
 
@@ -83,11 +99,7 @@ class FAISSVectorDatabase:
         for file_path in folder_paths:
             if self.print_progress:
                 print(f'Processing [{file_path}]...')
-            docs_processed.extend(
-                process_md_manpages(
-                    folder_path=file_path,
-                )
-            )
+            docs_processed.extend(process_md(folder_path=file_path, split_text=False))
 
         if docs_processed:
             self._faiss_db.add_documents(docs_processed)
