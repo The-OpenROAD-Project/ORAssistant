@@ -31,7 +31,7 @@ class FAISSVectorDatabase:
             self.embedding_model = GoogleGenerativeAIEmbeddings(
                 model=self.embeddings_model_name,
                 task_type='retrieval_document',
-            )  # type: ignore
+            )
 
         elif embeddings_type == 'HF':
             self.embedding_model = HuggingFaceEmbeddings(

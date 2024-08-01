@@ -62,7 +62,7 @@ class RetrieverGraph:
             self.retriever_agent.retrieve_general,
             self.retriever_agent.retrieve_opensta,
             self.retriever_agent.retrieve_errinfo,
-        ])  # type: ignore
+        ])
 
         response = model.invoke(messages)
 
