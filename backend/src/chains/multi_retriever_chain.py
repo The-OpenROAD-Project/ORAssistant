@@ -21,6 +21,7 @@ class MultiRetrieverChain(BaseChain):
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
+        rtdocs_path: Optional[list[str]] = None,
         embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         search_k: list[int] = [5, 5, 5],
@@ -40,6 +41,7 @@ class MultiRetrieverChain(BaseChain):
         self.chunk_size: int = chunk_size
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
+        self.rtdocs_path: Optional[list[str]] = rtdocs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path
 
         self.retriever: Optional[EnsembleRetriever] = None
@@ -78,15 +80,29 @@ class MultiRetrieverChain(BaseChain):
         pdfs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
         pdfs_similarity_retriever = pdfs_similarity_retriever_chain.retriever
 
+        rtdocs_similarity_retriever_chain = SimilarityRetrieverChain(
+            llm_model=None,
+            prompt_template_str=None,
+            embeddings_config=self.embeddings_config,
+            rtdocs_path=self.rtdocs_path,
+            chunk_size=self.chunk_size,
+        )
+        rtdocs_similarity_retriever_chain.embed_docs(return_docs=False)
+        rtdocs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        rtdocs_similarity_retriever = rtdocs_similarity_retriever_chain.retriever
+
         if (
             docs_similarity_retriever is not None
             and manpages_similarity_retriever is not None
+            and pdfs_similarity_retriever is not None
+            and rtdocs_similarity_retriever is not None
         ):
             self.retriever = EnsembleRetriever(
                 retrievers=[
                     docs_similarity_retriever,
                     manpages_similarity_retriever,
                     pdfs_similarity_retriever,
+                    rtdocs_similarity_retriever,
                 ],
                 weights=self.weights,
             )

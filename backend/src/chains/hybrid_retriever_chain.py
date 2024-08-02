@@ -27,6 +27,7 @@ class HybridRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
+        rtdocs_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
         reranking_model_name: Optional[str] = None,
         use_cuda: bool = False,
@@ -49,6 +50,7 @@ class HybridRetrieverChain(BaseChain):
 
         self.docs_path: Optional[list[str]] = docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
+        self.rtdocs_path: Optional[list[str]] = rtdocs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path
 
         self.chunk_size: int = chunk_size
@@ -66,10 +68,11 @@ class HybridRetrieverChain(BaseChain):
             docs_path=self.docs_path,
             manpages_path=self.manpages_path,
             other_docs_path=self.other_docs_path,
+            rtdocs_path=self.rtdocs_path,
             chunk_size=self.chunk_size,
         )
 
-        processed_docs, processed_manpages, processed_pdfs = (
+        processed_docs, processed_manpages, processed_pdfs, processed_rtdocs = (
             similarity_retriever_chain.embed_docs(return_docs=True)
         )
         faiss_db = similarity_retriever_chain.vector_db
@@ -89,6 +92,8 @@ class HybridRetrieverChain(BaseChain):
             embedded_docs += processed_manpages
         if processed_pdfs is not None:
             embedded_docs += processed_pdfs
+        if processed_rtdocs is not None:
+            embedded_docs += processed_rtdocs
 
         bm25_retriever_chain = BM25RetrieverChain()
         bm25_retriever_chain.create_bm25_retriever(

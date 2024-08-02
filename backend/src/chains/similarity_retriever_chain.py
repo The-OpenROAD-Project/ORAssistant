@@ -17,6 +17,7 @@ class SimilarityRetrieverChain(BaseChain):
         prompt_template_str: Optional[str] = None,
         docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
+        rtdocs_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
         embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
@@ -33,12 +34,14 @@ class SimilarityRetrieverChain(BaseChain):
         self.docs_path: Optional[list[str]] = docs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
+        self.rtdocs_path: Optional[list[str]] = rtdocs_path
 
         self.chunk_size: int = chunk_size
 
         self.processed_docs: Optional[list[Document]] = []
         self.processed_manpages: Optional[list[Document]] = []
         self.processed_pdfs: Optional[list[Document]] = []
+        self.processed_html: Optional[list[Document]] = []
 
         self.vector_db: Optional[FAISSVectorDatabase] = None
         self.retriever: Any  # This is Any for now as certain child classes (eg. bm25_retriever_chain) have a different retriever.
@@ -47,7 +50,10 @@ class SimilarityRetrieverChain(BaseChain):
         self,
         return_docs: bool = False,
     ) -> Tuple[
-        Optional[list[Document]], Optional[list[Document]], Optional[list[Document]]
+        Optional[list[Document]],
+        Optional[list[Document]],
+        Optional[list[Document]],
+        Optional[list[Document]],
     ]:
         if self.vector_db is None:
             self.create_vector_db()
@@ -75,7 +81,18 @@ class SimilarityRetrieverChain(BaseChain):
                 else:
                     raise ValueError('File type not supported.')
 
-        return self.processed_docs, self.processed_manpages, self.processed_pdfs
+        if self.rtdocs_path is not None and self.vector_db is not None:
+            self.processed_html = self.vector_db.add_html(
+                folder_paths=self.rtdocs_path,
+                return_docs=return_docs,
+            )
+
+        return (
+            self.processed_docs,
+            self.processed_manpages,
+            self.processed_pdfs,
+            self.processed_html,
+        )
 
     def create_vector_db(self) -> None:
         if (
@@ -97,6 +114,7 @@ class SimilarityRetrieverChain(BaseChain):
             self.processed_docs == []
             and self.processed_manpages == []
             and self.processed_pdfs == []
+            and self.processed_html == []
         ):
             self.embed_docs()
 
