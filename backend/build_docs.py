@@ -53,7 +53,7 @@ def build_or_docs() -> None:
     print('Starting OR docs build...')
 
     os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
-    subprocess.run('make html', shell=True, capture_output=True)
+    res = subprocess.run('make html', shell=True, capture_output=True)
 
     print('Copying OR docs...')
     os.chdir(cur_dir)
@@ -210,6 +210,11 @@ if __name__ == '__main__':
     build_manpages()
 
     os.chdir(cur_dir)
+    copyfile(
+        f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
+        f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
+    )
+
     get_opensta_docs()
 
     update_source_dict('data/markdown/OR_docs')
