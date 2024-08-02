@@ -21,5 +21,5 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 def process_pdf_docs(file_path: str) -> list[Document]:
     loader = PyPDFLoader(file_path)
-    pages = loader.load_and_split(text_splitter=text_splitter)
-    return pages
+    docs = loader.load_and_split(text_splitter=text_splitter)
+    return docs
