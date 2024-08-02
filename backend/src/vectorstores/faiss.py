@@ -6,6 +6,7 @@ from langchain.docstore.document import Document
 
 from ..tools.process_md import process_md
 from ..tools.process_pdf import process_pdf_docs
+from ..tools.process_html import process_html
 from ..tools.process_json import generate_knowledge_base
 
 from typing import Optional, Union
@@ -64,14 +65,13 @@ class FAISSVectorDatabase:
         if self.print_progress:
             print('Processing markdown docs...')
 
-        docs_processed = []
+        docs_processed: list[Document] = []
 
         for folder_path in folder_paths:
             if self.print_progress:
                 print(f'Processing [{folder_path}]...')
             docs_processed.extend(
                 process_md(
-                    embeddings_model_name=self.embeddings_model_name,
                     folder_path=folder_path,
                     chunk_size=chunk_size,
                     split_text=True,
@@ -79,6 +79,8 @@ class FAISSVectorDatabase:
             )
 
         if docs_processed:
+            if self.print_progress:
+                print(f'Adding {folder_paths} to FAISS database...')
             self._faiss_db.add_documents(docs_processed)
         else:
             raise ValueError('No markdown documents processed.')
@@ -94,7 +96,7 @@ class FAISSVectorDatabase:
         if self.print_progress:
             print('Processing markdown manpages...')
 
-        docs_processed = []
+        docs_processed: list[Document] = []
 
         for file_path in folder_paths:
             if self.print_progress:
@@ -102,9 +104,35 @@ class FAISSVectorDatabase:
             docs_processed.extend(process_md(folder_path=file_path, split_text=False))
 
         if docs_processed:
+            if self.print_progress:
+                print(f'Adding {folder_paths} to FAISS database...')
             self._faiss_db.add_documents(docs_processed)
         else:
             raise ValueError('No manpages documents processed.')
+
+        if return_docs:
+            return docs_processed
+
+        return None
+
+    def add_html(
+        self, folder_paths: list[str], return_docs: bool = False
+    ) -> Optional[list[Document]]:
+        if self.print_progress:
+            print('Process HTML docs...')
+
+        docs_processed: list[Document] = []
+        for folder_path in folder_paths:
+            if self.print_progress:
+                print(f'Processing [{folder_path}]...')
+                docs_processed.extend(process_html(folder_path=folder_path))
+
+        if docs_processed:
+            if self.print_progress:
+                print(f'Adding {folder_paths} to FAISS database...')
+            self._faiss_db.add_documents(docs_processed)
+        else:
+            raise ValueError('No HTML docs processed.')
 
         if return_docs:
             return docs_processed
@@ -117,7 +145,7 @@ class FAISSVectorDatabase:
         if self.print_progress:
             print('Processing docs...')
 
-        docs_processed = []
+        docs_processed: list[Document] = []
 
         for file_path in file_paths:
             if self.print_progress:
@@ -128,6 +156,8 @@ class FAISSVectorDatabase:
                 raise ValueError('File type not supported.')
 
         if docs_processed:
+            if self.print_progress:
+                print(f'Adding [{file_paths}] to FAISS database...')
             self._faiss_db.add_documents(docs_processed)
         else:
             raise ValueError('No PDF documents processed.')
