@@ -207,7 +207,7 @@ class RetrieverAgent:
         - Using Docker
         - Using pre-built binaries
     
-        The tool is designed to assist users by providing clear, accurate, and relevant information that enhances their understanding and efficient use of OpenROAD and OpenROAD-Flow-Scripts.
+        This tool is designed to assist users by providing clear, accurate, and relevant information that enhances their understanding and efficient use of OpenROAD and OpenROAD-Flow-Scripts.
         """
         if RetrieverAgent.install_retriever is not None:
             docs = RetrieverAgent.install_retriever.invoke(input=query)
@@ -227,8 +227,16 @@ class RetrieverAgent:
     @tool
     def retrieve_opensta(query: str) -> Tuple[str, list[str]]:
         """
-        The OpenSTA Information Retriever tool is designed to provide detailed and comprehensive information about OpenSTA and its various commands.
-        This tool aids users by offering clear, accurate, and relevant details, helping them effectively utilize OpenSTA for their timing analysis needs. The tool covers the following aspects:
+        OpenSTA is an open-source gate-level static timing verifier that has been used by many design houses.\
+        As a stand-alone executable it can be used to verify the timing of a design using standard file formats.
+
+        Verilog netlist
+        Liberty library
+        SDC timing constraints
+        SDF delay annotation
+        SPEF parasitics
+
+        This tool is designed to provide detailed and comprehensive information about OpenSTA and its various commands.
 
         Command Line Arguments: Detailed information about the different command line arguments that can be used with OpenSTA.
         Example Command Scripts: Examples of command scripts for different scenarios, including reading designs, performing timing analysis, and power analysis.
@@ -240,7 +248,6 @@ class RetrieverAgent:
         Filter Expressions: Information on filter expressions used within OpenSTA commands.
         Variables: Descriptions of various variables used in OpenSTA and their purposes.
 
-        This tool aims to be an indispensable resource for users seeking to maximize the utility of OpenSTA by providing easy access to its extensive command set and functionalities.
         """
         if RetrieverAgent.opensta_retriever is not None:
             docs = RetrieverAgent.opensta_retriever.invoke(input=query)
@@ -283,6 +290,8 @@ class RetrieverAgent:
     @tool
     def retrieve_yosys_rtdocs(query: str) -> Tuple[str, list[str]]:
         """
+        Yosys is a framework for Verilog RTL synthesis. \
+        It currently has extensive Verilog-2005 support and provides a basic set of synthesis algorithms for various application domains. \
         Retrieve detailed information regarding the Yosys application. \
         This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of Yosys.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of Yosys.\
