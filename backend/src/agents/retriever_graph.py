@@ -62,6 +62,7 @@ class RetrieverGraph:
             self.retriever_agent.retrieve_general,
             self.retriever_agent.retrieve_opensta,
             self.retriever_agent.retrieve_errinfo,
+            self.retriever_agent.retrieve_yosys_rtdocs,
         ])
 
         response = model.invoke(messages)
@@ -104,6 +105,7 @@ class RetrieverGraph:
         general = ToolNode(self.retriever_agent.retrieve_general)
         opensta = ToolNode(self.retriever_agent.retrieve_opensta)
         errinfo = ToolNode(self.retriever_agent.retrieve_errinfo)
+        yosys_rtdocs = ToolNode(self.retriever_agent.retrieve_yosys_rtdocs)
 
         workflow.add_node('agent', self.agent)
         workflow.add_node('generate', self.generate)
@@ -113,6 +115,7 @@ class RetrieverGraph:
         workflow.add_node('retrieve_general', general.get_node)
         workflow.add_node('retrieve_opensta', opensta.get_node)
         workflow.add_node('retrieve_errinfo', errinfo.get_node)
+        workflow.add_node('retrieve_yosys_rtdocs', yosys_rtdocs.get_node)
 
         workflow.add_edge(START, 'agent')
         workflow.add_conditional_edges(
@@ -124,6 +127,7 @@ class RetrieverGraph:
                 'retrieve_general',
                 'retrieve_opensta',
                 'retrieve_errinfo',
+                'retrieve_yosys_rtdocs',
             ],
         )
 
@@ -132,6 +136,7 @@ class RetrieverGraph:
         workflow.add_edge('retrieve_general', 'generate')
         workflow.add_edge('retrieve_opensta', 'generate')
         workflow.add_edge('retrieve_errinfo', 'generate')
+        workflow.add_edge('retrieve_yosys_rtdocs', 'generate')
 
         workflow.add_edge('generate', END)
 
