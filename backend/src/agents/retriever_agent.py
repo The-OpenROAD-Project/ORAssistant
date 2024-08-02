@@ -4,8 +4,13 @@ from langchain_core.tools import tool
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
 
+import os
 from typing import Tuple, Optional, Union
+from dotenv import load_dotenv
 
+load_dotenv()
+
+search_k = os.getenv('SEARCH_K', 10) 
 
 class RetrieverAgent:
     def __init__(self) -> None:
@@ -26,6 +31,9 @@ class RetrieverAgent:
     errinfo_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
+    yosys_rtdocs_retriever: Optional[
+        Union[EnsembleRetriever, ContextualCompressionRetriever]
+    ]
 
     def initialize(
         self,
@@ -33,6 +41,19 @@ class RetrieverAgent:
         reranking_model_name: str,
         use_cuda: bool = False,
     ) -> None:
+        yosys_rtdocs_retriever_chain = HybridRetrieverChain(
+            embeddings_config=embeddings_config,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            rtdocs_path=[
+                '/home/palaniappan-r/Code/ORAssistant/backend/data/rtdocs/yosyshq.readthedocs.io/'
+            ],
+            contextual_rerank=True,
+            search_k=10,
+        )
+        yosys_rtdocs_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
+
         opensta_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
@@ -246,6 +267,29 @@ class RetrieverAgent:
 
         if RetrieverAgent.errinfo_retriever is not None:
             docs = RetrieverAgent.errinfo_retriever.invoke(input=query)
+
+        doc_text = ''
+        doc_srcs = []
+        for doc in docs:
+            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
+            if 'url' in doc.metadata:
+                doc_srcs.append(doc.metadata['url'])
+            elif 'source' in doc.metadata:
+                doc_srcs.append(doc.metadata['source'])
+
+        return doc_text, doc_srcs
+
+    @staticmethod
+    @tool
+    def retrieve_yosys_rtdocs(query: str) -> Tuple[str, list[str]]:
+        """
+        Retrieve detailed information regarding the Yosys application. \
+        This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of Yosys.\
+        This tool provides information pertaining to the installation, usage, and troubleshooting of Yosys.\
+        """
+
+        if RetrieverAgent.yosys_rtdocs_retriever is not None:
+            docs = RetrieverAgent.yosys_rtdocs_retriever.invoke(input=query)
 
         doc_text = ''
         doc_srcs = []
