@@ -1,6 +1,6 @@
-import json
 import os
 import glob
+import json
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
@@ -22,6 +22,7 @@ text_splitter = RecursiveCharacterTextSplitter(
     is_separator_regex=False,
 )
 
+
 def md_to_text(md_content: str) -> str:
     html = md.markdown(md_content)
     soup = BeautifulSoup(html, features='html.parser')
@@ -38,11 +39,11 @@ def load_docs(folder_path: str) -> list[Document]:
             documents.append(Document(page_content=content, metadata=metadata))
     return documents
 
+
 def process_md(
     folder_path: str,
     split_text: bool = True,
     chunk_size: Optional[int] = None,
-    embeddings_model_name: Optional[str] = None,
 ) -> list[Document]:
     """
     For processing OR/ORFS docs
@@ -60,9 +61,6 @@ def process_md(
     if split_text:
         if not chunk_size:
             raise ValueError('Chunk size not set.')
-
-        if not embeddings_model_name:
-            raise ValueError('Embeddings model name not specified.')
 
         documents = text_splitter.split_documents(documents)
 
@@ -82,11 +80,7 @@ def process_md(
                 Document(page_content=doc.page_content, metadata=new_metadata)
             )
 
-        docs_chunked = chunk_documents(
-            chunk_size,
-            documents_knowledge_base,
-            tokenizer_name=embeddings_model_name,
-        )
+        docs_chunked = chunk_documents(chunk_size, documents_knowledge_base)
 
         return docs_chunked
 
