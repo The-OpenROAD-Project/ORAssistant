@@ -53,7 +53,7 @@ def build_or_docs() -> None:
     print('Starting OR docs build...')
 
     os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
-    res = subprocess.run('make html', shell=True, capture_output=True)
+    subprocess.run('make html', shell=True, capture_output=True)
 
     print('Copying OR docs...')
     os.chdir(cur_dir)
