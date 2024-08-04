@@ -4,13 +4,16 @@ from langchain_core.tools import tool
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
 
+from ..tools.format_docs import format_docs
+
 import os
 from typing import Tuple, Optional, Union
 from dotenv import load_dotenv
 
 load_dotenv()
 
-search_k = os.getenv('SEARCH_K', 10) 
+search_k = int(os.getenv('SEARCH_K', 10))
+
 
 class RetrieverAgent:
     def __init__(self) -> None:
@@ -41,40 +44,18 @@ class RetrieverAgent:
         reranking_model_name: str,
         use_cuda: bool = False,
     ) -> None:
-        yosys_rtdocs_retriever_chain = HybridRetrieverChain(
-            embeddings_config=embeddings_config,
-            reranking_model_name=reranking_model_name,
-            use_cuda=use_cuda,
-            rtdocs_path=[
-                '/home/palaniappan-r/Code/ORAssistant/backend/data/rtdocs/yosyshq.readthedocs.io/'
-            ],
-            contextual_rerank=True,
-            search_k=10,
-        )
-        yosys_rtdocs_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
-
-        opensta_retriever_chain = HybridRetrieverChain(
-            embeddings_config=embeddings_config,
-            reranking_model_name=reranking_model_name,
-            use_cuda=use_cuda,
-            other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
-            contextual_rerank=True,
-            search_k=10,
-        )
-        opensta_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.opensta_retriever = opensta_retriever_chain.retriever
-
         install_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            docs_path=[
+            markdown_docs_path=[
                 './data/markdown/ORFS_docs/installation',
                 './data/markdown/OR_docs/installation',
+                './data/markdown/gh_discussions/Build',
+                './data/markdown/gh_discussions/Installation',
             ],
             contextual_rerank=True,
-            search_k=10,
+            search_k=search_k,
         )
         install_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.install_retriever = install_retriever_chain.retriever
@@ -83,31 +64,46 @@ class RetrieverAgent:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            docs_path=['./data/markdown/OR_docs/tools'],
+            markdown_docs_path=['./data/markdown/OR_docs/tools'],
             manpages_path=[
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
+                './data/markdown/gh_discussions/Query',
+                './data/markdown/gh_discussions/Runtime',
+                './data/markdown/gh_discussions/Documentation',
             ],
             contextual_rerank=True,
-            search_k=10,
+            search_k=search_k,
         )
         commands_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.commands_retriever = commands_retriever_chain.retriever
+
+        opensta_retriever_chain = HybridRetrieverChain(
+            embeddings_config=embeddings_config,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+            contextual_rerank=True,
+            search_k=search_k,
+        )
+        opensta_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.opensta_retriever = opensta_retriever_chain.retriever
 
         general_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            docs_path=[
+            markdown_docs_path=[
                 './data/markdown/ORFS_docs',
                 './data/markdown/OR_docs',
+                './data/markdown/gh_discussions',
             ],
             manpages_path=[
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
             ],
             contextual_rerank=True,
-            search_k=10,
+            search_k=search_k,
         )
         general_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.general_retriever = general_retriever_chain.retriever
@@ -116,12 +112,28 @@ class RetrieverAgent:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            docs_path=['./data/markdown/manpages/man3'],
+            markdown_docs_path=[
+                './data/markdown/manpages/man3',
+                './data/markdown/gh_discussions/Bug',
+            ],
             contextual_rerank=True,
-            search_k=10,
+            search_k=search_k,
         )
         errinfo_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.errinfo_retriever = errinfo_retriever_chain.retriever
+
+        yosys_rtdocs_retriever_chain = HybridRetrieverChain(
+            embeddings_config=embeddings_config,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            html_docs_path=[
+                '/home/palaniappan-r/Code/ORAssistant/backend/data/rtdocs/yosyshq.readthedocs.io/'
+            ],
+            contextual_rerank=True,
+            search_k=search_k,
+        )
+        yosys_rtdocs_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
 
     @staticmethod
     @tool
@@ -132,70 +144,57 @@ class RetrieverAgent:
         troubleshooting steps, and best practices. The tool is designed to assist users by providing clear, accurate, \
         and relevant information that enhances their understanding and efficient use of OpenROAD and OpenROAD-Flow-Scripts.
         """
-        if RetrieverAgent.general_retriever is not None:
-            docs = RetrieverAgent.general_retriever.invoke(input=query)
+        if RetrieverAgent.general_retriever is None:
+            raise ValueError('General Retriever not initialized')
 
-        doc_text = ''
-        doc_srcs = []
-        for doc in docs:
-            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
-            if 'url' in doc.metadata:
-                doc_srcs.append(doc.metadata['url'])
-            elif 'source' in doc.metadata:
-                doc_srcs.append(doc.metadata['source'])
-
-        return doc_text, doc_srcs
+        docs = RetrieverAgent.general_retriever.invoke(input=query)
+        return format_docs(docs)
 
     @staticmethod
     @tool
     def retrieve_cmds(query: str) -> Tuple[str, list[str]]:
         """
-        The Command Retriever Tool is designed to provide detailed and comprehensive information on the commands and tools available in the OpenROAD project and OpenROAD-Flow-Scripts. This includes descriptions, usage guidelines, command syntax, examples, and best practices.
+        Retrieve information on the commands and tools available in the OpenROAD project and OpenROAD-Flow-Scripts. \
+        This includes descriptions, usage guidelines, command syntax, examples, and best practices.
         The tool assists users by delivering clear, accurate, and relevant details to help them effectively utilize the following commands and tools within OpenROAD and OpenROAD-Flow-Scripts:
+ 
+        Here's a list of all the tools available:
+        Antenna Rule Checker
+        Clock Tree Synthesis
+        Design For Testing
+        Detailed Placement
+        Detailed Routing
+        Metal Fill
+        Global Floorplanning
+        Global Placement
+        Global Routing
+        Graphical User Interface
+        Initialize Floorplan
+        Macro Placement
+        Hierarchical Macro Placement
+        OpenDB
+        Chip-level Connections
+        Pad
+        Partition Manager
+        Power Distribution Network
+        Pin Placement
+        IR Drop Analysis
+        Parasitics Extraction
+        Restructure
+        Gate Resizer
+        Rectilinear Steiner Tree
+        TapCell
+        Read Unified Power Format
+        Utilities
 
-            Antenna Rule Checker (ANT)
-            Clock Tree Synthesis (CTS)
-            Design For Testing (DFT)
-            Detailed Placement (DPL)
-            Detailed Routing (DRT)
-            Metal Fill (FIN)
-            Global Floorplanning
-            Global Placement (GPL)
-            Global Routing (GRT)
-            Graphical User Interface (GUI)
-            Initialize Floorplan (IFP)
-            Macro Placement (MPL)
-            Hierarchical Macro Placement (MPL)
-            OpenDB (ODB)
-            Chip-level Connections
-            Pad (PAD)
-            Partition Manager (PAR)
-            Power Distribution Network (PDN)
-            Pin Placement (PPL)
-            IR Drop Analysis (PSM)
-            Parasitics Extraction (RSX)
-            Restructure (RMP)
-            Gate Resizer (RSZ)
-            Rectilinear Steiner Tree (STT)
-            TapCell (TAP)
-            Read Unified Power Format (UPF)
-            Utilities (UTL)
-
-        This tool aims to be an essential resource for users, providing all necessary information to maximize their productivity and efficiency when working with OpenROAD and OpenROAD-Flow-Scripts.
+        The tools can be represented by their abbreviations as well: ANT,CTS,DFT,DPL,DRT,FIN,GPL,GRT,GUI,IFP,MPL,ODB,PAD,PAR,PDN,PPL,PSM,RSX,RMP,RSZ,STT,TAP,UPF,UTL     
+        
         """
-        if RetrieverAgent.commands_retriever is not None:
-            docs = RetrieverAgent.commands_retriever.invoke(input=query)
+        if RetrieverAgent.commands_retriever is None:
+            raise ValueError('Commands Retriever not initialized')
 
-        doc_text = ''
-        doc_srcs = []
-        for doc in docs:
-            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
-            if 'url' in doc.metadata:
-                doc_srcs.append(doc.metadata['url'])
-            elif 'source' in doc.metadata:
-                doc_srcs.append(doc.metadata['source'])
-
-        return doc_text, doc_srcs
+        docs = RetrieverAgent.commands_retriever.invoke(input=query)
+        return format_docs(docs)
 
     @staticmethod
     @tool
@@ -209,24 +208,18 @@ class RetrieverAgent:
     
         This tool is designed to assist users by providing clear, accurate, and relevant information that enhances their understanding and efficient use of OpenROAD and OpenROAD-Flow-Scripts.
         """
-        if RetrieverAgent.install_retriever is not None:
-            docs = RetrieverAgent.install_retriever.invoke(input=query)
+        if RetrieverAgent.install_retriever is None:
+            raise ValueError('Install Retriever not initialized')
 
-        doc_text = ''
-        doc_srcs = []
-        for doc in docs:
-            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
-            if 'url' in doc.metadata:
-                doc_srcs.append(doc.metadata['url'])
-            elif 'source' in doc.metadata:
-                doc_srcs.append(doc.metadata['source'])
-
-        return doc_text, doc_srcs
+        docs = RetrieverAgent.install_retriever.invoke(input=query)
+        return format_docs(docs)
 
     @staticmethod
     @tool
     def retrieve_opensta(query: str) -> Tuple[str, list[str]]:
         """
+        Retrieve detailed and comprehensive information about OpenSTA and its various commands.
+        
         OpenSTA is an open-source gate-level static timing verifier that has been used by many design houses.\
         As a stand-alone executable it can be used to verify the timing of a design using standard file formats.
 
@@ -235,8 +228,6 @@ class RetrieverAgent:
         SDC timing constraints
         SDF delay annotation
         SPEF parasitics
-
-        This tool is designed to provide detailed and comprehensive information about OpenSTA and its various commands.
 
         Command Line Arguments: Detailed information about the different command line arguments that can be used with OpenSTA.
         Example Command Scripts: Examples of command scripts for different scenarios, including reading designs, performing timing analysis, and power analysis.
@@ -249,19 +240,11 @@ class RetrieverAgent:
         Variables: Descriptions of various variables used in OpenSTA and their purposes.
 
         """
-        if RetrieverAgent.opensta_retriever is not None:
-            docs = RetrieverAgent.opensta_retriever.invoke(input=query)
+        if RetrieverAgent.opensta_retriever is None:
+            raise ValueError('OpenSTA Retriever not initialized')
 
-        doc_text = ''
-        doc_srcs = []
-        for doc in docs:
-            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
-            if 'url' in doc.metadata:
-                doc_srcs.append(doc.metadata['url'])
-            elif 'source' in doc.metadata:
-                doc_srcs.append(doc.metadata['source'])
-
-        return doc_text, doc_srcs
+        docs = RetrieverAgent.opensta_retriever.invoke(input=query)
+        return format_docs(docs)
 
     @staticmethod
     @tool
@@ -272,19 +255,11 @@ class RetrieverAgent:
         Examples: ANT-0001, CTS-0014 etc.
         """
 
-        if RetrieverAgent.errinfo_retriever is not None:
-            docs = RetrieverAgent.errinfo_retriever.invoke(input=query)
+        if RetrieverAgent.errinfo_retriever is None:
+            raise ValueError('Error Info Retriever not initialized')
 
-        doc_text = ''
-        doc_srcs = []
-        for doc in docs:
-            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
-            if 'url' in doc.metadata:
-                doc_srcs.append(doc.metadata['url'])
-            elif 'source' in doc.metadata:
-                doc_srcs.append(doc.metadata['source'])
-
-        return doc_text, doc_srcs
+        docs = RetrieverAgent.errinfo_retriever.invoke(input=query)
+        return format_docs(docs)
 
     @staticmethod
     @tool
@@ -297,16 +272,8 @@ class RetrieverAgent:
         This tool provides information pertaining to the installation, usage, and troubleshooting of Yosys.\
         """
 
-        if RetrieverAgent.yosys_rtdocs_retriever is not None:
-            docs = RetrieverAgent.yosys_rtdocs_retriever.invoke(input=query)
+        if RetrieverAgent.yosys_rtdocs_retriever is None:
+            raise ValueError('Yosys RTDocs Retriever not initialized')
 
-        doc_text = ''
-        doc_srcs = []
-        for doc in docs:
-            doc_text += f'\n\n- - - - - - - - - - - - - - - \n\n{doc.page_content}'
-            if 'url' in doc.metadata:
-                doc_srcs.append(doc.metadata['url'])
-            elif 'source' in doc.metadata:
-                doc_srcs.append(doc.metadata['source'])
-
-        return doc_text, doc_srcs
+        docs = RetrieverAgent.yosys_rtdocs_retriever.invoke(input=query)
+        return format_docs(docs)
