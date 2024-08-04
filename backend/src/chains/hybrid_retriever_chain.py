@@ -25,9 +25,9 @@ class HybridRetrieverChain(BaseChain):
         embeddings_config: Optional[dict[str, str]] = None,
         llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
-        docs_path: Optional[list[str]] = None,
+        markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
-        rtdocs_path: Optional[list[str]] = None,
+        html_docs_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
         reranking_model_name: Optional[str] = None,
         use_cuda: bool = False,
@@ -48,9 +48,9 @@ class HybridRetrieverChain(BaseChain):
         self.search_k: int = search_k
         self.weights: list[float] = weights
 
-        self.docs_path: Optional[list[str]] = docs_path
+        self.markdown_docs_path: Optional[list[str]] = markdown_docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
-        self.rtdocs_path: Optional[list[str]] = rtdocs_path
+        self.html_docs_path: Optional[list[str]] = html_docs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path
 
         self.chunk_size: int = chunk_size
@@ -65,10 +65,10 @@ class HybridRetrieverChain(BaseChain):
             llm_model=None,
             prompt_template_str=None,
             embeddings_config=self.embeddings_config,
-            docs_path=self.docs_path,
+            markdown_docs_path=self.markdown_docs_path,
             manpages_path=self.manpages_path,
             other_docs_path=self.other_docs_path,
-            rtdocs_path=self.rtdocs_path,
+            html_docs_path=self.html_docs_path,
             chunk_size=self.chunk_size,
         )
 

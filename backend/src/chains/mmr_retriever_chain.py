@@ -13,10 +13,10 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         self,
         llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
-        docs_path: Optional[list[str]] = None,
+        markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
-        rtdocs_path: Optional[list[str]] = None,
+        html_docs_path: Optional[list[str]] = None,
         embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
@@ -25,9 +25,9 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
             embeddings_config=embeddings_config,
-            docs_path=docs_path,
+            markdown_docs_path=markdown_docs_path,
             manpages_path=manpages_path,
-            rtdocs_path=rtdocs_path,
+            html_docs_path=html_docs_path,
             other_docs_path=other_docs_path,
             chunk_size=chunk_size,
             use_cuda=use_cuda,
@@ -48,7 +48,7 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
         else:
             self.vector_db = vector_db
 
-        if self.vector_db is not None:
+        if self.vector_db is not None and self.vector_db.faiss_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
                 search_type='mmr',
                 search_kwargs={'k': search_k, 'lambda_mult': lambda_mult},
