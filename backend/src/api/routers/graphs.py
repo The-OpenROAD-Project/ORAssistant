@@ -46,7 +46,7 @@ embeddings_type: str = str(os.getenv('EMBEDDINGS_TYPE'))
 
 if embeddings_type == 'HF':
     embeddings_model_name = str(os.getenv('HF_EMBEDDINGS'))
-elif embeddings_type == 'GOOGLE':
+elif embeddings_type == 'GOOGLE_GENAI' or embeddings_type == 'GOOGLE_VERTEXAI':
     embeddings_model_name = str(os.getenv('GOOGLE_EMBEDDINGS'))
 
 embeddings_config = {'type': embeddings_type, 'name': embeddings_model_name}

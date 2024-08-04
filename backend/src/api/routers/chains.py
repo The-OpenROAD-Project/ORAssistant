@@ -77,7 +77,7 @@ hybrid_retriever_chain = HybridRetrieverChain(
     embeddings_config=embeddings_config,
     contextual_rerank=True,
     use_cuda=use_cuda,
-    docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
+    markdown_docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
     other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
@@ -90,7 +90,7 @@ sim_retriever_chain = SimilarityRetrieverChain(
     prompt_template_str=summarise_prompt_template,
     embeddings_config=embeddings_config,
     use_cuda=use_cuda,
-    docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
+    markdown_docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
     other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
@@ -102,7 +102,7 @@ multi_retriever_chain = MultiRetrieverChain(
     prompt_template_str=summarise_prompt_template,
     embeddings_config=embeddings_config,
     use_cuda=use_cuda,
-    docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
+    markdown_docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
 )
 multi_retriever_chain.create_multi_retriever()
