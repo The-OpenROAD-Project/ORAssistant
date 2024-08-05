@@ -52,7 +52,7 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 - Prerequisites: Python 3.12, recommended using a virtual environment like `conda`.
 - **Step 1**: `pip install -r backend/requirements.txt`
 - **Step 2**: Copy the `.env.example` file as shown above.
-- **Step 3**: To scrape OR/ORFS docs and populate the `data` folder, run:
+- **Step 3**: For populating the `data` folder with OR/ORFS docs, OpenSTA docs and Yosys docs, run:
 
 ```bash
   cd backend && python build_docs.py
@@ -108,27 +108,33 @@ flowchart LR
  
 ``` 
 
-Currently, there are four separate retrievers, each for answering queries about 
-1. OR/ORFS installation
+Depending on the input query, each query can be forwarded to any one of the following retrievers,
+1. General OR/ORFS information
 2. OR tools and commands
-3. OpenSTA tools and commands
-4. General information
+3. OR/ORFS installation
+4. OR Error Messages
+5. OpenSTA docs
+5. Yosys docs
 
-The retrievers act a separate tools and can be accessed by the LLM's tool-calling capabilities.
+The retrievers act as separate tools and can be accessed by the LLM's tool-calling capabilities.
 
 The `langgraph` framework has been used to make effective use of the multiple retriever tools. Upon receiving a query, a routing LLM call classifies the query and forwards it to the corresponding retriever tool. Relevant documents are the queried from the vectorstore by the tool and sent to the LLM for response generation.
 
 ```mermaid
 graph TD
     __start__ --> router_agent
-    router_agent -.-> retrieve_cmds
     router_agent -.-> retrieve_general
+    router_agent -.-> retrieve_cmds
     router_agent -.-> retrieve_install
+    router_agent -.-> retrieve_errinfo
     router_agent -.-> retrieve_opensta
-    retrieve_cmds --> generate
+    router_agent -.-> retrieve_yosys
     retrieve_general --> generate
+    retrieve_cmds --> generate
     retrieve_install --> generate
+    retrieve_errinfo --> generate
     retrieve_opensta --> generate
+    retrieve_yosys --> generate
     generate --> __end__
 ```
 
