@@ -22,6 +22,7 @@ text_splitter = RecursiveCharacterTextSplitter(
     is_separator_regex=False,
 )
 
+
 def process_html(
     folder_path: str,
     split_text: bool = True,

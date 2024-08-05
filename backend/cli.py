@@ -29,8 +29,8 @@ if __name__ == '__main__':
             llm_response = output[-1]['generate']['messages'][0]
 
             tool = list(output[-2].keys())[0]
-            srcs = output[-2][tool]['sources']
-            urls = output[-2][tool]['urls']
+            srcs = set(output[-2][tool]['sources'])
+            urls = (output[-2][tool]['urls'])
             print(f'LLM: {llm_response} \nSources: {srcs} \nURLs: {urls}\n\n')
         
         else:

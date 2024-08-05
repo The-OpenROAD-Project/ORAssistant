@@ -35,7 +35,7 @@ def track_src(src: str) -> dict[str, str]:
         for file in files:
             src_file = os.path.join(root, file)
             src_path = src_file.split('backend/')[-1]
-            
+
             if 'OR_docs' in src_file:
                 copied_files[src_path] = (
                     f"{or_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
@@ -73,7 +73,7 @@ def copy_tree_track_src(src: str, dst: str) -> dict[str, str]:
             shutil.copy2(src_file, dst_file)
 
             dst_path = dst_file.split('backend/')[-1]
-            
+
             if 'OR_docs' in dst_file:
                 copied_files[dst_path] = (
                     f"{or_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
@@ -207,9 +207,9 @@ def build_orfs_docs() -> None:
 
     for file in os.listdir(f'{md_orfs_docs}'):
         if file.endswith('.md'):
-            copyfile(
-                f'{md_orfs_docs}/{file}', f'{cur_dir}/data/markdown/ORFS_docs/{file}'
-            )
+            source_dict.update(copy_tree_track_src(
+                f'{md_orfs_docs}/{file}', f'{cur_dir}/data/markdown/ORFS_docs/{file}',
+            ))
     print('Finished building ORFS docs.')
     print('Source dict:', source_dict)
 
