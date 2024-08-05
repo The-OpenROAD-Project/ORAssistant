@@ -19,6 +19,7 @@ class AgentState(TypedDict):
     context: Annotated[list[str], add_messages]
     tools: list[str]
     sources: list[str]
+    urls: list[str]
 
 
 class ToolNode:
@@ -29,8 +30,8 @@ class ToolNode:
         query = state['messages'][-1].content
         if query is None:
             raise ValueError('Query is None')
-        response, sources = self.tool_fn(query)
-        return {'context': [response], 'sources': sources}
+        response, sources, urls = self.tool_fn(query)
+        return {'context': [response], 'sources': sources, 'urls': urls}
 
 
 class RetrieverGraph:
