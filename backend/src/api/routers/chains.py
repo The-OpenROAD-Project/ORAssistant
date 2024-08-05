@@ -51,7 +51,7 @@ embeddings_type: str = str(os.getenv('EMBEDDINGS_TYPE'))
 
 if embeddings_type == 'HF':
     embeddings_model_name = str(os.getenv('HF_EMBEDDINGS'))
-elif embeddings_type == 'GOOGLE':
+elif embeddings_type == 'GOOGLE_GENAI' or embeddings_type == 'GOOGLE_VERTEXAI':
     embeddings_model_name = str(os.getenv('GOOGLE_EMBEDDINGS'))
 
 embeddings_config = {'type': embeddings_type, 'name': embeddings_model_name}
@@ -76,6 +76,7 @@ hybrid_retriever_chain = HybridRetrieverChain(
     prompt_template_str=summarise_prompt_template,
     embeddings_config=embeddings_config,
     contextual_rerank=True,
+    reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
     markdown_docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
@@ -104,6 +105,8 @@ multi_retriever_chain = MultiRetrieverChain(
     use_cuda=use_cuda,
     markdown_docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
     manpages_path=['./data/markdown/manpages'],
+    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    html_docs_path=['./data/rtdocs'],
 )
 multi_retriever_chain.create_multi_retriever()
 multi_llm_chain = multi_retriever_chain.get_llm_chain()

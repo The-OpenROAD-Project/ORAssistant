@@ -89,7 +89,7 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
     else:
         raise ValueError('RetrieverGraph not initialized.')
 
-    sources: list[str] = []
+    urls: list[str] = []
     context: list[str] = []
 
     if (
@@ -100,19 +100,19 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
         and len(output[2]['generate']['messages']) > 0
     ):
         llm_response = output[2]['generate']['messages'][0]
+        tool = list(output[-2].keys())[0]
+        urls = list(set(output[-2][tool]['urls']))
     else:
         print('LLM response extraction failed')
-
-    sources = list(set(sources))
 
     if user_input.list_sources and user_input.list_context:
         response = {
             'response': llm_response,
-            'sources': (sources),
+            'sources': (urls),
             'context': (context),
         }
     elif user_input.list_sources:
-        response = {'response': llm_response, 'sources': (sources)}
+        response = {'response': llm_response, 'sources': (urls)}
     elif user_input.list_context:
         response = {'response': llm_response, 'context': (context)}
     else:
