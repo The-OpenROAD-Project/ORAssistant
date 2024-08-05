@@ -108,7 +108,7 @@ class FAISSVectorDatabase:
         return None
 
     def add_md_manpages(
-        self, folder_paths: list[str], return_docs: bool = False
+        self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
             print('Processing markdown manpages...')
@@ -120,8 +120,7 @@ class FAISSVectorDatabase:
                 print(f'Processing [{folder_path}]...')
             docs_processed.extend(
                 process_md(
-                    folder_path=folder_path,
-                    split_text=False,
+                    folder_path=folder_path, split_text=False, chunk_size=chunk_size
                 )
             )
 
@@ -138,7 +137,7 @@ class FAISSVectorDatabase:
         return None
 
     def add_html(
-        self, folder_paths: list[str], return_docs: bool = False
+        self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         if self.print_progress:
             print('Process HTML docs...')
@@ -147,7 +146,11 @@ class FAISSVectorDatabase:
         for folder_path in folder_paths:
             if self.print_progress:
                 print(f'Processing [{folder_path}]...')
-                docs_processed.extend(process_html(folder_path=folder_path))
+                docs_processed.extend(
+                    process_html(
+                        folder_path=folder_path, split_text=True, chunk_size=chunk_size
+                    )
+                )
 
         if docs_processed:
             if self.print_progress:
