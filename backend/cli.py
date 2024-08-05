@@ -27,18 +27,11 @@ if __name__ == '__main__':
             and len(output[-1]['generate']['messages']) > 0
         ):
             llm_response = output[-1]['generate']['messages'][0]
-        else:
-            print('LLM response extraction failed')
 
-        if(
-            'tool' in output[-2]
-            and 'sources' in output[-2]['tool']
-            and 'urls' in output[-2]['tool']
-        ):
             tool = list(output[-2].keys())[0]
             srcs = output[-2][tool]['sources']
             urls = output[-2][tool]['urls']
+            print(f'LLM: {llm_response} \nSources: {srcs} \nURLs: {urls}\n\n')
+        
         else:
-            print('Tool response extraction failed')
-
-        print(f'LLM: {llm_response} \nSources: {srcs} \nURLs: {urls}\n\n')
+            print('LLM response extraction failed')
