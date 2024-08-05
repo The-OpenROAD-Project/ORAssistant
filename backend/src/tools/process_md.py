@@ -58,29 +58,25 @@ def process_md(
 
     documents = load_docs(folder_path=folder_path)
 
+    for doc in documents:
+        try:
+            url = src_dict[doc.metadata['source']]
+        except KeyError:
+            print(f"Could not find source for {doc.metadata['source']}")
+            url = ''
+
+        new_metadata = {
+            'url': url,
+            'source': doc.metadata['source'],
+        }
+        doc.metadata = new_metadata
+
     if split_text:
         if not chunk_size:
             raise ValueError('Chunk size not set.')
 
         documents = text_splitter.split_documents(documents)
-
-        documents_knowledge_base = []
-        for doc in documents:
-            try:
-                url = src_dict[doc.metadata['source']]
-            except KeyError:
-                print(f"Cound not find source for {doc.metadata['source']}")
-                url = ''
-
-            new_metadata = {
-                'url': url,
-                'source': doc.metadata['source'],
-            }
-            documents_knowledge_base.append(
-                Document(page_content=doc.page_content, metadata=new_metadata)
-            )
-
-        docs_chunked = chunk_documents(chunk_size, documents_knowledge_base)
+        docs_chunked = chunk_documents(chunk_size, documents)
 
         return docs_chunked
 
