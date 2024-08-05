@@ -137,7 +137,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_general(query: str) -> Tuple[str, list[str]]:
+    def retrieve_general(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve comprehensive and detailed information pertaining to the OpenROAD project and OpenROAD-Flow-Scripts. \
         This includes, but is not limited to, general information, specific functionalities, usage guidelines, \
@@ -152,7 +152,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_cmds(query: str) -> Tuple[str, list[str]]:
+    def retrieve_cmds(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve information on the commands and tools available in the OpenROAD project and OpenROAD-Flow-Scripts. \
         This includes descriptions, usage guidelines, command syntax, examples, and best practices.
@@ -198,7 +198,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_install(query: str) -> Tuple[str, list[str]]:
+    def retrieve_install(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve comprehensive and detailed information pertaining to the installaion of OpenROAD project and OpenROAD-Flow-Scripts. \
         This includes, but is not limited to, various dependencies, system requirements, installation methods such as,
@@ -216,7 +216,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_opensta(query: str) -> Tuple[str, list[str]]:
+    def retrieve_opensta(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve detailed and comprehensive information about OpenSTA and its various commands.
         
@@ -248,7 +248,7 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_errinfo(query: str) -> Tuple[str, list[str]]:
+    def retrieve_errinfo(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve descriptions and details regarding the various warning/error messages encountered while using the OpenROAD.
         An error code usually is identified by the tool, followed by a number.
@@ -263,13 +263,14 @@ class RetrieverAgent:
 
     @staticmethod
     @tool
-    def retrieve_yosys_rtdocs(query: str) -> Tuple[str, list[str]]:
+    def retrieve_yosys_rtdocs(query: str) -> Tuple[str, list[str], list[str]]:
         """
-        Yosys is a framework for Verilog RTL synthesis. \
-        It currently has extensive Verilog-2005 support and provides a basic set of synthesis algorithms for various application domains. \
         Retrieve detailed information regarding the Yosys application. \
         This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of Yosys.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of Yosys.\
+        
+        Yosys is a framework for Verilog RTL synthesis. \
+        It currently has extensive Verilog-2005 support and provides a basic set of synthesis algorithms for various application domains. \
         """
 
         if RetrieverAgent.yosys_rtdocs_retriever is None:
