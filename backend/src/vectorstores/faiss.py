@@ -1,7 +1,8 @@
 from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores.utils import DistanceStrategy
+from langchain_google_vertexai import VertexAIEmbeddings
 from langchain.docstore.document import Document
 
 from ..tools.process_md import process_md
@@ -26,13 +27,22 @@ class FAISSVectorDatabase:
 
         model_kwargs = {'device': 'cuda'} if use_cuda else {}
 
-        self.embedding_model: Union[HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings]
+        self.embedding_model: Union[
+            HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
+        ]
 
-        if embeddings_type == 'GOOGLE':
+        if embeddings_type == 'GOOGLE_GENAI':
             self.embedding_model = GoogleGenerativeAIEmbeddings(
                 model=self.embeddings_model_name,
                 task_type='retrieval_document',
             )
+            print('Using Google GenerativeAI embeddings...')
+
+        elif embeddings_type == 'GOOGLE_VERTEXAI':
+            self.embedding_model = VertexAIEmbeddings(
+                model_name=self.embeddings_model_name
+            )
+            print('Using Google VertexAI embeddings...')
 
         elif embeddings_type == 'HF':
             self.embedding_model = HuggingFaceEmbeddings(
@@ -41,6 +51,7 @@ class FAISSVectorDatabase:
                 encode_kwargs={'normalize_embeddings': True},
                 model_kwargs=model_kwargs,
             )
+            print('Using HuggingFace embeddings...')
 
         else:
             raise ValueError('Invalid embdeddings type specified.')
@@ -49,15 +60,21 @@ class FAISSVectorDatabase:
         self.debug = debug
         self.distance_strategy = distance_strategy
 
-        self._faiss_db = FAISS.from_documents(
-            documents=[Document(page_content='')],
-            embedding=self.embedding_model,
-            distance_strategy=self.distance_strategy,
-        )
+        self._faiss_db: Optional[FAISS] = None
 
     @property
-    def faiss_db(self) -> FAISS:
+    def faiss_db(self) -> Optional[FAISS]:
         return self._faiss_db
+
+    def _add_to_db(self, documents: list[Document]) -> None:
+        if self._faiss_db is None:
+            self._faiss_db = FAISS.from_documents(
+                documents=documents,
+                embedding=self.embedding_model,
+                distance_strategy=self.distance_strategy,
+            )
+        else:
+            self._faiss_db.add_documents(documents)
 
     def add_md_docs(
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
@@ -80,8 +97,8 @@ class FAISSVectorDatabase:
 
         if docs_processed:
             if self.print_progress:
-                print(f'Adding {folder_paths} to FAISS database...')
-            self._faiss_db.add_documents(docs_processed)
+                print(f'Adding {folder_paths} to FAISS database...\n')
+            self._add_to_db(documents=docs_processed)
         else:
             raise ValueError('No markdown documents processed.')
 
@@ -98,15 +115,20 @@ class FAISSVectorDatabase:
 
         docs_processed: list[Document] = []
 
-        for file_path in folder_paths:
+        for folder_path in folder_paths:
             if self.print_progress:
-                print(f'Processing [{file_path}]...')
-            docs_processed.extend(process_md(folder_path=file_path, split_text=False))
+                print(f'Processing [{folder_path}]...')
+            docs_processed.extend(
+                process_md(
+                    folder_path=folder_path,
+                    split_text=False,
+                )
+            )
 
         if docs_processed:
             if self.print_progress:
-                print(f'Adding {folder_paths} to FAISS database...')
-            self._faiss_db.add_documents(docs_processed)
+                print(f'Adding {folder_paths} to FAISS database...\n')
+            self._add_to_db(documents=docs_processed)
         else:
             raise ValueError('No manpages documents processed.')
 
@@ -129,8 +151,8 @@ class FAISSVectorDatabase:
 
         if docs_processed:
             if self.print_progress:
-                print(f'Adding {folder_paths} to FAISS database...')
-            self._faiss_db.add_documents(docs_processed)
+                print(f'Adding {folder_paths} to FAISS database...\n')
+            self._add_to_db(documents=docs_processed)
         else:
             raise ValueError('No HTML docs processed.')
 
@@ -157,8 +179,8 @@ class FAISSVectorDatabase:
 
         if docs_processed:
             if self.print_progress:
-                print(f'Adding [{file_paths}] to FAISS database...')
-            self._faiss_db.add_documents(docs_processed)
+                print(f'Adding [{file_paths}] to FAISS database...\n')
+            self._add_to_db(documents=docs_processed)
         else:
             raise ValueError('No PDF documents processed.')
 
@@ -179,6 +201,8 @@ class FAISSVectorDatabase:
         return json_vector_db
 
     def get_relevant_documents(self, query: str, k: int = 2) -> str:
+        if self._faiss_db is None:
+            raise ValueError('No documents in FAISS database')
         retrieved_docs = self._faiss_db.similarity_search(query=query, k=k)
         retrieved_text = ''
 
