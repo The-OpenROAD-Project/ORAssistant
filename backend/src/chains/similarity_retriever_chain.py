@@ -128,7 +128,7 @@ class SimilarityRetrieverChain(BaseChain):
         super().create_llm_chain()
 
         self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
+            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'][0])))
             | self.llm_chain
         )
 

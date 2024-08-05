@@ -24,8 +24,8 @@ class MultiRetrieverChain(BaseChain):
         html_docs_path: Optional[list[str]] = None,
         embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
-        search_k: list[int] = [5, 5, 5],
-        weights: list[float] = [0.4, 0.4, 0.2],
+        search_k: list[int] = [5, 5, 5, 5],
+        weights: list[float] = [0.25, 0.25, 0.25, 0.25],
         chunk_size: int = 500,
     ):
         super().__init__(
@@ -55,7 +55,7 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         docs_similarity_retriever_chain.embed_docs(return_docs=False)
-        docs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        docs_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[0])
         docs_similarity_retriever = docs_similarity_retriever_chain.retriever
 
         manpages_similarity_retriever_chain = SimilarityRetrieverChain(
@@ -66,8 +66,8 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         manpages_similarity_retriever_chain.embed_docs(return_docs=False)
-        manpages_similarity_retriever_chain.create_similarity_retriever(search_k=5)
-        manpages_similarity_retriever = docs_similarity_retriever_chain.retriever
+        manpages_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[1])
+        manpages_similarity_retriever = manpages_similarity_retriever_chain.retriever
 
         pdfs_similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
@@ -77,7 +77,7 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         pdfs_similarity_retriever_chain.embed_docs(return_docs=False)
-        pdfs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        pdfs_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[2])
         pdfs_similarity_retriever = pdfs_similarity_retriever_chain.retriever
 
         rtdocs_similarity_retriever_chain = SimilarityRetrieverChain(
@@ -88,7 +88,7 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         rtdocs_similarity_retriever_chain.embed_docs(return_docs=False)
-        rtdocs_similarity_retriever_chain.create_similarity_retriever(search_k=5)
+        rtdocs_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[3])
         rtdocs_similarity_retriever = rtdocs_similarity_retriever_chain.retriever
 
         if (
@@ -111,7 +111,7 @@ class MultiRetrieverChain(BaseChain):
         super().create_llm_chain()
 
         self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
+            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'][0])))
             | self.llm_chain
         )
 
