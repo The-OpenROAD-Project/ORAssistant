@@ -214,7 +214,6 @@ def build_orfs_docs() -> None:
 
     for file in os.listdir(f'{md_orfs_docs}/user'):
         if file.endswith('.md'):
-            logging.debug(file.lower())
             if 'build' in file.lower():
                 source_dict.update(
                     copy_file_track_src(
