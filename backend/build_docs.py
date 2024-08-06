@@ -16,7 +16,6 @@ cur_dir: str = os.getcwd()
 or_docs_url = 'https://openroad.readthedocs.io/en/latest'
 orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
 opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
-manpages_url = 'https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs'
 yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 
 logging.basicConfig(level=logging.DEBUG)
@@ -30,6 +29,10 @@ def purge_folders(folder_paths: list[str]) -> None:
 
 def track_src(src: str) -> dict[str, str]:
     copied_files = {}
+
+    if not os.path.exists(src):
+        logging.debug(f'File {src} does not exist. Exiting.')
+        sys.exit(1)
 
     for root, _, files in os.walk(src):
         for file in files:
@@ -45,7 +48,7 @@ def track_src(src: str) -> dict[str, str]:
                     f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
                 )
             elif 'manpages' in src:
-                copied_files[src_path] = manpages_url
+                copied_files[src_path] = f"OpenROAD Manpages - {src_path.split('/')[-1]}"
             elif 'yosys' in src:
                 copied_files[src_path] = src_path.split('/data/rtdocs')[-1]
             elif 'OpenSTA' in src:
@@ -57,6 +60,10 @@ def track_src(src: str) -> dict[str, str]:
 
 def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
     copied_files = {}
+
+    if not os.path.exists(src):
+        logging.debug(f'File {src} does not exist. Exiting.')
+        sys.exit(1)
 
     if os.path.isfile(src):
         shutil.copy2(src, dst)
@@ -72,9 +79,9 @@ def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
                 f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
             )
         elif 'manpages' in dst:
-            copied_files[dst_path] = manpages_url
+            copied_files[dst_path] = f"OpenROAD Manpages - {src.split('/')[-1]}"
         elif 'yosys' in dst:
-            copied_files[dst_path] = dst_path.split('/data/rtdocs')[-1]
+            copied_files[dst_path] = src.split('/data/rtdocs')[-1]
         elif 'OpenSTA' in dst:
             copied_files[dst_path] = opensta_docs_url
         else:
@@ -85,6 +92,10 @@ def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
 
 def copy_tree_track_src(src: str, dst: str) -> dict[str, str]:
     copied_files = {}
+
+    if not os.path.exists(src):
+        logging.debug(f'Folder {src} does not exist. Exiting.')
+        sys.exit(1)
 
     for root, _, files in os.walk(src):
         rel_path = os.path.relpath(root, src)
@@ -110,9 +121,9 @@ def copy_tree_track_src(src: str, dst: str) -> dict[str, str]:
                     f"{orfs_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
                 )
             elif 'manpages' in dst_file:
-                copied_files[dst_path] = manpages_url
+                copied_files[dst_path] = f"OpenROAD Manpages - {src.split('/')[-1]}"
             elif 'yosys' in dst_file:
-                copied_files[dst_path] = dst_path.split('/data/rtdocs')[-1]
+                copied_files[dst_path] = src.split('/data/rtdocs')[-1]
             elif 'OpenSTA' in dst_file:
                 copied_files[dst_path] = opensta_docs_url
             else:
@@ -212,9 +223,11 @@ def build_orfs_docs() -> None:
         )
     )
 
+    installation_files = ['FAQS.md','BuildLocally.md', 'BuildWithDocker.md', 'BuildWithPrebuilt.md', 'BuildWithWSL.md', 'SupportedOS.md', 'index2.md']
+
     for file in os.listdir(f'{md_orfs_docs}/user'):
         if file.endswith('.md'):
-            if 'build' in file.lower():
+            if file in installation_files:
                 source_dict.update(
                     copy_file_track_src(
                         f'{md_orfs_docs}/user/{file}',
@@ -229,11 +242,23 @@ def build_orfs_docs() -> None:
                     )
                 )
 
-    for file in os.listdir(f'{md_orfs_docs}'):
+    for file in os.listdir(f'{md_orfs_docs}/'):
         if file.endswith('.md'):
-            source_dict.update(copy_tree_track_src(
-                f'{md_orfs_docs}/{file}', f'{cur_dir}/data/markdown/ORFS_docs/{file}',
-            ))
+            print(file)
+            if file in installation_files:
+                source_dict.update(
+                    copy_file_track_src(
+                        f'{md_orfs_docs}/{file}',
+                        f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
+                    )
+                )
+            else:
+                source_dict.update(
+                    copy_file_track_src(
+                        f'{md_orfs_docs}/{file}',
+                        f'{cur_dir}/data/markdown/ORFS_docs/{file}',
+                    )
+                )
     logging.debug('Finished building ORFS docs.')
 
     return
@@ -349,7 +374,7 @@ if __name__ == '__main__':
         folder_name='OpenROAD-flow-scripts',
     )
 
-    build_or_docs()
+    # build_or_docs()
     build_orfs_docs()
     build_manpages()
     
@@ -361,13 +386,6 @@ if __name__ == '__main__':
         )
     )
     os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
-
-    source_dict.update(
-        copy_tree_track_src(
-            f'{cur_dir}/data/markdown/ORFS_docs/index2.md',
-            f'{cur_dir}/data/markdown/ORFS_docs/installation/index2.md',
-        )
-    )
 
     gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
     gh_disc_src = json.load(gh_disc_src_json)
