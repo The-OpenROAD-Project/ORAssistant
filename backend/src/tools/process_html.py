@@ -44,7 +44,7 @@ def process_html(
     for file_path in tqdm(html_files, desc='Loading HTML files'):
         content = UnstructuredHTMLLoader(file_path=file_path).load()
         for doc in content:
-            doc.metadata['source'] = file_path.split('backend/')[-1]
+            doc.metadata['source'] = file_path.split('./')[-1]
         documents.extend(content)
 
     for doc in documents:
