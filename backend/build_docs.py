@@ -312,7 +312,7 @@ def get_yosys_rtdocs() -> None:
 
 
 if __name__ == '__main__':
-    print("Building knowledge base...")
+    print('Building knowledge base...')
     docs_paths = [
         'data/markdown/manpages',
         'data/markdown/OR_docs',
@@ -379,5 +379,5 @@ if __name__ == '__main__':
     with open('src/source_list.json', 'w+') as src:
         src.write(json.dumps(source_dict))
 
-    # repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
-    # purge_folders(folder_paths=repo_paths) 
+    repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
+    purge_folders(folder_paths=repo_paths) 
