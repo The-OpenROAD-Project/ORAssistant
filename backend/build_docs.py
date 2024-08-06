@@ -4,7 +4,7 @@ import requests
 import sys
 import shutil
 import json
-
+import logging
 from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
@@ -19,12 +19,13 @@ opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022c
 manpages_url = 'https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs'
 yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/0.43'
 
+logging.basicConfig(level=logging.DEBUG)
 
 def purge_folders(folder_paths: list[str]) -> None:
     for folder_path in folder_paths:
         if os.path.exists(folder_path):
             shutil.rmtree(folder_path)
-            print(f'Purging, Folder {folder_path} deleted.')
+            logging.debug(f'Purging, Folder {folder_path} deleted.')
 
 
 def track_src(src: str) -> dict[str, str]:
@@ -32,26 +33,53 @@ def track_src(src: str) -> dict[str, str]:
 
     for root, _, files in os.walk(src):
         for file in files:
-            src_file = os.path.join(root, file)
-            src_path = src_file.split('backend/')[-1]
+            src = os.path.join(root, file)
+            src_path = src.split('backend/')[-1]
 
-            if 'OR_docs' in src_file:
+            if 'OR_docs' in src:
                 copied_files[src_path] = (
-                    f"{or_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
+                    f"{or_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
                 )
-            elif 'ORFS_docs' in src_file:
+            elif 'ORFS_docs' in src:
                 copied_files[src_path] = (
-                    f"{orfs_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
+                    f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
                 )
-            elif 'manpages' in src_file:
+            elif 'manpages' in src:
                 copied_files[src_path] = manpages_url
-            elif 'yosys' in src_file:
+            elif 'yosys' in src:
                 copied_files[src_path] = src_path.split('/data/rtdocs')[-1]
-            elif 'OpenSTA' in src_file:
+            elif 'OpenSTA' in src:
                 copied_files[src_path] = opensta_docs_url
             else:
                 copied_files[src_path] = src_path
 
+    return copied_files
+
+def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
+    copied_files = {}
+
+    if os.path.isfile(src):
+        shutil.copy2(src, dst)
+
+        dst_path = dst.split('backend/')[-1]
+
+        if 'OR_docs' in dst:
+            copied_files[dst_path] = (
+                f"{or_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
+            )
+        elif 'ORFS_docs' in dst:
+            copied_files[dst_path] = (
+                f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
+            )
+        elif 'manpages' in dst:
+            copied_files[dst_path] = manpages_url
+        elif 'yosys' in dst:
+            copied_files[dst_path] = dst_path.split('/data/rtdocs')[-1]
+        elif 'OpenSTA' in dst:
+            copied_files[dst_path] = opensta_docs_url
+        else:
+            copied_files[dst_path] = dst_path
+    
     return copied_files
 
 
@@ -92,37 +120,36 @@ def copy_tree_track_src(src: str, dst: str) -> dict[str, str]:
 
     return copied_files
 
-
 def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) -> None:
     target_dir = os.path.join(cur_dir, folder_name)
-    print(f'Cloning repo from {url} to {target_dir}...')
+    logging.debug(f'Cloning repo from {url} to {target_dir}...')
     command = f'git clone {url} --depth 1 {target_dir}'
     res = subprocess.run(command, shell=True, capture_output=True)
     if res.returncode != 0:
-        print(f"Error in cloning repo: {res.stderr.decode('utf-8')}")
+        logging.debug(f"Error in cloning repo: {res.stderr.decode('utf-8')}")
         sys.exit(1)
     if commit_hash:
         os.chdir(target_dir)
         command = f'git fetch origin {commit_hash} && git checkout {commit_hash}'
         res = subprocess.run(command, shell=True, capture_output=True)
         if res.returncode != 0:
-            print(f"Error in checking out commit hash: {res.stderr.decode('utf-8')}")
+            logging.debug(f"Error in checking out commit hash: {res.stderr.decode('utf-8')}")
             sys.exit(1)
-    print('Cloned repo successfully.')
+    logging.debug('Cloned repo successfully.')
 
 
 def build_or_docs() -> None:
-    print('Starting OR docs build...')
+    logging.debug('Starting OR docs build...')
 
     os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
     subprocess.run('make html', shell=True, capture_output=True)
 
-    print('Copying OR docs...')
+    logging.debug('Copying OR docs...')
     os.chdir(cur_dir)
     md_or_docs = os.path.join(cur_dir, 'OpenROAD/docs/build/html/_sources')
 
     if not os.path.isdir(md_or_docs):
-        print(f'Directory {md_or_docs} does not exist. Exiting.')
+        logging.debug(f'Directory {md_or_docs} does not exist. Exiting.')
         sys.exit(1)
 
     source_dict.update(
@@ -153,25 +180,25 @@ def build_or_docs() -> None:
         if file.endswith('.md'):
             copyfile(f'{md_or_docs}/{file}', f'{cur_dir}/data/markdown/OR_docs/{file}')
 
-    print('Finished building OR docs.')
+    logging.debug('Finished building OR docs.')
 
     return
 
 
 def build_orfs_docs() -> None:
-    print('Starting ORFS docs build...')
+    logging.debug('Starting ORFS docs build...')
     os.chdir(os.path.join(cur_dir, 'OpenROAD-flow-scripts/docs'))
 
     subprocess.run('make html', shell=True, capture_output=True)
 
-    print('Copying ORFS docs...')
+    logging.debug('Copying ORFS docs...')
     os.chdir(cur_dir)
     md_orfs_docs = os.path.join(
         cur_dir, 'OpenROAD-flow-scripts/docs/build/html/_sources'
     )
 
     if not os.path.isdir(md_orfs_docs):
-        print(f'Directory {md_orfs_docs} does not exist. Exiting.')
+        logging.debug(f'Directory {md_orfs_docs} does not exist. Exiting.')
         sys.exit(1)
 
     source_dict.update(
@@ -185,20 +212,19 @@ def build_orfs_docs() -> None:
         )
     )
 
-    os.makedirs(f'{cur_dir}/data/markdown/ORFS_docs/installation', exist_ok=True)
-
     for file in os.listdir(f'{md_orfs_docs}/user'):
         if file.endswith('.md'):
+            logging.debug(file.lower())
             if 'build' in file.lower():
                 source_dict.update(
-                    copy_tree_track_src(
+                    copy_file_track_src(
                         f'{md_orfs_docs}/user/{file}',
                         f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
                     )
                 )
             else:
                 source_dict.update(
-                    copy_tree_track_src(
+                    copy_file_track_src(
                         f'{md_orfs_docs}/user/{file}',
                         f'{cur_dir}/data/markdown/ORFS_docs/{file}',
                     )
@@ -209,20 +235,20 @@ def build_orfs_docs() -> None:
             source_dict.update(copy_tree_track_src(
                 f'{md_orfs_docs}/{file}', f'{cur_dir}/data/markdown/ORFS_docs/{file}',
             ))
-    print('Finished building ORFS docs.')
+    logging.debug('Finished building ORFS docs.')
 
     return
 
 
 def build_manpages() -> None:
-    print('Starting manpages build...')
+    logging.debug('Starting manpages build...')
 
     # check if pandoc is installed, if not error out.
     res = subprocess.run('pandoc --version', shell=True, capture_output=True)
     if res.returncode != 0:
-        print('Pandoc is not installed. Please install it.')
+        logging.debug('Pandoc is not installed. Please install it.')
         sys.exit(1)
-    print('Pandoc is installed.')
+    logging.debug('Pandoc is installed.')
 
     # generate manpages
     command = '../../etc/find_messages.py > messages.txt'
@@ -230,11 +256,10 @@ def build_manpages() -> None:
         path = os.path.join(cur_dir, 'OpenROAD/src', module)
         if not os.path.isdir(path):
             continue
-        print('Processing module:', module)
         os.chdir(path)
         res = subprocess.run(command, shell=True, capture_output=True)
         if res.returncode != 0:
-            print(
+            logging.error(
                 f"Error in finding messages for {module}: {res.stderr.decode('utf-8')}"
             )
             continue
@@ -242,16 +267,16 @@ def build_manpages() -> None:
     num_cores = os.cpu_count()
     command = f'make clean && make preprocess && make -j{num_cores}'
     res = subprocess.run(command, shell=True, capture_output=True)
-    print('Finished building manpages.')
+    logging.debug('Finished building manpages.')
 
     # copy folder contents to data/markdown/manpages
     src_dir = os.path.join(cur_dir, 'OpenROAD/docs/md')
     dest_dir = os.path.join(cur_dir, 'data/markdown/manpages')
 
     source_dict.update(copy_tree_track_src(src_dir, dest_dir))
-    print('Copied manpages to data/markdown/manpages.')
+    logging.debug('Copied manpages to data/markdown/manpages.')
 
-    print('Finished building manpages.')
+    logging.debug('Finished building manpages.')
 
     return
 
@@ -266,25 +291,24 @@ def get_opensta_docs() -> None:
     if response.status_code == 200:
         with open(save_path, 'wb+') as file:
             file.write(response.content)
-        print('OpenSTA docs downloaded successfully.')
+        logging.debug('OpenSTA docs downloaded successfully.')
         source_dict.update(track_src(f'{cur_dir}/data/pdf/OpenSTA'))
-        # source_dict[os.path.join(cur_dir, save_path)] = opensta_docs_url
     else:
-        print('Failed to download file. Status code:', response.status_code)
+        logging.debug('Failed to download file. Status code:', response.status_code)
 
 
 def get_yosys_rtdocs() -> None:
-    print('Downloading Yosys RT docs...')
+    logging.debug('Downloading Yosys RT docs...')
     try:
         subprocess.run(
             f'wget -r -A.html -P data/rtdocs {yosys_rtdocs_url} ',
             shell=True,
         )
     except Exception as e:
-        print(f'Error in downloading Yosys RT docs: {e}')
+        logging.debug(f'Error in downloading Yosys RT docs: {e}')
         sys.exit(1)
 
-    print('Yosys RT docs downloaded successfully.')
+    logging.debug('Yosys RT docs downloaded successfully.')
     source_dict.update(track_src(f'{cur_dir}/data/rtdocs'))
 
 
@@ -300,14 +324,12 @@ if __name__ == '__main__':
 
     os.makedirs('data/markdown/manpages', exist_ok=True)
     os.makedirs('data/markdown/OR_docs', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
+    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
+    os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
     os.makedirs('data/rtdocs', exist_ok=True)
-
-    get_yosys_rtdocs()
-    get_opensta_docs()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
@@ -328,6 +350,9 @@ if __name__ == '__main__':
     build_orfs_docs()
     build_manpages()
 
+    get_yosys_rtdocs()
+    get_opensta_docs()
+    
     os.chdir(cur_dir)
     source_dict.update(
         copy_tree_track_src(
@@ -344,9 +369,6 @@ if __name__ == '__main__':
         )
     )
 
-    repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
-    purge_folders(folder_paths=repo_paths)
-
     gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
     gh_disc_src = json.load(gh_disc_src_json)
     gh_disc_path = 'data/markdown/gh_discussions'
@@ -354,5 +376,8 @@ if __name__ == '__main__':
         full_path = os.path.join(gh_disc_path, file)
         source_dict[full_path] = gh_disc_src[file]['url']
 
-    with open('src/source_list.json', 'w+') as src_file:
-        src_file.write(json.dumps(source_dict))
+    with open('src/source_list.json', 'w+') as src:
+        src.write(json.dumps(source_dict))
+
+    repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
+    purge_folders(folder_paths=repo_paths) 
