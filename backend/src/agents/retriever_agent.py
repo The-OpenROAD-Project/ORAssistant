@@ -49,7 +49,7 @@ class RetrieverAgent:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             html_docs_path=[
-                '/home/palaniappan-r/Code/ORAssistant/backend/data/rtdocs/yosyshq.readthedocs.io/'
+                './data/rtdocs/yosyshq.readthedocs.io/'
             ],
             weights=[0.6,0.2,0.2],
             contextual_rerank=True,
