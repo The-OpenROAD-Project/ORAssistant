@@ -243,8 +243,7 @@ def build_orfs_docs() -> None:
                 )
 
     for file in os.listdir(f'{md_orfs_docs}/'):
-        if file.endswith('.md'):
-            print(file)
+        if file.endswith('.md'):  
             if file in installation_files:
                 source_dict.update(
                     copy_file_track_src(
@@ -380,7 +379,7 @@ if __name__ == '__main__':
     
     os.chdir(cur_dir)
     source_dict.update(
-        copy_tree_track_src(
+        copy_file_track_src(
             f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
             f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
         )
