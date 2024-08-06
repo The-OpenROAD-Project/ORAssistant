@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 search_k = int(os.getenv('SEARCH_K', 10))
-
+chunk_size = int(os.getenv('CHUNK_SIZE', 4000))
 
 class RetrieverAgent:
     def __init__(self) -> None:
@@ -54,6 +54,7 @@ class RetrieverAgent:
             weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
+            chunk_size=chunk_size,
         )
         yosys_rtdocs_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
@@ -71,6 +72,7 @@ class RetrieverAgent:
             weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
+            chunk_size=chunk_size,
         )
         install_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.install_retriever = install_retriever_chain.retriever
@@ -90,6 +92,7 @@ class RetrieverAgent:
             weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
+            chunk_size=chunk_size,
         )
         commands_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.commands_retriever = commands_retriever_chain.retriever
@@ -102,6 +105,7 @@ class RetrieverAgent:
             weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
+            chunk_size=chunk_size,
         )
         opensta_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.opensta_retriever = opensta_retriever_chain.retriever
@@ -122,6 +126,7 @@ class RetrieverAgent:
             weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
+            chunk_size=chunk_size,
         )
         general_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.general_retriever = general_retriever_chain.retriever
@@ -137,6 +142,7 @@ class RetrieverAgent:
             weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
+            chunk_size=chunk_size,
         )
         errinfo_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.errinfo_retriever = errinfo_retriever_chain.retriever
