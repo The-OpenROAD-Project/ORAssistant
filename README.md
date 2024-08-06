@@ -63,6 +63,11 @@ Ensure you have `docker` and `docker-compose` installed in your system.
   python main.py
 ```
 
+-**Optionally**: To interact with the chatbot in your terminal, run:
+```bash
+python chatbot.py
+```
+
 The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
 
 Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
