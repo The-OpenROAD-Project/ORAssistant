@@ -373,7 +373,7 @@ if __name__ == '__main__':
         folder_name='OpenROAD-flow-scripts',
     )
 
-    # build_or_docs()
+    build_or_docs()
     build_orfs_docs()
     build_manpages()
     
