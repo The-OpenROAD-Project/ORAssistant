@@ -5,7 +5,6 @@ import sys
 import shutil
 import json
 
-from distutils.dir_util import copy_tree
 from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
