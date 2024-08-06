@@ -26,7 +26,7 @@ Provide a structured, detailed and informative answer to this following question
 """
 
 gh_discussion_prompt_template = """
-The following is a conversation between two programmers discussing the OpenROAD (OR) project and the OpenROAD-Flow-Scripts (ORFS).
+The following is a GitHub Discussions conversation between two programmers discussing the OpenROAD (OR) project and the OpenROAD-Flow-Scripts (ORFS).
 
 You may infer information from the conversation to answer the question.
 
