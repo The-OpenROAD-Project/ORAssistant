@@ -17,7 +17,7 @@ or_docs_url = 'https://openroad.readthedocs.io/en/latest'
 orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
 opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
 manpages_url = 'https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/docs'
-yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/0.43'
+yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 
 logging.basicConfig(level=logging.DEBUG)
 
