@@ -54,6 +54,7 @@ class RetrieverAgent:
                 './data/markdown/gh_discussions/Build',
                 './data/markdown/gh_discussions/Installation',
             ],
+            weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
         )
@@ -72,6 +73,7 @@ class RetrieverAgent:
                 './data/markdown/gh_discussions/Runtime',
                 './data/markdown/gh_discussions/Documentation',
             ],
+            weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
         )
@@ -83,6 +85,7 @@ class RetrieverAgent:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+            weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
         )
@@ -102,6 +105,7 @@ class RetrieverAgent:
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
             ],
+            weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
         )
@@ -116,6 +120,7 @@ class RetrieverAgent:
                 './data/markdown/manpages/man3',
                 './data/markdown/gh_discussions/Bug',
             ],
+            weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
         )
@@ -129,6 +134,7 @@ class RetrieverAgent:
             html_docs_path=[
                 '/home/palaniappan-r/Code/ORAssistant/backend/data/rtdocs/yosyshq.readthedocs.io/'
             ],
+            weights=[0.6,0.2,0.2],
             contextual_rerank=True,
             search_k=search_k,
         )
@@ -159,33 +165,33 @@ class RetrieverAgent:
         The tool assists users by delivering clear, accurate, and relevant details to help them effectively utilize the following commands and tools within OpenROAD and OpenROAD-Flow-Scripts:
  
         Here's a list of all the tools available:
-        Antenna Rule Checker
-        Clock Tree Synthesis
-        Design For Testing
-        Detailed Placement
-        Detailed Routing
-        Metal Fill
-        Global Floorplanning
-        Global Placement
-        Global Routing
-        Graphical User Interface
-        Initialize Floorplan
-        Macro Placement
-        Hierarchical Macro Placement
-        OpenDB
+        ANT: Antenna Rule Checker
+        CTS: Clock Tree Synthesis
+        DFT: Design For Testing
+        DPL: Detailed Placement
+        DRT: Detailed Routing
+        FIN: Metal Fill
+        GPL: Global Floorplanning
+        GPL: Global Placement
+        GRT: Global Routing
+        GUI: Graphical User Interface
+        IFP: Initialize Floorplan
+        MPL: Macro Placement
+        MPL: Hierarchical Macro Placement
+        ODB: OpenDB
         Chip-level Connections
-        Pad
-        Partition Manager
-        Power Distribution Network
-        Pin Placement
-        IR Drop Analysis
-        Parasitics Extraction
-        Restructure
-        Gate Resizer
-        Rectilinear Steiner Tree
-        TapCell
-        Read Unified Power Format
-        Utilities
+        PAD: Pad
+        PAR: Partition Manager
+        PDN: Power Distribution Network
+        PPL: Pin Placement
+        PSM: IR Drop Analysis
+        RSX: Parasitics Extraction
+        RMP: Restructure
+        RSZ: Gate Resizer
+        STT: Rectilinear Steiner Tree
+        TAP: TapCell
+        UPF: Read Unified Power Format
+        UTL: Utilities
 
         The tools can be represented by their abbreviations as well: ANT,CTS,DFT,DPL,DRT,FIN,GPL,GRT,GUI,IFP,MPL,ODB,PAD,PAR,PDN,PPL,PSM,RSX,RMP,RSZ,STT,TAP,UPF,UTL     
         
