@@ -210,7 +210,6 @@ def build_orfs_docs() -> None:
                 f'{md_orfs_docs}/{file}', f'{cur_dir}/data/markdown/ORFS_docs/{file}',
             ))
     print('Finished building ORFS docs.')
-    print('Source dict:', source_dict)
 
     return
 
