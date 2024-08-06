@@ -44,6 +44,20 @@ class RetrieverAgent:
         reranking_model_name: str,
         use_cuda: bool = False,
     ) -> None:
+        yosys_rtdocs_retriever_chain = HybridRetrieverChain(
+            embeddings_config=embeddings_config,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            html_docs_path=[
+                '/home/palaniappan-r/Code/ORAssistant/backend/data/rtdocs/yosyshq.readthedocs.io/'
+            ],
+            weights=[0.6,0.2,0.2],
+            contextual_rerank=True,
+            search_k=search_k,
+        )
+        yosys_rtdocs_retriever_chain.create_hybrid_retriever()
+        RetrieverAgent.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
+
         install_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
@@ -126,20 +140,6 @@ class RetrieverAgent:
         )
         errinfo_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.errinfo_retriever = errinfo_retriever_chain.retriever
-
-        yosys_rtdocs_retriever_chain = HybridRetrieverChain(
-            embeddings_config=embeddings_config,
-            reranking_model_name=reranking_model_name,
-            use_cuda=use_cuda,
-            html_docs_path=[
-                '/home/palaniappan-r/Code/ORAssistant/backend/data/rtdocs/yosyshq.readthedocs.io/'
-            ],
-            weights=[0.6,0.2,0.2],
-            contextual_rerank=True,
-            search_k=search_k,
-        )
-        yosys_rtdocs_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
 
     @staticmethod
     @tool
