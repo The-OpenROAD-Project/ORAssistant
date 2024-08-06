@@ -312,6 +312,7 @@ def get_yosys_rtdocs() -> None:
 
 
 if __name__ == '__main__':
+    print("Building knowledge base...")
     docs_paths = [
         'data/markdown/manpages',
         'data/markdown/OR_docs',
@@ -329,6 +330,9 @@ if __name__ == '__main__':
     os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
     os.makedirs('data/rtdocs', exist_ok=True)
+
+    get_yosys_rtdocs()
+    get_opensta_docs()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
@@ -348,9 +352,6 @@ if __name__ == '__main__':
     build_or_docs()
     build_orfs_docs()
     build_manpages()
-
-    get_yosys_rtdocs()
-    get_opensta_docs()
     
     os.chdir(cur_dir)
     source_dict.update(
@@ -378,5 +379,5 @@ if __name__ == '__main__':
     with open('src/source_list.json', 'w+') as src:
         src.write(json.dumps(source_dict))
 
-    repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
-    purge_folders(folder_paths=repo_paths) 
+    # repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
+    # purge_folders(folder_paths=repo_paths) 
