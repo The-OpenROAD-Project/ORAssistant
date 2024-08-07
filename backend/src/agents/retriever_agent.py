@@ -15,6 +15,7 @@ load_dotenv()
 search_k = int(os.getenv('SEARCH_K', 10))
 chunk_size = int(os.getenv('CHUNK_SIZE', 4000))
 
+
 class RetrieverAgent:
     def __init__(self) -> None:
         pass
@@ -48,10 +49,8 @@ class RetrieverAgent:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=[
-                './data/rtdocs/yosyshq.readthedocs.io/'
-            ],
-            weights=[0.6,0.2,0.2],
+            html_docs_path=['./data/rtdocs/yosyshq.readthedocs.io/'],
+            weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
@@ -69,7 +68,7 @@ class RetrieverAgent:
                 './data/markdown/gh_discussions/Build',
                 './data/markdown/gh_discussions/Installation',
             ],
-            weights=[0.6,0.2,0.2],
+            weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
@@ -89,7 +88,7 @@ class RetrieverAgent:
                 './data/markdown/gh_discussions/Runtime',
                 './data/markdown/gh_discussions/Documentation',
             ],
-            weights=[0.6,0.2,0.2],
+            weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
@@ -102,7 +101,7 @@ class RetrieverAgent:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
-            weights=[0.6,0.2,0.2],
+            weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
@@ -123,7 +122,7 @@ class RetrieverAgent:
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
             ],
-            weights=[0.6,0.2,0.2],
+            weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
@@ -139,7 +138,7 @@ class RetrieverAgent:
                 './data/markdown/manpages/man3',
                 './data/markdown/gh_discussions/Bug',
             ],
-            weights=[0.6,0.2,0.2],
+            weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
