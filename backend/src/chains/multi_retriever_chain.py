@@ -55,7 +55,9 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         docs_similarity_retriever_chain.embed_docs(return_docs=False)
-        docs_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[0])
+        docs_similarity_retriever_chain.create_similarity_retriever(
+            search_k=self.search_k[0]
+        )
         docs_similarity_retriever = docs_similarity_retriever_chain.retriever
 
         manpages_similarity_retriever_chain = SimilarityRetrieverChain(
@@ -66,7 +68,9 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         manpages_similarity_retriever_chain.embed_docs(return_docs=False)
-        manpages_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[1])
+        manpages_similarity_retriever_chain.create_similarity_retriever(
+            search_k=self.search_k[1]
+        )
         manpages_similarity_retriever = manpages_similarity_retriever_chain.retriever
 
         pdfs_similarity_retriever_chain = SimilarityRetrieverChain(
@@ -77,7 +81,9 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         pdfs_similarity_retriever_chain.embed_docs(return_docs=False)
-        pdfs_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[2])
+        pdfs_similarity_retriever_chain.create_similarity_retriever(
+            search_k=self.search_k[2]
+        )
         pdfs_similarity_retriever = pdfs_similarity_retriever_chain.retriever
 
         rtdocs_similarity_retriever_chain = SimilarityRetrieverChain(
@@ -88,7 +94,9 @@ class MultiRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         rtdocs_similarity_retriever_chain.embed_docs(return_docs=False)
-        rtdocs_similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k[3])
+        rtdocs_similarity_retriever_chain.create_similarity_retriever(
+            search_k=self.search_k[3]
+        )
         rtdocs_similarity_retriever = rtdocs_similarity_retriever_chain.retriever
 
         if (

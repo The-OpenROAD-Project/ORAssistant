@@ -103,7 +103,6 @@ class SimilarityRetrieverChain(BaseChain):
             self.vector_db = FAISSVectorDatabase(
                 embeddings_model_name=self.embeddings_config['name'],
                 embeddings_type=self.embeddings_config['type'],
-                print_progress=True,
                 use_cuda=self.use_cuda,
             )
         else:
