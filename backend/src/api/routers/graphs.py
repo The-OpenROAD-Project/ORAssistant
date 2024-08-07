@@ -9,8 +9,10 @@ from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dotenv import load_dotenv
-
 from typing import Union
+import logging
+
+logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
 
 class UserInput(BaseModel):
@@ -103,7 +105,7 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
         tool = list(output[-2].keys())[0]
         urls = list(set(output[-2][tool]['urls']))
     else:
-        print('LLM response extraction failed')
+        logging.error('LLM response extraction failed')
 
     if user_input.list_sources and user_input.list_context:
         response = {

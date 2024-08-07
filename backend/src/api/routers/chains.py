@@ -157,8 +157,6 @@ async def get_hybrid_response(user_input: UserInput) -> dict[str, Any]:
 
 @router.post('/hybrid/get_chunks')
 async def get_hybrid_chunks(user_input: UserInput) -> dict[str, Any]:
-    user_question = user_input.query
-    print(user_question)
     if hybrid_retriever is not None:
         doc_chunks = hybrid_retriever.invoke(input='placement')
         response = {

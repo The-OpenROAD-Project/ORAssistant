@@ -1,6 +1,7 @@
 import os
 import glob
 import json
+import logging
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
@@ -11,6 +12,8 @@ from langchain.docstore.document import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from .chunk_documents import chunk_documents
+
+logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
 chunk_size: int = int(os.getenv('CHUNK_SIZE', 4000))
 chunk_overlap: int = int(os.getenv('CHUNK_OVERLAP', 400))
@@ -50,7 +53,7 @@ def process_md(
     """
     # if no files in the directory
     if not os.path.exists(folder_path) or not os.listdir(folder_path):
-        print(f'{folder_path} is not populated, returning empty list.')
+        logging.error(f'{folder_path} is not populated, returning empty list.')
         return []
 
     with open('src/source_list.json') as f:
@@ -62,7 +65,7 @@ def process_md(
         try:
             url = src_dict[doc.metadata['source']]
         except KeyError:
-            print(f"Could not find source for {doc.metadata['source']}")
+            logging.warn(f"Could not find source for {doc.metadata['source']}")
             url = ''
 
         new_metadata = {

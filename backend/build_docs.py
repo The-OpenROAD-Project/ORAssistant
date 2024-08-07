@@ -18,7 +18,8 @@ orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
 opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
 yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
+
 
 def purge_folders(folder_paths: list[str]) -> None:
     for folder_path in folder_paths:
@@ -48,15 +49,18 @@ def track_src(src: str) -> dict[str, str]:
                     f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
                 )
             elif 'manpages' in src:
-                copied_files[src_path] = f"OpenROAD Manpages - {src_path.split('/')[-1]}"
+                copied_files[src_path] = (
+                    f"OpenROAD Manpages - {src_path.split('/')[-1]}"
+                )
             elif 'yosys' in src:
-                copied_files[src_path] = src_path.split('/data/rtdocs')[-1]
+                copied_files[src_path] = src_path.split('/data/rtdocs/')[-1]
             elif 'OpenSTA' in src:
                 copied_files[src_path] = opensta_docs_url
             else:
                 copied_files[src_path] = src_path
 
     return copied_files
+
 
 def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
     copied_files = {}
@@ -79,14 +83,16 @@ def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
                 f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
             )
         elif 'manpages' in dst:
-            copied_files[dst_path] = f"OpenROAD Manpages - {src.split('/')[-1]}"
+            copied_files[dst_path] = (
+                f"OpenROAD Manpages - {src.split('data/markdown/')[-1]}"
+            )
         elif 'yosys' in dst:
-            copied_files[dst_path] = src.split('/data/rtdocs')[-1]
+            copied_files[dst_path] = src.split('/data/rtdocs/')[-1]
         elif 'OpenSTA' in dst:
             copied_files[dst_path] = opensta_docs_url
         else:
             copied_files[dst_path] = dst_path
-    
+
     return copied_files
 
 
@@ -121,15 +127,18 @@ def copy_tree_track_src(src: str, dst: str) -> dict[str, str]:
                     f"{orfs_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
                 )
             elif 'manpages' in dst_file:
-                copied_files[dst_path] = f"OpenROAD Manpages - {src.split('/')[-1]}"
+                copied_files[dst_path] = (
+                    f"OpenROAD Manpages - {src.split('data/markdown/')[-1]}"
+                )
             elif 'yosys' in dst_file:
-                copied_files[dst_path] = src.split('/data/rtdocs')[-1]
+                copied_files[dst_path] = src.split('/data/rtdocs/')[-1]
             elif 'OpenSTA' in dst_file:
                 copied_files[dst_path] = opensta_docs_url
             else:
                 copied_files[dst_path] = dst_path
 
     return copied_files
+
 
 def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) -> None:
     target_dir = os.path.join(cur_dir, folder_name)
@@ -144,7 +153,9 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
         command = f'git fetch origin {commit_hash} && git checkout {commit_hash}'
         res = subprocess.run(command, shell=True, capture_output=True)
         if res.returncode != 0:
-            logging.debug(f"Error in checking out commit hash: {res.stderr.decode('utf-8')}")
+            logging.debug(
+                f"Error in checking out commit hash: {res.stderr.decode('utf-8')}"
+            )
             sys.exit(1)
     logging.debug('Cloned repo successfully.')
 
@@ -223,7 +234,15 @@ def build_orfs_docs() -> None:
         )
     )
 
-    installation_files = ['FAQS.md','BuildLocally.md', 'BuildWithDocker.md', 'BuildWithPrebuilt.md', 'BuildWithWSL.md', 'SupportedOS.md', 'index2.md']
+    installation_files = [
+        'FAQS.md',
+        'BuildLocally.md',
+        'BuildWithDocker.md',
+        'BuildWithPrebuilt.md',
+        'BuildWithWSL.md',
+        'SupportedOS.md',
+        'index2.md',
+    ]
 
     for file in os.listdir(f'{md_orfs_docs}/user'):
         if file.endswith('.md'):
@@ -243,7 +262,7 @@ def build_orfs_docs() -> None:
                 )
 
     for file in os.listdir(f'{md_orfs_docs}/'):
-        if file.endswith('.md'):  
+        if file.endswith('.md'):
             if file in installation_files:
                 source_dict.update(
                     copy_file_track_src(
@@ -336,7 +355,7 @@ def get_yosys_rtdocs() -> None:
 
 
 if __name__ == '__main__':
-    print('Building knowledge base...')
+    logging.info('Building knowledge base...')
     docs_paths = [
         'data/markdown/manpages',
         'data/markdown/OR_docs',
@@ -376,7 +395,7 @@ if __name__ == '__main__':
     build_or_docs()
     build_orfs_docs()
     build_manpages()
-    
+
     os.chdir(cur_dir)
     source_dict.update(
         copy_file_track_src(
@@ -397,4 +416,4 @@ if __name__ == '__main__':
         src.write(json.dumps(source_dict))
 
     repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
-    purge_folders(folder_paths=repo_paths) 
+    purge_folders(folder_paths=repo_paths)
