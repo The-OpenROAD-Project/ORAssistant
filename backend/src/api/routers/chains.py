@@ -47,7 +47,15 @@ llm_temp_str = os.getenv('GEMINI_TEMP')
 if llm_temp_str is not None:
     llm_temp = float(llm_temp_str)
 
-hf_embdeddings: str = str(os.getenv('HF_EMBEDDINGS'))
+embeddings_type: str = str(os.getenv('EMBEDDINGS_TYPE'))
+
+if embeddings_type == 'HF':
+    embeddings_model_name = str(os.getenv('HF_EMBEDDINGS'))
+elif embeddings_type == 'GOOGLE_GENAI' or embeddings_type == 'GOOGLE_VERTEXAI':
+    embeddings_model_name = str(os.getenv('GOOGLE_EMBEDDINGS'))
+
+embeddings_config = {'type': embeddings_type, 'name': embeddings_model_name}
+
 hf_reranker: str = str(os.getenv('HF_RERANKER'))
 
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
@@ -66,11 +74,15 @@ router = APIRouter(prefix='/chains', tags=['chains'])
 hybrid_retriever_chain = HybridRetrieverChain(
     llm_model=llm,
     prompt_template_str=summarise_prompt_template,
-    embeddings_model_name=hf_embdeddings,
-    reranking_model_name=hf_reranker,
+    embeddings_config=embeddings_config,
     contextual_rerank=True,
+    reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
-    docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
+    markdown_docs_path=[
+        './data/markdown/ORFS_docs',
+        './data/markdown/OR_docs',
+        './data/markdown/gh_discussions',
+    ],
     manpages_path=['./data/markdown/manpages'],
     other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
@@ -81,9 +93,13 @@ hybrid_llm_chain = hybrid_retriever_chain.get_llm_chain()
 sim_retriever_chain = SimilarityRetrieverChain(
     llm_model=llm,
     prompt_template_str=summarise_prompt_template,
-    embeddings_model_name=hf_embdeddings,
+    embeddings_config=embeddings_config,
     use_cuda=use_cuda,
-    docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
+    markdown_docs_path=[
+        './data/markdown/ORFS_docs',
+        './data/markdown/OR_docs',
+        './data/markdown/gh_discussions',
+    ],
     manpages_path=['./data/markdown/manpages'],
     other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
 )
@@ -93,10 +109,16 @@ sim_llm_chain = sim_retriever_chain.get_llm_chain()
 multi_retriever_chain = MultiRetrieverChain(
     llm_model=llm,
     prompt_template_str=summarise_prompt_template,
-    embeddings_model_name=hf_embdeddings,
+    embeddings_config=embeddings_config,
     use_cuda=use_cuda,
-    docs_path=['./data/markdown/ORFS_docs', './data/markdown/OR_docs'],
+    markdown_docs_path=[
+        './data/markdown/ORFS_docs',
+        './data/markdown/OR_docs',
+        './data/markdown/gh_discussions',
+    ],
     manpages_path=['./data/markdown/manpages'],
+    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    html_docs_path=['./data/rtdocs'],
 )
 multi_retriever_chain.create_multi_retriever()
 multi_llm_chain = multi_retriever_chain.get_llm_chain()
@@ -147,8 +169,6 @@ async def get_hybrid_response(user_input: UserInput) -> dict[str, Any]:
 
 @router.post('/hybrid/get_chunks')
 async def get_hybrid_chunks(user_input: UserInput) -> dict[str, Any]:
-    user_question = user_input.query
-    print(user_question)
     if hybrid_retriever is not None:
         doc_chunks = hybrid_retriever.invoke(input='placement')
         response = {

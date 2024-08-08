@@ -1,14 +1,12 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 
-from transformers import AutoTokenizer
-
 
 def chunk_documents(
-    chunk_size: int, knowledge_base: list[Document], tokenizer_name: str
+    chunk_size: int,
+    knowledge_base: list[Document],
 ) -> list[Document]:
-    text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
-        AutoTokenizer.from_pretrained(tokenizer_name),
+    text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=int(chunk_size / 10),
         add_start_index=True,

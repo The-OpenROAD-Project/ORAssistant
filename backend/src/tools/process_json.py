@@ -1,7 +1,11 @@
+import os
 import json
+import logging
 
 from langchain.docstore.document import Document
 from typing import Any
+
+logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
 
 def parse_json(json_object: dict[str, Any]) -> str:
@@ -20,7 +24,7 @@ def generate_knowledge_base(file_paths: list[str]) -> list[Document]:
     for file_path in file_paths:
         try:
             with open(file_path, 'r') as file:
-                print(f'Processing {file_path}...')
+                logging.debug(f'Processing {file_path}...')
                 for line in file:
                     try:
                         json_object = json.loads(line)
@@ -31,8 +35,8 @@ def generate_knowledge_base(file_paths: list[str]) -> list[Document]:
                             )
                         )
                     except json.JSONDecodeError:
-                        print('Error: Invalid JSON format line:', line)
+                        logging.error('Error: Invalid JSON format line:', line)
         except FileNotFoundError:
-            print(f'{file_path} not found.')
+            logging.error(f'{file_path} not found.')
 
     return json_knowledge_base

@@ -1,10 +1,10 @@
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.docstore.document import Document
-
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-from dotenv import load_dotenv
 import os
+import json
+from dotenv import load_dotenv
+
+from langchain.docstore.document import Document
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 load_dotenv()
 
@@ -21,5 +21,14 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 def process_pdf_docs(file_path: str) -> list[Document]:
     loader = PyPDFLoader(file_path)
-    pages = loader.load_and_split(text_splitter=text_splitter)
-    return pages
+    docs = loader.load_and_split(text_splitter=text_splitter)
+
+    with open('src/source_list.json') as f:
+        src_dict = json.loads(f.read())
+
+    for doc in docs:
+        doc.metadata['source'] = src_dict.get(
+            doc.metadata['source'], doc.metadata['source']
+        )
+
+    return docs

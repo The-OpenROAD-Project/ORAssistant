@@ -9,8 +9,10 @@ from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dotenv import load_dotenv
-
 from typing import Union
+import logging
+
+logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
 
 class UserInput(BaseModel):
@@ -42,7 +44,15 @@ llm_temp_str = os.getenv('GEMINI_TEMP')
 if llm_temp_str is not None:
     llm_temp = float(llm_temp_str)
 
-hf_embdeddings: str = str(os.getenv('HF_EMBEDDINGS'))
+embeddings_type: str = str(os.getenv('EMBEDDINGS_TYPE'))
+
+if embeddings_type == 'HF':
+    embeddings_model_name = str(os.getenv('HF_EMBEDDINGS'))
+elif embeddings_type == 'GOOGLE_GENAI' or embeddings_type == 'GOOGLE_VERTEXAI':
+    embeddings_model_name = str(os.getenv('GOOGLE_EMBEDDINGS'))
+
+embeddings_config = {'type': embeddings_type, 'name': embeddings_model_name}
+
 hf_reranker: str = str(os.getenv('HF_RERANKER'))
 
 llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
@@ -60,7 +70,7 @@ router = APIRouter(prefix='/graphs', tags=['graphs'])
 
 rg = RetrieverGraph(
     llm_model=llm,
-    embeddings_model_name=hf_embdeddings,
+    embeddings_config=embeddings_config,
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
 )
@@ -81,7 +91,7 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
     else:
         raise ValueError('RetrieverGraph not initialized.')
 
-    sources: list[str] = []
+    urls: list[str] = []
     context: list[str] = []
 
     if (
@@ -92,19 +102,19 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
         and len(output[2]['generate']['messages']) > 0
     ):
         llm_response = output[2]['generate']['messages'][0]
+        tool = list(output[-2].keys())[0]
+        urls = list(set(output[-2][tool]['urls']))
     else:
-        print('LLM response extraction failed')
-
-    sources = list(set(sources))
+        logging.error('LLM response extraction failed')
 
     if user_input.list_sources and user_input.list_context:
         response = {
             'response': llm_response,
-            'sources': (sources),
+            'sources': (urls),
             'context': (context),
         }
     elif user_input.list_sources:
-        response = {'response': llm_response, 'sources': (sources)}
+        response = {'response': llm_response, 'sources': (urls)}
     elif user_input.list_context:
         response = {'response': llm_response, 'context': (context)}
     else:
