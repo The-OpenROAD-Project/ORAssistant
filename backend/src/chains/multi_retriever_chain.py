@@ -116,12 +116,7 @@ class MultiRetrieverChain(BaseChain):
             )
 
     def create_llm_chain(self) -> None:
-        super().create_llm_chain()
-
-        self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'][0])))
-            | self.llm_chain
-        )
+        super().create_llm_chain() 
 
         llm_chain_with_source = RunnableParallel({
             'context': self.retriever,
