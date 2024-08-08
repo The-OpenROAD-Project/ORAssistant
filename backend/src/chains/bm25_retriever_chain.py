@@ -14,20 +14,22 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
         self,
         llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
-        docs_path: Optional[list[str]] = None,
+        markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
-        embeddings_model_name: Optional[str] = None,
+        html_docs_path: Optional[list[str]] = None,
+        embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
-            embeddings_model_name=embeddings_model_name,
-            docs_path=docs_path,
+            embeddings_config=embeddings_config,
+            markdown_docs_path=markdown_docs_path,
             manpages_path=manpages_path,
             other_docs_path=other_docs_path,
+            html_docs_path=html_docs_path,
             chunk_size=chunk_size,
             use_cuda=use_cuda,
         )
@@ -41,9 +43,12 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
     ) -> None:
         if embedded_docs is None:
             super().create_vector_db()
-            processed_docs, processed_manpages, processed_other_docs = (
-                super().embed_docs(return_docs=True)
-            )
+            (
+                processed_docs,
+                processed_manpages,
+                processed_other_docs,
+                processed_rtdocs,
+            ) = super().embed_docs(return_docs=True)
 
             embedded_docs = []
             if processed_docs is not None:
@@ -52,6 +57,8 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
                 embedded_docs += processed_manpages
             if processed_other_docs is not None:
                 embedded_docs += processed_other_docs
+            if processed_rtdocs is not None:
+                embedded_docs += processed_rtdocs
 
         self.retriever = BM25Retriever.from_documents(
             documents=embedded_docs, search_kwargs={'k': search_k}

@@ -4,7 +4,6 @@ from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain.docstore.document import Document
 
 from ..vectorstores.faiss import FAISSVectorDatabase
-from ..tools.format_docs import format_docs
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Optional, Tuple, Any, Union
@@ -15,10 +14,11 @@ class SimilarityRetrieverChain(BaseChain):
         self,
         llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
         prompt_template_str: Optional[str] = None,
-        docs_path: Optional[list[str]] = None,
+        markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
+        html_docs_path: Optional[list[str]] = None,
         other_docs_path: Optional[list[str]] = None,
-        embeddings_model_name: Optional[str] = None,
+        embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
     ):
@@ -27,18 +27,20 @@ class SimilarityRetrieverChain(BaseChain):
             prompt_template_str=prompt_template_str,
         )
 
-        self.embeddings_model_name: Optional[str] = embeddings_model_name
+        self.embeddings_config: Optional[dict[str, str]] = embeddings_config
         self.use_cuda: bool = use_cuda
 
-        self.docs_path: Optional[list[str]] = docs_path
+        self.markdown_docs_path: Optional[list[str]] = markdown_docs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path
         self.manpages_path: Optional[list[str]] = manpages_path
+        self.html_docs_path: Optional[list[str]] = html_docs_path
 
         self.chunk_size: int = chunk_size
 
         self.processed_docs: Optional[list[Document]] = []
         self.processed_manpages: Optional[list[Document]] = []
         self.processed_pdfs: Optional[list[Document]] = []
+        self.processed_html: Optional[list[Document]] = []
 
         self.vector_db: Optional[FAISSVectorDatabase] = None
         self.retriever: Any  # This is Any for now as certain child classes (eg. bm25_retriever_chain) have a different retriever.
@@ -47,14 +49,17 @@ class SimilarityRetrieverChain(BaseChain):
         self,
         return_docs: bool = False,
     ) -> Tuple[
-        Optional[list[Document]], Optional[list[Document]], Optional[list[Document]]
+        Optional[list[Document]],
+        Optional[list[Document]],
+        Optional[list[Document]],
+        Optional[list[Document]],
     ]:
         if self.vector_db is None:
             self.create_vector_db()
 
-        if self.docs_path is not None and self.vector_db is not None:
+        if self.markdown_docs_path is not None and self.vector_db is not None:
             self.processed_docs = self.vector_db.add_md_docs(
-                folder_paths=self.docs_path,
+                folder_paths=self.markdown_docs_path,
                 chunk_size=self.chunk_size,
                 return_docs=return_docs,
             )
@@ -75,27 +80,43 @@ class SimilarityRetrieverChain(BaseChain):
                 else:
                     raise ValueError('File type not supported.')
 
-        return self.processed_docs, self.processed_manpages, self.processed_pdfs
+        if self.html_docs_path is not None and self.vector_db is not None:
+            self.processed_html = self.vector_db.add_html(
+                folder_paths=self.html_docs_path,
+                return_docs=return_docs,
+            )
+
+        return (
+            self.processed_docs,
+            self.processed_manpages,
+            self.processed_pdfs,
+            self.processed_html,
+        )
 
     def create_vector_db(self) -> None:
-        if self.embeddings_model_name is not None:
+        if (
+            self.embeddings_config is not None
+            and self.embeddings_config['name'] is not None
+            and self.embeddings_config['type'] is not None
+        ):
             self.vector_db = FAISSVectorDatabase(
-                embeddings_model_name=self.embeddings_model_name,
-                print_progress=True,
+                embeddings_model_name=self.embeddings_config['name'],
+                embeddings_type=self.embeddings_config['type'],
                 use_cuda=self.use_cuda,
             )
         else:
-            raise ValueError('Embeddings model name not provided.')
+            raise ValueError('Embeddings model config not provided correctly.')
 
     def create_similarity_retriever(self, search_k: Optional[int] = 5) -> None:
         if (
             self.processed_docs == []
             and self.processed_manpages == []
             and self.processed_pdfs == []
+            and self.processed_html == []
         ):
             self.embed_docs()
 
-        if self.vector_db is not None:
+        if self.vector_db is not None and self.vector_db.faiss_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
                 search_type='similarity',
                 search_kwargs={'k': search_k},
@@ -103,11 +124,6 @@ class SimilarityRetrieverChain(BaseChain):
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
-
-        self.llm_chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
-            | self.llm_chain
-        )
 
         llm_chain_with_source = RunnableParallel({
             'context': self.retriever,
