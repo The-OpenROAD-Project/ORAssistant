@@ -7,7 +7,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 
 from langchain.retrievers import EnsembleRetriever
-from ..tools.format_docs import format_docs
 
 
 from typing import Optional, Union
@@ -116,7 +115,7 @@ class MultiRetrieverChain(BaseChain):
             )
 
     def create_llm_chain(self) -> None:
-        super().create_llm_chain() 
+        super().create_llm_chain()
 
         llm_chain_with_source = RunnableParallel({
             'context': self.retriever,

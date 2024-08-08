@@ -4,7 +4,6 @@ from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain.docstore.document import Document
 
 from ..vectorstores.faiss import FAISSVectorDatabase
-from ..tools.format_docs import format_docs
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Optional, Tuple, Any, Union

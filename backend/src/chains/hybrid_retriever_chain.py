@@ -3,7 +3,6 @@ from .similarity_retriever_chain import SimilarityRetrieverChain
 from .mmr_retriever_chain import MMRRetrieverChain
 from .bm25_retriever_chain import BM25RetrieverChain
 
-from ..tools.format_docs import format_docs
 
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
@@ -124,7 +123,7 @@ class HybridRetrieverChain(BaseChain):
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
-        
+
         llm_chain_with_source = RunnableParallel({
             'context': self.retriever,
             'question': RunnablePassthrough(),
