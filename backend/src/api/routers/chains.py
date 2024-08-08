@@ -167,118 +167,118 @@ async def get_hybrid_response(user_input: UserInput) -> dict[str, Any]:
     return response
 
 
-# @router.post('/hybrid/get_chunks')
-# async def get_hybrid_chunks(user_input: UserInput) -> dict[str, Any]:
-#     if hybrid_retriever is not None:
-#         doc_chunks = hybrid_retriever.invoke(input='placement')
-#         response = {
-#             'response': [
-#                 {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
-#                 for doc in doc_chunks
-#             ]
-#         }
-#     else:
-#         raise ValueError('Hybrid retriever not initialized')
+@router.post('/hybrid/get_chunks')
+async def get_hybrid_chunks(user_input: UserInput) -> dict[str, Any]:
+    if hybrid_retriever is not None:
+        doc_chunks = hybrid_retriever.invoke(input='placement')
+        response = {
+            'response': [
+                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
+                for doc in doc_chunks
+            ]
+        }
+    else:
+        raise ValueError('Hybrid retriever not initialized')
 
-#     return response
-
-
-# @router.post('/sim/get_chunks')
-# async def get_sim_chunks(user_input: UserInput) -> dict[str, Any]:
-#     user_question = user_input.query
-
-#     if sim_retriever_chain.retriever is not None:
-#         doc_chunks = sim_retriever_chain.retriever.invoke(input=user_question)
-#         response = {
-#             'response': [
-#                 {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
-#                 for doc in doc_chunks
-#             ]
-#         }
-#     else:
-#         raise ValueError('Similarity retriever not initialized')
-
-#     return response
+    return response
 
 
-# @router.post('/ensemble/get_chunks')
-# async def get_ensemble_chunks(user_input: UserInput) -> dict[str, Any]:
-#     user_question = user_input.query
+@router.post('/sim/get_chunks')
+async def get_sim_chunks(user_input: UserInput) -> dict[str, Any]:
+    user_question = user_input.query
 
-#     if multi_retriever_chain.retriever is not None:
-#         doc_chunks = multi_retriever_chain.retriever.invoke(input=user_question)
-#         response = {
-#             'response': [
-#                 {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
-#                 for doc in doc_chunks
-#             ]
-#         }
-#     else:
-#         raise ValueError('Ensemble retriever not initialized')
+    if sim_retriever_chain.retriever is not None:
+        doc_chunks = sim_retriever_chain.retriever.invoke(input=user_question)
+        response = {
+            'response': [
+                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
+                for doc in doc_chunks
+            ]
+        }
+    else:
+        raise ValueError('Similarity retriever not initialized')
 
-#     return response
-
-
-# @router.post('/sim')
-# async def get_sim_response(user_input: UserInput) -> dict[str, Any]:
-#     user_question = user_input.query
-#     result = hybrid_llm_chain.invoke(user_question)
-
-#     links = []
-#     context = []
-#     for i in result['context']:
-#         if 'url' in i.metadata:
-#             links.append(i.metadata['url'])
-#         elif 'source' in i.metadata:
-#             links.append(i.metadata['source'])
-#         context.append(i.page_content)
-
-#     links = list(set(links))
-
-#     if user_input.list_sources and user_input.list_context:
-#         response = {
-#             'response': result['answer'],
-#             'sources': (links),
-#             'context': (context),
-#         }
-#     elif user_input.list_sources:
-#         response = {'response': result['answer'], 'sources': (links)}
-#     elif user_input.list_context:
-#         response = {'response': result['answer'], 'context': (context)}
-#     else:
-#         response = {'response': result['answer']}
-
-#     return response
+    return response
 
 
-# @router.post('/ensemble')
-# async def get_response(user_input: UserInput) -> dict[str, Any]:
-#     user_question = user_input.query
-#     result = hybrid_llm_chain.invoke(user_question)
+@router.post('/ensemble/get_chunks')
+async def get_ensemble_chunks(user_input: UserInput) -> dict[str, Any]:
+    user_question = user_input.query
 
-#     links = []
-#     context = []
-#     for i in result['context']:
-#         if 'url' in i.metadata:
-#             links.append(i.metadata['url'])
-#         elif 'source' in i.metadata:
-#             links.append(i.metadata['source'])
-#         context.append(i.page_content)
+    if multi_retriever_chain.retriever is not None:
+        doc_chunks = multi_retriever_chain.retriever.invoke(input=user_question)
+        response = {
+            'response': [
+                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
+                for doc in doc_chunks
+            ]
+        }
+    else:
+        raise ValueError('Ensemble retriever not initialized')
 
-#     links = list(set(links))
-#     links = list(set(links))
+    return response
 
-#     if user_input.list_sources and user_input.list_context:
-#         response = {
-#             'response': result['answer'],
-#             'sources': (links),
-#             'context': (context),
-#         }
-#     elif user_input.list_sources:
-#         response = {'response': result['answer'], 'sources': (links)}
-#     elif user_input.list_context:
-#         response = {'response': result['answer'], 'context': (context)}
-#     else:
-#         response = {'response': result['answer']}
 
-#     return response
+@router.post('/sim')
+async def get_sim_response(user_input: UserInput) -> dict[str, Any]:
+    user_question = user_input.query
+    result = hybrid_llm_chain.invoke(user_question)
+
+    links = []
+    context = []
+    for i in result['context']:
+        if 'url' in i.metadata:
+            links.append(i.metadata['url'])
+        elif 'source' in i.metadata:
+            links.append(i.metadata['source'])
+        context.append(i.page_content)
+
+    links = list(set(links))
+
+    if user_input.list_sources and user_input.list_context:
+        response = {
+            'response': result['answer'],
+            'sources': (links),
+            'context': (context),
+        }
+    elif user_input.list_sources:
+        response = {'response': result['answer'], 'sources': (links)}
+    elif user_input.list_context:
+        response = {'response': result['answer'], 'context': (context)}
+    else:
+        response = {'response': result['answer']}
+
+    return response
+
+
+@router.post('/ensemble')
+async def get_response(user_input: UserInput) -> dict[str, Any]:
+    user_question = user_input.query
+    result = hybrid_llm_chain.invoke(user_question)
+
+    links = []
+    context = []
+    for i in result['context']:
+        if 'url' in i.metadata:
+            links.append(i.metadata['url'])
+        elif 'source' in i.metadata:
+            links.append(i.metadata['source'])
+        context.append(i.page_content)
+
+    links = list(set(links))
+    links = list(set(links))
+
+    if user_input.list_sources and user_input.list_context:
+        response = {
+            'response': result['answer'],
+            'sources': (links),
+            'context': (context),
+        }
+    elif user_input.list_sources:
+        response = {'response': result['answer'], 'sources': (links)}
+    elif user_input.list_context:
+        response = {'response': result['answer'], 'context': (context)}
+    else:
+        response = {'response': result['answer']}
+
+    return response
