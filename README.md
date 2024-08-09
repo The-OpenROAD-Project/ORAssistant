@@ -14,7 +14,7 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 ## Components
 
 We have divided our app into three components, each of which can be hosted on a separate machine for scalability. 
-- Backend: Generates the necessary chat endpoints for users to communicate.
+- Backend: Generates the necessary chat endpoints for users to communicate with.
 - Frontend: We use Streamlit to communicate with a chat endpoint, providing a user-friendly chat interface.
 - Evaluation: Besides the vanilla chat interface, we also have a human evaluation interface for research and development.
 
@@ -28,20 +28,20 @@ This setup involves the setting of both the frontend and backend components. We 
 
 Ensure you have `docker` and `docker-compose` installed in your system.
 
-- **Step 1**: Clone the repository:
+**Step 1**: Clone the repository:
 
 ```bash
   git clone https://github.com/The-OpenROAD-Project/ORAssistant.git
 ```
 
-- **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys. Get the [Google Gemini API Key](https://ai.google.dev) and add it to your env file, add other env vars as required.
+**Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
 
 ```bash
   cd backend
   cp .env.example .env
 ```
 
-- **Step 3**: Start the server by running the following command:
+**Step 3**: Start the docker contaier by running the following command:
 
 ```bash
   docker compose up
@@ -49,21 +49,38 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 
 #### Option 2 - Local Install
 
-- Prerequisites: Python 3.12, recommended using a virtual environment like `conda`.
-- **Step 1**: `pip install -r backend/requirements.txt`
-- **Step 2**: Copy the `.env.example` file as shown above.
-- **Step 3**: For populating the `data` folder with OR/ORFS docs, OpenSTA docs and Yosys docs, run:
+Prerequisites: 
+  - `Python 3.12`, recommended using a virtual environment like `conda`.
+  - `wget`
+  - `pandoc`
+  - `git`
+
+**Step 1**:
+Install the required dependencies.
+ ```bash
+pip install -r backend/requirements.txt
+```
+**Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
+
+```bash
+  cd backend
+  cp .env.example .env
+```
+
+
+**Step 3**: For populating the `data` folder with OR/ORFS docs, OpenSTA docs and Yosys docs, run:
 
 ```bash
   cd backend && python build_docs.py
 ```
 
-- **Step 4**: To run the server:
+**Step 4**: 
+To run the server:
 ```bash
   python main.py
 ```
 
--**Optionally**: To interact with the chatbot in your terminal, run:
+**Optionally**: To interact with the chatbot in your terminal, run:
 ```bash
 python chatbot.py
 ```
@@ -119,7 +136,7 @@ Depending on the input query, each query can be forwarded to any one of the foll
 3. OR/ORFS installation
 4. OR Error Messages
 5. OpenSTA docs
-5. Yosys docs
+6. Yosys docs
 
 The retrievers act as separate tools and can be accessed by the LLM's tool-calling capabilities.
 
