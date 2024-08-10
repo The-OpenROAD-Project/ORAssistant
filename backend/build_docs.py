@@ -163,6 +163,11 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
 def build_or_docs() -> None:
     logging.debug('Starting OR docs build...')
 
+    # if sphinx-build not in PATH
+    if not shutil.which('sphinx-build'):
+        logging.debug('sphinx-build not found in PATH. Exiting.')
+        sys.exit(1)
+
     os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
     subprocess.run('make html', shell=True, capture_output=True)
 
@@ -356,7 +361,14 @@ def get_yosys_rtdocs() -> None:
 
 if __name__ == '__main__':
     logging.info('Building knowledge base...')
-    purge_folders(folder_paths=['data'])
+    docs_paths = [
+        'data/markdown/manpages',
+        'data/markdown/OR_docs',
+        'data/markdown/ORFS_docs',
+        'data/pdf',
+        'data/rtdocs',
+    ]
+    purge_folders(folder_paths=docs_paths)
 
     new_paths = [
         'data/markdown/manpages',

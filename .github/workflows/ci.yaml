@@ -1,6 +1,12 @@
-name: Mypy & pre-commit
+name: CI checks
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   backend:
@@ -21,6 +27,10 @@ jobs:
       - name: Run pre-commit
         run: |
           pre-commit run --files backend/*
+      - name: Run tests
+        working-directory: backend
+        run: |
+          pytest .
   frontend:
     runs-on: ubuntu-latest
     steps:
