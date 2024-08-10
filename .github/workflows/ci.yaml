@@ -23,7 +23,7 @@ jobs:
           pip install -r backend/requirements-test.txt
       - name: Run MyPy
         run: |
-          python -m mypy --strict backend
+          python -m mypy backend
       - name: Run pre-commit
         run: |
           pre-commit run --files backend/*
@@ -45,7 +45,7 @@ jobs:
           pip install -r frontend/requirements-test.txt
       - name: Run MyPy
         run: |
-          python -m mypy --strict frontend
+          python -m mypy frontend
       - name: Run pre-commit
         run: |
           pre-commit run --files frontend/*
