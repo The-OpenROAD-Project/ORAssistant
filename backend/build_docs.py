@@ -356,23 +356,20 @@ def get_yosys_rtdocs() -> None:
 
 if __name__ == '__main__':
     logging.info('Building knowledge base...')
-    docs_paths = [
+    purge_folders(folder_paths=['data'])
+
+    new_paths = [
         'data/markdown/manpages',
         'data/markdown/OR_docs',
+        'data/markdown/OR_docs/installation',
+        'data/markdown/OR_docs/tools',
         'data/markdown/ORFS_docs',
-        'data/pdf',
+        'data/markdown/ORFS_docs/installation',
+        'data/pdf/OpenSTA',
         'data/rtdocs',
     ]
-    purge_folders(folder_paths=docs_paths)
-
-    os.makedirs('data/markdown/manpages', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
-    os.makedirs('data/pdf/OpenSTA', exist_ok=True)
-    os.makedirs('data/rtdocs', exist_ok=True)
+    for path in new_paths:
+        os.makedirs(path, exist_ok=True)
 
     get_yosys_rtdocs()
     get_opensta_docs()

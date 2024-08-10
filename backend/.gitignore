@@ -1,0 +1,3 @@
+# Coverage files
+.coverage
+coverage.xml
