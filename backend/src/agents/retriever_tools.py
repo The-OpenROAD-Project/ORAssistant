@@ -71,11 +71,13 @@ class RetrieverTools:
             use_cuda=use_cuda,
             markdown_docs_path=[
                 './data/markdown/OR_docs/tools',
-                './data/markdown/manpages/man1',
-                './data/markdown/manpages/man2',
                 './data/markdown/gh_discussions/Query',
                 './data/markdown/gh_discussions/Runtime',
                 './data/markdown/gh_discussions/Documentation',
+            ],
+            manpages_path=[
+                './data/markdown/manpages/man1',
+                './data/markdown/manpages/man2',
             ],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
@@ -93,6 +95,8 @@ class RetrieverTools:
                 './data/markdown/OR_docs',
                 './data/markdown/ORFS_docs',
                 './data/markdown/gh_discussions',
+            ],
+            manpages_path=[
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
             ],
