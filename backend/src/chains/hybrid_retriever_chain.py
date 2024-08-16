@@ -80,12 +80,12 @@ class HybridRetrieverChain(BaseChain):
             similarity_retriever_chain.embed_docs(return_docs=True)
 
         self.vector_db = similarity_retriever_chain.vector_db
-        similarity_retriever_chain.create_similarity_retriever(search_k=10)
+        similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k)
         similarity_retriever = similarity_retriever_chain.retriever
 
         mmr_retriever_chain = MMRRetrieverChain()
         mmr_retriever_chain.create_mmr_retriever(
-            vector_db=self.vector_db, search_k=10, lambda_mult=0.7
+            vector_db=self.vector_db, search_k=self.search_k, lambda_mult=0.7
         )
         mmr_retriever = mmr_retriever_chain.retriever
 
@@ -93,7 +93,7 @@ class HybridRetrieverChain(BaseChain):
 
         if self.vector_db is not None and self.vector_db.processed_docs:
             bm25_retriever_chain.create_bm25_retriever(
-                embedded_docs=self.vector_db.processed_docs, search_k=10
+                embedded_docs=self.vector_db.processed_docs, search_k=self.search_k
             )
             bm25_retriever = bm25_retriever_chain.retriever
 
