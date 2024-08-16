@@ -74,8 +74,6 @@ class RetrieverTools:
                 './data/markdown/gh_discussions/Query',
                 './data/markdown/gh_discussions/Runtime',
                 './data/markdown/gh_discussions/Documentation',
-            ],
-            manpages_path=[
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
             ],
@@ -95,8 +93,6 @@ class RetrieverTools:
                 './data/markdown/OR_docs',
                 './data/markdown/ORFS_docs',
                 './data/markdown/gh_discussions',
-            ],
-            manpages_path=[
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
             ],
