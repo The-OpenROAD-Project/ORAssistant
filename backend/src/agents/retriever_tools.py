@@ -228,14 +228,17 @@ class RetrieverTools:
     @tool
     def retrieve_opensta(query: str) -> Tuple[str, list[str], list[str]]:
         """
-        Retrieve detailed and comprehensive information about OpenSTA and its various commands.\
+        Retrieve detailed information regarding the OpenSTA application.\
+        This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of OpenSTA.\
+        This tool provides information pertaining to the installation, usage, and troubleshooting of OpenSTA.\
+        
         OpenSTA is an open-source gate-level static timing verifier that has been used by many design houses.\
         As a stand-alone executable it can be used to verify the timing of a design using standard file formats.\
-        Verilog netlist\
-        Liberty library\
-        SDC timing constraints\
-        SDF delay annotation\
-        SPEF parasitics\
+        - Verilog netlist\
+        - Liberty library\
+        - SDC timing constraints\
+        - SDF delay annotation\
+        - SPEF parasitics\
         Command Line Arguments: Detailed information about the different command line arguments that can be used with OpenSTA.\
         Example Command Scripts: Examples of command scripts for different scenarios, including reading designs, performing timing analysis, and power analysis.\
         Timing Analysis using SDF: Instructions and examples for performing timing analysis using Standard Delay Format (SDF).\
