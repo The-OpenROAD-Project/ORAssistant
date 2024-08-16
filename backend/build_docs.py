@@ -35,8 +35,6 @@ def update_src(src_path: str, dst_path: str) -> None:
         source_dict[dst_path] = (
             f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
         )
-        print('uwu')
-        print(dst_path.split('data/markdown/manpages')[-1])
     elif 'yosys' in dst_path:
         source_dict[dst_path] = dst_path[len('data/rtdocs/') :]
     elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
