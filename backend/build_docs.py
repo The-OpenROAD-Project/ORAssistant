@@ -38,7 +38,7 @@ def update_src(src_path: str, dst_path: str) -> None:
             f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
         )
     elif 'yosys' in dst_path:
-        source_dict[dst_path] = dst_path[len('data/rtdocs/') :]
+        source_dict[dst_path] = f"https://{dst_path[len('data/rtdocs/') :]}"
     elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
         source_dict[dst_path] = opensta_docs_url
     elif 'OpenSTA' in dst_path and 'markdown' in dst_path:
@@ -57,7 +57,7 @@ def purge_folders(folder_paths: list[str]) -> None:
 def track_src(src: str):
     logging.debug(f'Updating source dict for {src}...')
     if not os.path.exists(src):
-        logging.debug(f'File {src} does not exist. Exiting.')
+        logging.error(f'File {src} does not exist. Exiting.')
         sys.exit(1)
 
     for root, _, files in os.walk(src):
