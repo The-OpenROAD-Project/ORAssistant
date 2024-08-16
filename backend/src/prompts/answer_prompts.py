@@ -5,6 +5,7 @@ Generate a comprehensive and informative answer for the given question based sol
 Use an unbiased and journalistic tone. 
 Combine information from the context to create a coherent answer. Do not repeat text.
 You may use bullet points to explain the answer in a step-by-step, detailed manner.
+You may provide code snippets and terminal commands as part of the answer.
 
 The user does not have access to the context.
 You must not ask the user to refer to the context in any part of your answer.
@@ -32,3 +33,20 @@ The following is a GitHub Discussions conversation between two programmers discu
 You may infer information from the conversation to answer the question.
 
 """
+
+tool_calling_prompt_template = """You are an assistant that has access to the following set of tools. Here are the names and descriptions for each tool:
+
+{tool_descriptions}
+
+Given the user input, return the name of the tool(s) to use. Return your response as a JSON blob with 'tool_names'.
+
+User Input: 
+{question}
+
+Given the chat history and the follow-up user input, rephrase the user input to be a standalone question. Return your response as a JSON blob with 'rephrased_question'.
+
+Chat History:
+{chat_history}
+
+"""
+
