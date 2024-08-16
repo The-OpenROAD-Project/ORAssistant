@@ -12,6 +12,7 @@ from ...prompts.answer_prompts import summarise_prompt_template
 
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 
 from dotenv import load_dotenv
 
@@ -28,7 +29,7 @@ load_dotenv()
 
 required_env_vars = [
     'USE_CUDA',
-    'GEMINI_TEMP',
+    'LLM_TEMP',
     'HF_EMBEDDINGS',
     'HF_RERANKER',
     'GOOGLE_GEMINI',
@@ -43,7 +44,7 @@ llm_temp: float = 0.0
 if str(os.getenv('USE_CUDA')).lower() in ('true'):
     use_cuda = True
 
-llm_temp_str = os.getenv('GEMINI_TEMP')
+llm_temp_str = os.getenv('LLM_TEMP')
 if llm_temp_str is not None:
     llm_temp = float(llm_temp_str)
 
@@ -58,16 +59,24 @@ embeddings_config = {'type': embeddings_type, 'name': embeddings_model_name}
 
 hf_reranker: str = str(os.getenv('HF_RERANKER'))
 
-llm: Union[ChatGoogleGenerativeAI, ChatVertexAI]
+llm: Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
 
-if os.getenv('GOOGLE_GEMINI') == '1_pro':
-    llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)  # type: ignore
-elif os.getenv('GOOGLE_GEMINI') == '1.5_flash':
-    llm = ChatVertexAI(model_name='gemini-1.5-flash', temperature=llm_temp)
-elif os.getenv('GOOGLE_GEMINI') == '1.5_pro':
-    llm = ChatVertexAI(model_name='gemini-1.5-pro', temperature=llm_temp)
+if os.getenv('LLM_MODEL') == 'ollama':
+    model_name = str(os.getenv('OLLAMA_MODEL'))
+    llm = ChatOllama(model=model_name,temperature=llm_temp)
+
+elif os.getenv('LLM_MODEL') == 'gemini':
+    if os.getenv('GOOGLE_GEMINI') == '1_pro':
+        llm = ChatGoogleGenerativeAI(model='gemini-pro', temperature=llm_temp)  # type: ignore
+    elif os.getenv('GOOGLE_GEMINI') == '1.5_flash':
+        llm = ChatVertexAI(model_name='gemini-1.5-flash', temperature=llm_temp)
+    elif os.getenv('GOOGLE_GEMINI') == '1.5_pro':
+        llm = ChatVertexAI(model_name='gemini-1.5-pro', temperature=llm_temp)
+    else:
+        raise ValueError('GOOGLE_GEMINI environment variable not set to a valid value.')
+
 else:
-    raise ValueError('GOOGLE_GEMINI environment variable not set to a valid value.')
+    raise ValueError('LLM_MODEL environment variable not set to a valid value.')
 
 router = APIRouter(prefix='/chains', tags=['chains'])
 
@@ -222,7 +231,7 @@ async def get_ensemble_chunks(user_input: UserInput) -> dict[str, Any]:
 @router.post('/sim')
 async def get_sim_response(user_input: UserInput) -> dict[str, Any]:
     user_question = user_input.query
-    result = hybrid_llm_chain.invoke(user_question)
+    result = sim_llm_chain.invoke(user_question)
 
     links = []
     context = []
@@ -254,7 +263,7 @@ async def get_sim_response(user_input: UserInput) -> dict[str, Any]:
 @router.post('/ensemble')
 async def get_response(user_input: UserInput) -> dict[str, Any]:
     user_question = user_input.query
-    result = hybrid_llm_chain.invoke(user_question)
+    result = multi_llm_chain.invoke(user_question)
 
     links = []
     context = []
