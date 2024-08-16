@@ -11,7 +11,7 @@ from ..chains.base_chain import BaseChain
 from ..prompts.prompt_templates import (
     summarise_prompt_template,
     tool_rephrase_prompt_template,
-    rephrase_prompt_template
+    rephrase_prompt_template,
 )
 
 from langchain_google_vertexai import ChatVertexAI
@@ -114,7 +114,7 @@ class RetrieverGraph:
             return {'tools': []}
 
         if self.inbuit_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
+            model = self.llm.bind_tools(self.tools, tool_choice='any')  # type: ignore
 
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
@@ -122,8 +122,8 @@ class RetrieverGraph:
                 | JsonOutputParser()
             )
             response = tool_choice_chain.invoke({
-                'question' : followup_question,
-                'chat_history': state['chat_history']
+                'question': followup_question,
+                'chat_history': state['chat_history'],
             })
 
             response = model.invoke(followup_question)
@@ -151,12 +151,12 @@ class RetrieverGraph:
                 return {'tools': []}
 
             if 'tool_names' in str(response):
-                tool_calls = response.get('tool_names', []) #type: ignore
+                tool_calls = response.get('tool_names', [])  # type: ignore
             else:
                 logging.warn('Tool selection failed. Returning empty tool list.')
 
             if 'rephrased_question' in str(response):
-                state['messages'][-1].content = response.get('rephrased_question') #type: ignore
+                state['messages'][-1].content = response.get('rephrased_question')  # type: ignore
             else:
                 logging.warn('Rephrased question not found in response.')
 

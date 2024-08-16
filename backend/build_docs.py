@@ -16,7 +16,9 @@ cur_dir: str = os.getcwd()
 or_docs_url = 'https://openroad.readthedocs.io/en/latest'
 orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
 opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
-opensta_readme_url = 'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
+opensta_readme_url = (
+    'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
+)
 yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
@@ -280,7 +282,6 @@ def get_opensta_docs() -> None:
         with open(save_path, 'wb+') as file:
             file.write(response.content)
         logging.debug('OpenSTA docs downloaded successfully.')
-        track_src(f'{cur_dir}/data/pdf/OpenSTA')
     else:
         logging.debug('Failed to download file. Status code:', response.status_code)
 
@@ -293,9 +294,11 @@ def get_opensta_docs() -> None:
         with open(save_path, 'wb+') as file:
             file.write(response.content)
         logging.debug('OpenSTA readme downloaded successfully.')
-        track_src(f'{cur_dir}/data/markdown/OpenSTA')
     else:
         logging.debug('Failed to download file. Status code:', response.status_code)
+
+    track_src(f'{cur_dir}/data/markdown/OpenSTA')
+    track_src(f'{cur_dir}/data/pdf/OpenSTA')
 
 
 def get_yosys_rtdocs() -> None:
@@ -335,8 +338,8 @@ if __name__ == '__main__':
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
     os.makedirs('data/rtdocs', exist_ok=True)
 
-    get_yosys_rtdocs()
     get_opensta_docs()
+    get_yosys_rtdocs()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',

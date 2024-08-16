@@ -10,7 +10,7 @@ def get_history_str(chat_history: list[dict[str, str]]) -> str:
     return history_str
 
 
-chat_history:list[dict[str,str]] = []
+chat_history: list[dict[str, str]] = []
 
 if __name__ == '__main__':
     rg = graphs.rg
@@ -44,7 +44,7 @@ if __name__ == '__main__':
             srcs = set(output[-2][tool]['sources'])
             urls = output[-2][tool]['urls']
             chat_history.append({'User': user_question, 'AI': llm_response})
-            
+
             print(f'LLM: {llm_response} \nSources: {srcs} \nURLs: {urls}\n\n')
 
         else:
