@@ -34,7 +34,7 @@ You may infer information from the conversation to answer the question.
 
 """
 
-tool_calling_prompt_template = """You are an assistant that has access to the following set of tools. Here are the names and descriptions for each tool:
+tool_rephrase_prompt_template = """You are an assistant that has access to the following set of tools. Here are the names and descriptions for each tool:
 
 {tool_descriptions}
 
@@ -52,7 +52,19 @@ Return your response as a JSON blob with 'rephrased_question'.
 Choose the most appropriate tool from the list of tools to answer the rephrased question.
 Return your response as a JSON blob with 'tool_names'.
 
-Chat History:
+"""
+
+rephrase_prompt_template = """
+
+This is the chat history between you and the user:
 {chat_history}
+
+This is the user's follow-up question:
+{question}
+
+Given the chat history, rephrase the follow-up question to be a standalone question.
+The rephrased question should include ony relevant information inferred from the chat history.
+Discard information irrelavant to the follow-up question.
+Return your response as a JSON blob with 'rephrased_question'.
 
 """

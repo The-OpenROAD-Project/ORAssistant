@@ -10,7 +10,8 @@ from langgraph.graph.message import add_messages
 from ..chains.base_chain import BaseChain
 from ..prompts.prompt_templates import (
     summarise_prompt_template,
-    tool_calling_prompt_template,
+    tool_rephrase_prompt_template,
+    rephrase_prompt_template
 )
 
 from langchain_google_vertexai import ChatVertexAI
@@ -107,34 +108,38 @@ class RetrieverGraph:
         ).get_llm_chain()
 
     def agent(self, state: AgentState) -> dict[str, list[str]]:
-        messages = state['messages'][-1].content
+        followup_question = state['messages'][-1].content
 
         if self.llm is None:
             return {'tools': []}
 
         if self.inbuit_tool_calling:
-            model = self.llm.bind_tools([
-                self.retriever_tools.retrieve_cmds,
-                self.retriever_tools.retrieve_install,
-                self.retriever_tools.retrieve_general,
-                self.retriever_tools.retrieve_opensta,
-                self.retriever_tools.retrieve_errinfo,
-                self.retriever_tools.retrieve_yosys_rtdocs,
-            ])  # type: ignore
-            response = model.invoke(messages)
+            model = self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
+
+            tool_choice_chain = (
+                ChatPromptTemplate.from_template(rephrase_prompt_template)
+                | self.llm
+                | JsonOutputParser()
+            )
+            response = tool_choice_chain.invoke({
+                'question' : followup_question,
+                'chat_history': state['chat_history']
+            })
+
+            response = model.invoke(followup_question)
 
             if response is None or response.tool_calls is None:  # type: ignore
                 return {'tools': []}
 
             return {'tools': response.tool_calls}  # type: ignore
         else:
-            tool_choice_chain = (
-                ChatPromptTemplate.from_template(tool_calling_prompt_template)
+            tool_rephrase_chain = (
+                ChatPromptTemplate.from_template(tool_rephrase_prompt_template)
                 | self.llm
                 | JsonOutputParser()
             )
-            response = tool_choice_chain.invoke({
-                'question': messages,
+            response = tool_rephrase_chain.invoke({
+                'question': followup_question,
                 'tool_descriptions': self.tool_descriptions,
                 'chat_history': state['chat_history'],
             })
