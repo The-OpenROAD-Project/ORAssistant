@@ -21,6 +21,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import ChatPromptTemplate
 
 import os
+import json
 import logging
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
@@ -144,16 +145,20 @@ class RetrieverGraph:
                     'Tool selection response not found. Returning empty tool list.'
                 )
                 return {'tools': []}
+            json_response = json.loads(str(response))
 
-            if 'tool_names' in response:
-                tool_calls = response.get('tool_names', [])
-            else:
-                logging.warn('Tool selection failed. Returning empty tool list.')
+            if json_response: 
+                if 'tool_names' in str(response):
+                    tool_calls = json_response.get('tool_names', [])
+                else:
+                    logging.warn('Tool selection failed. Returning empty tool list.')
 
-            if 'rephrased_question' in response:
-                state['messages'][-1].content = response['rephrased_question']
+                if 'rephrased_question' in str(response):
+                    state['messages'][-1].content = json_response['rephrased_question']
+                else:
+                    logging.warn('Rephrased question not found in response.')
             else:
-                logging.warn('Rephrased question not found in response.')
+                raise  TypeError('Unable to parse Response JSON object.')
 
             return {'tools': tool_calls}
 
