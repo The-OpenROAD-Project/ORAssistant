@@ -23,10 +23,6 @@ text_splitter = RecursiveCharacterTextSplitter(
 def process_pdf_docs(file_path: str) -> list[Document]:
     loader = PyPDFLoader(file_path)
 
-    if not os.path.exists(file_path) or not os.listdir(file_path):
-        logging.error(f'{file_path} is not populated, returning empty list.')
-        return []
-
     with open('src/source_list.json') as f:
         src_dict = json.loads(f.read())
 
@@ -34,6 +30,7 @@ def process_pdf_docs(file_path: str) -> list[Document]:
 
     for doc in documents:
         try:
+            doc.metadata['source'] = file_path.split('./')[-1]
             url = src_dict[doc.metadata['source']]
         except KeyError:
             logging.warn(f"Could not find source for {doc.metadata['source']}")
