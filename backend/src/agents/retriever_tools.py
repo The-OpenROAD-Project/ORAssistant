@@ -17,7 +17,7 @@ search_k = int(os.getenv('SEARCH_K', 10))
 chunk_size = int(os.getenv('CHUNK_SIZE', 4000))
 
 
-class RetrieverAgent:
+class RetrieverTools:
     def __init__(self) -> None:
         pass
 
@@ -63,14 +63,15 @@ class RetrieverAgent:
             chunk_size=chunk_size,
         )
         install_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.install_retriever = install_retriever_chain.retriever
+        RetrieverTools.install_retriever = install_retriever_chain.retriever
 
         commands_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             markdown_docs_path=[
-                './data/markdown/OR_docs/tools' './data/markdown/manpages/man1',
+                './data/markdown/OR_docs/tools',
+                './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
                 './data/markdown/gh_discussions/Query',
                 './data/markdown/gh_discussions/Runtime',
@@ -82,7 +83,7 @@ class RetrieverAgent:
             chunk_size=chunk_size,
         )
         commands_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.commands_retriever = commands_retriever_chain.retriever
+        RetrieverTools.commands_retriever = commands_retriever_chain.retriever
 
         general_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
@@ -101,7 +102,7 @@ class RetrieverAgent:
             chunk_size=chunk_size,
         )
         general_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.general_retriever = general_retriever_chain.retriever
+        RetrieverTools.general_retriever = general_retriever_chain.retriever
 
         yosys_rtdocs_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
@@ -114,7 +115,7 @@ class RetrieverAgent:
             chunk_size=chunk_size,
         )
         yosys_rtdocs_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
+        RetrieverTools.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
 
         opensta_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
@@ -127,7 +128,7 @@ class RetrieverAgent:
             chunk_size=chunk_size,
         )
         opensta_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.opensta_retriever = opensta_retriever_chain.retriever
+        RetrieverTools.opensta_retriever = opensta_retriever_chain.retriever
 
         errinfo_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
@@ -143,7 +144,7 @@ class RetrieverAgent:
             chunk_size=chunk_size,
         )
         errinfo_retriever_chain.create_hybrid_retriever()
-        RetrieverAgent.errinfo_retriever = errinfo_retriever_chain.retriever
+        RetrieverTools.errinfo_retriever = errinfo_retriever_chain.retriever
 
     @staticmethod
     @tool
@@ -154,10 +155,10 @@ class RetrieverAgent:
         troubleshooting steps, and best practices. The tool is designed to assist users by providing clear, accurate,\
         and relevant information that enhances their understanding and efficient use of OpenROAD and OpenROAD-Flow-Scripts.\
         """
-        if RetrieverAgent.general_retriever is None:
+        if RetrieverTools.general_retriever is None:
             raise ValueError('General Retriever not initialized')
 
-        docs = RetrieverAgent.general_retriever.invoke(input=query)
+        docs = RetrieverTools.general_retriever.invoke(input=query)
         return format_docs(docs)
 
     @staticmethod
@@ -197,10 +198,10 @@ class RetrieverAgent:
         UPF: Read Unified Power Format\
         UTL: Utilities\
         """
-        if RetrieverAgent.commands_retriever is None:
+        if RetrieverTools.commands_retriever is None:
             raise ValueError('Commands Retriever not initialized')
 
-        docs = RetrieverAgent.commands_retriever.invoke(input=query)
+        docs = RetrieverTools.commands_retriever.invoke(input=query)
         return format_docs(docs)
 
     @staticmethod
@@ -213,10 +214,10 @@ class RetrieverAgent:
         - Using Docker\
         - Using pre-built binaries\
         """
-        if RetrieverAgent.install_retriever is None:
+        if RetrieverTools.install_retriever is None:
             raise ValueError('Install Retriever not initialized')
 
-        docs = RetrieverAgent.install_retriever.invoke(input=query)
+        docs = RetrieverTools.install_retriever.invoke(input=query)
         return format_docs(docs)
 
     @staticmethod
@@ -241,10 +242,10 @@ class RetrieverAgent:
         Filter Expressions: Information on filter expressions used within OpenSTA commands.\
         Variables: Descriptions of various variables used in OpenSTA and their purposes.\
         """
-        if RetrieverAgent.opensta_retriever is None:
+        if RetrieverTools.opensta_retriever is None:
             raise ValueError('OpenSTA Retriever not initialized')
 
-        docs = RetrieverAgent.opensta_retriever.invoke(input=query)
+        docs = RetrieverTools.opensta_retriever.invoke(input=query)
         return format_docs(docs)
 
     @staticmethod
@@ -256,10 +257,10 @@ class RetrieverAgent:
         Examples: ANT-0001, CTS-0014 etc.\
         """
 
-        if RetrieverAgent.errinfo_retriever is None:
+        if RetrieverTools.errinfo_retriever is None:
             raise ValueError('Error Info Retriever not initialized')
 
-        docs = RetrieverAgent.errinfo_retriever.invoke(input=query)
+        docs = RetrieverTools.errinfo_retriever.invoke(input=query)
         return format_docs(docs)
 
     @staticmethod
@@ -274,8 +275,8 @@ class RetrieverAgent:
         It currently has extensive Verilog-2005 support and provides a basic set of synthesis algorithms for various application domains.\
         """
 
-        if RetrieverAgent.yosys_rtdocs_retriever is None:
+        if RetrieverTools.yosys_rtdocs_retriever is None:
             raise ValueError('Yosys RTDocs Retriever not initialized')
 
-        docs = RetrieverAgent.yosys_rtdocs_retriever.invoke(input=query)
+        docs = RetrieverTools.yosys_rtdocs_retriever.invoke(input=query)
         return format_docs(docs)

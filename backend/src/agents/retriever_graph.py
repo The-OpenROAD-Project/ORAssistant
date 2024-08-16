@@ -1,4 +1,4 @@
-from .retriever_agent import RetrieverAgent
+from .retriever_tools import RetrieverTools
 
 from typing import TypedDict, Annotated, Union, Optional, Any
 from langchain_core.messages import AnyMessage
@@ -78,7 +78,7 @@ class RetrieverGraph:
         use_cuda: bool = False,
     ):
         self.llm = llm_model
-        self.retriever_agent: RetrieverAgent = RetrieverAgent()
+        self.retriever_agent: RetrieverTools = RetrieverTools()
         self.retriever_agent.initialize(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
