@@ -1,5 +1,5 @@
 from langchain.docstore.document import Document
-from ..prompts.answer_prompts import gh_discussion_prompt_template
+from ..prompts.prompt_templates import gh_discussion_prompt_template
 
 
 def format_docs(docs: list[Document]) -> tuple[str, list[str], list[str]]:
