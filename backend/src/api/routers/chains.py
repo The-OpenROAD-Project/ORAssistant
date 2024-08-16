@@ -8,7 +8,7 @@ from ...chains.hybrid_retriever_chain import HybridRetrieverChain
 from ...chains.similarity_retriever_chain import SimilarityRetrieverChain
 from ...chains.multi_retriever_chain import MultiRetrieverChain
 
-from ...prompts.answer_prompts import summarise_prompt_template
+from ...prompts.prompt_templates import summarise_prompt_template
 
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI

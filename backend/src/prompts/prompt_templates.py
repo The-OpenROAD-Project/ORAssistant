@@ -38,12 +38,19 @@ tool_calling_prompt_template = """You are an assistant that has access to the fo
 
 {tool_descriptions}
 
-Given the user input, return the name of the tool(s) to use. Return your response as a JSON blob with 'tool_names'.
+This is the chat history between you and the user:
+{chat_history}
 
-User Input: 
+This is the user's follow-up question:
 {question}
 
-Given the chat history and the follow-up user input, rephrase the user input to be a standalone question. Return your response as a JSON blob with 'rephrased_question'.
+Given the chat history, rephrase the follow-up question to be a standalone question.
+The rephrased question should include ony relevant information inferred from the chat history.
+Discard information irrelavant to the follow-up question. 
+Return your response as a JSON blob with 'rephrased_question'.
+
+Choose the most appropriate tool from the list of tools to answer the rephrased question.
+Return your response as a JSON blob with 'tool_names'.
 
 Chat History:
 {chat_history}
