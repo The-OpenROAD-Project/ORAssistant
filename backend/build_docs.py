@@ -16,10 +16,34 @@ cur_dir: str = os.getcwd()
 or_docs_url = 'https://openroad.readthedocs.io/en/latest'
 orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
 opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
+opensta_readme_url = 'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
 yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
+def update_src(src_path: str, dst_path: str) -> None:
+    if 'OR_docs' in dst_path:
+        source_dict[dst_path] = (
+            f"{or_docs_url}/{src_path.split('_sources/')[-1].replace('.md', '.html')}"
+        )
+    elif 'ORFS_docs' in dst_path:
+        source_dict[dst_path] = (
+            f"{orfs_docs_url}/{src_path.split('_sources/')[-1].replace('.md', '.html')}"
+        )
+    elif 'manpages' in dst_path:
+        source_dict[dst_path] = (
+            f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
+        )
+        print("uwu")
+        print(dst_path.split('data/markdown/manpages')[-1])
+    elif 'yosys' in dst_path:
+        source_dict[dst_path] = dst_path[len('data/rtdocs/'):]
+    elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
+        source_dict[dst_path] = opensta_docs_url
+    elif 'OpenSTA' in dst_path and 'markdown' in dst_path:
+        source_dict[dst_path] = opensta_readme_url
+    else:
+        source_dict[dst_path] = dst_path
 
 def purge_folders(folder_paths: list[str]) -> None:
     for folder_path in folder_paths:
@@ -28,9 +52,8 @@ def purge_folders(folder_paths: list[str]) -> None:
             logging.debug(f'Purging, Folder {folder_path} deleted.')
 
 
-def track_src(src: str) -> dict[str, str]:
-    copied_files = {}
-
+def track_src(src: str):
+    logging.debug(f'Updating source dict for {src}...')
     if not os.path.exists(src):
         logging.debug(f'File {src} does not exist. Exiting.')
         sys.exit(1)
@@ -40,31 +63,10 @@ def track_src(src: str) -> dict[str, str]:
             src = os.path.join(root, file)
             src_path = src.split('backend/')[-1]
 
-            if 'OR_docs' in src:
-                copied_files[src_path] = (
-                    f"{or_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
-                )
-            elif 'ORFS_docs' in src:
-                copied_files[src_path] = (
-                    f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
-                )
-            elif 'manpages' in src:
-                copied_files[src_path] = (
-                    f"OpenROAD Manpages - {src_path.split('/')[-1]}"
-                )
-            elif 'yosys' in src:
-                copied_files[src_path] = src_path.split('/data/rtdocs/')[-1]
-            elif 'OpenSTA' in src:
-                copied_files[src_path] = opensta_docs_url
-            else:
-                copied_files[src_path] = src_path
-
-    return copied_files
+            update_src(src_path, src_path)
 
 
-def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
-    copied_files = {}
-
+def copy_file_track_src(src: str, dst: str):
     if not os.path.exists(src):
         logging.debug(f'File {src} does not exist. Exiting.')
         sys.exit(1)
@@ -74,31 +76,9 @@ def copy_file_track_src(src: str, dst: str) -> dict[str, str]:
 
         dst_path = dst.split('backend/')[-1]
 
-        if 'OR_docs' in dst:
-            copied_files[dst_path] = (
-                f"{or_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
-            )
-        elif 'ORFS_docs' in dst:
-            copied_files[dst_path] = (
-                f"{orfs_docs_url}/{src.split('_sources/')[-1].replace('.md', '.html')}"
-            )
-        elif 'manpages' in dst:
-            copied_files[dst_path] = (
-                f"OpenROAD Manpages - {src.split('data/markdown/')[-1]}"
-            )
-        elif 'yosys' in dst:
-            copied_files[dst_path] = src.split('/data/rtdocs/')[-1]
-        elif 'OpenSTA' in dst:
-            copied_files[dst_path] = opensta_docs_url
-        else:
-            copied_files[dst_path] = dst_path
+        update_src(src, dst_path)
 
-    return copied_files
-
-
-def copy_tree_track_src(src: str, dst: str) -> dict[str, str]:
-    copied_files = {}
-
+def copy_tree_track_src(src: str, dst: str):
     if not os.path.exists(src):
         logging.debug(f'Folder {src} does not exist. Exiting.')
         sys.exit(1)
@@ -118,32 +98,13 @@ def copy_tree_track_src(src: str, dst: str) -> dict[str, str]:
 
             dst_path = dst_file.split('backend/')[-1]
 
-            if 'OR_docs' in dst_file:
-                copied_files[dst_path] = (
-                    f"{or_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
-                )
-            elif 'ORFS_docs' in dst_file:
-                copied_files[dst_path] = (
-                    f"{orfs_docs_url}/{src_file.split('_sources/')[-1].replace('.md', '.html')}"
-                )
-            elif 'manpages' in dst_file:
-                copied_files[dst_path] = (
-                    f"OpenROAD Manpages - {src.split('data/markdown/')[-1]}"
-                )
-            elif 'yosys' in dst_file:
-                copied_files[dst_path] = src.split('/data/rtdocs/')[-1]
-            elif 'OpenSTA' in dst_file:
-                copied_files[dst_path] = opensta_docs_url
-            else:
-                copied_files[dst_path] = dst_path
-
-    return copied_files
+            update_src(src_file, dst_path)
 
 
 def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) -> None:
     target_dir = os.path.join(cur_dir, folder_name)
     logging.debug(f'Cloning repo from {url} to {target_dir}...')
-    command = f'git clone {url} --depth 1 {target_dir}'
+    command = f'git clone {url} {target_dir}'
     res = subprocess.run(command, shell=True, capture_output=True)
     if res.returncode != 0:
         logging.debug(f"Error in cloning repo: {res.stderr.decode('utf-8')}")
@@ -174,33 +135,25 @@ def build_or_docs() -> None:
         logging.debug(f'Directory {md_or_docs} does not exist. Exiting.')
         sys.exit(1)
 
-    source_dict.update(
-        copy_tree_track_src(
-            f'{md_or_docs}/user', f'{cur_dir}/data/markdown/OR_docs/installation'
-        )
+    copy_tree_track_src(
+        f'{md_or_docs}/user', f'{cur_dir}/data/markdown/OR_docs/installation'
     )
-    source_dict.update(
-        copy_tree_track_src(
-            f'{md_or_docs}/main/src', f'{cur_dir}/data/markdown/OR_docs/tools'
-        )
+    copy_tree_track_src(
+        f'{md_or_docs}/main/src', f'{cur_dir}/data/markdown/OR_docs/tools'
     )
-    source_dict.update(
-        copy_tree_track_src(
-            f'{md_or_docs}/tutorials', f'{cur_dir}/data/markdown/OR_docs'
-        )
+    copy_tree_track_src(
+        f'{md_or_docs}/tutorials', f'{cur_dir}/data/markdown/OR_docs/general'
     )
-    source_dict.update(
-        copy_tree_track_src(f'{md_or_docs}/contrib', f'{cur_dir}/data/markdown/OR_docs')
+    copy_tree_track_src(
+        f'{md_or_docs}/contrib', f'{cur_dir}/data/markdown/OR_docs/general'
     )
-    source_dict.update(
-        copy_tree_track_src(
-            f'{md_or_docs}/src/test', f'{cur_dir}/data/markdown/OR_docs'
-        )
+    copy_tree_track_src(
+            f'{md_or_docs}/src/test', f'{cur_dir}/data/markdown/OR_docs/general'
     )
 
     for file in os.listdir(f'{md_or_docs}'):
         if file.endswith('.md'):
-            copyfile(f'{md_or_docs}/{file}', f'{cur_dir}/data/markdown/OR_docs/{file}')
+            copyfile(f'{md_or_docs}/{file}', f'{cur_dir}/data/markdown/OR_docs/general/{file}')
 
     logging.debug('Finished building OR docs.')
 
@@ -223,15 +176,11 @@ def build_orfs_docs() -> None:
         logging.debug(f'Directory {md_orfs_docs} does not exist. Exiting.')
         sys.exit(1)
 
-    source_dict.update(
-        copy_tree_track_src(
-            f'{md_orfs_docs}/tutorials', f'{cur_dir}/data/markdown/ORFS_docs'
-        )
+    copy_tree_track_src(
+        f'{md_orfs_docs}/tutorials', f'{cur_dir}/data/markdown/ORFS_docs/general'
     )
-    source_dict.update(
-        copy_tree_track_src(
-            f'{md_orfs_docs}/contrib', f'{cur_dir}/data/markdown/ORFS_docs'
-        )
+    copy_tree_track_src(
+        f'{md_orfs_docs}/contrib', f'{cur_dir}/data/markdown/ORFS_docs/general'
     )
 
     installation_files = [
@@ -247,36 +196,29 @@ def build_orfs_docs() -> None:
     for file in os.listdir(f'{md_orfs_docs}/user'):
         if file.endswith('.md'):
             if file in installation_files:
-                source_dict.update(
-                    copy_file_track_src(
-                        f'{md_orfs_docs}/user/{file}',
-                        f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
-                    )
+                copy_file_track_src(
+                    f'{md_orfs_docs}/user/{file}',
+                    f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
                 )
             else:
-                source_dict.update(
-                    copy_file_track_src(
-                        f'{md_orfs_docs}/user/{file}',
-                        f'{cur_dir}/data/markdown/ORFS_docs/{file}',
-                    )
+                copy_file_track_src(
+                    f'{md_orfs_docs}/user/{file}',
+                    f'{cur_dir}/data/markdown/ORFS_docs/general/{file}',
                 )
 
     for file in os.listdir(f'{md_orfs_docs}/'):
         if file.endswith('.md'):
             if file in installation_files:
-                source_dict.update(
-                    copy_file_track_src(
-                        f'{md_orfs_docs}/{file}',
-                        f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
-                    )
+                copy_file_track_src(
+                    f'{md_orfs_docs}/{file}',
+                    f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
                 )
             else:
-                source_dict.update(
-                    copy_file_track_src(
-                        f'{md_orfs_docs}/{file}',
-                        f'{cur_dir}/data/markdown/ORFS_docs/{file}',
-                    )
+                copy_file_track_src(
+                    f'{md_orfs_docs}/{file}',
+                    f'{cur_dir}/data/markdown/ORFS_docs/general/{file}',
                 )
+
     logging.debug('Finished building ORFS docs.')
 
     return
@@ -288,7 +230,7 @@ def build_manpages() -> None:
     # check if pandoc is installed, if not error out.
     res = subprocess.run('pandoc --version', shell=True, capture_output=True)
     if res.returncode != 0:
-        logging.debug('Pandoc is not installed. Please install it.')
+        logging.error('Pandoc is not installed. Please install it.')
         sys.exit(1)
     logging.debug('Pandoc is installed.')
 
@@ -314,8 +256,8 @@ def build_manpages() -> None:
     # copy folder contents to data/markdown/manpages
     src_dir = os.path.join(cur_dir, 'OpenROAD/docs/md')
     dest_dir = os.path.join(cur_dir, 'data/markdown/manpages')
-
-    source_dict.update(copy_tree_track_src(src_dir, dest_dir))
+    
+    copy_tree_track_src(src_dir, dest_dir)
     logging.debug('Copied manpages to data/markdown/manpages.')
 
     logging.debug('Finished building manpages.')
@@ -334,7 +276,20 @@ def get_opensta_docs() -> None:
         with open(save_path, 'wb+') as file:
             file.write(response.content)
         logging.debug('OpenSTA docs downloaded successfully.')
-        source_dict.update(track_src(f'{cur_dir}/data/pdf/OpenSTA'))
+        track_src(f'{cur_dir}/data/pdf/OpenSTA')
+    else:
+        logging.debug('Failed to download file. Status code:', response.status_code)
+    
+    response = requests.get(opensta_readme_url)
+
+    save_path = 'data/markdown/OpenSTA/OpenSTA_readme.md'
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+    if response.status_code == 200:
+        with open(save_path, 'wb+') as file:
+            file.write(response.content)
+        logging.debug('OpenSTA readme downloaded successfully.')
+        track_src(f'{cur_dir}/data/markdown/OpenSTA')
     else:
         logging.debug('Failed to download file. Status code:', response.status_code)
 
@@ -351,7 +306,7 @@ def get_yosys_rtdocs() -> None:
         sys.exit(1)
 
     logging.debug('Yosys RT docs downloaded successfully.')
-    source_dict.update(track_src(f'{cur_dir}/data/rtdocs'))
+    track_src(f'{cur_dir}/data/rtdocs')
 
 
 if __name__ == '__main__':
@@ -369,21 +324,16 @@ if __name__ == '__main__':
     os.makedirs('data/markdown/OR_docs', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
     os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
+    os.makedirs('data/markdown/OR_docs/general', exist_ok=True)
     os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
     os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
+    os.makedirs('data/markdown/ORFS_docs/general', exist_ok=True)
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
     os.makedirs('data/rtdocs', exist_ok=True)
 
     get_yosys_rtdocs()
     get_opensta_docs()
-
-    clone_repo(
-        url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
-        commit_hash=os.getenv(
-            'OR_REPO_COMMIT', 'ffc5760f2df639cd184c40ceba253c7e02a006d5'
-        ),
-        folder_name='OpenROAD',
-    )
+    
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
         commit_hash=os.getenv(
@@ -391,18 +341,24 @@ if __name__ == '__main__':
         ),
         folder_name='OpenROAD-flow-scripts',
     )
+    clone_repo(
+        url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
+        commit_hash=os.getenv(
+            'OR_REPO_COMMIT', 'ffc5760f2df639cd184c40ceba253c7e02a006d5'
+        ),
+        folder_name='OpenROAD',
+    )
 
     build_or_docs()
     build_orfs_docs()
     build_manpages()
 
     os.chdir(cur_dir)
-    source_dict.update(
-        copy_file_track_src(
-            f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
-            f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
-        )
+    copy_file_track_src(
+        f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
+        f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
     )
+
     os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
 
     gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
