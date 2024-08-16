@@ -8,7 +8,7 @@ from langgraph.graph.graph import CompiledGraph
 from langgraph.graph.message import add_messages
 
 from ..chains.base_chain import BaseChain
-from ..prompts.answer_prompts import (
+from ..prompts.prompt_templates import (
     summarise_prompt_template,
     tool_calling_prompt_template,
 )
@@ -135,7 +135,7 @@ class RetrieverGraph:
             )
             response = tool_choice_chain.invoke({
                 'question': messages,
-                'tool_descriptions': self.retriever_tools,
+                'tool_descriptions': self.tool_descriptions,
                 'chat_history': state['chat_history'],
             })
 
