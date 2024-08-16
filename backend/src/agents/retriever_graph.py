@@ -21,7 +21,6 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import ChatPromptTemplate
 
 import os
-import json
 import logging
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
@@ -78,26 +77,26 @@ class RetrieverGraph:
         use_cuda: bool = False,
     ):
         self.llm = llm_model
-        self.retriever_agent: RetrieverTools = RetrieverTools()
-        self.retriever_agent.initialize(
+        self.retriever_tools: RetrieverTools = RetrieverTools()
+        self.retriever_tools.initialize(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
         )
 
-        self.retriever_tools = [
-            self.retriever_agent.retrieve_cmds,
-            self.retriever_agent.retrieve_install,
-            self.retriever_agent.retrieve_general,
-            self.retriever_agent.retrieve_opensta,
-            self.retriever_agent.retrieve_errinfo,
-            self.retriever_agent.retrieve_yosys_rtdocs,
+        self.tools = [
+            self.retriever_tools.retrieve_cmds,
+            self.retriever_tools.retrieve_install,
+            self.retriever_tools.retrieve_general,
+            self.retriever_tools.retrieve_opensta,
+            self.retriever_tools.retrieve_errinfo,
+            self.retriever_tools.retrieve_yosys_rtdocs,
         ]
         self.inbuit_tool_calling = inbuit_tool_calling
 
         self.tool_descriptions = ''
-        for retriever_tool in self.retriever_tools:
-            text_desc = render_text_description([retriever_tool])  # type: ignore
+        for tool in self.tools:
+            text_desc = render_text_description([tool])  # type: ignore
             text_desc.replace('(query: str) -> Tuple[str, list[str], list[str]]', ' ')
             self.tool_descriptions += text_desc + '\n\n'
 
@@ -115,12 +114,12 @@ class RetrieverGraph:
 
         if self.inbuit_tool_calling:
             model = self.llm.bind_tools([
-                self.retriever_agent.retrieve_cmds,
-                self.retriever_agent.retrieve_install,
-                self.retriever_agent.retrieve_general,
-                self.retriever_agent.retrieve_opensta,
-                self.retriever_agent.retrieve_errinfo,
-                self.retriever_agent.retrieve_yosys_rtdocs,
+                self.retriever_tools.retrieve_cmds,
+                self.retriever_tools.retrieve_install,
+                self.retriever_tools.retrieve_general,
+                self.retriever_tools.retrieve_opensta,
+                self.retriever_tools.retrieve_errinfo,
+                self.retriever_tools.retrieve_yosys_rtdocs,
             ])  # type: ignore
             response = model.invoke(messages)
 
@@ -145,20 +144,16 @@ class RetrieverGraph:
                     'Tool selection response not found. Returning empty tool list.'
                 )
                 return {'tools': []}
-            json_response = json.loads(str(response))
 
-            if json_response: 
-                if 'tool_names' in str(response):
-                    tool_calls = json_response.get('tool_names', [])
-                else:
-                    logging.warn('Tool selection failed. Returning empty tool list.')
-
-                if 'rephrased_question' in str(response):
-                    state['messages'][-1].content = json_response['rephrased_question']
-                else:
-                    logging.warn('Rephrased question not found in response.')
+            if 'tool_names' in str(response):
+                tool_calls = response.get('tool_names', []) #type: ignore
             else:
-                raise  TypeError('Unable to parse Response JSON object.')
+                logging.warn('Tool selection failed. Returning empty tool list.')
+
+            if 'rephrased_question' in str(response):
+                state['messages'][-1].content = response.get('rephrased_question') #type: ignore
+            else:
+                logging.warn('Rephrased question not found in response.')
 
             return {'tools': tool_calls}
 
@@ -188,12 +183,12 @@ class RetrieverGraph:
     def initialize(self) -> None:
         workflow = StateGraph(AgentState)
 
-        commands = ToolNode(self.retriever_agent.retrieve_cmds)
-        install = ToolNode(self.retriever_agent.retrieve_install)
-        general = ToolNode(self.retriever_agent.retrieve_general)
-        opensta = ToolNode(self.retriever_agent.retrieve_opensta)
-        errinfo = ToolNode(self.retriever_agent.retrieve_errinfo)
-        yosys_rtdocs = ToolNode(self.retriever_agent.retrieve_yosys_rtdocs)
+        commands = ToolNode(self.retriever_tools.retrieve_cmds)
+        install = ToolNode(self.retriever_tools.retrieve_install)
+        general = ToolNode(self.retriever_tools.retrieve_general)
+        opensta = ToolNode(self.retriever_tools.retrieve_opensta)
+        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)
+        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)
 
         workflow.add_node('agent', self.agent)
         workflow.add_node('generate', self.generate)
