@@ -5,6 +5,7 @@ from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.docstore.document import Document
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 
 from typing import Optional, Iterable, Union
 
@@ -12,7 +13,7 @@ from typing import Optional, Iterable, Union
 class BM25RetrieverChain(SimilarityRetrieverChain):
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]] = None,
         prompt_template_str: Optional[str] = None,
         markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,

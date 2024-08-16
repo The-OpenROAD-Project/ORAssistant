@@ -3,17 +3,21 @@ from .base_chain import BaseChain
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain.docstore.document import Document
 
-from ..vectorstores.faiss import FAISSVectorDatabase
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
+
+
 from typing import Optional, Tuple, Any, Union
 
+from ..vectorstores.faiss import FAISSVectorDatabase
 
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]] = None,
         prompt_template_str: Optional[str] = None,
+        vector_db: Optional[FAISSVectorDatabase] = None,
         markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         html_docs_path: Optional[list[str]] = None,
@@ -25,6 +29,7 @@ class SimilarityRetrieverChain(BaseChain):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
+            vector_db=vector_db,
         )
 
         self.embeddings_config: Optional[dict[str, str]] = embeddings_config
@@ -42,19 +47,19 @@ class SimilarityRetrieverChain(BaseChain):
         self.processed_pdfs: Optional[list[Document]] = []
         self.processed_html: Optional[list[Document]] = []
 
-        self.vector_db: Optional[FAISSVectorDatabase] = None
         self.retriever: Any  # This is Any for now as certain child classes (eg. bm25_retriever_chain) have a different retriever.
 
     def embed_docs(
         self,
         return_docs: bool = False,
+        extend_existing: bool = False,
     ) -> Tuple[
         Optional[list[Document]],
         Optional[list[Document]],
         Optional[list[Document]],
         Optional[list[Document]],
-    ]:
-        if self.vector_db is None:
+    ]:    
+        if self.vector_db is None and extend_existing is False:
             self.create_vector_db()
 
         if self.markdown_docs_path is not None and self.vector_db is not None:
@@ -108,19 +113,16 @@ class SimilarityRetrieverChain(BaseChain):
             raise ValueError('Embeddings model config not provided correctly.')
 
     def create_similarity_retriever(self, search_k: Optional[int] = 5) -> None:
-        if (
-            self.processed_docs == []
-            and self.processed_manpages == []
-            and self.processed_pdfs == []
-            and self.processed_html == []
-        ):
+        if self.vector_db is None:
             self.embed_docs()
-
+        
         if self.vector_db is not None and self.vector_db.faiss_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
                 search_type='similarity',
                 search_kwargs={'k': search_k},
             )
+        else:
+            raise ValueError('FAISS Vector DB not created.')
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()

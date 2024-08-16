@@ -3,6 +3,7 @@ from .similarity_retriever_chain import SimilarityRetrieverChain
 
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 
@@ -15,7 +16,7 @@ from typing import Optional, Union
 class MultiRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
+        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]] = None,
         prompt_template_str: Optional[str] = None,
         markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
