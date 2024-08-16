@@ -15,6 +15,7 @@ import logging
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
+
 def get_history_str(chat_history: list[dict[str, str]]) -> str:
     history_str = ''
     for i in chat_history:
@@ -24,7 +25,7 @@ def get_history_str(chat_history: list[dict[str, str]]) -> str:
 
 class UserInput(BaseModel):
     query: str
-    chat_history: list[dict[str,str]] = []
+    chat_history: list[dict[str, str]] = []
     list_sources: bool = False
     list_context: bool = False
 
@@ -67,7 +68,7 @@ llm: Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
 
 if os.getenv('LLM_MODEL') == 'ollama':
     model_name = str(os.getenv('OLLAMA_MODEL'))
-    llm = ChatOllama(model=model_name,temperature=llm_temp)
+    llm = ChatOllama(model=model_name, temperature=llm_temp)
 
 elif os.getenv('LLM_MODEL') == 'gemini':
     if os.getenv('GOOGLE_GEMINI') == '1_pro':
@@ -89,7 +90,7 @@ rg = RetrieverGraph(
     embeddings_config=embeddings_config,
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
-    inbuit_tool_calling=False
+    inbuit_tool_calling=False,
 )
 rg.initialize()
 
@@ -102,7 +103,7 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
         'messages': [
             ('user', user_question),
         ],
-        'chat_history' : get_history_str(user_input.chat_history) 
+        'chat_history': get_history_str(user_input.chat_history),
     }
 
     if rg.graph is not None:
@@ -131,13 +132,13 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
             'response': llm_response,
             'sources': (urls),
             'context': (context),
-            'tool' : tool
+            'tool': tool,
         }
     elif user_input.list_sources:
-        response = {'response': llm_response, 'sources': (urls), 'tool' : tool}
+        response = {'response': llm_response, 'sources': (urls), 'tool': tool}
     elif user_input.list_context:
-        response = {'response': llm_response, 'context': (context), 'tool' : tool}
+        response = {'response': llm_response, 'context': (context), 'tool': tool}
     else:
-        response = {'response': llm_response, 'tool' : tool}
+        response = {'response': llm_response, 'tool': tool}
 
     return response
