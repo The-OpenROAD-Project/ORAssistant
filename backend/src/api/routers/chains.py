@@ -63,7 +63,7 @@ llm: Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
 
 if os.getenv('LLM_MODEL') == 'ollama':
     model_name = str(os.getenv('OLLAMA_MODEL'))
-    llm = ChatOllama(model=model_name,temperature=llm_temp)
+    llm = ChatOllama(model=model_name, temperature=llm_temp)
 
 elif os.getenv('LLM_MODEL') == 'gemini':
     if os.getenv('GOOGLE_GEMINI') == '1_pro':

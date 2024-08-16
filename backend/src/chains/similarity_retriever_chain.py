@@ -12,10 +12,13 @@ from typing import Optional, Tuple, Any, Union
 
 from ..vectorstores.faiss import FAISSVectorDatabase
 
+
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]] = None,
+        llm_model: Optional[
+            Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+        ] = None,
         prompt_template_str: Optional[str] = None,
         vector_db: Optional[FAISSVectorDatabase] = None,
         markdown_docs_path: Optional[list[str]] = None,
@@ -58,7 +61,7 @@ class SimilarityRetrieverChain(BaseChain):
         Optional[list[Document]],
         Optional[list[Document]],
         Optional[list[Document]],
-    ]:    
+    ]:
         if self.vector_db is None and extend_existing is False:
             self.create_vector_db()
 
@@ -115,7 +118,7 @@ class SimilarityRetrieverChain(BaseChain):
     def create_similarity_retriever(self, search_k: Optional[int] = 5) -> None:
         if self.vector_db is None:
             self.embed_docs()
-        
+
         if self.vector_db is not None and self.vector_db.faiss_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
                 search_type='similarity',

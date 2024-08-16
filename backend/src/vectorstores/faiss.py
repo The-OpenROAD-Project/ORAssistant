@@ -20,6 +20,7 @@ logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
 load_dotenv()
 
+
 class FAISSVectorDatabase:
     def __init__(
         self,
@@ -189,15 +190,17 @@ class FAISSVectorDatabase:
             return processed_otherdocs
 
         return None
-    
+
     def save_db(self) -> None:
         if self._faiss_db is None:
             raise ValueError('No documents in FAISS database')
-        
+
         self._faiss_db.save_local(os.getenv('FAISS_DB_PATH', 'faiss_db'))
 
     def load_db(self) -> None:
-        self._faiss_db = FAISS.load_local(os.getenv('FAISS_DB_PATH', 'faiss db'), self.embedding_model)
+        self._faiss_db = FAISS.load_local(
+            os.getenv('FAISS_DB_PATH', 'faiss db'), self.embedding_model
+        )
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
         logging.info('Processing json files...')

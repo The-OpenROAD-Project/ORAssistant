@@ -21,6 +21,7 @@ yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
+
 def update_src(src_path: str, dst_path: str) -> None:
     if 'OR_docs' in dst_path:
         source_dict[dst_path] = (
@@ -34,16 +35,17 @@ def update_src(src_path: str, dst_path: str) -> None:
         source_dict[dst_path] = (
             f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
         )
-        print("uwu")
+        print('uwu')
         print(dst_path.split('data/markdown/manpages')[-1])
     elif 'yosys' in dst_path:
-        source_dict[dst_path] = dst_path[len('data/rtdocs/'):]
+        source_dict[dst_path] = dst_path[len('data/rtdocs/') :]
     elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
         source_dict[dst_path] = opensta_docs_url
     elif 'OpenSTA' in dst_path and 'markdown' in dst_path:
         source_dict[dst_path] = opensta_readme_url
     else:
         source_dict[dst_path] = dst_path
+
 
 def purge_folders(folder_paths: list[str]) -> None:
     for folder_path in folder_paths:
@@ -77,6 +79,7 @@ def copy_file_track_src(src: str, dst: str):
         dst_path = dst.split('backend/')[-1]
 
         update_src(src, dst_path)
+
 
 def copy_tree_track_src(src: str, dst: str):
     if not os.path.exists(src):
@@ -148,12 +151,15 @@ def build_or_docs() -> None:
         f'{md_or_docs}/contrib', f'{cur_dir}/data/markdown/OR_docs/general'
     )
     copy_tree_track_src(
-            f'{md_or_docs}/src/test', f'{cur_dir}/data/markdown/OR_docs/general'
+        f'{md_or_docs}/src/test', f'{cur_dir}/data/markdown/OR_docs/general'
     )
 
     for file in os.listdir(f'{md_or_docs}'):
         if file.endswith('.md'):
-            copyfile(f'{md_or_docs}/{file}', f'{cur_dir}/data/markdown/OR_docs/general/{file}')
+            copyfile(
+                f'{md_or_docs}/{file}',
+                f'{cur_dir}/data/markdown/OR_docs/general/{file}',
+            )
 
     logging.debug('Finished building OR docs.')
 
@@ -256,7 +262,7 @@ def build_manpages() -> None:
     # copy folder contents to data/markdown/manpages
     src_dir = os.path.join(cur_dir, 'OpenROAD/docs/md')
     dest_dir = os.path.join(cur_dir, 'data/markdown/manpages')
-    
+
     copy_tree_track_src(src_dir, dest_dir)
     logging.debug('Copied manpages to data/markdown/manpages.')
 
@@ -279,7 +285,7 @@ def get_opensta_docs() -> None:
         track_src(f'{cur_dir}/data/pdf/OpenSTA')
     else:
         logging.debug('Failed to download file. Status code:', response.status_code)
-    
+
     response = requests.get(opensta_readme_url)
 
     save_path = 'data/markdown/OpenSTA/OpenSTA_readme.md'
@@ -333,7 +339,7 @@ if __name__ == '__main__':
 
     get_yosys_rtdocs()
     get_opensta_docs()
-    
+
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
         commit_hash=os.getenv(

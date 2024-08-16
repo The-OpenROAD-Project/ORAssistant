@@ -16,7 +16,9 @@ from typing import Optional, Union
 class MultiRetrieverChain(BaseChain):
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]] = None,
+        llm_model: Optional[
+            Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+        ] = None,
         prompt_template_str: Optional[str] = None,
         markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,

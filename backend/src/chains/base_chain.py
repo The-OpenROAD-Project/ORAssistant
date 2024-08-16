@@ -9,10 +9,13 @@ from typing import Optional, Union, Any
 
 from ..vectorstores.faiss import FAISSVectorDatabase
 
+
 class BaseChain:
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]] = None,
+        llm_model: Optional[
+            Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+        ] = None,
         vector_db: Optional[FAISSVectorDatabase] = None,
         prompt_template_str: Optional[str] = None,
     ):

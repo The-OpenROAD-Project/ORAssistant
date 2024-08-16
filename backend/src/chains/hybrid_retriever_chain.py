@@ -23,7 +23,9 @@ class HybridRetrieverChain(BaseChain):
     def __init__(
         self,
         embeddings_config: Optional[dict[str, str]] = None,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]] = None,
+        llm_model: Optional[
+            Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+        ] = None,
         prompt_template_str: Optional[str] = None,
         vector_db: Optional[FAISSVectorDatabase] = None,
         markdown_docs_path: Optional[list[str]] = None,
@@ -75,10 +77,9 @@ class HybridRetrieverChain(BaseChain):
             chunk_size=self.chunk_size,
         )
         if self.vector_db is None:
-            processed_docs, processed_manpages, processed_pdfs, processed_rtdocs = (
-                similarity_retriever_chain.embed_docs(return_docs=True)
-            )
-            self.vector_db = similarity_retriever_chain.vector_db 
+            similarity_retriever_chain.embed_docs(return_docs=True)
+
+        self.vector_db = similarity_retriever_chain.vector_db
         similarity_retriever_chain.create_similarity_retriever(search_k=10)
         similarity_retriever = similarity_retriever_chain.retriever
 

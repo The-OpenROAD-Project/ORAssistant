@@ -39,8 +39,7 @@ class RetrieverAgent:
     yosys_rtdocs_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
-    tool_descriptions: str = ""
-
+    tool_descriptions: str = ''
 
     def initialize(
         self,
@@ -71,8 +70,7 @@ class RetrieverAgent:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             markdown_docs_path=[
-                './data/markdown/OR_docs/tools'
-                './data/markdown/manpages/man1',
+                './data/markdown/OR_docs/tools' './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
                 './data/markdown/gh_discussions/Query',
                 './data/markdown/gh_discussions/Runtime',
@@ -85,7 +83,7 @@ class RetrieverAgent:
         )
         commands_retriever_chain.create_hybrid_retriever()
         RetrieverAgent.commands_retriever = commands_retriever_chain.retriever
- 
+
         general_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
@@ -281,4 +279,3 @@ class RetrieverAgent:
 
         docs = RetrieverAgent.yosys_rtdocs_retriever.invoke(input=query)
         return format_docs(docs)
-

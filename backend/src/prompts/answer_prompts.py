@@ -49,4 +49,3 @@ Chat History:
 {chat_history}
 
 """
-
