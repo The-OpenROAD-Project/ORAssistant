@@ -12,10 +12,13 @@ from ..tools.process_json import generate_knowledge_base
 
 import os
 import logging
+
 from typing import Optional, Union
+from dotenv import load_dotenv
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
+load_dotenv()
 
 class FAISSVectorDatabase:
     def __init__(
@@ -62,6 +65,8 @@ class FAISSVectorDatabase:
         self.debug = debug
         self.distance_strategy = distance_strategy
 
+        self.processed_docs: list[Document] = []
+
         self._faiss_db: Optional[FAISS] = None
 
     @property
@@ -83,11 +88,11 @@ class FAISSVectorDatabase:
     ) -> Optional[list[Document]]:
         logging.info('Processing markdown docs...')
 
-        docs_processed: list[Document] = []
+        processed_mddocs: list[Document] = []
 
         for folder_path in folder_paths:
             logging.debug(f'Processing [{folder_path}]...')
-            docs_processed.extend(
+            processed_mddocs.extend(
                 process_md(
                     folder_path=folder_path,
                     chunk_size=chunk_size,
@@ -95,14 +100,15 @@ class FAISSVectorDatabase:
                 )
             )
 
-        if docs_processed:
+        if processed_mddocs:
             logging.info(f'Adding {folder_paths} to FAISS database...\n')
-            self._add_to_db(documents=docs_processed)
+            self._add_to_db(documents=processed_mddocs)
+            self.processed_docs.extend(processed_mddocs)
         else:
             raise ValueError('No markdown documents processed.')
 
         if return_docs:
-            return docs_processed
+            return processed_mddocs
 
         return None
 
@@ -110,24 +116,25 @@ class FAISSVectorDatabase:
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         logging.info('Processing markdown manpages...')
-        docs_processed: list[Document] = []
 
+        processed_manpages: list[Document] = []
         for folder_path in folder_paths:
             logging.debug(f'Processing [{folder_path}]...')
-            docs_processed.extend(
+            processed_manpages.extend(
                 process_md(
                     folder_path=folder_path, split_text=False, chunk_size=chunk_size
                 )
             )
 
-        if docs_processed:
+        if processed_manpages:
             logging.info(f'Adding {folder_paths} to FAISS database...\n')
-            self._add_to_db(documents=docs_processed)
+            self._add_to_db(documents=processed_manpages)
+            self.processed_docs.extend(processed_manpages)
         else:
             raise ValueError('No manpages documents processed.')
 
         if return_docs:
-            return docs_processed
+            return processed_manpages
 
         return None
 
@@ -136,23 +143,24 @@ class FAISSVectorDatabase:
     ) -> Optional[list[Document]]:
         logging.info('Process HTML docs...')
 
-        docs_processed: list[Document] = []
+        processed_html_docs: list[Document] = []
         for folder_path in folder_paths:
             logging.debug(f'Processing [{folder_path}]...')
-            docs_processed.extend(
+            processed_html_docs.extend(
                 process_html(
                     folder_path=folder_path, split_text=True, chunk_size=chunk_size
                 )
             )
 
-        if docs_processed:
+        if processed_html_docs:
             logging.info(f'Adding {folder_paths} to FAISS database...\n')
-            self._add_to_db(documents=docs_processed)
+            self._add_to_db(documents=processed_html_docs)
+            self.processed_docs.extend(processed_html_docs)
         else:
             raise ValueError('No HTML docs processed.')
 
         if return_docs:
-            return docs_processed
+            return processed_html_docs
 
         return None
 
@@ -161,25 +169,35 @@ class FAISSVectorDatabase:
     ) -> Optional[list[Document]]:
         logging.info('Processing docs...')
 
-        docs_processed: list[Document] = []
+        processed_otherdocs: list[Document] = []
 
         for file_path in file_paths:
             logging.debug(f'Processing [{file_path}]...')
             if file_type == 'pdf':
-                docs_processed.extend(process_pdf_docs(file_path=file_path))
+                processed_otherdocs.extend(process_pdf_docs(file_path=file_path))
             else:
                 raise ValueError('File type not supported.')
 
-        if docs_processed:
+        if processed_otherdocs:
             logging.info(f'Adding [{file_paths}] to FAISS database...\n')
-            self._add_to_db(documents=docs_processed)
+            self._add_to_db(documents=processed_otherdocs)
+            self.processed_docs.extend(processed_otherdocs)
         else:
             raise ValueError('No PDF documents processed.')
 
         if return_docs:
-            return docs_processed
+            return processed_otherdocs
 
         return None
+    
+    def save_db(self) -> None:
+        if self._faiss_db is None:
+            raise ValueError('No documents in FAISS database')
+        
+        self._faiss_db.save_local(os.getenv('FAISS_DB_PATH', 'faiss_db'))
+
+    def load_db(self) -> None:
+        self._faiss_db = FAISS.load_local(os.getenv('FAISS_DB_PATH', 'faiss db'), self.embedding_model)
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
         logging.info('Processing json files...')
