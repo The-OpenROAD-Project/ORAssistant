@@ -59,7 +59,7 @@ def purge_folders(folder_paths: list[str]) -> None:
             logging.debug(f'Purging, Folder {folder_path} deleted.')
 
 
-def track_src(src: str):
+def track_src(src: str) -> None:
     logging.debug(f'Updating source dict for {src}...')
     if not os.path.exists(src):
         logging.error(f'File {src} does not exist. Exiting.')
@@ -73,7 +73,7 @@ def track_src(src: str):
             update_src(src_path, src_path)
 
 
-def copy_file_track_src(src: str, dst: str):
+def copy_file_track_src(src: str, dst: str) -> None:
     if not os.path.exists(src):
         logging.debug(f'File {src} does not exist. Exiting.')
         sys.exit(1)
@@ -86,7 +86,7 @@ def copy_file_track_src(src: str, dst: str):
         update_src(src, dst_path)
 
 
-def copy_tree_track_src(src: str, dst: str):
+def copy_tree_track_src(src: str, dst: str) -> None:
     if not os.path.exists(src):
         logging.debug(f'Folder {src} does not exist. Exiting.')
         sys.exit(1)
@@ -360,7 +360,7 @@ if __name__ == '__main__':
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
     os.makedirs('data/html', exist_ok=True)
 
-    #    get_or_website_html()
+    get_or_website_html()
     get_opensta_docs()
     get_yosys_docs_html()
 
