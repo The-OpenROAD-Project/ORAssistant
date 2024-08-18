@@ -89,6 +89,7 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
+            html_docs_path=['./data/html/or_website/'],
             markdown_docs_path=[
                 './data/markdown/OR_docs',
                 './data/markdown/ORFS_docs',
@@ -108,7 +109,7 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=['./data/rtdocs/yosyshq.readthedocs.io/'],
+            html_docs_path=['./data/html/yosys_docs'],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -121,6 +122,7 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
+            markdown_docs_path=['./data/markdown/OpenSTA_docs'],
             other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
@@ -225,8 +227,8 @@ class RetrieverTools:
     def retrieve_opensta(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve detailed information regarding the OpenSTA application.\
-        This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of OpenSTA.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of OpenSTA.\
+        This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of OpenSTA.\
         
         OpenSTA is an open-source gate-level static timing verifier that has been used by many design houses.\
         As a stand-alone executable it can be used to verify the timing of a design using standard file formats.\
@@ -271,8 +273,8 @@ class RetrieverTools:
     def retrieve_yosys_rtdocs(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve detailed information regarding the Yosys application.\
-        This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of Yosys.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of Yosys.\
+        This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of Yosys.\
         
         Yosys is a framework for Verilog RTL synthesis.\
         It currently has extensive Verilog-2005 support and provides a basic set of synthesis algorithms for various application domains.\
