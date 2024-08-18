@@ -87,13 +87,10 @@ hybrid_retriever_chain = HybridRetrieverChain(
     contextual_rerank=True,
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
-    markdown_docs_path=[
-        './data/markdown/ORFS_docs',
-        './data/markdown/OR_docs',
-        './data/markdown/gh_discussions',
-    ],
+    markdown_docs_path=['./data/markdown'],
     manpages_path=['./data/markdown/manpages'],
     other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    html_docs_path=['./data/html'],
 )
 hybrid_retriever_chain.create_hybrid_retriever()
 hybrid_retriever = hybrid_retriever_chain.retriever
@@ -104,13 +101,10 @@ sim_retriever_chain = SimilarityRetrieverChain(
     prompt_template_str=summarise_prompt_template,
     embeddings_config=embeddings_config,
     use_cuda=use_cuda,
-    markdown_docs_path=[
-        './data/markdown/ORFS_docs',
-        './data/markdown/OR_docs',
-        './data/markdown/gh_discussions',
-    ],
+    markdown_docs_path=['./data/markdown'],
     manpages_path=['./data/markdown/manpages'],
     other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    html_docs_path=['./data/html'],
 )
 sim_retriever_chain.create_similarity_retriever()
 sim_llm_chain = sim_retriever_chain.get_llm_chain()
@@ -120,14 +114,10 @@ multi_retriever_chain = MultiRetrieverChain(
     prompt_template_str=summarise_prompt_template,
     embeddings_config=embeddings_config,
     use_cuda=use_cuda,
-    markdown_docs_path=[
-        './data/markdown/ORFS_docs',
-        './data/markdown/OR_docs',
-        './data/markdown/gh_discussions',
-    ],
+    markdown_docs_path=['./data/markdown'],
     manpages_path=['./data/markdown/manpages'],
     other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
-    html_docs_path=['./data/rtdocs'],
+    html_docs_path=['./data/html'],
 )
 multi_retriever_chain.create_multi_retriever()
 multi_llm_chain = multi_retriever_chain.get_llm_chain()
