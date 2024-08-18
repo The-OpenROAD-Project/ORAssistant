@@ -29,7 +29,7 @@ logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
-    context: Annotated[list[str], add_messages]
+    context: Annotated[list[AnyMessage], add_messages]
     tools: list[str]
     sources: Annotated[list[str], add_messages]
     urls: Annotated[list[str], add_messages]
@@ -164,7 +164,7 @@ class RetrieverGraph:
 
     def generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
         query = state['messages'][-1].content
-        context = state['context'][-1]
+        context = state['context'][-1].content
 
         ans = self.llm_chain.invoke({'context': context, 'question': query})
 
