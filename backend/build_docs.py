@@ -19,7 +19,8 @@ opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022c
 opensta_readme_url = (
     'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
 )
-yosys_rtdocs_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
+yosys_html_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
+or_website_url = 'https://theopenroadproject.org/'
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
@@ -38,11 +39,15 @@ def update_src(src_path: str, dst_path: str) -> None:
             f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
         )
     elif 'yosys' in dst_path:
-        source_dict[dst_path] = f"https://{dst_path[len('data/rtdocs/') :]}"
+        source_dict[dst_path] = f"https://{dst_path[len('data/html/') :]}"
     elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
         source_dict[dst_path] = opensta_docs_url
     elif 'OpenSTA' in dst_path and 'markdown' in dst_path:
         source_dict[dst_path] = opensta_readme_url
+    elif 'theopenroadproject' in dst_path:
+        source_dict[dst_path] = (
+            f"https://{dst_path[len('data/html/') : len('index.html') + 1]}"
+        )
     else:
         source_dict[dst_path] = dst_path
 
@@ -287,7 +292,7 @@ def get_opensta_docs() -> None:
 
     response = requests.get(opensta_readme_url)
 
-    save_path = 'data/markdown/OpenSTA/OpenSTA_readme.md'
+    save_path = 'data/markdown/OpenSTA_docs/OpenSTA_readme.md'
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     if response.status_code == 200:
@@ -297,15 +302,30 @@ def get_opensta_docs() -> None:
     else:
         logging.debug('Failed to download file. Status code:', response.status_code)
 
-    track_src(f'{cur_dir}/data/markdown/OpenSTA')
+    track_src(f'{cur_dir}/data/markdown/OpenSTA_docs')
     track_src(f'{cur_dir}/data/pdf/OpenSTA')
 
 
-def get_yosys_rtdocs() -> None:
-    logging.debug('Downloading Yosys RT docs...')
+def get_or_website_html() -> None:
+    logging.debug('Scraping OR website...')
     try:
         subprocess.run(
-            f'wget -r -A.html -P data/rtdocs {yosys_rtdocs_url} ',
+            f'wget -r -A.html -P data/html/or_website {or_website_url} ',
+            shell=True,
+        )
+    except Exception as e:
+        logging.debug(f'Error in downloading OR website docs: {e}')
+        sys.exit(1)
+
+    logging.debug('OR website docs downloaded successfully.')
+    track_src(f'{cur_dir}/data/html/or_website')
+
+
+def get_yosys_docs_html() -> None:
+    logging.debug('Scraping Yosys RT docs...')
+    try:
+        subprocess.run(
+            f'wget -r -A.html -P data/html/yosys_docs {yosys_html_url} ',
             shell=True,
         )
     except Exception as e:
@@ -313,7 +333,7 @@ def get_yosys_rtdocs() -> None:
         sys.exit(1)
 
     logging.debug('Yosys RT docs downloaded successfully.')
-    track_src(f'{cur_dir}/data/rtdocs')
+    track_src(f'{cur_dir}/data/html/yosys_docs')
 
 
 if __name__ == '__main__':
@@ -322,8 +342,9 @@ if __name__ == '__main__':
         'data/markdown/manpages',
         'data/markdown/OR_docs',
         'data/markdown/ORFS_docs',
+        'data/markdown/OpenSTA_docs',
         'data/pdf',
-        'data/rtdocs',
+        'data/html',
     ]
     purge_folders(folder_paths=docs_paths)
 
@@ -335,11 +356,13 @@ if __name__ == '__main__':
     os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
     os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
     os.makedirs('data/markdown/ORFS_docs/general', exist_ok=True)
+    os.makedirs('data/markdown/OpenSTA_docs', exist_ok=True)
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
-    os.makedirs('data/rtdocs', exist_ok=True)
+    os.makedirs('data/html', exist_ok=True)
 
+    #    get_or_website_html()
     get_opensta_docs()
-    get_yosys_rtdocs()
+    get_yosys_docs_html()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
