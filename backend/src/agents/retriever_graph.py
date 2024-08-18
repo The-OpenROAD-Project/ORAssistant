@@ -114,7 +114,7 @@ class RetrieverGraph:
             return {'tools': []}
 
         if self.inbuit_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice='any')  # type: ignore
+            model = self.llm.bind_tools(self.tools, tool_choice='any')
 
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
@@ -128,10 +128,10 @@ class RetrieverGraph:
 
             response = model.invoke(followup_question)
 
-            if response is None or response.tool_calls is None:  # type: ignore
+            if response is None or response.tool_calls is None:
                 return {'tools': []}
 
-            return {'tools': response.tool_calls}  # type: ignore
+            return {'tools': response.tool_calls}
         else:
             tool_rephrase_chain = (
                 ChatPromptTemplate.from_template(tool_rephrase_prompt_template)
@@ -151,12 +151,12 @@ class RetrieverGraph:
                 return {'tools': []}
 
             if 'tool_names' in str(response):
-                tool_calls = response.get('tool_names', [])  # type: ignore
+                tool_calls = response.get('tool_names', [])
             else:
                 logging.warn('Tool selection failed. Returning empty tool list.')
 
             if 'rephrased_question' in str(response):
-                state['messages'][-1].content = response.get('rephrased_question')  # type: ignore
+                state['messages'][-1].content = response.get('rephrased_question')
             else:
                 logging.warn('Rephrased question not found in response.')
 
