@@ -163,6 +163,11 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
 def build_or_docs() -> None:
     logging.debug('Starting OR docs build...')
 
+    # if sphinx-build not in PATH
+    if not shutil.which('sphinx-build'):
+        logging.debug('sphinx-build not found in PATH. Exiting.')
+        sys.exit(1)
+
     os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
     subprocess.run('make html', shell=True, capture_output=True)
 
@@ -365,14 +370,18 @@ if __name__ == '__main__':
     ]
     purge_folders(folder_paths=docs_paths)
 
-    os.makedirs('data/markdown/manpages', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
-    os.makedirs('data/pdf/OpenSTA', exist_ok=True)
-    os.makedirs('data/rtdocs', exist_ok=True)
+    new_paths = [
+        'data/markdown/manpages',
+        'data/markdown/OR_docs',
+        'data/markdown/OR_docs/installation',
+        'data/markdown/OR_docs/tools',
+        'data/markdown/ORFS_docs',
+        'data/markdown/ORFS_docs/installation',
+        'data/pdf/OpenSTA',
+        'data/rtdocs',
+    ]
+    for path in new_paths:
+        os.makedirs(path, exist_ok=True)
 
     get_yosys_rtdocs()
     get_opensta_docs()
