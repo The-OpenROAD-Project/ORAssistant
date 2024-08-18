@@ -1,10 +1,12 @@
 .env
+*.ipynb
 __pycache__/
 backend/data/pdf
-backend/data/rtdocs
+backend/data/html
 backend/data/markdown/manpages
 backend/data/markdown/OR_docs
 backend/data/markdown/ORFS_docs
+backend/data/markdown/OpenSTA_docs
 backend/src/*.json
 *.pyc
 frontend/*.json  
