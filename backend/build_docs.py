@@ -46,7 +46,7 @@ def update_src(src_path: str, dst_path: str) -> None:
         source_dict[dst_path] = opensta_readme_url
     elif 'theopenroadproject' in dst_path:
         source_dict[dst_path] = (
-            f"https://{dst_path[len('data/html/') : len('index.html') + 1]}"
+            f"https://{dst_path.replace('data/html/or_website/', '').replace('/index.html', '')}"
         )
     else:
         source_dict[dst_path] = dst_path
@@ -319,6 +319,7 @@ def get_or_website_html() -> None:
 
     logging.debug('OR website docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/or_website')
+    print(source_dict)
 
 
 def get_yosys_docs_html() -> None:
@@ -361,8 +362,8 @@ if __name__ == '__main__':
     os.makedirs('data/html', exist_ok=True)
 
     get_or_website_html()
-    get_opensta_docs()
-    get_yosys_docs_html()
+    # get_opensta_docs()
+    # get_yosys_docs_html()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
