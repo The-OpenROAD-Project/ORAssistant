@@ -237,15 +237,10 @@ class RetrieverTools:
         - SDC timing constraints\
         - SDF delay annotation\
         - SPEF parasitics\
-        Command Line Arguments: Detailed information about the different command line arguments that can be used with OpenSTA.\
-        Example Command Scripts: Examples of command scripts for different scenarios, including reading designs, performing timing analysis, and power analysis.\
         Timing Analysis using SDF: Instructions and examples for performing timing analysis using Standard Delay Format (SDF).\
         Timing Analysis with Multiple Process Corners: Guidelines and examples for conducting timing analysis across multiple process corners.\
         Power Analysis: Steps and commands involved in performing power analysis.\
         TCL Interpreter: Details on using the TCL interpreter with OpenSTA.\
-        Commands: Comprehensive list and descriptions of all commands available in OpenSTA, along with usage guidelines and examples.\
-        Filter Expressions: Information on filter expressions used within OpenSTA commands.\
-        Variables: Descriptions of various variables used in OpenSTA and their purposes.\
         """
         if RetrieverTools.opensta_retriever is None:
             raise ValueError('OpenSTA Retriever not initialized')
