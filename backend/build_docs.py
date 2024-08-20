@@ -79,6 +79,15 @@ def copy_file_track_src(src: str, dst: str) -> None:
         sys.exit(1)
 
     if os.path.isfile(src):
+        if os.path.exists(dst):
+            base, ext = os.path.splitext(dst)
+            counter = 2
+            while os.path.exists(dst):
+                new_file_name = f'{base}_{counter}{ext}'
+                logging.debug(f'File {dst} already exists. Renaming to {new_file_name}')
+                dst = new_file_name
+                counter += 1
+
         shutil.copy2(src, dst)
 
         dst_path = dst.split('backend/')[-1]
@@ -93,19 +102,27 @@ def copy_tree_track_src(src: str, dst: str) -> None:
 
     for root, _, files in os.walk(src):
         rel_path = os.path.relpath(root, src)
-        if rel_path == '.':
-            dst_dir = dst
-        else:
-            dst_dir = os.path.join(dst, rel_path)
+        dst_dir = dst if rel_path == '.' else os.path.join(dst, rel_path)
         os.makedirs(dst_dir, exist_ok=True)
 
         for file in files:
             src_file = os.path.join(root, file)
             dst_file = os.path.join(dst_dir, file)
+
+            if os.path.exists(dst_file):
+                base, ext = os.path.splitext(file)
+                counter = 2
+                while os.path.exists(dst_file):
+                    new_file_name = f'{base}_{counter}{ext}'
+                    dst_file = os.path.join(dst_dir, new_file_name)
+                    logging.debug(
+                        f'File {dst_file} already exists. Renaming to {new_file_name}'
+                    )
+                    counter += 1
+
             shutil.copy2(src_file, dst_file)
 
             dst_path = dst_file.split('backend/')[-1]
-
             update_src(src_file, dst_path)
 
 
@@ -146,8 +163,10 @@ def build_or_docs() -> None:
     copy_tree_track_src(
         f'{md_or_docs}/user', f'{cur_dir}/data/markdown/OR_docs/installation'
     )
-    copy_tree_track_src(
-        f'{md_or_docs}/main/src', f'{cur_dir}/data/markdown/OR_docs/tools'
+    copy_tree_track_src(f'{md_or_docs}/main', f'{cur_dir}/data/markdown/OR_docs/tools')
+    copy_file_track_src(
+        f'{md_or_docs}/main/README.md',
+        f'{cur_dir}/data/markdown/OR_docs/general/README.md',
     )
     copy_tree_track_src(
         f'{md_or_docs}/tutorials', f'{cur_dir}/data/markdown/OR_docs/general'
@@ -319,7 +338,6 @@ def get_or_website_html() -> None:
 
     logging.debug('OR website docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/or_website')
-    print(source_dict)
 
 
 def get_yosys_docs_html() -> None:
@@ -362,8 +380,8 @@ if __name__ == '__main__':
     os.makedirs('data/html', exist_ok=True)
 
     get_or_website_html()
-    # get_opensta_docs()
-    # get_yosys_docs_html()
+    get_opensta_docs()
+    get_yosys_docs_html()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
