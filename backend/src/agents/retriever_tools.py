@@ -47,6 +47,27 @@ class RetrieverTools:
         reranking_model_name: str,
         use_cuda: bool = False,
     ) -> None:
+        general_retriever_chain = HybridRetrieverChain(
+            embeddings_config=embeddings_config,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            html_docs_path=['./data/html/or_website/'],
+            markdown_docs_path=[
+                './data/markdown/OR_docs',
+                './data/markdown/ORFS_docs',
+                './data/markdown/gh_discussions',
+                './data/markdown/manpages/man1',
+                './data/markdown/manpages/man2',
+            ],
+            other_docs_path=['./data/pdf/OR_publications'],
+            weights=[0.6, 0.2, 0.2],
+            contextual_rerank=True,
+            search_k=search_k,
+            chunk_size=chunk_size,
+        )
+        general_retriever_chain.create_hybrid_retriever()
+        RetrieverTools.general_retriever = general_retriever_chain.retriever
+
         install_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
@@ -85,26 +106,6 @@ class RetrieverTools:
         commands_retriever_chain.create_hybrid_retriever()
         RetrieverTools.commands_retriever = commands_retriever_chain.retriever
 
-        general_retriever_chain = HybridRetrieverChain(
-            embeddings_config=embeddings_config,
-            reranking_model_name=reranking_model_name,
-            use_cuda=use_cuda,
-            html_docs_path=['./data/html/or_website/'],
-            markdown_docs_path=[
-                './data/markdown/OR_docs',
-                './data/markdown/ORFS_docs',
-                './data/markdown/gh_discussions',
-                './data/markdown/manpages/man1',
-                './data/markdown/manpages/man2',
-            ],
-            weights=[0.6, 0.2, 0.2],
-            contextual_rerank=True,
-            search_k=search_k,
-            chunk_size=chunk_size,
-        )
-        general_retriever_chain.create_hybrid_retriever()
-        RetrieverTools.general_retriever = general_retriever_chain.retriever
-
         yosys_rtdocs_retriever_chain = HybridRetrieverChain(
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
@@ -123,7 +124,7 @@ class RetrieverTools:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             markdown_docs_path=['./data/markdown/OpenSTA_docs'],
-            other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+            other_docs_path=['./data/pdf/OpenSTA'],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
