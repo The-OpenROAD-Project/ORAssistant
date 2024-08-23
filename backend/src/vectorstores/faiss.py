@@ -158,7 +158,7 @@ class FAISSVectorDatabase:
             self._add_to_db(documents=processed_html_docs)
             self.processed_docs.extend(processed_html_docs)
         else:
-            raise ValueError('No HTML docs processed.')
+            raise ValueError(f'Could not add {folder_paths}. No HTML docs processed.')
 
         if return_docs:
             return processed_html_docs
