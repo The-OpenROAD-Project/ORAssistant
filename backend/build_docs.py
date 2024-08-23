@@ -76,7 +76,7 @@ def track_src(src: str) -> None:
 
 def copy_file_track_src(src: str, dst: str) -> None:
     if not os.path.exists(src):
-        logging.debug(f'File {src} does not exist. Exiting.')
+        logging.error(f'File {src} does not exist. Exiting.')
         sys.exit(1)
 
     if os.path.isfile(src):
@@ -330,7 +330,7 @@ def get_or_website_html() -> None:
     logging.debug('Scraping OR website...')
     try:
         subprocess.run(
-            f'wget -r -A.html -P data/html/or_website {or_website_url} ',
+            f'wget -r -A.html -P data/html/or_website {or_website_url}',
             shell=True,
         )
     except Exception as e:
@@ -357,9 +357,11 @@ def get_or_publications() -> None:
             paper_name = paper_link.split('/')[-1]
             print(f'Downloading {paper_name}. . .')
 
-            if os.path.exists(f'{cur_dir}/data/pdf/OR_publications/{paper_name}'):
-                print(f'{paper_name} already exists. Renaming...')
-                paper_name = f"{paper_name.split('.')[0]}_1.pdf"
+            counter = 2
+            while os.path.exists(f'{cur_dir}/data/pdf/OR_publications/{paper_name}'):
+                logging.debug(f'File {paper_name} already exists. Renaming. . .')
+                paper_name = f"{paper_name.split('.')[0]}_{counter}.pdf"
+                counter += 1
 
             subprocess.run([
                 'wget',
@@ -367,6 +369,7 @@ def get_or_publications() -> None:
                 '-O',
                 f'data/pdf/OR_publications/{paper_name}',
             ])
+            
             source_dict[f'data/pdf/OR_publications/{paper_name}'] = paper_link
 
     except Exception as e:
