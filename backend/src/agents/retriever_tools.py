@@ -92,6 +92,7 @@ class RetrieverTools:
             use_cuda=use_cuda,
             markdown_docs_path=[
                 './data/markdown/OR_docs/tools',
+                './data/markdown/ORFS_docs/tools',
                 './data/markdown/gh_discussions/Query',
                 './data/markdown/gh_discussions/Runtime',
                 './data/markdown/gh_discussions/Documentation',
@@ -187,8 +188,7 @@ class RetrieverTools:
         MPL: Macro Placement\
         MPL: Hierarchical Macro Placement\
         ODB: OpenDB\
-        Chip-level Connections\
-        PAD: Pad\
+        PAD: Chip-level Connections\
         PAR: Partition Manager\
         PDN: Power Distribution Network\
         PPL: Pin Placement\
