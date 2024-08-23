@@ -92,7 +92,7 @@ class RetrieverTools:
             use_cuda=use_cuda,
             markdown_docs_path=[
                 './data/markdown/OR_docs/tools',
-                './data/markdown/ORFS_docs/tools',
+                './data/markdown/ORFS_docs/general',
                 './data/markdown/gh_discussions/Query',
                 './data/markdown/gh_discussions/Runtime',
                 './data/markdown/gh_discussions/Documentation',
@@ -170,36 +170,17 @@ class RetrieverTools:
     def retrieve_cmds(query: str) -> Tuple[str, list[str], list[str]]:
         """
         Retrieve information on the commands available in the OpenROAD project and OpenROAD-Flow-Scripts.\
-        This includes descriptions, usage guidelines, command syntax, examples, and best practices.\
-        This tool assists users by delivering clear, accurate, and\
-        relevant details to help them effectively utilize the following commands within OpenROAD and OpenROAD-Flow-Scripts:\
-        Here's a list of all the commands available:
-        ANT: Antenna Rule Checker\
-        CTS: Clock Tree Synthesis\
-        DFT: Design For Testing\
-        DPL: Detailed Placement\
-        DRT: Detailed Routing\
-        FIN: Metal Fill\
-        GPL: Global Floorplanning\
-        GPL: Global Placement\
-        GRT: Global Routing\
-        GUI: Graphical User Interface\
-        IFP: Initialize Floorplan\
-        MPL: Macro Placement\
-        MPL: Hierarchical Macro Placement\
-        ODB: OpenDB\
-        PAD: Chip-level Connections\
-        PAR: Partition Manager\
-        PDN: Power Distribution Network\
-        PPL: Pin Placement\
-        PSM: IR Drop Analysis\
-        RSX: Parasitics Extraction\
-        RMP: Restructure\
-        RSZ: Gate Resizer\
-        STT: Rectilinear Steiner Tree\
-        TAP: TapCell\
-        UPF: Read Unified Power Format\
-        UTL: Utilities\
+        This includes usage guidelines, command syntax, examples, and best practices about commands that cover various \
+        aspects of electronic design automation, such as synthesis, placement, routing, analysis, and \
+        optimization within the OpenROAD environment.
+
+        Commands include:
+        Antenna Rule Checker, Clock Tree Synthesis, Design For Testing, Detailed Placement, \
+        Detailed Routing, Metal Fill, Global Floorplanning, Global Placement, Global Routing, Graphical User Interface, \
+        Initialize Floorplan, Macro Placement, Hierarchical Macro Placement, OpenDB, Chip-level Connections,\
+        Partition Manager, Power Distribution Network, Pin Placement, IR Drop Analysis, Parasitics Extraction,\
+        Restructure, Gate Resizer, Rectilinear Steiner Tree, TapCell, Read Unified Power Format, Timing Optimization\
+       
         """
         if RetrieverTools.commands_retriever is None:
             raise ValueError('Commands Retriever not initialized')
@@ -232,16 +213,11 @@ class RetrieverTools:
         This tool provides comprehensive information on the various functionalities, commands, and usage guidelines of OpenSTA.\
         
         OpenSTA is an open-source gate-level static timing verifier that has been used by many design houses.\
-        As a stand-alone executable it can be used to verify the timing of a design using standard file formats.\
-        - Verilog netlist\
-        - Liberty library\
-        - SDC timing constraints\
-        - SDF delay annotation\
-        - SPEF parasitics\
-        Timing Analysis using SDF: Instructions and examples for performing timing analysis using Standard Delay Format (SDF).\
-        Timing Analysis with Multiple Process Corners: Guidelines and examples for conducting timing analysis across multiple process corners.\
-        Power Analysis: Steps and commands involved in performing power analysis.\
-        TCL Interpreter: Details on using the TCL interpreter with OpenSTA.\
+        Timing Analysis: Perform static timing analysis using standard file formats (Verilog, Liberty, SDC, SDF, SPEF).
+        Multiple Process Corners: Conduct analysis across different process variations.
+        Power Analysis: Evaluate power consumption in designs.
+        TCL Interpreter: Use TCL scripts for command automation and customization.
+   
         """
         if RetrieverTools.opensta_retriever is None:
             raise ValueError('OpenSTA Retriever not initialized')
@@ -274,6 +250,9 @@ class RetrieverTools:
         
         Yosys is a framework for Verilog RTL synthesis.\
         It currently has extensive Verilog-2005 support and provides a basic set of synthesis algorithms for various application domains.\
+        Setup: Configure Yosys for synthesis tasks.
+        Usage: Execute synthesis commands and scripts.
+        Troubleshooting: Resolve common issues in synthesis flows.
         """
 
         if RetrieverTools.yosys_rtdocs_retriever is None:
