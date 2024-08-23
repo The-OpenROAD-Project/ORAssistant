@@ -13,7 +13,7 @@ You must not ask the user to refer to a link that is not a part of your answer.
 If there is nothing in the context relevant to the question, simply say "Sorry its not avaiable in my knowledge base." Do not try to make up an answer.
 Anything between the following `context`  html blocks is retrieved from a knowledge bank, not part of the conversation with the user. 
 
-For casual greetings or personal inquiries intended to you, respond politely with a simple, relevant answer. Avoid providing any technical information.
+For casual greetings or questions about your identity or purpose, respond politely with a simple, relevant answer. Avoid providing any technical information.
 ------------------------------------------------------------------------------------
 Use the following context:
 
@@ -47,13 +47,12 @@ This is the user's follow-up question:
 {question}
 
 Given the chat history, rephrase the follow-up question to be a standalone question.
-The rephrased question should include ony relevant information inferred from the chat history.
-If necessary, list command names in the rephrased question.
-Discard information irrelavant to the follow-up question.
+The rephrased question should include only relevant information inferred from the chat history.
 If the question is already standalone, return the same question. 
 Return your response as a JSON blob with 'rephrased_question'.
 
 Choose the most appropriate tools from the list of tools to answer the rephrased question.
+If the user has asked for a wrong tool, correct the tool name in the rephrased question.
 You are encouraged to use multiple tools.
 Return your response as a JSON blob with 'tool_names'.
 
@@ -68,8 +67,8 @@ This is the user's follow-up question:
 {question}
 
 Given the chat history, rephrase the follow-up question to be a standalone question.
-The rephrased question should include ony relevant information inferred from the chat history.
-Discard information irrelavant to the follow-up question.
+The rephrased question should include only relevant information inferred from the chat history.
+If the user has asked for a wrong tool, correct the tool name in the rephrased question.
 If the question is already standalone, return the same question.
 
 Return your response as a JSON blob with 'rephrased_question'.

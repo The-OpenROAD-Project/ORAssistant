@@ -175,11 +175,11 @@ class RetrieverTools:
         optimization within the OpenROAD environment.
 
         Commands include:
-        Antenna Rule Checker, Clock Tree Synthesis, Design For Testing, Detailed Placement, \
-        Detailed Routing, Metal Fill, Global Floorplanning, Global Placement, Global Routing, Graphical User Interface, \
-        Initialize Floorplan, Macro Placement, Hierarchical Macro Placement, OpenDB, Chip-level Connections,\
-        Partition Manager, Power Distribution Network, Pin Placement, IR Drop Analysis, Parasitics Extraction,\
-        Restructure, Gate Resizer, Rectilinear Steiner Tree, TapCell, Read Unified Power Format, Timing Optimization\
+        Antenna Rule Checker (ANT), Clock Tree Synthesis (CTS), Design For Testing (DFT), Detailed Placement (DPL), \
+        Detailed Routing (DRT), Metal Fill (FIN), Floorplanning, Global Placement (GPL), Global Routing (GRT), Graphical User Interface (GUI), \
+        Initialize Floorplan (IFP), Macro Placement (MPL), Hierarchical Macro Placement, OpenDB (ODB), Chip-level Connections (PAD),\
+        Partition Manager (PAR), Power Distribution Network (PDN), Pin Placement (PPL), IR Drop Analysis (PSM), Parasitics Extraction (RSX),\
+        Restructure (RMP), Gate Resizer (RSZ), Rectilinear Steiner Tree (STT), TapCell (TAP), Read Unified Power Format (UPF), Timing Optimization\
        
         """
         if RetrieverTools.commands_retriever is None:
