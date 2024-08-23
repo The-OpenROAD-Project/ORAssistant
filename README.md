@@ -41,7 +41,7 @@ Ensure you have `docker` and `docker-compose` installed in your system.
   cp .env.example .env
 ```
 
-**Step 3**: Start the docker contaier by running the following command:
+**Step 3**: Start the docker container by running the following command:
 
 ```bash
   docker compose up
