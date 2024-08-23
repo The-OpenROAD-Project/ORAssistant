@@ -12,6 +12,8 @@ from typing import Optional, Tuple, Any, Union
 
 from ..vectorstores.faiss import FAISSVectorDatabase
 
+import os
+
 
 class SimilarityRetrieverChain(BaseChain):
     def __init__(
@@ -78,15 +80,18 @@ class SimilarityRetrieverChain(BaseChain):
             )
 
         if self.other_docs_path is not None and self.vector_db is not None:
-            for other_docs_path in self.other_docs_path:
-                if other_docs_path.endswith('.pdf'):
-                    self.processed_pdfs = self.vector_db.add_documents(
-                        file_paths=[other_docs_path],
-                        file_type='pdf',
-                        return_docs=return_docs,
-                    )
-                else:
-                    raise ValueError('File type not supported.')
+            for folder_name in self.other_docs_path:
+                for root, _, files in os.walk(folder_name):
+                    for file in files:
+                        other_docs_path = os.path.join(root, file)
+                        if other_docs_path.endswith('.pdf'):
+                            self.processed_pdfs = self.vector_db.add_documents(
+                                file_paths=[other_docs_path],
+                                file_type='pdf',
+                                return_docs=return_docs,
+                            )
+                        else:
+                            raise ValueError('File type not supported.')
 
         if self.html_docs_path is not None and self.vector_db is not None:
             self.processed_html = self.vector_db.add_html(
