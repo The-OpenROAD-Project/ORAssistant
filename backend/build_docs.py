@@ -8,6 +8,7 @@ import logging
 from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
+from bs4 import BeautifulSoup
 
 load_dotenv()
 source_dict: dict[str, str] = {}
@@ -340,6 +341,41 @@ def get_or_website_html() -> None:
     track_src(f'{cur_dir}/data/html/or_website')
 
 
+def get_or_publications() -> None:
+    try:
+        html = requests.get('https://theopenroadproject.org/publications/').text
+        soup = BeautifulSoup(html, 'lxml')
+        links = soup.find_all('a')
+        papers = []
+
+        for link in links:
+            href = link.get('href')
+            if href and '.pdf' in href:
+                papers.append(href)
+
+        for paper_link in papers:
+            paper_name = paper_link.split('/')[-1]
+            print(f'Downloading {paper_name}. . .')
+
+            if os.path.exists(f'{cur_dir}/data/pdf/OR_publications/{paper_name}'):
+                print(f'{paper_name} already exists. Renaming...')
+                paper_name = f"{paper_name.split('.')[0]}_1.pdf"
+
+            subprocess.run([
+                'wget',
+                paper_link,
+                '-O',
+                f'data/pdf/OR_publications/{paper_name}',
+            ])
+            source_dict[f'data/pdf/OR_publications/{paper_name}'] = paper_link
+
+    except Exception as e:
+        logging.debug(f'Error in downloading OR publications: {e}')
+        sys.exit(1)
+
+    logging.debug('OR publications downloaded successfully.')
+
+
 def get_yosys_docs_html() -> None:
     logging.debug('Scraping Yosys RT docs...')
     try:
@@ -377,8 +413,10 @@ if __name__ == '__main__':
     os.makedirs('data/markdown/ORFS_docs/general', exist_ok=True)
     os.makedirs('data/markdown/OpenSTA_docs', exist_ok=True)
     os.makedirs('data/pdf/OpenSTA', exist_ok=True)
+    os.makedirs('data/pdf/OR_publications', exist_ok=True)
     os.makedirs('data/html', exist_ok=True)
 
+    get_or_publications()
     get_or_website_html()
     get_opensta_docs()
     get_yosys_docs_html()
