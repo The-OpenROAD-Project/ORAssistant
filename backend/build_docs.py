@@ -40,7 +40,7 @@ def update_src(src_path: str, dst_path: str) -> None:
             f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
         )
     elif 'yosys' in dst_path:
-        source_dict[dst_path] = f"https://{dst_path[len('data/html/') :]}"
+        source_dict[dst_path] = f"https://{dst_path[len('data/html/yosys_docs') :]}"
     elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
         source_dict[dst_path] = opensta_docs_url
     elif 'OpenSTA' in dst_path and 'markdown' in dst_path:
@@ -355,7 +355,7 @@ def get_or_publications() -> None:
 
         for paper_link in papers:
             paper_name = paper_link.split('/')[-1]
-            print(f'Downloading {paper_name}. . .')
+            logging.debug(f'Downloading {paper_name}. . .')
 
             counter = 2
             while os.path.exists(f'{cur_dir}/data/pdf/OR_publications/{paper_name}'):
@@ -369,7 +369,7 @@ def get_or_publications() -> None:
                 '-O',
                 f'data/pdf/OR_publications/{paper_name}',
             ])
-            
+
             source_dict[f'data/pdf/OR_publications/{paper_name}'] = paper_link
 
     except Exception as e:
