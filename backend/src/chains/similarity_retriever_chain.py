@@ -91,7 +91,9 @@ class SimilarityRetrieverChain(BaseChain):
                                 return_docs=return_docs,
                             )
                         else:
-                            raise ValueError('File type not supported. Only PDFs are supported.')
+                            raise ValueError(
+                                'File type not supported. Only PDFs are supported.'
+                            )
 
         if self.html_docs_path is not None and self.vector_db is not None:
             self.processed_html = self.vector_db.add_html(
