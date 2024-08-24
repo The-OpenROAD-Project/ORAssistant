@@ -2,7 +2,7 @@ from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain
 from .mmr_retriever_chain import MMRRetrieverChain
 from .bm25_retriever_chain import BM25RetrieverChain
-
+from ..vectorstores.faiss import FAISSVectorDatabase
 
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
@@ -14,6 +14,7 @@ from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 
 from typing import Optional, Union
 
@@ -22,8 +23,11 @@ class HybridRetrieverChain(BaseChain):
     def __init__(
         self,
         embeddings_config: Optional[dict[str, str]] = None,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
+        llm_model: Optional[
+            Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+        ] = None,
         prompt_template_str: Optional[str] = None,
+        vector_db: Optional[FAISSVectorDatabase] = None,
         markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
         html_docs_path: Optional[list[str]] = None,
@@ -38,6 +42,7 @@ class HybridRetrieverChain(BaseChain):
         super().__init__(
             llm_model=llm_model,
             prompt_template_str=prompt_template_str,
+            vector_db=vector_db,
         )
         self.embeddings_config: Optional[dict[str, str]] = embeddings_config
 
@@ -63,6 +68,7 @@ class HybridRetrieverChain(BaseChain):
         similarity_retriever_chain = SimilarityRetrieverChain(
             llm_model=None,
             prompt_template_str=None,
+            vector_db=self.vector_db,
             embeddings_config=self.embeddings_config,
             markdown_docs_path=self.markdown_docs_path,
             manpages_path=self.manpages_path,
@@ -70,35 +76,26 @@ class HybridRetrieverChain(BaseChain):
             html_docs_path=self.html_docs_path,
             chunk_size=self.chunk_size,
         )
-
-        processed_docs, processed_manpages, processed_pdfs, processed_rtdocs = (
+        if self.vector_db is None:
             similarity_retriever_chain.embed_docs(return_docs=True)
-        )
-        faiss_db = similarity_retriever_chain.vector_db
-        similarity_retriever_chain.create_similarity_retriever(search_k=10)
+
+        self.vector_db = similarity_retriever_chain.vector_db
+        similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k)
         similarity_retriever = similarity_retriever_chain.retriever
 
         mmr_retriever_chain = MMRRetrieverChain()
         mmr_retriever_chain.create_mmr_retriever(
-            vector_db=faiss_db, search_k=10, lambda_mult=0.7
+            vector_db=self.vector_db, search_k=self.search_k, lambda_mult=0.7
         )
         mmr_retriever = mmr_retriever_chain.retriever
 
-        embedded_docs = []
-        if processed_docs is not None:
-            embedded_docs += processed_docs
-        if processed_manpages is not None:
-            embedded_docs += processed_manpages
-        if processed_pdfs is not None:
-            embedded_docs += processed_pdfs
-        if processed_rtdocs is not None:
-            embedded_docs += processed_rtdocs
-
         bm25_retriever_chain = BM25RetrieverChain()
-        bm25_retriever_chain.create_bm25_retriever(
-            embedded_docs=embedded_docs, search_k=10
-        )
-        bm25_retriever = bm25_retriever_chain.retriever
+
+        if self.vector_db is not None and self.vector_db.processed_docs:
+            bm25_retriever_chain.create_bm25_retriever(
+                embedded_docs=self.vector_db.processed_docs, search_k=self.search_k
+            )
+            bm25_retriever = bm25_retriever_chain.retriever
 
         if (
             similarity_retriever is not None

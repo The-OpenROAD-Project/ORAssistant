@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from dotenv import load_dotenv
 
 from langchain.docstore.document import Document
@@ -21,14 +22,24 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 def process_pdf_docs(file_path: str) -> list[Document]:
     loader = PyPDFLoader(file_path)
-    docs = loader.load_and_split(text_splitter=text_splitter)
 
     with open('src/source_list.json') as f:
         src_dict = json.loads(f.read())
 
-    for doc in docs:
-        doc.metadata['source'] = src_dict.get(
-            doc.metadata['source'], doc.metadata['source']
-        )
+    documents = loader.load_and_split(text_splitter=text_splitter)
 
-    return docs
+    for doc in documents:
+        try:
+            doc.metadata['source'] = file_path.split('./')[-1]
+            url = src_dict[doc.metadata['source']]
+        except KeyError:
+            logging.warn(f"Could not find source for {doc.metadata['source']}")
+            url = ''
+
+        new_metadata = {
+            'url': url,
+            'source': doc.metadata['source'],
+        }
+        doc.metadata = new_metadata
+
+    return documents

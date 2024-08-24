@@ -4,6 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from ..vectorstores.faiss import FAISSVectorDatabase
 
 from langchain_core.vectorstores import VectorStoreRetriever
+from langchain_ollama import ChatOllama
 
 from typing import Optional, Union
 
@@ -11,7 +12,9 @@ from typing import Optional, Union
 class MMRRetrieverChain(SimilarityRetrieverChain):
     def __init__(
         self,
-        llm_model: Optional[Union[ChatGoogleGenerativeAI, ChatVertexAI]] = None,
+        llm_model: Optional[
+            Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+        ] = None,
         prompt_template_str: Optional[str] = None,
         markdown_docs_path: Optional[list[str]] = None,
         manpages_path: Optional[list[str]] = None,
