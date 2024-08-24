@@ -177,7 +177,7 @@ class RetrieverTools:
         Commands include:
         Antenna Rule Checker (ANT), Clock Tree Synthesis (CTS), Design For Testing (DFT), Detailed Placement (DPL), \
         Detailed Routing (DRT), Metal Fill (FIN), Floorplanning, Global Placement (GPL), Global Routing (GRT), Graphical User Interface (GUI), \
-        Initialize Floorplan (IFP), Macro Placement (MPL), Hierarchical Macro Placement, OpenDB (ODB), Chip-level Connections (PAD),\
+        Initialize Floorplan (IFP), Macro Placement (MPL), Hierarchical Macro Placement (MPL2), OpenDB (ODB), Chip-level Connections (PAD),\
         Partition Manager (PAR), Power Distribution Network (PDN), Pin Placement (PPL), IR Drop Analysis (PSM), Parasitics Extraction (RSX),\
         Restructure (RMP), Gate Resizer (RSZ), Rectilinear Steiner Tree (STT), TapCell (TAP), Read Unified Power Format (UPF), Timing Optimization\
        
