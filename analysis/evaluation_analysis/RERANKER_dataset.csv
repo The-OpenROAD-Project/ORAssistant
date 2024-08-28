@@ -1,0 +1,935 @@
+question,ground_truth,retriever_type,response_time,response,tool,itr,acc_value,llm_score,hall_score
+1. What is CTS?,"CTS stands for Clock Tree Synthesis. It is a stage in the OpenROAD flow that synthesizes the clock distribution network. According to the context provided, CTS inserts clock buffers to distribute the clock signal to all sequential elements while minimizing skew. The CTS metrics reported include the number of clock roots, number of buffers inserted, number of clock subnets, and number of sinks.",agent-retriever,5979.986,"CTS stands for Clock Tree Synthesis. It is a module in OpenROAD that is responsible for creating a balanced and optimized clock distribution network within a design. 
+
+Here's how CTS works in OpenROAD:
+
+- **Basis:** OpenROAD's CTS module is based on TritonCTS 2.0.
+- **On-the-Fly Characterization:** TritonCTS 2.0 performs characterization on the fly, meaning there is no need for separate characterization data generation. 
+- **Control:** The on-the-fly characterization can be optionally controlled through parameters specified by the `configure_cts_characterization` command.
+- **Routing Layer:**  You can set the clock routing layer using the `set_wire_rc` command.
+- **Command:** The CTS module is accessed through the `clock_tree_synthesis` command. 
+",agent-retriever,1,TP,0.75,True
+2. What is ANT?,ANT stands for Antenna Rule Checker in OpenROAD. It is a tool that checks for antenna violations and generates reports indicating violated nets. Antenna violations can occur during chip manufacturing when metal interconnects collect charge that may damage transistor gates. The ANT tool helps identify these potential issues by calculating Partial Area Ratio (PAR) and Cumulative Area Ratio (CAR) for nets and comparing them against antenna rules. Violations found by ANT can be repaired after global routing using the repair_design command.,agent-retriever,3917.836,"ANT is a tool within the OpenROAD project that checks for antenna violations and generates a report to indicate violated nets. 
+
+Here's a breakdown of how it works:
+
+* **Antenna Violations:** These occur when a long, unconnected wire segment (an ""antenna"") is exposed to a high electric field, leading to potential device damage.
+* **LEF/DEF 5.8 Language Reference:**  ANT refers to the LEF/DEF 5.8 Language Reference, Appendix C, ""Calculating and Fixing Process Antenna Violations"" for a description of these violations. 
+* **Reports:**  ANT provides both detailed and simple reports. 
+    * **Detailed Reports:** Show all antenna calculations for violating nets.
+    * **Simple Reports:** Indicate violated nets. 
+* **Abbreviations Index:**  The reports use abbreviations:
+    * **PAR:** Partial Area Ratio 
+    * **CAR:** Cumulative Area Ratio
+    * **Area:** Gate Area 
+    * **S. Area:** Side Diffusion Area 
+    * **C. Area:** Cumulative Gate Area 
+    * **C. S. Area:** Cumulative Side (Diffusion) Area 
+* **Repairing Violations:**  Antenna violations can be repaired after global routing with the ""repair_design"" command. 
+",agent-retriever,1,TP,0.9,True
+3. What types of Operating systems are supported in OpenROAD?,"OpenROAD supports the following operating systems: - Ubuntu 20.04 and 22.04 - CentOS 7 and 8 - Debian 10 and 11 - RHEL - Windows 10 and above (via Docker or WSL) - macOS (with some limitations) The level of support varies depending on the installation method (local installation, prebuilt binaries, Docker installation, or Windows Subsystem for Linux).",agent-retriever,3092.66,"OpenROAD supports a variety of operating systems, with varying levels of support depending on the installation method. Here is a breakdown:
+
+**Supported Operating Systems:**
+
+* **Ubuntu 20.04:** Supported for local installation, prebuilt binaries, and Docker installation.
+* **Ubuntu 22.04:** Supported for local installation, prebuilt binaries, and Docker installation.
+* **CentOS 7:** Supported for local installation and Docker installation.
+* **CentOS 8:** Supported for local installation and Docker installation.
+* **Debian 10:** Supported for local installation, prebuilt binaries, and Docker installation.
+* **Debian 11:** Supported for local installation, prebuilt binaries, and Docker installation.
+* **RHEL:** Supported for local installation and Docker installation.
+* **Windows 10 and above:** Supported for Docker installation and Windows Subsystem for Linux.
+* **macOS:** Supported for local installation and Docker installation. However, local compilation for the modules ""par"" and ""mpl2"" are not fully supported due to an upstream issue with ""or-tools"". Docker installation is recommended for macOS wherever possible. 
+",agent-retriever,1,TP,1.0,True
+4. How can I install OpenROAD using Docker?,"To install OpenROAD using Docker: 1. Install Docker on your machine. 2. Clone the OpenROAD-flow-scripts repository: git clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts cd OpenROAD-flow-scripts 3. Build the Docker image: ./build_openroad.sh You can restrict CPU usage with: ./build_openroad.sh --threads N 4. Run a Docker container: docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $(pwd)/flow:/OpenROAD-flow-scripts/flow openroad/flow-ubuntu22.04-builder 5. Inside the container, set up the environment: source ./env.sh 6. Verify the installation: yosys -help openroad -help 7. Run the flow: cd flow make Alternatively, you can use the docker_shell utility from the flow directory: cd flow util/docker_shell make For GUI support, additional Docker run options are required. Refer to the documentation for specific instructions based on your operating system.",agent-retriever,6851.937000000001,"Here's how you can install OpenROAD using Docker:
+
+**1. Clone the OpenROAD-flow-scripts Repository:**
+
+   - Use Git to clone the OpenROAD-flow-scripts repository recursively:
+     ```bash
+     git clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts
+     ```
+   - Navigate to the repository directory:
+     ```bash
+     cd OpenROAD-flow-scripts
+     ```
+
+**2. Build the Docker Image:**
+
+   - Run the `build_openroad.sh` script to build the Docker image:
+     ```bash
+     ./build_openroad.sh
+     ```
+
+**3. (Optional) Restrict CPU Usage:**
+
+   - To control the number of CPUs used during compilation, use the `--threads` option:
+     ```bash
+     ./build_openroad.sh --threads N
+     ```
+   - Replace `N` with the desired number of CPU cores.
+
+**4. Run the Docker Image:**
+
+   - Start the Docker container in interactive mode using the following command:
+     ```bash
+     docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $(pwd)/flow:/OpenROAD-flow-scripts/flow openroad/flow-ubuntu22.04-builder
+     ```
+
+**5. Verify Installation:**
+
+   - Inside the Docker container, source the environment file:
+     ```bash
+     source ./env.sh
+     ```
+   - Check that Yosys and OpenROAD are installed correctly:
+     ```bash
+     yosys -help
+     openroad -help
+     ```
+   - Navigate to the `flow` directory and run the `make` command to build a design:
+     ```bash
+     cd flow
+     make
+     ```
+   - You can use the `exit` command to exit the Docker container.
+
+**Alternative: Using `docker_shell` Utility:**
+
+   - You can use the `docker_shell` utility to automate the Docker commands.  
+   - Make sure you are in the `flow` directory:
+     ```bash
+     cd flow
+     ```
+   - Then, run the following command to build a design:
+     ```bash
+     util/docker_shell make
+     ```
+
+**Enabling GUI Support (Docker):**
+
+   - For Ubuntu/Debian OS users, start the Docker container with the following command:
+     ```bash
+     docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $(pwd)/flow:/OpenROAD-flow-scripts/flow -e DISPLAY=${DISPLAY} -v /tmp/.X11-unix:/tmp/.X11-unix -v ${HOME}/.Xauthority:/.Xauthority --network host --security-opt seccomp=unconfined openroad/flow-$OS_NAME-builder
+     ```
+
+   - For Mac OS X users, use the following command:
+     ```bash
+     docker run --rm -it -e DISPLAY=<IP_LIKE_FROM_TUTORIAL>:0 --network host --privileged <IMAGE_NAME>
+     ```
+
+   - Alternatively, you can use the `docker_shell` utility for GUI support:
+     ```bash
+     cd flow
+     util/docker_shell gui_final
+     ```
+
+**Note:** The `docker_shell` utility is a helpful tool for automating Docker commands, simplifying your workflow. You can find documentation for it in the `DockerShell.md` file within the OpenROAD-flow-scripts repository.
+",agent-retriever,1,TP,1.0,True
+5. Help me install OpenROAD-flow-scripts using WSL?,"To install OpenROAD-flow-scripts using Windows Subsystem for Linux (WSL): 1. Install WSL: - Follow Microsoft's instructions at https://learn.microsoft.com/en-us/windows/wsl/install - You can use any supported kernel like Ubuntu 22.04, CentOS 7, or Debian 11 2. Configure Docker for Windows: - Enable 'Use the WSL 2 Based engine' in Docker settings - Enable integration with your WSL distro under Resources > WSL integration 3. Access WSL: - Open the 'Ubuntu 22.04 LTS' app (or your chosen distro) - Run: sudo apt-get update; sudo apt-get upgrade; sudo apt install -y build-essential python3 python3-venv python3-pip make 4. Verify Docker: - Run: docker run hello-world - You should see a 'Hello from Docker!' message 5. Follow the Docker guide: - With WSL and Docker set up, you can now follow the Docker installation guide for OpenROAD-flow-scripts at https://openroad-flow-scripts.readthedocs.io/en/latest/user/BuildWithDocker.html This setup provides a Linux environment with necessary dependencies to build and run OpenROAD-flow-scripts using Docker on Windows.",agent-retriever,4521.971,"To install OpenROAD-flow-scripts using WSL (Windows Subsystem for Linux), follow these steps:
+
+1. **Install WSL:**
+   - Follow the instructions to install WSL on your Windows machine. You can choose any supported kernel, such as CentOS 7, Ubuntu 20.04, Ubuntu 22.04, RHEL 8, Debian 10, or Debian 11.
+
+2. **Configure Docker:**
+   - Ensure you have Docker for Windows set up.
+   - Enable the following options to allow WSL to use Docker:
+     - **General > Use the WSL 2 Based engine** (should be the default selection)
+     - **Resources > WSL integration > Enable integration with my default WSL distro** and select the distribution you installed (e.g., ""Ubuntu-22.04"").
+
+3. **Access WSL:**
+   - Open the ""Ubuntu 22.04 LTS"" app (or your chosen distribution).
+   - Update and upgrade the system:
+     ```bash
+     sudo apt-get update; sudo apt-get upgrade; sudo apt install -y build-essential python3 python3-venv python3-pip make
+     ```
+
+4. **Verify Docker:**
+   - Run the following command to check if Docker is running:
+     ```bash
+     docker run hello-world
+     ```
+   - You should see the output:
+     ```
+     Hello from Docker!
+     This message shows that your installation appears to be working correctly.
+     ```
+
+5. **Install OpenROAD-flow-scripts:**
+   - Since you have configured a Linux system with the necessary dependencies, you are now ready to follow the Docker guide for installing OpenROAD-flow-scripts. 
+
+6. **Build OpenROAD-flow-scripts Locally (Optional):**
+   - If you wish to install OpenROAD-flow-scripts locally instead of using Docker, you can follow the instructions in the ""Build from sources locally"" section.
+
+7. **Delete WSL Kernel (Optional):**
+   - If you need to delete your WSL kernel, refer to the provided guide for instructions.
+",agent-retriever,1,TP,1.0,True
+6. How can I do macro placement,"To perform macro placement in OpenROAD, you can use the `macro_placement` command. Here's how to use it: 1. First, run `global_placement` before macro placement. 2. Then use the `macro_placement` command with the following syntax: macro_placement [-halo {halo_x halo_y}] [-channel {channel_x channel_y}] [-fence_region {lx ly ux uy}] [-snap_layer snap_layer_number] [-style corner_max_wl|corner_min_wl] Options: - `-halo`: Horizontal and vertical halo around macros (in microns) - `-channel`: Horizontal and vertical channel width between macros (in microns) - `-fence_region`: Restrict macro placements to a specific region (in microns, defaults to core area) - `-snap_layer`: Snap macro origins to this routing layer track - `-style`: Placement style, either `corner_max_wl` or `corner_min_wl` (default is `corner_max_wl`) Macros will be placed with max(halo * 2, channel) spacing between macros and between macros and the fence/die boundary. If no solutions are found, try reducing the channel/halo. For more detailed information, refer to the OpenROAD documentation on macro placement. The command for placing macros in OpenROAD is: macro_placement [-halo {halo_x halo_y}] [-channel {channel_x channel_y}] [-fence_region {lx ly ux uy}] [-snap_layer snap_layer_number] [-style corner_max_wl|corner_min_wl] This command performs macro placement with the following options: - -halo: Horizontal and vertical halo around macros (in microns) - -channel: Horizontal and vertical channel width between macros (in microns) - -fence_region: Restrict macro placements to a specific region (in microns, defaults to core area) - -snap_layer: Snap macro origins to this routing layer track - -style: Placement style, either corner_max_wl or corner_min_wl (default is corner_max_wl) Note that you should run global_placement before using macro_placement.",agent-retriever,3118.1749999999997,"The OpenROAD project provides several options for performing macro placement:
+
+* **Automatic Macro Placement:**
+    * You can use the `macro_placement` command. This command performs macro placement by considering factors like halo spacing, channel width, and placement style. It aims to maximize wirelength between macros.
+* **Hierarchical Macro Placement:**
+    * The `rtl_macro_placer` command utilizes a hierarchical approach for macro placement. It breaks down the design into clusters, enabling efficient placement of large and complex IP blocks.
+* **Manual Macro Placement:**
+    * The `place_macro` command allows you to manually place individual macros within your design. This provides fine-grained control over macro positioning.
+    
+These commands offer different strategies for macro placement, allowing you to choose the most suitable method based on your design requirements and goals. 
+",agent-retriever,1,TP,0.5,False
+7. What is the command for timing optimization?,"The main commands for timing optimization in OpenROAD are: 1. repair_design - Inserts buffers to fix max slew, max capacitance and max fanout violations. It also resizes gates to normalize slews. 2. repair_timing - Repairs setup and hold violations. It can be used with options like: repair_timing -setup (to fix setup violations) repair_timing -hold (to fix hold violations) These commands are typically run after placement and clock tree synthesis. The repair_timing command supports multiple corner analysis to calculate worst-case setup and hold violations. For example: repair_design repair_timing -setup repair_timing -hold You can also use options like -slack_margin to add additional slack margin when repairing timing.",agent-retriever,1949.519,"The command for timing optimization in the OpenROAD project is `repair_timing`. 
+",agent-retriever,1,TP,0.5,False
+8. How can I define die area in my floorplan?,"To define the die area in your floorplan using OpenROAD, you can use the `initialize_floorplan` command. There are two main methods: 1. Manually specify die/core area: initialize_floorplan -die_area {0 0 2000 2000} -core_area {100 100 1900 1900} -site FreePDK45_38x28_10R_NP_162NW_34O This sets a 2000x2000 micron die area with the lower left corner at (0,0) and upper right at (2000,2000). 2. Let OpenROAD calculate die area based on utilization and aspect ratio: initialize_floorplan -utilization 70 -aspect_ratio 1.0 -core_space 0.0 -site FreePDK45_38x28_10R_NP_162NW_34O This sets 70% utilization with a 1.0 aspect ratio, and OpenROAD calculates the die area. Note: Don't use both methods simultaneously to avoid unexpected behavior. Adjust values according to your design needs and technology node.",agent-retriever,3743.205,"The `initialize_floorplan` command in OpenROAD can be used to define the die area of your floorplan. You have two options:
+
+* **Method 1: Automatic die size calculation:** 
+    * Use the `-utilization` and `-aspect_ratio` arguments to specify the desired utilization and aspect ratio of your design.
+    * For example:  `initialize_floorplan -utilization 70 -aspect_ratio 1.0 -core_space 0.0 -sites FreePDK45_38x28_10R_NP_162NW_34O`. 
+    * This method automatically calculates the die area based on your specified utilization and aspect ratio.
+
+* **Method 2: Set die/core area:** 
+    * Use the `-die_area` and `-core_area` arguments to explicitly define the die and core area coordinates in microns. 
+    * The coordinates are specified as lower left x/y and upper right x/y coordinates.
+    * For example: `initialize_floorplan -die_area 0 0 2000 2000 -core_area 100 100 1900 1900 -sites FreePDK45_38x28_10R_NP_162NW_34O`.
+    * This method gives you more direct control over the die area and core area. 
+",agent-retriever,1,TP,1.0,True
+9. How can I analyze clock skews?,Clock skew can be analyzed using OpenSTA (Open Source Timing Analyzer) in OpenROAD. Use the command: report_clock_skew This will report clock skew information for your design.,agent-retriever,4131.996,"Analyzing clock skews involves understanding the timing differences between clock signals reaching different parts of a design. Here's a breakdown of how you can analyze clock skews:
+
+* **Report Clock Skew:** The `report_clock_skew` command in OpenROAD-Flow-Scripts (ORFS) is a helpful starting point. It provides a table of clock skew values, usually organized by clock name and the corresponding registers or timing points. This gives you an overview of the skew distribution within your design.
+* **Visualize Skew:**  Using tools like OpenROAD's GUI or other visualization tools, you can create heatmaps of clock skew across your layout. This allows you to identify areas with high skew and visually pinpoint potential problems.
+* **Investigate Critical Paths:** Focus on the timing paths with the most critical timing violations or near-violations. These paths are likely heavily influenced by clock skew. Use timing analysis tools to examine the impact of skew on these paths.
+* **Consider Clock Tree Latency:** Take into account the latency of the clock tree itself.  If a macro has a significant internal clock tree latency, it may be acceptable to have some skew between the macro's clock and other parts of the design.
+* **Analyze Hold Buffers:** The insertion of many hold buffers often indicates a problem with clock skew or timing constraints. Analyze these buffers to understand their cause and effect.
+* **Analyze Jitter:** If a path fails both setup and hold time, jitter (on-chip variation) could be a contributing factor. Jitter can cause clock edges to be both early and late, leading to timing issues.
+* **Consider Clock Tree Size:** The size of the clock tree matters. Larger clock trees tend to have greater potential for skew. If your clock tree is very large, it's crucial to pay close attention to skew.
+
+By combining these techniques, you can gain a thorough understanding of clock skew in your design and identify areas that require optimization to ensure proper timing and functionality. 
+",agent-retriever,1,TP,0.25,False
+10. To view routing congestion in OpenROAD:,"1. In the GUI, go to the 'Heat Maps' section and check the 'Routing Congestion' box to visualize the congestion map. 2. You can also generate a congestion report file: global_route -guide_file out.guide -congestion_report_file congest.rpt 3. To visualize congested GCells as markers: - In the DRC Viewer window, click 'Load' and select the congestion report file - A summary of congested GCells will be shown and markers added to the GUI - Use the Inspector window for details on routing resources 4. Click the 'zoom to' options to enlarge the view of congested areas 5. For designs with high congestion, OpenROAD will report: [ERROR GRT-0118] Routing congestion too high. These methods allow you to identify and analyze areas of routing congestion in your design.",agent-retriever,3671.072,"To view routing congestion in OpenROAD, you can use the OpenROAD GUI and follow these steps:
+
+* **Launch OpenROAD GUI:** Run the following command(s) in the terminal in the OpenROAD tool root directory:
+    * `shell`
+    * `cd ../tools/OpenROAD/src/grt/test/`
+    * `openroad -gui`
+* **Load congestion report:** In the DRC Viewer window, click on Load and select the file with the congestion report (e.g., `report_file.rpt`).
+* **View congestion summary:** A summary of the GCells with congestion is shown in the DRC Viewer window, and markers are added to the GUI.
+* **Inspect details:** Use the Inspector window for detailed routing resources information.
+* **Zoom in:** Click on ""zoom_to"" options to enlarge the view.
+* **Explore heatmaps:** From the Menu Bar, click on Tools -> Heat Maps -> Placement Density to view congestion selectively on vertical and horizontal layers. 
+* **Adjust heatmap settings:** Expand Heat Maps -> Placement Density from the Display Control window (available on the LHS of OpenROAD GUI). Set Minimum to 50.00% and Maximum to 100.00% to view congestion on all layers between 50-100%.
+* **View routing congestion heatmap:** From the Display Control window, select Heat Maps -> Routing Congestion.
+* **View power density heatmap:** From the Display Control window, select Heat Maps -> Power Density. 
+",agent-retriever,1,TP,0.9,True
+11. What does DRT-0297 mean?,DRT-0297 is an error code in OpenROAD's detailed routing tool (DRT). Specifically: - Type: ERROR - Message: 'inst {} not found in db' - Meaning: The detailed router was unable to find a particular instance in the database.,agent-retriever,1764.138,"DRT-0297 is an error message indicating that an instance (inst) specified is not found in the database. 
+",agent-retriever,1,TP,0.75,True
+12. Does OpenROAD support synthesis?,"OpenROAD currently does not have its own built-in synthesis capabilities. Instead, it relies on external tools like Yosys for synthesis. However, there is no plan to integrate synthesis directly into OpenROAD.",agent-retriever,1819.502,"OpenROAD does not support synthesis as part of its tool. However, it can integrate with Yosys, an external tool, for synthesis.  
+",agent-retriever,1,TP,0.75,True
+13. How can I specify I/O pin layout?,"To specify I/O pin layout in OpenROAD, you can use the following commands: 1. Define pin shape patterns: define_pin_shape_pattern -layer <layer> -x_step <x> -y_step <y> -region {llx lly urx ury} -size {width height} 2. Set I/O pin constraints: set_io_pin_constraint -direction <direction> -region <edge:interval> 3. Place specific pins: place_pin -pin_name <name> -layer <layer> -location {x y} -pin_size {width height} 4. Place all pins: place_pins -hor_layers <layers> -ver_layers <layers> [options] Key options for place_pins: - -corner_avoidance <length>: Avoid corners - -min_distance <distance>: Set minimum pin spacing - -exclude <region>: Exclude regions from pin placement - -group_pins <pin_list>: Group pins together You can also use write_pin_placement to save the pin placement to a file.",agent-retriever,5016.657999999999,"You can use the `define_pin_shape_pattern` and `set_io_pin_constraint` commands in OpenROAD to specify I/O pin layout. 
+
+Here's a breakdown of the steps:
+
+* **Define a Pin Placement Grid:**
+    * Use the `define_pin_shape_pattern` command to define a grid of potential pin locations on the specified layer.
+    * This command takes various parameters like:
+        * `-layer`: The top-most routing layer for the grid.
+        * `-x_step`, `-y_step`: The spacing between grid positions in the x and y directions.
+        * `-region`: The area of the placement grid, which can be the entire die area or a specific region.
+        * `-size`: The width and height of the pins placed on the grid.
+        * `-pin_keepout`: The minimum distance pins should keep from existing routing obstructions.
+* **Set I/O Pin Constraints:**
+    * Utilize the `set_io_pin_constraint` command to define region constraints for pins based on their direction or name. 
+    * This command allows you to restrict pins to specific regions of the die boundary.
+    * You can use the following parameters:
+        * `-direction`: The pin direction (input, output, inout, or feedthrough).
+        * `-pin_names`: A list of pin names to constrain.
+        * `-region`: A syntax defining the region where pins are allowed.
+            * `edge:interval`: Restricting pins to a specific interval on a particular edge (top, bottom, left, right).
+            * `*`:  Restricting pins to the entire edge.
+        * `-mirrored_pins`: Defines pairs of pins that will be placed symmetrically on the die boundary.
+        * `-group`: Places the pins defined in `-pin_names` together on the die boundary.
+        * `-order`:  Places pins in ascending x/y position, only when `-group` is used.
+
+By combining these commands, you can create a specific layout for your I/O pins, specifying their locations, spacing, and regions on the die. 
+",agent-retriever,1,TP,0.75,True
+14. How does timing driven placement work in OpenROAD?,"Timing-driven placement in OpenROAD works as follows: 1. The global placement tool (gpl) performs a virtual repair_design to calculate slack values and weight nets with low slack. 2. It adjusts the worst slacks (controlled by -timing_driven_nets_percentage) using a multiplier (controlled by -timing_driven_net_weight_max). 3. The multiplier is scaled from the full value for the worst slack, down to 1.0 at the timing_driven_nets_percentage point. 4. Timing-driven iterations are triggered based on overflow threshold values set by -timing_driven_net_reweight_overflow. 5. When these overflow thresholds are reached, the resizer is executed to recalculate timing and update net weights. 6. This process repeats, guiding the placement to improve timing-critical paths. 7. The set_wire_rc command is used to set resistance and capacitance values for estimated wires used in timing calculations. Key parameters that control timing-driven placement: - -timing_driven_net_reweight_overflow - -timing_driven_net_weight_max - -timing_driven_nets_percentage Adjusting these parameters allows tuning the timing-driven behavior to balance runtime and quality of results.",agent-retriever,4005.777,"OpenROAD's global placement module (gpl) implements timing-driven placement using a virtual repair_design process. This process helps to identify nets with low slack and adjusts them to improve timing. 
+
+Here's a step-by-step explanation:
+
+* **Virtual Repair:** When the `-timing_driven` flag is enabled, gpl performs a virtual repair_design to calculate slack values for all nets.
+* **Net Weighting:**  Nets with low slack are given higher weights to prioritize their optimization during placement.
+* **Weight Adjustment:** The worst slacks (those with the lowest slack values) are adjusted using a multiplier controlled by the `-timing_driven_net_weight_max` parameter.
+* **Percentage Control:** The `-timing_driven_nets_percentage` parameter determines the percentage of nets that will be reweighted.  
+* **Scaling Multiplier:** The multiplier for weighting nets is scaled from its maximum value for the worst slacks down to 1.0 at the specified percentage point.
+* **Wire RC Estimation:**  The `set_wire_rc` command is used to set resistance and capacitance values for estimated wires, providing more accurate timing estimations.
+* **Iterative Placement:** The placement process iterates, and each time it reaches a defined overflow threshold (controlled by `-timing_driven_net_reweight_overflow`), the resizer is executed. This recalculates weights based on the latest timing analysis.
+* **Runtime Considerations:**  Timing-driven placement can be computationally expensive, especially with multiple overflow thresholds. Fewer thresholds can help to reduce runtime.
+
+Overall, timing-driven placement in OpenROAD aims to optimize the placement of cells to improve circuit performance by minimizing timing violations and maximizing slack values. 
+",agent-retriever,1,TP,0.95,True
+15. What are the CI practices for OR?,"OpenROAD utilizes the following CI practices: 1. OpenROAD Dashboard: - Provides visualization of Quality-of-Results (QoR) over time - Displays flow-QoR metrics such as timing, area, power, etc. 2. Jenkins CI: - Used as the continuous integration tool - Runs regression tests and collects metrics - Provides access to CI information and results These practices help track project metrics, maintain quality, and provide visibility into OpenROAD's performance over time.",agent-retriever,2946.4030000000002,"OpenROAD uses Jenkins as its Continuous Integration (CI) tool. 
+
+* **Jenkins CI** provides metrics regarding regression tests.
+* The OpenROAD Dashboard provides an easy way to explore Quality-of-Results (QoR) over time and describes flow-QoR metrics such as timing, area, power, etc.
+* **The Jenkins website is at https://jenkins.openroad.tools/.**
+* **The CI Guide describes pipelines available to the developers and code maintainers.**
+* There are public and private pipelines. 
+* **Private pipelines are available to code maintainers and The OpenROAD Project members.**
+* To access private pipelines, you need to have authorization to access confidential data and be logged in the Jenkins website. 
+* **Public pipelines are available to the public.**
+* **You can find your build through the Jenkins website or from GitHub.**
+* **CI metrics are constantly being updated due to changes in the functionality of Jenkins.**
+* **The CI Guide is not static.**
+* **You can access the CI metrics using the link provided in the Jenkins website.**",agent-retriever,1,TP,0.8,True
+16. What are the minimum and recommended hardware requirements for running OpenROAD?,The minimum hardware requirements for running OpenROAD are: - 1 CPU core - 8GB RAM The recommended hardware requirements for running OpenROAD are: - 4 CPU cores - 16GB RAM,agent-retriever,2005.8880000000001,"The minimum hardware requirements for running OpenROAD are 1 CPU core and 8GB of RAM. The recommended hardware requirements are 4 CPU cores and 16GB of RAM.  OpenROAD requires more computational power for larger designs. 
+",agent-retriever,1,TP,1.0,True
+17. Is macOS supported by OpenROAD?,"Yes, macOS is supported by OpenROAD, but with some limitations: 1. Local installation is supported. 2. However, local compilation for the modules 'par' and 'mpl2' is not fully supported due to an upstream issue with or-tools. 3. Docker installation is recommended for macOS users. 4. Prebuilt binaries are not available for macOS. Given these constraints, macOS users are advised to use the Docker installation method for the best experience with OpenROAD.",agent-retriever,2170.83,"Yes, macOS is supported by OpenROAD, however, there are some caveats:
+
+* **Local compilation for the modules `par` and `mpl2` is not fully supported due to an upstream issue with `or-tools`**. This means that building OpenROAD locally on macOS might encounter problems with these specific modules.
+* **Docker installation is recommended whenever possible for macOS**. This ensures a smoother installation and avoids potential issues related to local compilation. 
+",agent-retriever,1,TP,0.9,True
+18. How do you start the OpenROAD GUI?,"To open the GUI from the command-line (this command does not return until the GUI is closed): gui::show script interactive Options: Switch Name Description script TCL script to evaluate in the GUI. interactive Boolean if true, the GUI should open in an interactive session (default), or if false that the GUI would execute the script and return to the terminal.",agent-retriever,2318.161,"You can start the OpenROAD GUI in two ways:
+
+* **Using the -gui flag:** Launch OpenROAD with the `-gui` flag when running it from the command line. This will automatically start the GUI along with OpenROAD. 
+* **Using the gui::show command:** After starting OpenROAD, use the command `gui::show` in the OpenROAD command line. This will launch the GUI from within the OpenROAD environment. 
+",agent-retriever,1,TP,0.5,True
+19. Does OpenROAD support hierarchical macro placement?,"Yes, OpenROAD supports hierarchical macro placement through the mpl2 command, also known as 'Hier-RTLMP'. This command implements a multilevel physical planning approach that utilizes the hierarchy and data flow inherent in the design's RTL. The mpl2 command allows for efficient placement of macros in complex hierarchical designs, taking into account the overall structure and connectivity of the design.",agent-retriever,2396.722,"Yes, OpenROAD supports hierarchical macro placement. 
+
+Here is how OpenROAD implements hierarchical macro placement:
+
+* **RTLMP Flow:**  OpenROAD has a specific flow called ""RTLMP"" (RTL Macro Placement) designed for hierarchical placement.  
+* **Hierarchical Netlist:** The RTLMP flow requires that the netlist be hierarchical. 
+* **Importance of Hierarchy:**  If the netlist is flat (no hierarchy), the RTLMP flow will not function. 
+* **Yosys Limitations:** Currently, the Yosys synthesis tool, used within OpenROAD, has limitations in its register retiming capabilities, which can impact the effectiveness of hierarchical placement. 
+",agent-retriever,1,TP,0.5,False
+20. What is the role of DRT in OpenROAD?,"The Detailed Routing (DRT) module in OpenROAD is based on the open-source detailed router, TritonRoute. TritonRoute consists of several main building blocks, including pin access analysis, track assignment, initial detailed routing, search and repair, and a DRC engine. The initial development of the router is inspired by the ISPD-2018 initial detailed routing contest. However, the current framework differs and is built from scratch, aiming for an industrial-oriented scalable and flexible flow.",agent-retriever,3820.346,"DRT, or Detailed Routing, is a critical component of the OpenROAD flow. It is responsible for the detailed routing of the design, connecting all the components and pins according to the global routing guide. DRT in OpenROAD is built on top of the open-source TritonRoute detailed router. The DRT module uses several main building blocks to perform its task, including:
+
+* **Pin Access Analysis:** DRT analyzes the design to determine how best to access the pins of each component and create paths for connecting them.
+* **Track Assignment:** DRT assigns tracks within the routing layers for the interconnects based on the global routing guide.
+* **Initial Detailed Routing:** DRT creates an initial detailed route, connecting all pins according to the assigned tracks.
+* **Search and Repair:** DRT uses search and repair algorithms to try to find the best solution for detailed routing, while also complying with design rules.
+* **DRC Engine:** DRT uses a DRC engine to perform design rule checks throughout the process to ensure that the generated routing meets the specifications. 
+
+DRT is an essential step in the OpenROAD flow, ensuring that the final design is routed correctly and meets the required specifications. 
+",agent-retriever,1,TP,0.8,True
+21. How can you skip the metal trim step during PDN grid generation?,"To skip the metal trim step during PDN grid generation, you can use the -skip_trim option when running the PDN generation command. This option tells the tool to bypass the metal trimming process, which can be useful in certain scenarios where trimming is not desired or necessary. Example usage: pdngen -skip_trim By including this option, the PDN generation process will proceed without performing the metal trim step, potentially saving time in the overall flow.",agent-retriever,2856.951,"To skip the metal trim step during PDN grid generation in OpenROAD, you can use the `-skip_trim` option with the `pdngen` command. This option will prevent the tool from attempting to remove metal stubs from the grid. 
+
+Here's how you can do it:
+
+* **Use the `pdngen` command:** This command is used to build the power grid.
+* **Add the `-skip_trim` option:** This option tells `pdngen` to skip the metal trimming step.
+
+For example, the following command will build the power grid without performing the metal trim:
+
+```
+pdngen -skip_trim
+```
+",agent-retriever,1,TP,1.0,True
+22. What command would you use to add power and ground stripes to a grid?,"To add power and ground stripes to a grid in OpenROAD, you would use the `add_pdn_stripe` command. This command defines a pattern of power and ground stripes in a single layer to be added to a power grid. Here are some example usages: 1. To add stripes following pins on metal1: add_pdn_stripe -grid main_grid -layer metal1 -followpins 2. To add stripes on metal2 with a specific width: add_pdn_stripe -grid main_grid -layer metal2 -width 0.17 -followpins 3. To add stripes on metal4 with width, pitch, offset, and starting with ground: add_pdn_stripe -grid main_grid -layer metal4 -width 0.48 -pitch 56.0 -offset 2 -starts_with GROUND",agent-retriever,4754.747,"The command to add power and ground stripes to a grid is **`add_pdn_stripe`**. 
+
+Here's how to use it:
+
+* **`-layer layer_name`:**  Specifies the metal layer to place the stripes on.
+* **`-grid grid_name`:**  Identifies the power grid to which these stripes will be added. If not specified, it defaults to the last grid defined by **`define_pdn_grid`**.
+* **`-width width_value`:** Sets the width of the stripes.
+* **`-followpins`:** Indicates that the stripes are part of the standard cell rails, with pitch and spacing determined by the cell rows. The `-width` option is not required in this case. 
+* **`-extend_to_core_ring`:** Extends the stripes to the core power grid ring.
+* **`-pitch pitch_value`:** Sets the distance between each power/ground pair.
+* **`-spacing spacing_value`:** Defines the spacing between power/ground pairs within a single pitch. Defaults to `pitch / 2` if not specified.
+* **`-offset offset_value`:**  Sets the offset of the stripe from the design's lower left corner.
+* **`-starts_with POWER|GROUND`:**  Specifies whether the first strap placed should be POWER or GROUND. Defaults to the grid setting.
+* **`-extend_to_boundary`:**  Extends the stripes to the grid's boundary.
+* **`-snap_to_grid`:**  Snaps the stripes to the defined routing grid.
+* **`-number_of_straps count`:**  Defines the number of power/ground pairs to add.
+* **`-nets list_of_nets`:**  Limits the straps to the specified list of nets. 
+",agent-retriever,1,TP,1.0,True
+23. Explain the purpose of the -liberty_file parameter in the restructure command.,"The -liberty_file parameter in the restructure command is used to specify a Liberty file containing descriptions of the cells used in the design. This Liberty file is then passed to ABC (A System for Sequential Synthesis and Verification). The Liberty file provides crucial information about the timing, power, and functional characteristics of the cells, which is essential for ABC to perform accurate analysis and optimization during the restructuring process.",agent-retriever,3468.62,"The `-liberty_file` parameter in the `restructure` command specifies the Liberty file that contains the description of the cells used in the design. This file is passed to ABC, a logic synthesis tool, to help it understand the characteristics of the cells and optimize the design accordingly. 
+
+Here's a breakdown of the purpose:
+
+* **Cell Descriptions:** The Liberty file provides essential information about each cell in the design, such as its:
+    * **Area:** The size of the cell in terms of unit area.
+    * **Delay:** The time it takes for a signal to propagate through the cell.
+    * **Power:** The amount of power consumed by the cell.
+    * **Pin Locations:** The locations of the input and output pins on the cell.
+
+* **Optimization for Restructuring:** ABC uses this information to:
+    * **Select appropriate cells:** Based on the available cells in the Liberty file, ABC chooses the best-suited cells for the design.
+    * **Optimize logic:** ABC manipulates the logic gates and connections to reduce area, delay, or power consumption while respecting the cell characteristics defined in the Liberty file.
+
+In essence, the `-liberty_file` parameter ensures that the restructuring process is performed with accurate information about the design's cells, leading to better optimization results. 
+",agent-retriever,1,TP,1.0,True
+24. Define the -slack_threshold parameter and its default value.,"The -slack_threshold parameter specifies a (setup) timing slack value below which timing paths need to be analyzed for restructuring. The default value is 0, and the allowed values are floats ranging from 0 to MAX_FLOAT.",agent-retriever,1650.3909999999998,"I'm not sure. 
+",agent-retriever,1,FN,0.0,True
+25. How can I perform parasitic extraction with specific parameters?,"To perform parasitic extraction with specific parameters in OpenROAD, you can use the `extract_parasitics` command. Here's an example command that uses an extraction rules file named rcx.rules and sets a max resistance of 56 ohms: extract_parasitics -ext_model_file rcx.rules -max_res 56 This command will extract parasitics based on the rules defined in rcx.rules and limit the maximum resistance to 56 ohms.",agent-retriever,3242.669,"The `extract_parasitics` command allows you to perform parasitic extraction with specific parameters. Here's how:
+
+* **Specify the Extraction Rules File:** Use the `-ext_model_file` option to indicate the file containing the extraction rules.
+* **Define the Number of Corners:** Employ the `-corner_cnt` option to specify the number of corners for parasitic extraction.
+* **Set the Maximum Series Resistance:** Use the `-max_res` option to define the threshold for combining resistors in series.
+* **Adjust the Coupling Threshold:** The `-coupling_threshold` option lets you set a threshold below which coupling is considered grounded.
+* **Enable Debug Mode for a Specific Net:** Utilize the `-debug_net_id` option (a developer option) to evaluate a particular net.
+* **Override LEF Resistance:**  Use the `-lef_res` option to modify the resistance per unit specified in the LEF file.
+* **Control Lateral Context:** The `-cc_model` option lets you define the maximum number of tracks considered for lateral context on the same routing level.
+* **Adjust Vertical Context Depth:** The `-context_depth` option controls the number of levels of vertical context used for capacitance calculation.
+* **Separate Via Resistance:** Use the `-no_merge_via_res` option to keep via resistance distinct from wire resistance. 
+",agent-retriever,1,TP,0.8,True
+26. What is the purpose of the OpenROAD Dashboard?,"The OpenROAD Dashboard serves several important purposes: 1. Visualization of Quality-of-Results (QoR): It provides a graphical representation of various QoR metrics over time, allowing users to track the progress and improvements in the OpenROAD flow. 2. Display of flow-QoR metrics: The dashboard shows key metrics such as timing, area, power, and other relevant parameters for different designs and configurations.",agent-retriever,3015.891,"The OpenROAD Dashboard is a web-based tool that enables users to track and analyze the Quality of Results (QoR) of the OpenROAD flow over time. It provides insights into various flow-QoR metrics, such as timing, area, power, etc. 
+
+Here are some key features of the OpenROAD Dashboard:
+
+* **Trends page:** This page displays interactive graphs that visualize metric trends over time. Users can select specific platforms, designs, and metrics to track fluctuations. 
+* **Comparison page:** This page allows users to compare metrics between different branches or commits for a specific platform and its designs. It presents a table highlighting the differences between the base source and the test source. This page also offers a platform summary table with statistical trends for various designs within a platform and a summary table providing insights for a set of selected designs with added functionality for filtering.
+
+The OpenROAD Dashboard effectively facilitates data-driven decision-making and performance optimization in the design flow. 
+",agent-retriever,1,TP,1.0,True
+27. How can the results of the extracted parasitics be saved into a .spef file named design.spef?,The results of extracted parasitics can be saved into a .spef file named design.spef using the `write_spef` command in OpenROAD. Here's the process: 1. Open OpenROAD: cd ../tools/OpenROAD/src/rcx/test/ openroad 2. Load your design: source 45_gcd.tcl 3. Extract parasitics: extract_parasitics 4. Save to .spef file: write_spef design.spef This will create a file named design.spef containing the parasitic information in SPEF format.,agent-retriever,2278.435,"The `write_spef` command in OpenROAD can be used to save the extracted parasitics into a .spef file.  Here's how:
+
+1. **Run the `write_spef` command:** 
+   ```tcl
+   write_spef design.spef
+   ```
+
+   This command will create a file named ""design.spef"" in the current directory, containing the parasitics information stored in the OpenROAD database. 
+",agent-retriever,1,TP,0.5,True
+28. What steps are required to generate an Extraction Rules file using OpenRCX?,"The process of generating an Extraction Rules file using OpenRCX involves several steps: 1. Generate layout patterns: - Use OpenRCX's `generate_patterns.tcl` script to produce layout patterns - Output: DEF file (`patterns.def`) and optional Verilog netlist (`patterns.v`) 2. Extract parasitics using a reference extractor: - Use a reference extraction tool (not provided by OpenRCX) - Input: `patterns.def`, `patterns.v` (if required), and additional files - Output: SPEF file (`patterns.spef`) with extracted parasitic data 3. Convert SPEF file to RC tech file: - Use OpenRCX's `generate_rules.tcl` script - Process `patterns.spef` to generate capacitance and resistance tables - Output: Custom RC tech file containing Extraction Rules 4. Benchmarking (optional): - Extract parasitics from pattern layout using the generated RC tech file - Compare results with golden parasitic values from step 2 - Use `ext_patterns.tcl` script - Output: SPEF (`rcx.spef`) and comparison report (`diff_spef.out`)",agent-retriever,4109.1449999999995,"The generation of an Extraction Rules file using OpenRCX involves these steps:
+
+1. **Generate layout patterns:**  
+    * Run OpenRCX's `generate_patterns.tcl` script.
+    * This script uses the technology LEF file as input.
+    * The output includes `patterns.def` and `patterns.v`. 
+    * OpenRCX creates various layout pattern geometries to model different capacitance and resistance configurations.
+
+2. **Extract parasitics:**
+    * Run your preferred extraction tool (the reference extractor) on the generated layout patterns.
+    * The input includes `patterns.def` and `patterns.v` (if required), as well as any other files needed by the reference extractor.
+    * The output is `patterns.spef`.
+    * This step extracts parasitics from the patterns generated by OpenRCX, providing reference data for calculating per-unit length R and C values.
+
+3. **Convert patterns.spef to RC tech file:**
+    * Run OpenRCX's `generate_rules.tcl` script.
+    * It takes the `patterns.spef` file from the reference extractor as input.
+    * The output is the custom RC tech file for OpenRCX.
+    * OpenRCX performs calculations to produce capacitance and resistance tables for various wire geometries.
+
+4. **Benchmarking:**
+    * Optionally, test the accuracy of OpenRCX on the patterns layout. 
+    * Use OpenRCX's `ext_patterns.tcl` script. 
+    * Input: `patterns.def` and the generated RC tech file.
+    * Output: `rcx.spef` and `diff_spef.out`.
+    * OpenRCX performs parasitic extraction on the pattern layout using the generated RC tech file. It then compares the extracted parasitics with the golden parasitics obtained from the reference extractor in step 2. 
+",agent-retriever,1,TP,1.0,True
+29. Provide a command to perform parasitic extraction on a design with an extraction rules file named rcx.rules and max resistance of 56 ohms.,"To perform parasitic extraction with the given parameters, you can use the following command in OpenROAD: extract_parasitics -ext_model_file rcx.rules -max_res 56",agent-retriever,3869.703,"The following command performs parasitic extraction on a design with the specified parameters:
+
+```tcl
+extract_parasitics -ext_model_file rcx.rules -max_res 56
+```
+
+Here's a breakdown of the command:
+
+* **`extract_parasitics`**: This is the command used for parasitic extraction in OpenROAD. 
+* **`-ext_model_file rcx.rules`**: This option specifies the ""Extraction Rules file"" used for the extraction. In this case, it's `rcx.rules`.
+* **`-max_res 56`**: This option defines the maximum resistance allowed for series resistors to be combined.  The value is set to 56 ohms.
+
+This command will use the `rcx.rules` file to extract parasitics from the routed design, combining series resistors up to a maximum resistance of 56 ohms. 
+",agent-retriever,1,TP,1.0,True
+30. How can I add my design test case for regressions?,"To add your design test case for regressions in OpenROAD-Flow-Scripts (ORFS), follow these steps: 1. Create the Verilog source files directory based on the top module name: - Navigate to the `designs/src` directory. - Create a new directory named after your top module (e.g., `designs/src/my_design`). - Create a file named `my_design.v` inside the directory and add your Verilog code. 2. Create a config.mk file to define the design configuration: - Navigate to the `designs/gf180` directory (assuming you're using the gf180 platform). - Create a new directory named after your top module (e.g., `designs/gf180/my_design`). - Create a file named `config.mk` inside the directory. 3. Define key design parameters in config.mk: - Specify parameters such as PLATFORM, DESIGN_NAME, VERILOG_FILES, SDC_FILE, CORE_UTILIZATION, PLACE_DENSITY, and TNS_END_PERCENT. 4. Define SDC constraints: - Navigate to the `designs/gf180/my_design` directory. - Create a file named `constraint.sdc` and add your SDC constraints. 5. Add the design name to the Makefile: - Modify the Makefile in the main OpenROAD-Flow-Scripts directory to include your design. 6. Run the regression test: - Execute the command `./test/regression` to run the regression tests, including your new design. Remember to adjust file names, directories, and parameters according to your specific design and platform.",agent-retriever,5409.938999999999,"Here are the steps to add your design test case for regressions in OpenROAD-Flow-Scripts (ORFS):
+
+1. **Create the Verilog source files directory:**
+    * Navigate to the `designs/src` directory.
+    * Create a new directory named after your top module. For example, if your top module is `my_design`, create a directory called `my_design`.
+    * Navigate into the newly created directory and create a file named `my_design.v`.
+    * Copy your Verilog code into the `my_design.v` file.
+2. **Create the design configuration file:**
+    * Navigate to the `designs/gf180` directory.
+    * Create a new directory named after your top module, for example `my_design`.
+    * Navigate into the newly created directory and create a file called `config.mk`.
+3. **Define key design parameters in config.mk:**
+    * Set the `PLATFORM`, `DESIGN_NAME`, and `VERILOG_FILES` variables based on your design.
+    * You can also set optional parameters like `SDC_FILE`, `CORE_UTILIZATION`, `PLACE_DENSITY`, and `TNS_END_PERCENT`.
+    * Refer to existing design examples or the flow variables list for customization.
+4. **Define SDC constraints:**
+    * Navigate to the `designs/gf180/my_design` directory.
+    * Create a file called `constraint.sdc` and edit it to define design constraints.
+    * Update `current_design`, `clk_port_name`, and `clk_period` as per your design requirements.
+5. **Add the design name to Makefile:**
+    * Edit the `Makefile` file and add your design to the list of available designs.
+6. **Run the regression test:**
+    * Navigate to the `test` directory.
+    * Execute the `./regression` script to run the regression tests, including your new design.
+
+Remember to follow the best practices for writing regression tests, which include:
+
+* **No database dependencies:** Ensure that the test does not depend on existing database files.
+* **Independence from the working directory:** The script should be able to run from any directory.
+* **Concise summary of failures:** The regression script should provide a clear and concise summary of test failures.
+* **Exit code:** The script should return an exit code of 0 for success and 1 for failure.
+* **Minimal output:** The script should avoid printing large amounts of internal tool information.
+* **Clean repository:** Add output files or directories to `.gitignore` to prevent the repository from becoming ""dirty"".
+* **Nangate45 library data:** If you are using the Nangate45 library, ensure the library data is properly linked in the tool command.
+",agent-retriever,1,TP,1.0,True
+31. Can I add my own custom steps for the flow?,"Yes, you can add custom steps to the OpenROAD flow. Here's how: 1. Identify the stage: - Determine where you want to add your custom step within the OpenROAD flow. - This could be before or after existing stages like floorplanning, placement, or routing. 2. Write a Tcl script: - Create a Tcl script that contains the commands and logic for your custom step. - This script should be compatible with OpenROAD's API and the flow's environment. 3. Integrate with the flow: - Modify the relevant makefile or Tcl script in OpenROAD-flow-scripts to call your custom Tcl script at the desired stage. - You can use variables and environment settings to control the execution of your custom step. 4. Test thoroughly: - Ensure that your custom step works correctly and doesn't break the overall flow. - Test it with different designs and configurations to validate its functionality. By adding custom steps, you can tailor the OpenROAD flow to meet your specific design requirements and integrate your own tools or algorithms.",agent-retriever,3228.674,"Yes, you can add your own custom steps for the OpenROAD flow. Here's how:
+
+* **Add a flow option:** If you need a specific step, you can add a flow option to the OpenROAD-Flow-Scripts. The developer guide explains how to add a new design or platform. You can also learn how to update the codebase.
+* **Create a new script:** You can create a new Tcl script to implement your custom step. This script can be run at any point in the flow, either before or after existing steps.
+* **Utilize OpenROAD's API:** OpenROAD provides a powerful API that allows you to interact with its data structures and functions. You can use this API to create custom scripts that manipulate the design data in your own way.
+* **Modify existing scripts:** You can also modify existing scripts in OpenROAD-Flow-Scripts to add your custom functionality. This approach can be useful if you want to modify the behavior of a specific step in the flow.
+
+Remember to document your changes thoroughly and provide clear instructions on how to use your custom steps.  This will help others understand and utilize your contributions to the OpenROAD flow.
+",agent-retriever,1,TP,0.8,True
+32. Does ORFS create a DRC-correct layout?,"Yes, ORFS creates a DRC-correct layout.",agent-retriever,3328.815,"ORFS aims to create a DRC-correct layout, but it doesn't always succeed. The flow includes DRC checks, but users have reported issues with DRC violations after running the flow. 
+
+Here are some key points:
+
+* **DRC checks are included:** ORFS performs DRC checks as part of its flow. 
+* **DRC violations can occur:** Users have reported encountering DRC violations, such as metal spacing violations, after running the ORFS flow.
+* **Potential causes:** The discussions highlight a few possible causes for DRC errors: 
+    * **Macro placement:** Misaligned macro I/O pins can lead to criss-crossing wires, causing DRC violations.
+    * **PDN definition:** Wide power stripes with insufficient spacing can cause DRC errors, as seen in one user's experience.
+* **Troubleshooting:** To address DRC errors, users can: 
+    * **Modify macro halo:** Increase the halo around macros to allow for better wire routing.
+    * **Adjust floorplan:** Ensure proper I/O pin alignment and floorplan configuration to enable straight wire routing.
+    * **Review PDN definition:** Make sure the power distribution network is defined correctly to avoid spacing issues.
+
+The information suggests that while ORFS strives for DRC correctness, users may encounter DRC violations and need to investigate and address them during the design process. 
+",agent-retriever,1,FP,0.0,False
+33. Give full form of all tools in OpenROAD,dbSTA stands for Verilog to DB. OpenDB stands for Open Database. TritonPart stands for Constraints-driven Partitioner. ifp stands for Floorplan Initialization. ICeWall stands for Chip-level Connections. ppl stands for I/O Placement. pdn stands for PDN Generation. tap stands for Tapcell and Welltie Insertion. mpl stands for Triton Macro Placer. mpl2 stands for Hierarchical Automatic Macro Placer. gpl stands for RePlAce Global Placer. rsz stands for Gate Resizing and Buffering. dpl stands for Detailed Placement. cts stands for Clock Tree Synthesis. grt stands for FastRoute Global Routing. ant stands for Antenna Check and Diode Insertion. drt stands for TritonRoute Detailed Routing. fin stands for Metal Fill Insertion. dft stands for Design for Test. rcx stands for OpenRCX Parasitic Extraction. sta stands for OpenSTA Timing/Power Analyzer. gui stands for Graphical User Interface. psm stands for Static IR Analyzer.,agent-retriever,2533.1679999999997,"Here are the full forms of the tools in the OpenROAD project: 
+
+* **OpenROAD** itself stands for **Open-Source Roadmap for Design Automation**. 
+* **ORFS** stands for **OpenROAD-Flow-Scripts**.
+* **OpenSTA** stands for **Open-Source Static Timing Analyzer**.
+* **TritonRoute** is the name of the detailed router used in OpenROAD. 
+* **FlexPA** is an abbreviation for **Flexible Pin Access**. It is a component of the TritonRoute router. 
+* **FlexDR** is an abbreviation for **Flexible Detailed Routing**. It is another component of the TritonRoute router. 
+",agent-retriever,1,FP,0.0,False
+1. What is CTS?,"CTS stands for Clock Tree Synthesis. It is a stage in the OpenROAD flow that synthesizes the clock distribution network. According to the context provided, CTS inserts clock buffers to distribute the clock signal to all sequential elements while minimizing skew. The CTS metrics reported include the number of clock roots, number of buffers inserted, number of clock subnets, and number of sinks.",agent-retriever-reranker,6876.763000000001,"CTS stands for Clock Tree Synthesis. It is a module in OpenROAD that is responsible for creating a balanced and efficient clock distribution network. This network ensures that all the clocked elements in a design receive the clock signal at the same time, minimizing timing skew and improving overall performance.  The OpenROAD implementation of CTS is based on the TritonCTS 2.0 engine, which performs on-the-fly characterization to avoid the need for separate data generation. 
+",agent-retriever-reranker,1,TP,0.85,True
+2. What is ANT?,ANT stands for Antenna Rule Checker in OpenROAD. It is a tool that checks for antenna violations and generates reports indicating violated nets. Antenna violations can occur during chip manufacturing when metal interconnects collect charge that may damage transistor gates. The ANT tool helps identify these potential issues by calculating Partial Area Ratio (PAR) and Cumulative Area Ratio (CAR) for nets and comparing them against antenna rules. Violations found by ANT can be repaired after global routing using the repair_design command.,agent-retriever-reranker,6100.094999999999,"I'm not sure. 
+",agent-retriever-reranker,1,FN,0.0,True
+3. What types of Operating systems are supported in OpenROAD?,"OpenROAD supports the following operating systems: - Ubuntu 20.04 and 22.04 - CentOS 7 and 8 - Debian 10 and 11 - RHEL - Windows 10 and above (via Docker or WSL) - macOS (with some limitations) The level of support varies depending on the installation method (local installation, prebuilt binaries, Docker installation, or Windows Subsystem for Linux).",agent-retriever-reranker,7089.2390000000005,"OpenROAD supports various operating systems, with varying levels of support depending on the installation method. Here's a breakdown of supported operating systems and their respective installation methods:
+
+**Supported Operating Systems:**
+
+* **Ubuntu 20.04**: Supported for local installation, prebuilt binaries, and Docker installation.
+* **Ubuntu 22.04**: Supported for local installation, prebuilt binaries, and Docker installation.
+* **CentOS 7**: Supported for local installation and Docker installation.
+* **CentOS 8**: Supported for local installation and Docker installation.
+* **Debian 10**: Supported for local installation, prebuilt binaries, and Docker installation.
+* **Debian 11**: Supported for local installation, prebuilt binaries, and Docker installation.
+* **RHEL**: Supported for local installation and Docker installation.
+* **Windows 10 and above**: Supported for Docker installation and Windows Subsystem for Linux.
+* **macOS**: Supported for local installation and Docker installation. 
+
+**Note:** For macOS, local compilation for the `par` and `mpl2` modules is not fully supported due to an upstream issue with `or-tools`. Docker installation is recommended in these cases. 
+",agent-retriever-reranker,1,TP,1.0,True
+4. How can I install OpenROAD using Docker?,"To install OpenROAD using Docker: 1. Install Docker on your machine. 2. Clone the OpenROAD-flow-scripts repository: git clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts cd OpenROAD-flow-scripts 3. Build the Docker image: ./build_openroad.sh You can restrict CPU usage with: ./build_openroad.sh --threads N 4. Run a Docker container: docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $(pwd)/flow:/OpenROAD-flow-scripts/flow openroad/flow-ubuntu22.04-builder 5. Inside the container, set up the environment: source ./env.sh 6. Verify the installation: yosys -help openroad -help 7. Run the flow: cd flow make Alternatively, you can use the docker_shell utility from the flow directory: cd flow util/docker_shell make For GUI support, additional Docker run options are required. Refer to the documentation for specific instructions based on your operating system.",agent-retriever-reranker,9085.728,"Here are the steps on how to install OpenROAD using Docker:
+
+1. **Clone and Build:**
+    * Begin by cloning the OpenROAD-flow-scripts repository: `git clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts`
+    * Navigate to the cloned directory: `cd OpenROAD-flow-scripts`
+    * Build the Docker image using the provided script: `./build_openroad.sh` 
+    * You can optionally restrict the number of CPUs used during the build process using the `-t` or `--threads` flag: `./build_openroad.sh --threads N`
+
+2. **Verify Installation:**
+    * The built Docker image is available within the Docker environment. To verify the installation, run a Docker container from the created image: `docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $(pwd)/flow:/OpenROAD-flow-scripts/flow openroad/flow-ubuntu22.04-builder`
+    * Inside the Docker container, source the environment script: `source ./env.sh`
+    * Ensure OpenROAD and Yosys are installed correctly by checking their help commands: `yosys -help` and `openroad -help`
+    * Change directory to the flow directory: `cd flow`
+    * Build the flow using make: `make`
+    * Finally, exit the Docker container: `exit`
+
+3. **Alternative Docker Shell Utility:**
+    *  You can also use the `docker_shell` utility for verification and further actions. Ensure you are in the `flow` directory. 
+    * Run the following command for basic verification: `util/docker_shell make`
+
+4. **Enabling GUI Support (Ubuntu/Debian):**
+    * To run the OpenROAD GUI, you need to start the Docker container with specific options:
+    * `docker run --rm -it \\\n           -u $(id -u ${USER}):$(id -g ${USER}) \\\n           -v $(pwd)/flow:/OpenROAD-flow-scripts/flow \\\n           -e DISPLAY=${DISPLAY} \\\n           -v /tmp/.X11-unix:/tmp/.X11-unix \\\n           -v ${HOME}/.Xauthority:/.Xauthority \\\n           --network host \\\n           --security-opt seccomp=unconfined \\\n           openroad/flow-$OS_NAME-builder`
+
+5. **Enabling GUI Support (Mac OS X):**
+    * For Mac OS X users, refer to the documentation for running the GUI with Docker. You will need to use a command similar to this: `docker run --rm -it -e DISPLAY=<IP_LIKE_FROM_TUTORIAL>:0 --network host --privileged <IMAGE_NAME>`
+
+6. **Using `docker_shell` for GUI:**
+    * You can also use the `docker_shell` utility to automate GUI operations. Ensure you are in the `flow` directory. Run the following command: `util/docker_shell gui_final` 
+
+The provided steps should guide you through the process of installing OpenROAD using Docker. 
+",agent-retriever-reranker,1,TP,0.97,True
+5. Help me install OpenROAD-flow-scripts using WSL?,"To install OpenROAD-flow-scripts using Windows Subsystem for Linux (WSL): 1. Install WSL: - Follow Microsoft's instructions at https://learn.microsoft.com/en-us/windows/wsl/install - You can use any supported kernel like Ubuntu 22.04, CentOS 7, or Debian 11 2. Configure Docker for Windows: - Enable 'Use the WSL 2 Based engine' in Docker settings - Enable integration with your WSL distro under Resources > WSL integration 3. Access WSL: - Open the 'Ubuntu 22.04 LTS' app (or your chosen distro) - Run: sudo apt-get update; sudo apt-get upgrade; sudo apt install -y build-essential python3 python3-venv python3-pip make 4. Verify Docker: - Run: docker run hello-world - You should see a 'Hello from Docker!' message 5. Follow the Docker guide: - With WSL and Docker set up, you can now follow the Docker installation guide for OpenROAD-flow-scripts at https://openroad-flow-scripts.readthedocs.io/en/latest/user/BuildWithDocker.html This setup provides a Linux environment with necessary dependencies to build and run OpenROAD-flow-scripts using Docker on Windows.",agent-retriever-reranker,8378.031,"Here are the steps to install OpenROAD-flow-scripts using WSL:
+
+1. **Install WSL:**  Follow the instructions found here to install Windows Subsystem for Linux (WSL) on your Windows machine. Choose a supported kernel like CentOS 7, Ubuntu 20.04, Ubuntu 22.04, RHEL 8, Debian 10, or Debian 11.
+
+2. **Configure Docker:**  
+    * Ensure you have Docker for Windows already installed. If not, refer to the Docker official website for instructions.
+    * Enable the following options within Docker settings:
+        *  **General:** Use the WSL 2 Based engine (should be the default selection).
+        * **Resources:** WSL Integration > Enable integration with my default WSL distro and select ""Ubuntu-22.04"", or the distribution you installed.
+
+3. **Access WSL:** Open the ""Ubuntu 22.04 LTS"" app to access your WSL environment. Run the following commands:
+    * `sudo apt-get update; sudo apt-get upgrade; sudo apt install -y build-essential python3 python3-venv python3-pip make`
+    * `docker run hello-world` (Verify that Docker is running correctly by checking for the output ""Hello from Docker!"")
+
+4. **Clone OpenROAD-flow-scripts:**
+    * Open a terminal within your WSL environment.
+    * Use the following command to clone the repository:
+        ```bash
+        git clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts
+        ```
+    * Navigate to the cloned directory:
+        ```bash
+        cd OpenROAD-flow-scripts
+        ```
+
+5. **Install Dependencies:**
+    * Run the setup script to install all the required dependencies:
+        ```bash
+        sudo ./setup.sh
+        ```
+
+6. **Build OpenROAD:**
+    * Run the build script to compile OpenROAD locally:
+        ```bash
+        ./build_openroad.sh --local
+        ```
+    * Note:  There is a `build_openroad.log` file generated in the main directory. This log file can be helpful in troubleshooting issues.
+
+7. **Verify Installation:**
+    * Source the environment file:
+        ```bash
+        source ./env.sh
+        ```
+    * Check that the binaries are available in your PATH:
+        ```bash
+        yosys -help
+        openroad -help
+        ```
+    * Navigate to the `flow` directory and run the `make` command to generate a default design from RTL to GDSII:
+        ```bash
+        cd flow
+        make
+        ```
+
+8. **View Final Layout:**
+    * You can view the final layout images in the OpenROAD GUI using this command:
+        ```bash
+        make gui_final
+        ```
+
+Now you have successfully installed OpenROAD-flow-scripts using WSL.
+",agent-retriever-reranker,1,TP,0.85,True
+6. How can I do macro placement,"To perform macro placement in OpenROAD, you can use the `macro_placement` command. Here's how to use it: 1. First, run `global_placement` before macro placement. 2. Then use the `macro_placement` command with the following syntax: macro_placement [-halo {halo_x halo_y}] [-channel {channel_x channel_y}] [-fence_region {lx ly ux uy}] [-snap_layer snap_layer_number] [-style corner_max_wl|corner_min_wl] Options: - `-halo`: Horizontal and vertical halo around macros (in microns) - `-channel`: Horizontal and vertical channel width between macros (in microns) - `-fence_region`: Restrict macro placements to a specific region (in microns, defaults to core area) - `-snap_layer`: Snap macro origins to this routing layer track - `-style`: Placement style, either `corner_max_wl` or `corner_min_wl` (default is `corner_max_wl`) Macros will be placed with max(halo * 2, channel) spacing between macros and between macros and the fence/die boundary. If no solutions are found, try reducing the channel/halo. For more detailed information, refer to the OpenROAD documentation on macro placement. The command for placing macros in OpenROAD is: macro_placement [-halo {halo_x halo_y}] [-channel {channel_x channel_y}] [-fence_region {lx ly ux uy}] [-snap_layer snap_layer_number] [-style corner_max_wl|corner_min_wl] This command performs macro placement with the following options: - -halo: Horizontal and vertical halo around macros (in microns) - -channel: Horizontal and vertical channel width between macros (in microns) - -fence_region: Restrict macro placements to a specific region (in microns, defaults to core area) - -snap_layer: Snap macro origins to this routing layer track - -style: Placement style, either corner_max_wl or corner_min_wl (default is corner_max_wl) Note that you should run global_placement before using macro_placement.",agent-retriever-reranker,6551.831,"You can perform macro placement in OpenROAD using the `macro_placement` command. This command utilizes the TritonMacroPlacer, an open-source tool, to place macros or blocks while respecting halos, channels, and cell row snapping. 
+
+Here's how it works:
+
+* **Pre-requisite:** Run `global_placement` before performing macro placement. 
+* **Placement Style:** The `macro_placement` command offers two placement styles:
+    * `corner_max_wl`: This style prioritizes maximizing the wirelength of connections between macros, forcing them towards the corners.
+    * `corner_min_wl`: This style aims to minimize the wirelength of connections between macros, distributing them more evenly.
+* **Spacing:** Macros are placed with a spacing of `max(halo * 2, channel)` between them and the fence/die boundary. This spacing is determined by the `-halo` and `-channel` options.
+* **Region Restriction:** The `-fence_region` option allows you to confine macro placement within a specific region of the chip, with the default being the core area.
+* **Snapping:**  The `-snap_layer` option lets you align macro origins to a particular routing layer track.
+
+In summary, the `macro_placement` command provides a flexible and efficient way to perform macro placement in OpenROAD, taking into account various factors like spacing, placement style, and region restrictions. 
+",agent-retriever-reranker,1,TP,0.94,True
+7. What is the command for timing optimization?,"The main commands for timing optimization in OpenROAD are: 1. repair_design - Inserts buffers to fix max slew, max capacitance and max fanout violations. It also resizes gates to normalize slews. 2. repair_timing - Repairs setup and hold violations. It can be used with options like: repair_timing -setup (to fix setup violations) repair_timing -hold (to fix hold violations) These commands are typically run after placement and clock tree synthesis. The repair_timing command supports multiple corner analysis to calculate worst-case setup and hold violations. For example: repair_design repair_timing -setup repair_timing -hold You can also use options like -slack_margin to add additional slack margin when repairing timing.",agent-retriever-reranker,8157.294999999999,"The command for timing optimization is `repair_timing`. 
+
+Here is a breakdown of how it works:
+
+* **Purpose:** The `repair_timing` command addresses setup and hold timing violations. It is best used after clock tree synthesis with propagated clocks.
+* **Process:** 
+    * It first focuses on fixing setup timing violations.
+    * Once setup is addressed, it proceeds to fix hold timing violations.
+    * The most critical setup path is always repaired first.
+    * To minimize negative slack, it then repairs violating paths to endpoints. 
+* **Options:** The command offers several options to fine-tune the process:
+    * `-setup`: Activates setup timing repair.
+    * `-hold`: Activates hold timing repair.
+    * `-recover_power`: Allows controlling the percentage of paths to recover power for.
+    * `-setup_margin`: Adds additional slack margin to the setup timing.
+    * `-hold_margin`: Adds additional slack margin to the hold timing.
+    * `-allow_setup_violations`: Permits buffer insertion even if it causes setup violations during hold repair.
+    * `-skip_pin_swap`: Skips the pin swap operation.
+    * `-skip_gate_cloning`: Skips the gate cloning operation.
+    * `-skip_buffering`: Skips rebuffering and load splitting.
+    * `-enable_buffer_removal`: Allows buffer removal during setup fixing.
+    * `-repair_tns`: Sets the percentage of violating endpoints to repair.
+    * `-max_utilization`: Defines the maximum percentage of core area used.
+    * `-max_buffer_percent`: Limits the maximum percentage of buffers inserted during hold repair. 
+    * `-verbose`: Enables verbose logging for detailed progress information. 
+",agent-retriever-reranker,1,TP,0.5,False
+8. How can I define die area in my floorplan?,"To define the die area in your floorplan using OpenROAD, you can use the `initialize_floorplan` command. There are two main methods: 1. Manually specify die/core area: initialize_floorplan -die_area {0 0 2000 2000} -core_area {100 100 1900 1900} -site FreePDK45_38x28_10R_NP_162NW_34O This sets a 2000x2000 micron die area with the lower left corner at (0,0) and upper right at (2000,2000). 2. Let OpenROAD calculate die area based on utilization and aspect ratio: initialize_floorplan -utilization 70 -aspect_ratio 1.0 -core_space 0.0 -site FreePDK45_38x28_10R_NP_162NW_34O This sets 70% utilization with a 1.0 aspect ratio, and OpenROAD calculates the die area. Note: Don't use both methods simultaneously to avoid unexpected behavior. Adjust values according to your design needs and technology node.",agent-retriever-reranker,6213.022,"You can define the die area in your floorplan using the `initialize_floorplan` command with the `-die_area` option. 
+
+Here's how:
+
+* **Use the `-die_area` option:** This option takes four values representing the lower left x/y and upper right x/y coordinates of the die area in microns.
+* **Specify the coordinates:**  For example, `-die_area 0 0 2000 2000` would define a die area with a lower left corner at (0, 0) and an upper right corner at (2000, 2000) microns. 
+
+Alternatively, you can compute the die area from the design size and utilization using the `-utilization` and `-aspect_ratio` options. 
+",agent-retriever-reranker,1,TP,0.85,True
+9. How can I analyze clock skews?,Clock skew can be analyzed using OpenSTA (Open Source Timing Analyzer) in OpenROAD. Use the command: report_clock_skew This will report clock skew information for your design.,agent-retriever-reranker,7179.246,"You can analyze clock skews using the `report_clock_skew` command in OpenROAD. Here's a breakdown of the process:
+
+* **Invoke the command:** Start by typing `report_clock_skew` in the OpenROAD console.
+* **Specify the clocks (optional):** If you want to analyze specific clocks, use the `-clock` option followed by the clock names. For example, `report_clock_skew -clock clk1 clk2`.
+* **Choose setup or hold analysis:** Use the `-setup` option to analyze setup skews or the `-hold` option to analyze hold skews.
+* **Include internal latency (optional):** To include internal clock latency from liberty min/max_clock_tree_path timing groups, use the `-include_internal_latency` option.
+* **Control output precision (optional):** The `-digits` option lets you specify the number of digits to report for delays. 
+
+The `report_clock_skew` command will then display the maximum difference in clock arrival times between all source and target registers with a path between them. This helps you identify potential timing issues related to clock skew. 
+",agent-retriever-reranker,1,TP,0.0,False
+10. To view routing congestion in OpenROAD:,"1. In the GUI, go to the 'Heat Maps' section and check the 'Routing Congestion' box to visualize the congestion map. 2. You can also generate a congestion report file: global_route -guide_file out.guide -congestion_report_file congest.rpt 3. To visualize congested GCells as markers: - In the DRC Viewer window, click 'Load' and select the congestion report file - A summary of congested GCells will be shown and markers added to the GUI - Use the Inspector window for details on routing resources 4. Click the 'zoom to' options to enlarge the view of congested areas 5. For designs with high congestion, OpenROAD will report: [ERROR GRT-0118] Routing congestion too high. These methods allow you to identify and analyze areas of routing congestion in your design.",agent-retriever-reranker,7345.992,"To view routing congestion in OpenROAD, follow these steps:
+
+1. **Open the OpenROAD GUI:** Launch the OpenROAD GUI by running the following command in the terminal, within the OpenROAD tool root directory:
+
+```
+shell
+cd ../tools/OpenROAD/src/grt/test/
+openroad -gui
+```
+
+2. **Access Display Control:** On the left-hand side (LHS) of the OpenROAD GUI, locate the ""Display Control"" window.
+
+3. **Select Heat Maps -> Routing Congestion:** Within the Display Control window, click on the ""Heat Maps"" option and then choose ""Routing Congestion"".
+
+4. **Adjust Congestion Levels (Optional):**  You can adjust the minimum and maximum congestion levels displayed in the Heat Map. To do this, click on the ""Placement Density"" option under the ""Heat Maps"" menu. A pop-up window will appear. 
+
+   * **Minimum:** Set the desired minimum congestion percentage. For example, to view congestion between 50-100%, set the Minimum value to ""50.00%"".
+   * **Maximum:** Set the desired maximum congestion percentage. For example, to view congestion between 50-100%, set the Maximum value to ""100.00%"". 
+",agent-retriever-reranker,1,FP,0.75,False
+11. What does DRT-0297 mean?,DRT-0297 is an error code in OpenROAD's detailed routing tool (DRT). Specifically: - Type: ERROR - Message: 'inst {} not found in db' - Meaning: The detailed router was unable to find a particular instance in the database.,agent-retriever-reranker,2444.322,"DRT-0297 is an error message that indicates an instance, identified by a placeholder within curly braces `{}`, was not found in the database. 
+",agent-retriever-reranker,1,TP,0.75,False
+12. Does OpenROAD support synthesis?,"OpenROAD currently does not have its own built-in synthesis capabilities. Instead, it relies on external tools like Yosys for synthesis. However, there is no plan to integrate synthesis directly into OpenROAD.",agent-retriever-reranker,5663.1669999999995,"OpenROAD does not currently support synthesis directly. It relies on external tools like Yosys for this stage of the design process. However, there is a discussion about potentially integrating Yosys into OpenROAD in the future. 
+",agent-retriever-reranker,1,TP,0.75,False
+13. How can I specify I/O pin layout?,"To specify I/O pin layout in OpenROAD, you can use the following commands: 1. Define pin shape patterns: define_pin_shape_pattern -layer <layer> -x_step <x> -y_step <y> -region {llx lly urx ury} -size {width height} 2. Set I/O pin constraints: set_io_pin_constraint -direction <direction> -region <edge:interval> 3. Place specific pins: place_pin -pin_name <name> -layer <layer> -location {x y} -pin_size {width height} 4. Place all pins: place_pins -hor_layers <layers> -ver_layers <layers> [options] Key options for place_pins: - -corner_avoidance <length>: Avoid corners - -min_distance <distance>: Set minimum pin spacing - -exclude <region>: Exclude regions from pin placement - -group_pins <pin_list>: Group pins together You can also use write_pin_placement to save the pin placement to a file.",agent-retriever-reranker,9654.42,"The OpenROAD project provides several commands to specify I/O pin layout:
+
+* **`set_io_pin_constraint`:** This command allows you to set region constraints for pins based on their direction or name. You can use this to restrict pins to a specific placement grid defined by the `define_pin_shape_pattern` command. 
+    * **`-direction`**: Specifies the pin direction (input, output, inout, or feedthrough).
+    * **`-pin_names`**:  Provides a list of pin names. Only one of `-direction` or `-pin_names` should be used in a single call.
+    * **`-region`**:  Defines the placement region using the syntax `edge:interval`, where `edge` can be `top`, `bottom`, `left`, or `right`, and `interval` specifies the range of positions on that edge. 
+    * **`-mirrored_pins`**:  Sets pairs of pins for symmetrical placement on vertical or horizontal edges. The list of pins must contain an even number.
+    * **`-group`**:  Places pins defined in `-pin_names` together on the die boundary, similar to the `-group_pins` option in the `place_pins` command.
+    * **`-order`**:  Places pins in ascending x/y position when used with `-group`.
+* **`define_pin_shape_pattern`:** This command creates a placement grid for pins, defining their shape and location. It allows you to specify the arrangement of I/O pins.
+* **`clear_io_pin_constraints`:** This command clears all previously defined constraints and pin shape patterns created using `set_io_pin_constraint` or `define_pin_shape_pattern`.
+
+In addition to these commands, you can use the following commands to further customize pin placement:
+
+* **`set_pin_length`:** Defines the length of horizontal and vertical pins.
+* **`set_pin_length_extension`:** Defines an extension to the length of horizontal and vertical pins.
+* **`set_pin_thick_multiplier`:** Defines a multiplier for the thickness of horizontal and vertical pins.
+* **`set_simulated_annealing`:**  Defines parameters for simulated annealing pin placement, which can be used for more complex layouts. 
+",agent-retriever-reranker,1,TP,0.93,False
+14. How does timing driven placement work in OpenROAD?,"Timing-driven placement in OpenROAD works as follows: 1. The global placement tool (gpl) performs a virtual repair_design to calculate slack values and weight nets with low slack. 2. It adjusts the worst slacks (controlled by -timing_driven_nets_percentage) using a multiplier (controlled by -timing_driven_net_weight_max). 3. The multiplier is scaled from the full value for the worst slack, down to 1.0 at the timing_driven_nets_percentage point. 4. Timing-driven iterations are triggered based on overflow threshold values set by -timing_driven_net_reweight_overflow. 5. When these overflow thresholds are reached, the resizer is executed to recalculate timing and update net weights. 6. This process repeats, guiding the placement to improve timing-critical paths. 7. The set_wire_rc command is used to set resistance and capacitance values for estimated wires used in timing calculations. Key parameters that control timing-driven placement: - -timing_driven_net_reweight_overflow - -timing_driven_net_weight_max - -timing_driven_nets_percentage Adjusting these parameters allows tuning the timing-driven behavior to balance runtime and quality of results.",agent-retriever-reranker,8044.039,"OpenROAD's global placement module (`gpl`) utilizes a timing-driven mode that aims to improve circuit performance by minimizing signal delays. Here's how it operates:
+
+* **Virtual Repair Design:**  When the `-timing_driven` flag is enabled, `gpl` performs a virtual repair design. This involves analyzing the circuit to identify critical paths and slacks.
+* **Net Weighting:**  Nets with low slack, indicating critical paths, are assigned higher weights. This prioritizes their placement to minimize delay.
+* **Slack Adjustment:** The worst slacks are adjusted using a multiplier, which is modified by the `-timing_driven_net_weight_max` option. 
+* **Net Weight Scaling:** The multiplier is scaled based on the `-timing_driven_nets_percentage` option. This ensures that the weighting scheme balances timing constraints with other placement objectives.
+* **Resistance and Capacitance:** The `set_wire_rc` command allows you to define the resistance and capacitance of estimated wires used for timing calculations.
+* **Overflow Thresholds:** The placer executes timing-driven iterations based on a set of overflow threshold values. These values, adjustable with the `-timing_driven_net_reweight_overflow` option, trigger the execution of the resizer, a process that can be computationally expensive. 
+* **Runtime Optimization:** To minimize runtime, you can adjust the overflow threshold values by using fewer thresholds.
+",agent-retriever-reranker,1,TP,0.95,True
+15. What are the CI practices for OR?,"OpenROAD utilizes the following CI practices: 1. OpenROAD Dashboard: - Provides visualization of Quality-of-Results (QoR) over time - Displays flow-QoR metrics such as timing, area, power, etc. 2. Jenkins CI: - Used as the continuous integration tool - Runs regression tests and collects metrics - Provides access to CI information and results These practices help track project metrics, maintain quality, and provide visibility into OpenROAD's performance over time.",agent-retriever-reranker,7047.514999999999,"The OpenROAD (OR) project uses several CI practices for building and testing the project. 
+
+* **Local CentOS 7 with GCC 8**: OR CI builds on a local CentOS 7 machine with GCC 8.
+* **Local CentOS 7 with GCC 8 without GUI**: OR CI builds on a local CentOS 7 machine with GCC 8, but without a graphical user interface.
+* **Docker CentOS 7 with GCC 8**: OR CI builds on a Docker container running CentOS 7 with GCC 8.
+* **Docker Ubuntu 20.04 with GCC 9**: OR CI builds on a Docker container running Ubuntu 20.04 with GCC 9.
+* **GitHub Actions**: OR CI also uses GitHub Actions for additional testing.
+    * **macOS (x86)**: Tests on macOS (x86) machines.
+    * **C++20**: Tests using clang-16, ensuring compatibility with C++20.
+
+The CI practices aim to provide comprehensive coverage across different platforms and compiler versions, ensuring the stability and reliability of the OpenROAD project. 
+",agent-retriever-reranker,1,FP,0.0,False
+16. What are the minimum and recommended hardware requirements for running OpenROAD?,The minimum hardware requirements for running OpenROAD are: - 1 CPU core - 8GB RAM The recommended hardware requirements for running OpenROAD are: - 4 CPU cores - 16GB RAM,agent-retriever-reranker,5547.96,"The minimum hardware requirements for running OpenROAD are:
+
+* **1 CPU core**
+* **8GB RAM**
+
+The recommended hardware requirements are:
+
+* **4 CPU cores**
+* **16GB RAM**
+
+The documentation notes that these requirements are for running the ""gcd"" design, which is a small design. Larger designs may require more powerful hardware. 
+",agent-retriever-reranker,1,TP,1.0,True
+17. Is macOS supported by OpenROAD?,"Yes, macOS is supported by OpenROAD, but with some limitations: 1. Local installation is supported. 2. However, local compilation for the modules 'par' and 'mpl2' is not fully supported due to an upstream issue with or-tools. 3. Docker installation is recommended for macOS users. 4. Prebuilt binaries are not available for macOS. Given these constraints, macOS users are advised to use the Docker installation method for the best experience with OpenROAD.",agent-retriever-reranker,5899.2699999999995,"Yes, macOS is supported by OpenROAD, but with limitations. 
+
+* **Local installation:**  OpenROAD can be installed locally on macOS, but local compilation for the modules `par` and `mpl2` is not fully supported due to an upstream issue with `or-tools`.
+* **Prebuilt binaries:** Prebuilt binaries are not available for macOS.
+* **Docker installation:** Docker installation is recommended for macOS.
+* **Windows Subsystem for Linux:** macOS does not support the Windows Subsystem for Linux (WSL). 
+",agent-retriever-reranker,1,TP,0.95,True
+18. How do you start the OpenROAD GUI?,"To open the GUI from the command-line (this command does not return until the GUI is closed): gui::show script interactive Options: Switch Name Description script TCL script to evaluate in the GUI. interactive Boolean if true, the GUI should open in an interactive session (default), or if false that the GUI would execute the script and return to the terminal.",agent-retriever-reranker,5568.646000000001,"There are two ways to start the OpenROAD GUI:
+
+* **Launching OpenROAD with the `-gui` flag:** This will launch OpenROAD with the GUI enabled.
+* **Opening the GUI from the command line with `gui::show`:** This will open the GUI in an interactive session. 
+",agent-retriever-reranker,1,TP,0.5,False
+19. Does OpenROAD support hierarchical macro placement?,"Yes, OpenROAD supports hierarchical macro placement through the mpl2 command, also known as 'Hier-RTLMP'. This command implements a multilevel physical planning approach that utilizes the hierarchy and data flow inherent in the design's RTL. The mpl2 command allows for efficient placement of macros in complex hierarchical designs, taking into account the overall structure and connectivity of the design.",agent-retriever-reranker,5709.631,"Yes, OpenROAD supports hierarchical macro placement.  The OpenROAD project supports the RTLMP_FLOW flag, which indicates the use of RTL Macro Placement.  This flag is used in conjunction with the HIREARCHICAL_SYNTHESIS flag.  A GitHub user inquired as to the reason for using both flags together.  Another user replied that RTLMP requires a hierarchical netlist to function.  Therefore, hierarchical macro placement is supported by OpenROAD. 
+",agent-retriever-reranker,1,TP,0.25,False
+20. What is the role of DRT in OpenROAD?,"The Detailed Routing (DRT) module in OpenROAD is based on the open-source detailed router, TritonRoute. TritonRoute consists of several main building blocks, including pin access analysis, track assignment, initial detailed routing, search and repair, and a DRC engine. The initial development of the router is inspired by the ISPD-2018 initial detailed routing contest. However, the current framework differs and is built from scratch, aiming for an industrial-oriented scalable and flexible flow.",agent-retriever-reranker,7977.373,"DRT, or Detailed Routing, is a critical module within the OpenROAD project. Its main function is to perform detailed routing, which is the process of connecting the components of an integrated circuit (IC) on a specific layer within the chip.
+
+Here's a breakdown of its role:
+
+* **Foundation:** DRT in OpenROAD is built upon the open-source detailed router TritonRoute. This means that OpenROAD leverages the capabilities of TritonRoute for its routing tasks.
+* **Components:** TritonRoute incorporates various crucial building blocks, including:
+    * **Pin Access Analysis:** Determining the optimal access points for connecting wires to pins on different components.
+    * **Track Assignment:** Assigning specific tracks on the routing layer for wires to run along.
+    * **Initial Detailed Routing:** Establishing a basic layout for the routing connections.
+    * **Search and Repair:**  Optimizing the initial routing and resolving any design rule violations (DRC).
+    * **DRC Engine:** Detecting and reporting any violations of design rules during the routing process.
+* **Industrial Focus:** DRT aims to offer a scalable and flexible flow, targeting industrial-level design requirements.
+* **Standard Interface:**  TritonRoute supports industry-standard LEF/DEF interfaces, enabling compatibility with various design tools. 
+* **Guide Support:**  It also supports route guide formats compatible with ISPD-2018 and ISPD-2019 contests, which are standardized benchmarks for routing algorithms. 
+",agent-retriever-reranker,1,TP,0.85,True
+21. How can you skip the metal trim step during PDN grid generation?,"To skip the metal trim step during PDN grid generation, you can use the -skip_trim option when running the PDN generation command. This option tells the tool to bypass the metal trimming process, which can be useful in certain scenarios where trimming is not desired or necessary. Example usage: pdngen -skip_trim By including this option, the PDN generation process will proceed without performing the metal trim step, potentially saving time in the overall flow.",agent-retriever-reranker,5710.593,"The `pdngen` command in OpenROAD allows you to skip the metal trim step, which removes metal stubs, by using the `-skip_trim` option.
+
+Here's how it works:
+
+* **Command:** `pdngen -skip_trim`
+
+* **Purpose:** This option instructs the `pdngen` command to bypass the metal trim step during power grid generation. 
+
+* **Benefit:** Skipping the metal trim step can potentially speed up the process, especially in designs with complex power grids. However, it might result in some metal stubs remaining in the design. 
+",agent-retriever-reranker,1,TP,1.0,True
+22. What command would you use to add power and ground stripes to a grid?,"To add power and ground stripes to a grid in OpenROAD, you would use the `add_pdn_stripe` command. This command defines a pattern of power and ground stripes in a single layer to be added to a power grid. Here are some example usages: 1. To add stripes following pins on metal1: add_pdn_stripe -grid main_grid -layer metal1 -followpins 2. To add stripes on metal2 with a specific width: add_pdn_stripe -grid main_grid -layer metal2 -width 0.17 -followpins 3. To add stripes on metal4 with width, pitch, offset, and starting with ground: add_pdn_stripe -grid main_grid -layer metal4 -width 0.48 -pitch 56.0 -offset 2 -starts_with GROUND",agent-retriever-reranker,7472.1900000000005,"You would use the `add_pdn_stripe` command to add power and ground stripes to a grid. 
+
+Here's a breakdown of the command and its options:
+
+* **`add_pdn_stripe`**: This is the main command used to define a pattern of power and ground stripes within a single layer.
+* **`-layer layer_name`**: This option specifies the layer on which the stripes will be placed.
+* **`-grid grid_name`**: This option specifies the grid to which these stripes will be added. If not specified, the last grid defined by the `define_pdn_grid` command will be used.
+* **`-width width_value`**: This option sets the width of the stripes.
+* **`-followpins`**: This option indicates that the stripes should follow the pitch and spacing of the standard cell rows. In this case, the `-width` option is not required, as the width can be determined from the cells.
+* **`-extend_to_core_ring`**: This option extends the stripes to the core power/ground ring.
+* **`-pitch pitch_value`**: This option sets the distance between each power/ground pair.
+* **`-spacing spacing_value`**: This option defines the spacing between power/ground pairs within a single pitch. The default value is half of the pitch.
+* **`-offset offset_value`**: This option specifies the offset of the stripe from the lower left corner of the design core area.
+* **`-starts_with POWER|GROUND`**: This option specifies whether the first strap placed will be POWER or GROUND. The default setting is determined by the grid setting.
+* **`-extend_to_boundary`**: This option extends the stripes to the boundary of the grid.
+* **`-snap_to_grid`**: This option snaps the stripes to the defined routing grid.
+* **`-number_of_straps count`**: This option defines the number of power/ground pairs to add.
+* **`-nets list_of_nets`**: This option limits the stripes to only the specified list of nets. 
+",agent-retriever-reranker,1,TP,1.0,True
+23. Explain the purpose of the -liberty_file parameter in the restructure command.,"The -liberty_file parameter in the restructure command is used to specify a Liberty file containing descriptions of the cells used in the design. This Liberty file is then passed to ABC (A System for Sequential Synthesis and Verification). The Liberty file provides crucial information about the timing, power, and functional characteristics of the cells, which is essential for ABC to perform accurate analysis and optimization during the restructuring process.",agent-retriever-reranker,5580.412,"The `-liberty_file` parameter in the `restructure` command is used to specify the Liberty file that contains the description of the cells used in the design. This Liberty file is passed to the ABC tool, which is used for local resynthesis in the OpenROAD restructure module. 
+
+Here's a breakdown:
+
+* **Restructuring:** The `restructure` command is part of OpenROAD, which aims to improve the design by restructuring logic. This involves analyzing the design and making changes to the netlist, potentially improving area or timing.
+* **ABC Tool:** OpenROAD utilizes the ABC tool to perform the local resynthesis.
+* **Liberty File:** The Liberty file provides the necessary information about the cells used in the design, including their properties like delay, area, and power consumption. This information is crucial for ABC to perform accurate resynthesis.
+
+Therefore, by providing the `-liberty_file` parameter, you are giving OpenROAD the essential information for the ABC tool to effectively analyze and modify the design based on the specified cells. 
+",agent-retriever-reranker,1,TP,1.0,True
+24. Define the -slack_threshold parameter and its default value.,"The -slack_threshold parameter specifies a (setup) timing slack value below which timing paths need to be analyzed for restructuring. The default value is 0, and the allowed values are floats ranging from 0 to MAX_FLOAT.",agent-retriever-reranker,4936.361,"I'm not sure. 
+",agent-retriever-reranker,1,FN,0.0,True
+25. How can I perform parasitic extraction with specific parameters?,"To perform parasitic extraction with specific parameters in OpenROAD, you can use the `extract_parasitics` command. Here's an example command that uses an extraction rules file named rcx.rules and sets a max resistance of 56 ohms: extract_parasitics -ext_model_file rcx.rules -max_res 56 This command will extract parasitics based on the rules defined in rcx.rules and limit the maximum resistance to 56 ohms.",agent-retriever-reranker,7591.389,"The `extract_parasitics` command in OpenROAD's `rcx` module allows you to perform parasitic extraction with specific parameters. Here's how:
+
+**1. Specify the Extraction Rules File:**
+
+* Use the `-ext_model_file` option to provide the path to the Extraction Rules file used for the extraction. This file contains the resistance and capacitance values needed for the process corner. 
+
+**2. Define the Number of Corners:**
+
+* Use the `-corner_cnt` option to specify the number of corners to be considered during extraction. This is useful for simulating different process variations.
+
+**3. Set the Maximum Resistance Threshold:**
+
+* Use the `-max_res` option to specify the threshold value for combining resistors in series. Resistors with combined values exceeding this threshold will not be merged.
+
+**4. Control Coupling Threshold:**
+
+* Use the `-coupling_threshold` option to define the minimum coupling capacitance value that is considered significant. Coupling capacitances below this threshold are treated as grounded. The default value is 0.1 fF.
+
+**5. Debug a Specific Net:**
+
+* Use the `-debug_net_id` option to target a specific net for debugging purposes. This allows you to investigate the parasitic extraction behavior for a specific net.
+
+**6. Override LEF Resistance:**
+
+* Use the `-lef_res` option to override the resistance per unit length specified in the LEF file. This allows you to manually adjust the resistance values if needed.
+
+**7. Adjust Lateral Context:**
+
+* Use the `-cc_model` option to control the maximum number of tracks of lateral context considered on the same routing level. The default value is 10, and you can adjust it based on your specific requirements.
+
+**8. Control Vertical Context Depth:**
+
+* Use the `-context_depth` option to specify the number of levels of vertical context that OpenRCX should consider for capacitance calculation. The default value is 5.
+
+**9. Separate Via Resistance:**
+
+* Use the `-no_merge_via_res` option to prevent the merging of via resistance with wire resistance. This allows for a more accurate representation of parasitic values. 
+",agent-retriever-reranker,1,TP,0.0,False
+26. What is the purpose of the OpenROAD Dashboard?,"The OpenROAD Dashboard serves several important purposes: 1. Visualization of Quality-of-Results (QoR): It provides a graphical representation of various QoR metrics over time, allowing users to track the progress and improvements in the OpenROAD flow. 2. Display of flow-QoR metrics: The dashboard shows key metrics such as timing, area, power, and other relevant parameters for different designs and configurations.",agent-retriever-reranker,6533.929999999999,"The OpenROAD Dashboard provides a way to analyze and track the Quality-of-Results (QoR) of the OpenROAD project over time. 
+
+Here's how it works:
+
+* **Trends Page:** This page allows users to visualize trends in metrics like timing, area, and power through interactive graphs. You can select specific platforms, designs, and metrics to track changes over time. 
+* **Comparison Page:** This page lets you compare metrics between different branches or commits for a specific platform and its designs. It presents a table highlighting the differences between the base source and the test source, offering deeper insights into the impact of changes. 
+* **Platform Summary Table:** This table provides statistical trends for various designs within a specific platform.
+* **Summary Table:** This table offers insights for a selected set of designs, including filtering functionality.
+
+The dashboard aims to assist users in making data-driven decisions and optimizing performance in the design flow. 
+",agent-retriever-reranker,1,TP,0.75,True
+27. How can the results of the extracted parasitics be saved into a .spef file named design.spef?,The results of extracted parasitics can be saved into a .spef file named design.spef using the `write_spef` command in OpenROAD. Here's the process: 1. Open OpenROAD: cd ../tools/OpenROAD/src/rcx/test/ openroad 2. Load your design: source 45_gcd.tcl 3. Extract parasitics: extract_parasitics 4. Save to .spef file: write_spef design.spef This will create a file named design.spef containing the parasitic information in SPEF format.,agent-retriever-reranker,6297.772,"The `write_spef` command can be used to save the extracted parasitics into a .spef file named `design.spef`. Here's how:
+
+1. **Open the OpenROAD (OR) command line interface.**
+2. **Use the `write_spef` command with the following arguments:**
+   - `filename`: This argument specifies the output filename. In this case, it would be `design.spef`.
+   - **Optional arguments:** You can optionally specify specific net IDs or net names using the `-net_id` or `-nets` arguments, respectively. You can also use the `-coordinates` argument, although its functionality is not described.
+
+**Example:**
+
+```tcl
+write_spef -file design.spef
+```
+
+This command will write the extracted parasitics data into a file named `design.spef`. 
+",agent-retriever-reranker,1,TP,0.75,True
+28. What steps are required to generate an Extraction Rules file using OpenRCX?,"The process of generating an Extraction Rules file using OpenRCX involves several steps: 1. Generate layout patterns: - Use OpenRCX's `generate_patterns.tcl` script to produce layout patterns - Output: DEF file (`patterns.def`) and optional Verilog netlist (`patterns.v`) 2. Extract parasitics using a reference extractor: - Use a reference extraction tool (not provided by OpenRCX) - Input: `patterns.def`, `patterns.v` (if required), and additional files - Output: SPEF file (`patterns.spef`) with extracted parasitic data 3. Convert SPEF file to RC tech file: - Use OpenRCX's `generate_rules.tcl` script - Process `patterns.spef` to generate capacitance and resistance tables - Output: Custom RC tech file containing Extraction Rules 4. Benchmarking (optional): - Extract parasitics from pattern layout using the generated RC tech file - Compare results with golden parasitic values from step 2 - Use `ext_patterns.tcl` script - Output: SPEF (`rcx.spef`) and comparison report (`diff_spef.out`)",agent-retriever-reranker,6711.495,"The generation of an Extraction Rules file (RC tech file) for OpenRCX involves the following steps:
+
+* **Generate layout patterns:**
+    * Run the `generate_patterns.tcl` script in the OpenRCX home directory (`./OpenROAD/src/rcx/calibration`).
+    * This script takes a technology LEF as input and produces `patterns.def` and `patterns.v` files.
+    * OpenRCX creates various pattern geometries to model resistance and capacitance for different geometric configurations.
+* **Extract parasitics of layout patterns:**
+    * Use a reference extraction tool (e.g., a commercial extractor) to extract parasitics from the generated `patterns.def` and `patterns.v` files.
+    * This step requires additional files specific to the reference extractor.
+    * The output of this step is `patterns.spef`.
+* **Convert patterns.spef to RC tech file:**
+    * Run the `generate_rules.tcl` script in the OpenRCX home directory (`./OpenROAD/src/rcx/calibration`).
+    * This script takes `patterns.spef` as input and produces the RC tech file.
+    * OpenRCX performs calculations on the SPEF data to create capacitance and resistance tables for various wire geometries.
+* **Benchmarking (optional):**
+    * Perform parasitic extraction on the pattern layout using the generated RC tech file.
+    * Use the `ext_patterns.tcl` script.
+    * OpenRCX compares the extracted parasitics with the golden parasitics from the reference extractor (Step B).
+    * This step helps verify the accuracy of the generated RC tech file. 
+",agent-retriever-reranker,1,TP,1.0,True
+29. Provide a command to perform parasitic extraction on a design with an extraction rules file named rcx.rules and max resistance of 56 ohms.,"To perform parasitic extraction with the given parameters, you can use the following command in OpenROAD: extract_parasitics -ext_model_file rcx.rules -max_res 56",agent-retriever-reranker,5351.68,"```tcl
+extract_parasitics -ext_model_file rcx.rules -max_res 56 
+```
+
+Here's a breakdown of the command:
+
+* **`extract_parasitics`**: This is the primary command used to perform parasitic extraction in OpenROAD.
+* **`-ext_model_file rcx.rules`**: This option specifies the path to the Extraction Rules file (RC technology file) named ""rcx.rules."" This file contains the calibration data and rules used for the extraction process.
+* **`-max_res 56`**: This option sets the maximum resistance threshold.  Resistors in series will be combined up to a maximum value of 56 ohms. 
+",agent-retriever-reranker,1,TP,1.0,True
+30. How can I add my design test case for regressions?,"To add your design test case for regressions in OpenROAD-Flow-Scripts (ORFS), follow these steps: 1. Create the Verilog source files directory based on the top module name: - Navigate to the `designs/src` directory. - Create a new directory named after your top module (e.g., `designs/src/my_design`). - Create a file named `my_design.v` inside the directory and add your Verilog code. 2. Create a config.mk file to define the design configuration: - Navigate to the `designs/gf180` directory (assuming you're using the gf180 platform). - Create a new directory named after your top module (e.g., `designs/gf180/my_design`). - Create a file named `config.mk` inside the directory. 3. Define key design parameters in config.mk: - Specify parameters such as PLATFORM, DESIGN_NAME, VERILOG_FILES, SDC_FILE, CORE_UTILIZATION, PLACE_DENSITY, and TNS_END_PERCENT. 4. Define SDC constraints: - Navigate to the `designs/gf180/my_design` directory. - Create a file named `constraint.sdc` and add your SDC constraints. 5. Add the design name to the Makefile: - Modify the Makefile in the main OpenROAD-Flow-Scripts directory to include your design. 6. Run the regression test: - Execute the command `./test/regression` to run the regression tests, including your new design. Remember to adjust file names, directories, and parameters according to your specific design and platform.",agent-retriever-reranker,7246.3949999999995,"To add your design test case for regressions in OpenROAD, you can follow these steps:
+
+1. **Create a new test script:**  Create a new TCL script file in the `./test` directory.
+2. **Name the script:** Name the script according to your design, for example, `my_design.tcl`.
+3. **Write the test script:** Inside the script, define the steps and commands needed to test your design using OpenROAD. 
+4. **Run the regression tests:** Once you have created your test script, you can run it by typing the following command in the terminal: `./test/regression`. 
+
+The `./test/regression` script is designed to run the regression tests for OpenROAD.  By adding your design test script to this directory, it will be included in the overall regression test suite, ensuring your design is tested alongside the existing test cases.
+",agent-retriever-reranker,1,FP,0.0,False
+31. Can I add my own custom steps for the flow?,"Yes, you can add custom steps to the OpenROAD flow. Here's how: 1. Identify the stage: - Determine where you want to add your custom step within the OpenROAD flow. - This could be before or after existing stages like floorplanning, placement, or routing. 2. Write a Tcl script: - Create a Tcl script that contains the commands and logic for your custom step. - This script should be compatible with OpenROAD's API and the flow's environment. 3. Integrate with the flow: - Modify the relevant makefile or Tcl script in OpenROAD-flow-scripts to call your custom Tcl script at the desired stage. - You can use variables and environment settings to control the execution of your custom step. 4. Test thoroughly: - Ensure that your custom step works correctly and doesn't break the overall flow. - Test it with different designs and configurations to validate its functionality. By adding custom steps, you can tailor the OpenROAD flow to meet your specific design requirements and integrate your own tools or algorithms.",agent-retriever-reranker,6191.312,"Yes, you can add your own custom steps to the OpenROAD-Flow-Scripts (ORFS). The documentation indicates that there is a mechanism to customize the flow by adding flow options. 
+
+You can add your own custom steps by:
+
+* **Adding a flow option:** You can modify the existing flow options or define new ones in the `config.mk` file to customize the flow.
+* **Adding a step to the Makefile:** You can add a new step to the Makefile to run your custom script or tool at a specific point in the flow.
+* **Modifying the flow scripts:** You can directly modify the flow scripts to incorporate your custom steps. 
+
+Remember to carefully document your changes and test them thoroughly before deploying them to the flow. 
+",agent-retriever-reranker,1,TP,0.9,True
+32. Does ORFS create a DRC-correct layout?,"Yes, ORFS creates a DRC-correct layout.",agent-retriever-reranker,5126.471,"Yes, ORFS aims to create a DRC-correct layout. It includes a DRC/LVS check using KLayout as part of the ""Finishing"" stage in its flow. This step verifies the design's adherence to design rules. 
+",agent-retriever-reranker,1,TP,0.75,True
+33. Give full form of all tools in OpenROAD,dbSTA stands for Verilog to DB. OpenDB stands for Open Database. TritonPart stands for Constraints-driven Partitioner. ifp stands for Floorplan Initialization. ICeWall stands for Chip-level Connections. ppl stands for I/O Placement. pdn stands for PDN Generation. tap stands for Tapcell and Welltie Insertion. mpl stands for Triton Macro Placer. mpl2 stands for Hierarchical Automatic Macro Placer. gpl stands for RePlAce Global Placer. rsz stands for Gate Resizing and Buffering. dpl stands for Detailed Placement. cts stands for Clock Tree Synthesis. grt stands for FastRoute Global Routing. ant stands for Antenna Check and Diode Insertion. drt stands for TritonRoute Detailed Routing. fin stands for Metal Fill Insertion. dft stands for Design for Test. rcx stands for OpenRCX Parasitic Extraction. sta stands for OpenSTA Timing/Power Analyzer. gui stands for Graphical User Interface. psm stands for Static IR Analyzer.,agent-retriever-reranker,5605.588,"I'm not sure. The provided text does not contain the full forms of the tools in OpenROAD. 
+",agent-retriever-reranker,1,FN,0.0,True
