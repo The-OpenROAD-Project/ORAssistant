@@ -89,9 +89,17 @@ class RetrieverGraph:
             self.retriever_tools.retrieve_cmds,
             self.retriever_tools.retrieve_install,
             self.retriever_tools.retrieve_general,
-            self.retriever_tools.retrieve_opensta,
+            self.retriever_tools.retrieve_klayout_docs,
             self.retriever_tools.retrieve_errinfo,
             self.retriever_tools.retrieve_yosys_rtdocs,
+        ]
+        self.tool_names = [
+            'retrieve_cmds',
+            'retrieve_install',
+            'retrieve_general',
+            'retrieve_klayout_docs',
+            'retrieve_errinfo',
+            'retrieve_yosys_rtdocs',
         ]
         self.inbuit_tool_calling = inbuit_tool_calling
 
@@ -132,6 +140,7 @@ class RetrieverGraph:
                 return {'tools': []}
 
             return {'tools': response.tool_calls}
+        
         else:
             tool_rephrase_chain = (
                 ChatPromptTemplate.from_template(tool_rephrase_prompt_template)
@@ -152,6 +161,10 @@ class RetrieverGraph:
 
             if 'tool_names' in str(response):
                 tool_calls = response.get('tool_names', [])
+                for tool in tool_calls:
+                    if tool not in self.tool_names:
+                        logging.warn(f'Tool {tool} not found in tool list.')
+                        tool_calls.remove(tool)
             else:
                 logging.warn('Tool selection failed. Returning empty tool list.')
 
@@ -191,7 +204,7 @@ class RetrieverGraph:
         commands = ToolNode(self.retriever_tools.retrieve_cmds)
         install = ToolNode(self.retriever_tools.retrieve_install)
         general = ToolNode(self.retriever_tools.retrieve_general)
-        opensta = ToolNode(self.retriever_tools.retrieve_opensta)
+        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs)
         errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)
         yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)
 
@@ -201,7 +214,7 @@ class RetrieverGraph:
         workflow.add_node('retrieve_cmds', commands.get_node)
         workflow.add_node('retrieve_install', install.get_node)
         workflow.add_node('retrieve_general', general.get_node)
-        workflow.add_node('retrieve_opensta', opensta.get_node)
+        workflow.add_node('retrieve_klayout_docs', klayout_docs.get_node)
         workflow.add_node('retrieve_errinfo', errinfo.get_node)
         workflow.add_node('retrieve_yosys_rtdocs', yosys_rtdocs.get_node)
 
@@ -213,7 +226,7 @@ class RetrieverGraph:
                 'retrieve_cmds',
                 'retrieve_install',
                 'retrieve_general',
-                'retrieve_opensta',
+                'retrieve_klayout_docs',
                 'retrieve_errinfo',
                 'retrieve_yosys_rtdocs',
             ],
@@ -222,7 +235,7 @@ class RetrieverGraph:
         workflow.add_edge('retrieve_cmds', 'generate')
         workflow.add_edge('retrieve_install', 'generate')
         workflow.add_edge('retrieve_general', 'generate')
-        workflow.add_edge('retrieve_opensta', 'generate')
+        workflow.add_edge('retrieve_klayout_docs', 'generate')
         workflow.add_edge('retrieve_errinfo', 'generate')
         workflow.add_edge('retrieve_yosys_rtdocs', 'generate')
 
