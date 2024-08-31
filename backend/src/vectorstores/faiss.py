@@ -33,6 +33,8 @@ class FAISSVectorDatabase:
         self.embeddings_model_name = embeddings_model_name
 
         model_kwargs = {'device': 'cuda'} if use_cuda else {}
+        if not use_cuda:
+            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
         self.embedding_model: Union[
             HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
