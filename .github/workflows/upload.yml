@@ -2,17 +2,13 @@ name: Upload latest documentation
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *' # Run every day at 00:00 UTC
   push:
-    # branches:
-    #   - master
   pull_request: # temporary, to remove.
-    # branches:
-      # - master
 
 env:
   HF_RAG_REPO: The-OpenROAD-Project/ORQA_RAG_datasets
+  OR_COMMIT_HASH: ffc5760f2df639cd184c40ceba253c7e02a006d5
+  ORFS_COMMIT_HASH: b94834df01cb58915bc0e8dabf85a314fbd8fb9e
 
 jobs:
   or-manpages:
@@ -32,10 +28,15 @@ jobs:
     - name: Clone OpenROAD
       run: |
         git clone https://github.com/The-OpenROAD-Project/OpenROAD
+    - name: Checkout OpenROAD hash
+      working-directory: OpenROAD
+      run: |
+        git fetch origin ${{ env.OR_COMMIT_HASH }}
+        git checkout ${{ env.OR_COMMIT_HASH }}
     - name: Build documentation
       working-directory: OpenROAD/docs
       run: |
-        ../etc/find_messages.py > messages.txt
+        python ../etc/find_messages.py > messages.txt
         make preprocess && make doc
     - name: Login to Huggingface
       run: |
