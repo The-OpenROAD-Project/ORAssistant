@@ -75,6 +75,7 @@ class HybridRetrieverChain(BaseChain):
             other_docs_path=self.other_docs_path,
             html_docs_path=self.html_docs_path,
             chunk_size=self.chunk_size,
+            use_cuda=self.use_cuda,
         )
         if self.vector_db is None:
             similarity_retriever_chain.embed_docs(return_docs=True)
