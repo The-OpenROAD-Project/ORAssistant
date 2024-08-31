@@ -2,8 +2,6 @@ name: Upload latest documentation
 
 on:
   workflow_dispatch:
-  push:
-  pull_request: # temporary, to remove.
 
 env:
   HF_RAG_REPO: The-OpenROAD-Project/ORQA_RAG_datasets
