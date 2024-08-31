@@ -140,7 +140,7 @@ class RetrieverGraph:
                 return {'tools': []}
 
             return {'tools': response.tool_calls}
-        
+
         else:
             tool_rephrase_chain = (
                 ChatPromptTemplate.from_template(tool_rephrase_prompt_template)

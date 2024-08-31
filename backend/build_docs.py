@@ -396,6 +396,7 @@ def get_yosys_docs_html() -> None:
     logging.debug('Yosys docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/yosys_docs')
 
+
 def get_klayout_docs_html() -> None:
     logging.debug('Scraping KLayout docs...')
     try:
@@ -409,6 +410,7 @@ def get_klayout_docs_html() -> None:
 
     logging.debug('KLayout docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/klayout_docs')
+
 
 if __name__ == '__main__':
     logging.info('Building knowledge base...')
