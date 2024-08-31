@@ -33,19 +33,25 @@ jobs:
       run: |
         git fetch origin ${{ env.OR_COMMIT_HASH }}
         git checkout ${{ env.OR_COMMIT_HASH }}
-    - name: Build documentation
+    - name: Preprocess manpages
+      working-directory: OpenROAD/src
+      run: |
+        for folder in $(ls -d */); do
+          cd $folder
+          ../../etc/find_messages.py > messages.txt
+          cd ..
+        done
+    - name: Build manpages
       working-directory: OpenROAD/docs
       run: |
-        python ../etc/find_messages.py > messages.txt
-        make preprocess && make doc
+        make clean && make preprocess && make doc
     - name: Login to Huggingface
       run: |
         huggingface-cli login --token ${{ secrets.HF_TOKEN }}
-    - name: Upload documentation
+    - name: Upload manpages
       working-directory: OpenROAD/docs
       run: |
-        mv md manpages
-        huggingface-cli upload ${{ env.HF_RAG_REPO }} ./manpages .
+        huggingface-cli upload ${{ env.HF_RAG_REPO }} ./md /manpages
     - name: Logout from Huggingface
       run: |
         huggingface-cli logout
