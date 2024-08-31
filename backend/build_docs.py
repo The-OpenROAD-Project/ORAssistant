@@ -21,6 +21,7 @@ opensta_readme_url = (
     'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
 )
 yosys_html_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
+klayout_html_url = 'https://www.klayout.de/doc.html'
 or_website_url = 'https://theopenroadproject.org/'
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
@@ -41,6 +42,8 @@ def update_src(src_path: str, dst_path: str) -> None:
         )
     elif 'yosys' in dst_path:
         source_dict[dst_path] = f"https://{dst_path[len('data/html/yosys_docs') :]}"
+    elif 'klayout' in dst_path:
+        source_dict[dst_path] = f"https://{dst_path[len('data/html/klayout_docs') :]}"
     elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
         source_dict[dst_path] = opensta_docs_url
     elif 'OpenSTA' in dst_path and 'markdown' in dst_path:
@@ -387,12 +390,25 @@ def get_yosys_docs_html() -> None:
             shell=True,
         )
     except Exception as e:
-        logging.debug(f'Error in downloading Yosys RT docs: {e}')
+        logging.debug(f'Error in downloading Yosys docs: {e}')
         sys.exit(1)
 
-    logging.debug('Yosys RT docs downloaded successfully.')
+    logging.debug('Yosys docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/yosys_docs')
 
+def get_klayout_docs_html() -> None:
+    logging.debug('Scraping KLayout docs...')
+    try:
+        subprocess.run(
+            f'wget -r -A.html -P data/html/klayout_docs {klayout_html_url} ',
+            shell=True,
+        )
+    except Exception as e:
+        logging.debug(f'Error in downloading KLayout docs: {e}')
+        sys.exit(1)
+
+    logging.debug('KLayout docs downloaded successfully.')
+    track_src(f'{cur_dir}/data/html/klayout_docs')
 
 if __name__ == '__main__':
     logging.info('Building knowledge base...')
@@ -423,6 +439,7 @@ if __name__ == '__main__':
     get_or_website_html()
     get_opensta_docs()
     get_yosys_docs_html()
+    get_klayout_docs_html()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
