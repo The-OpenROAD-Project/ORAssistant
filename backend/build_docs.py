@@ -401,7 +401,7 @@ def get_klayout_docs_html() -> None:
     logging.debug('Scraping KLayout docs...')
     try:
         subprocess.run(
-            f'wget -r -A.html -P data/html/klayout_docs {klayout_html_url} ',
+            f'wget -r -A.html -l 3 -P data/html/klayout_docs {klayout_html_url} ',
             shell=True,
         )
     except Exception as e:
@@ -437,11 +437,13 @@ if __name__ == '__main__':
     os.makedirs('data/pdf/OR_publications', exist_ok=True)
     os.makedirs('data/html', exist_ok=True)
 
+    get_klayout_docs_html()
+    get_yosys_docs_html()
+    
     get_or_publications()
     get_or_website_html()
     get_opensta_docs()
-    get_yosys_docs_html()
-    get_klayout_docs_html()
+
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
