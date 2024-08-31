@@ -44,7 +44,7 @@ jobs:
       working-directory: OpenROAD/docs
       run: |
         mv md manpages
-        huggingface-cli repo upload ${{ env.HF_ORQA_DOCS_REPO }} --path manpages --overwrite
+        huggingface-cli upload ${{ env.HF_RAG_REPO }} ./manpages .
     - name: Logout from Huggingface
       run: |
         huggingface-cli logout
