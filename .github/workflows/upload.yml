@@ -1,0 +1,50 @@
+name: Upload latest documentation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Run every day at 00:00 UTC
+  push:
+    branches:
+      - main
+  pull_request: # temporary, to remove.
+    branches:
+      - main
+
+env:
+  HF_RAG_REPO: The-OpenROAD-Project/ORQA_RAG_datasets
+
+jobs:
+  or-manpages:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up prerequisites
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y make pandoc git
+    - name: Set up python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Install huggingface CLI
+      run: |
+        pip install huggingface_hub[cli]
+    - name: Clone OpenROAD
+      run: |
+        git clone https://github.com/The-OpenROAD-Project/OpenROAD
+    - name: Build documentation
+      working-directory: OpenROAD/docs
+      run: |
+        ../etc/find_messages.py > messages.txt
+        make preprocess && make doc
+    - name: Login to Huggingface
+      run: |
+        huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+    - name: Upload documentation
+      working-directory: OpenROAD/docs
+      run: |
+        mv md manpages
+        huggingface-cli repo upload ${{ env.HF_ORQA_DOCS_REPO }} --path manpages --overwrite
+    - name: Logout from Huggingface
+      run: |
+        huggingface-cli logout
