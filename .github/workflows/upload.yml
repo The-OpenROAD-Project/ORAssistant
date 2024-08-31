@@ -5,11 +5,11 @@ on:
   schedule:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC
   push:
-    branches:
-      - master
+    # branches:
+    #   - master
   pull_request: # temporary, to remove.
-    branches:
-      - master
+    # branches:
+      # - master
 
 env:
   HF_RAG_REPO: The-OpenROAD-Project/ORQA_RAG_datasets
