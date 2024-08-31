@@ -51,7 +51,7 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            #html_docs_path=['./data/html/or_website/'],
+            # html_docs_path=['./data/html/or_website/'],
             markdown_docs_path=[
                 './data/markdown/OR_docs',
                 './data/markdown/ORFS_docs',
@@ -59,7 +59,7 @@ class RetrieverTools:
                 './data/markdown/manpages/man1',
                 './data/markdown/manpages/man2',
             ],
-            #other_docs_path=['./data/pdf/OR_publications'],
+            # other_docs_path=['./data/pdf/OR_publications'],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
