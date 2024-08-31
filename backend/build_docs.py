@@ -439,11 +439,10 @@ if __name__ == '__main__':
 
     get_klayout_docs_html()
     get_yosys_docs_html()
-    
+
     get_or_publications()
     get_or_website_html()
     get_opensta_docs()
-
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
