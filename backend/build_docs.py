@@ -9,6 +9,8 @@ from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
 from bs4 import BeautifulSoup
+from huggingface_hub import snapshot_download
+
 
 load_dotenv()
 source_dict: dict[str, str] = {}
@@ -36,8 +38,12 @@ def update_src(src_path: str, dst_path: str) -> None:
             f"{orfs_docs_url}/{src_path.split('_sources/')[-1].replace('.md', '.html')}"
         )
     elif 'manpages' in dst_path:
+        manpage_path = dst_path.replace('data/markdown/', '')
+        commit_hash = os.getenv(
+            'ORQA_RAG_DATASETS_COMMIT', '470c7ecd67d3a22557500a451b73a31fc8c4ec15'
+        )
         source_dict[dst_path] = (
-            f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
+            f'https://huggingface.co/datasets/The-OpenROAD-Project/ORQA_RAG_datasets/raw/{commit_hash}/{manpage_path}'
         )
     elif 'yosys' in dst_path:
         source_dict[dst_path] = f"https://{dst_path[len('data/html/yosys_docs') :]}"
@@ -255,45 +261,21 @@ def build_orfs_docs() -> None:
     return
 
 
-def build_manpages() -> None:
-    logging.debug('Starting manpages build...')
-
-    # check if pandoc is installed, if not error out.
-    res = subprocess.run('pandoc --version', shell=True, capture_output=True)
-    if res.returncode != 0:
-        logging.error('Pandoc is not installed. Please install it.')
-        sys.exit(1)
-    logging.debug('Pandoc is installed.')
-
-    # generate manpages
-    command = '../../etc/find_messages.py > messages.txt'
-    for module in os.listdir(os.path.join(cur_dir, 'OpenROAD/src')):
-        path = os.path.join(cur_dir, 'OpenROAD/src', module)
-        if not os.path.isdir(path):
-            continue
-        os.chdir(path)
-        res = subprocess.run(command, shell=True, capture_output=True)
-        if res.returncode != 0:
-            logging.error(
-                f"Error in finding messages for {module}: {res.stderr.decode('utf-8')}"
-            )
-            continue
-    os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
-    num_cores = os.cpu_count()
-    command = f'make clean && make preprocess && make -j{num_cores}'
-    res = subprocess.run(command, shell=True, capture_output=True)
-    logging.debug('Finished building manpages.')
-
-    # copy folder contents to data/markdown/manpages
-    src_dir = os.path.join(cur_dir, 'OpenROAD/docs/md')
-    dest_dir = os.path.join(cur_dir, 'data/markdown/manpages')
-
-    copy_tree_track_src(src_dir, dest_dir)
-    logging.debug('Copied manpages to data/markdown/manpages.')
-
-    logging.debug('Finished building manpages.')
-
-    return
+def download_manpages() -> None:
+    os.chdir(cur_dir)
+    logging.debug('Downloading Manpages...')
+    commit_hash = os.getenv(
+        'ORQA_RAG_DATASETS_COMMIT', '470c7ecd67d3a22557500a451b73a31fc8c4ec15'
+    )
+    snapshot_download(
+        repo_id='The-OpenROAD-Project/ORQA_RAG_datasets',
+        revision=commit_hash,
+        repo_type='dataset',
+        local_dir='data/markdown',
+        ignore_patterns=['.gitattributes', 'README.md'],
+    )
+    logging.debug('HF docs downloaded successfully.')
+    track_src(f'{cur_dir}/data/markdown/manpages')
 
 
 def get_opensta_docs() -> None:
@@ -441,7 +423,7 @@ if __name__ == '__main__':
 
     build_or_docs()
     build_orfs_docs()
-    build_manpages()
+    download_manpages()
 
     os.chdir(cur_dir)
     copy_file_track_src(
