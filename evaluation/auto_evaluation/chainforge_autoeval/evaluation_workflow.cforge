@@ -1,0 +1,3868 @@
+{
+  "flow": {
+    "nodes": [
+      {
+        "width": 312,
+        "height": 330,
+        "data": {
+          "llms": [
+            {
+              "key": "40f5edc7-4acc-404d-aae5-36898538dbac",
+              "name": "OR Assistant",
+              "emoji": "🌐",
+              "base_model": "__custom/OR Assistant/",
+              "model": "__custom/OR Assistant//default-model",
+              "settings": {
+                "endpoint": "/graphs/agent-retriever",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "ensemble"
+              },
+              "formData": {
+                "shortname": "OR Assistant",
+                "model": "default-model",
+                "endpoint": "/graphs/agent-retriever",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "ensemble"
+              }
+            }
+          ],
+          "n": 1,
+          "prompt": "{Prompts} ",
+          "fields": [
+            {
+              "text": "The `detailed_placement` command in OpenROAD performs detailed placement of instances to legal locations after global placement. It places instances in a way that avoids overlaps and ensures that each instance is placed on a valid site. \n\nHere are some of the key features of the `detailed_placement` command:\n\n* **Legalization:** The command legalizes the placement of instances by ensuring that they are placed on valid sites and do not overlap with other instances or design elements.\n* **Fence Region:** It supports fence regions, which are areas of the design where instances are not allowed to be placed.\n* **Fragmented ROWs:** The command can handle fragmented ROWs, which are rows of sites that have been divided into smaller sections.\n\nThe `detailed_placement` command has several options that can be used to control its behavior. These options include:\n\n* **-max_displacement:** This option specifies the maximum distance that an instance can be moved during placement.\n* **-disallow_one_site_gaps:** This option disables one-site gaps during placement checking.\n* **-report_file_name:** This option specifies the file name for saving the placement report.\n\nThe `detailed_placement` command is an important part of the OpenROAD flow, as it ensures that instances are placed in a legal and efficient manner.\n\n\nSources:\n",
+              "prompt": "What does the detailed_placement command do in OpenROAD? ",
+              "fill_history": {
+                "Prompts": "What does the detailed_placement command do in OpenROAD?"
+              },
+              "llm": {
+                "key": "40f5edc7-4acc-404d-aae5-36898538dbac",
+                "name": "OR Assistant",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant/default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "ensemble"
+                },
+                "formData": {
+                  "shortname": "OR Assistant"
+                },
+                "progress": {
+                  "success": 50,
+                  "error": 0
+                }
+              },
+              "uid": "5db52fac-f624-44ae-9ea4-27913513f5b2",
+              "metavars": {
+                "Answers": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells.",
+                "__pt": "{Prompts} ",
+                "LLM_0": "OR Assistant"
+              }
+            },
+            {
+              "text": "The Automatic Code Generator is a tool for generating code for OpenDB objects and Iterators. \n\nHere are the steps involved in using the Automatic Code Generator:\n\n* **Provide input JSON:** The tool requires a JSON file (schema.json) specifying the requirements for code generation.\n* **Specify source directory:** You must indicate the directory containing the source files for the code generation (src_dir).\n* **Specify include directory:** The directory containing the include files (include_dir) must also be provided.\n* **Specify template directory:** Lastly, the directory with Jinja templates used for defining the classes (templates) needs to be specified.\n* **Run the generator:** Execute the provided command: `python3 gen.py --json schema.json --src_dir ../db --include_dir ../../include/odb --templates templates` to start the code generation process.\n* **Keep empty sections:** The tool removes empty sections from the output by default, but you can preserve them by running the generator with the `--keep_empty` flag.\n\n\nSources:\n",
+              "prompt": "What is Automatic Code Generator used for? ",
+              "fill_history": {
+                "Prompts": "What is Automatic Code Generator used for?"
+              },
+              "llm": {
+                "key": "40f5edc7-4acc-404d-aae5-36898538dbac",
+                "name": "OR Assistant",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant/default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "ensemble"
+                },
+                "formData": {
+                  "shortname": "OR Assistant"
+                },
+                "progress": {
+                  "success": 50,
+                  "error": 0
+                }
+              },
+              "uid": "4b16fd23-79de-4dba-b099-f555932cae2e",
+              "metavars": {
+                "Answers": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files",
+                "__pt": "{Prompts} ",
+                "LLM_0": "OR Assistant"
+              }
+            }
+          ],
+          "refresh": false,
+          "refreshLLMList": false
+        },
+        "dragging": false,
+        "id": "prompt-aime_evaluation",
+        "position": {
+          "x": 176,
+          "y": 384
+        },
+        "positionAbsolute": {
+          "x": 176,
+          "y": 384
+        },
+        "selected": false,
+        "type": "prompt"
+      },
+      {
+        "width": 423,
+        "height": 422,
+        "data": {
+          "columns": [
+            {
+              "header": "Prompts",
+              "key": "c0"
+            },
+            {
+              "header": "Answers",
+              "key": "c1"
+            }
+          ],
+          "rows": [
+            {
+              "__uid": "c71d036b-f49d-4040-9c7e-448bf4ba5597",
+              "c0": "What is the significance of the filler_placement command?",
+              "c1": "The filler_placement command fills gaps between detail-placed instances to connect the power and ground rails in the rows. filler_masters is a list of master/macro names to use for filling the gaps. Wildcard matching is supported, so FILL* will match, e.g., FILLCELL_X1 FILLCELL_X16 FILLCELL_X2 FILLCELL_X32 FILLCELL_X4 FILLCELL_X8. To specify a different naming prefix from FILLER_ use -prefix <new prefix>."
+            },
+            {
+              "__uid": "fdeb0d7e-0abf-496b-8546-f5ec2990d1cd",
+              "c0": "How to build OpenROAD from source locally?",
+              "c1": "Build from sources locally\n\nClone and Install Dependencies:\nThe setup.sh script installs all of the dependencies, including OpenROAD dependencies, if they are not already installed.\n\nSupported configurations are: CentOS 7, Ubuntu 20.04, Ubuntu 22.04, RHEL 8, Debian 10, and Debian 11.\n\n\\`\\`\\`sh\ngit clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts\ncd OpenROAD-flow-scripts\nsudo ./setup.sh\n\\`\\`\\`\n\nBuild:\n\\`\\`\\`sh\n./build_openroad.sh --local\n\\`\\`\\`\n\n**Note:**\nThere is a build_openroad.log file that is generated with every build in the main directory. In case of filing issues, it can be uploaded in the \"Relevant log output\" section of the OpenROAD-flow-scripts repo issue form.\n\nVerify Installation:\nThe binaries should be available on your $PATH after setting up the environment. The make command runs from RTL-GDSII generation for the default design \"gcd\" with the nangate45 PDK.\n\n\\`\\`\\`sh\nsource ./env.sh\nyosys -help\nopenroad -help\ncd flow\nmake\n\\`\\`\\`\n\nYou can view final layout images in the OpenROAD GUI using this command:\n\n\\`\\`\\`sh\nmake gui_final\n\\`\\`\\`\n\nCompiling and Debugging in Visual Studio Code:\nSet up environment variables using dev_env.sh, then start Visual Studio Code. Please ensure CMake plugins are installed.\n\n\\`\\`\\`sh\n. ./dev_env.sh\ncode tools/OpenROAD/\n\\`\\`\\`"
+            },
+            {
+              "__uid": "9e0086a0-899a-4921-a6f3-8b25466a8492",
+              "c0": "What file formats are supported by Parallax Static Timing Analyzer or OpenSTA?",
+              "c1": "The Following standard file formats are supported by Parallax Static Timing Analyzer or OpenSTA: Verilog netlist, Liberty library, SDC timing constraints,SDF delay annotation, and SPEF parasitics."
+            },
+            {
+              "__uid": "70977767-1e9d-4be5-818a-ae64e9f5c124",
+              "c0": "What does the clear_global_connect command do?",
+              "c1": "Global connections are typically used to define connections between a supply net (such as power/ground) and the supply pins on cells. The clear_global_connect command is used to clear previously declared connections between supply pins on design instances and their respective supply nets. Note that the clear_global_connect command only clears the logical connections; it does not remove any routing or physical connections."
+            },
+            {
+              "__uid": "12867f9f-370f-4b3f-aeef-be9a1175befb",
+              "c0": "What does the detailed_placement command do in OpenROAD?",
+              "c1": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells."
+            },
+            {
+              "__uid": "73c79604-88a2-4ef7-818c-3edc1e181164",
+              "c0": "What role does this argument -report_file_name play in the check_placement command?",
+              "c1": "The argument -report_file_name in check_placement command files name for saving the report (e.g. report.json)."
+            },
+            {
+              "__uid": "5e5275aa-e8f4-476c-bac6-010deaeb00f5",
+              "c0": "What does the argument -floorplan_initialize do in read_def?",
+              "c1": "When using the read_def command with the -floorplan_initialize argument, OpenROAD will read only physical placement information such as pin locations and instance locations. It does not read or redefine the netlist."
+            },
+            {
+              "__uid": "e691c7f5-8842-4608-8f3c-54fbf5b982c4",
+              "c0": "What is global routing?",
+              "c1": "The global routing module in OpenROAD (grt) is based on FastRoute, an open-source global router originally derived from Iowa State University's FastRoute4.1 algorithm. Global routing is responsible for creating routing guides for each net to simplify the job of the detailed router. The purpose of global routing is mainly to avoid overcongestion when creating the guides."
+            },
+            {
+              "__uid": "546d0350-2def-4425-aa61-131cc57d44d8",
+              "c0": "Explain Chip-level Connections in OpenROAD?",
+              "c1": "The chip-level connections module in OpenROAD (pad) is based on the open-source tool ICeWall. In this utility, either place an IO ring around the boundary of the chip and connect with either wirebond pads or a bump array."
+            },
+            {
+              "__uid": "5d2ae848-57db-4718-bbfc-e09755ca68d1",
+              "c0": "Can OpenROAD work with Multi-Mode-Multi-Corner Files (mmmc) ?",
+              "c1": "OpenROAD supports multi-corner Static Timing Analysis (STA), but it doesn't currently support multi-mode STA. \"MMMC\" files from proprietary tools are stored in proprietary formats, which OpenROAD cannot support. The OpenSTA manual will contain more information about how to run multi-corner analysis."
+            },
+            {
+              "__uid": "32f72cb6-686e-4131-b46a-f62d7d9fb00b",
+              "c0": "What is Clock Tree Synthesis in OpenROAD?",
+              "c1": "Clock tree synthesis (CTS) is the step of distributing a clock to all endpoints (such as flip-flops) while trying to minimize power and skew (the different in clock arrival times between two registers). The clock tree synthesis module in OpenROAD (cts) is based on TritonCTS 2.0, and can be run using the clock_tree_synthesis command. TritonCTS 2.0 features on-the-fly characterization, and therefore does not need to pre-generate characterization data. The on-the-fly characterization feature can be optionally controlled by parameters specified by the configure_cts_characterization command. You can use the set_wire_rc command to set the clock routing layer used when calculating parasitics in this step."
+            },
+            {
+              "__uid": "caf925e2-6d8c-4bd0-b39f-348c7160d6e2",
+              "c0": "Can OpenROAD work with multi-VT cells (HVT, LVT, SVT) and swap between them in a single run?",
+              "c1": "OpenROAD supports using multi-VT cell libraries, and it can swap between VT cells during optimization."
+            },
+            {
+              "__uid": "1969df65-5235-45f2-ad13-aad4ea83a2b3",
+              "c0": "Why is RSMT used more?",
+              "c1": "Traditionally, global routing just uses tree structures like RMST or RSMT while RSMT is becoming more popular due to its minimal wirelength to connect a multi-pin net."
+            },
+            {
+              "__uid": "c0769de1-c3f7-4c25-838d-f697d4427358",
+              "c0": "Is there any way I can use just the RTL-MP2 stand-alone on either an RTL design or a gate netlist? The issue is, that we use proprietary tools so do not have an OpenDB database for our designs.",
+              "c1": "OpenROAD supports interoperability with other EDA tools through the industry standard Verilog, LEF, and DEF formats. In this case, you can import a DEF file into OpenROAD from an external tool, run RTL-MP2, and then export the DEF file. The DEF file format should be supported by nearly all EDA physical design tools."
+            },
+            {
+              "__uid": "0170fac7-5687-4290-97ca-f6996aee1b9d",
+              "c0": "What is the job of Pin Placer?",
+              "c1": "Place pins on the boundary of the die on the track grid to minimize net wirelengths. Pin placement also creates a metal shape for each pin using min-area rules. For designs with unplaced cells, the net wirelength is computed considering the center of the die area as the unplaced cells' position."
+            },
+            {
+              "__uid": "f8fb0381-4871-49a6-8cff-3adc0a015c9b",
+              "c0": "What does the par module do?",
+              "c1": "The partitioning module (par) is based on TritonPart, an open-source constraints-driven partitioner. par can be used to partition a hypergraph or a gate-level netlist. TritonPart solves multi-way partitioning by 1) constraints-driven coarsening, 2) initial partitioning, 3) refinement, 4) cut-overlay clustering and partitioning (COCP), and 5) V-cycle refinement. The purpose of partitioning a netlist is to reduce the complexity of a circuit so that algorithms can operate on smaller chunks of the netlist at a time. Partitioning a netlist may slightly reduce the optimization opportunities compared to a non-partitioned approach, but it greatly benefits the runtime. Partitioning a netlist may be the only option to feasibly operate on very large circuits."
+            },
+            {
+              "__uid": "60bbca35-b15c-4bc8-9c2f-8f3938e67e88",
+              "c0": "`auto_place_pins pin_layer` places pins on a single layer but It should be able to place vertical pins (sides of the die) and horizontal pins (top and bottom of the die) in separate layers, why is it not able to do this?",
+              "c1": "I currently recommend using `io_placer` instead of `auto_place_pins`. Here's an example:```io_placer -hor_layer 3 -ver_layer 2```Note that `io_placer` uses cell placement information to guide the I/O pin placement. If placement has not yet been run, the `-random` flag is required, which will distribute the pins evenly over the die boundary."
+            },
+            {
+              "__uid": "d839b491-01a4-40cd-a323-1c0d39425dc9",
+              "c0": "I would like to know if there is any way to write the log output from OpenROAD into a file (using a report_ type command)?",
+              "c1": "To capture output from OpenROAD, you can use standard Unix file operations and redirections. OpenROAD outputs all messages directly to the stdout I/O stream."
+            },
+            {
+              "__uid": "80851e01-911b-45ed-929f-2f44d07d1b4e",
+              "c0": "Describe Parallax Static Timing Analyzer or OpenSTA?",
+              "c1": "OpenSTA is a gate-level static timing verifier. As a stand-alone executable, it can be used to verify the timing of a design using standard file formats. OpenSTA uses a TCL command interpreter to read the design, specify timing constraints, and print timing reports."
+            },
+            {
+              "__uid": "fd16590d-56a1-4dc7-8595-947509e9f9f5",
+              "c0": "Why did I encounter an issue with CORE_UTILIZATION when trying to aim for a DU of 70% on the ASAP7 PDK which should be possible and reasonable for any design?",
+              "c1": "If you are using ORFS, the CORE_UTILIZATION variable only determines the core utilization after Yosys (synthesis) runs using the netlist data. The utilization can change dramatically as OpenROAD performs timing optimization, which will insert buffers, remove buffers, and resize cells. For example, if you set CORE_UTILIZATION to 70% utilization during the initialization step, you may end up with 90%+ utilization because of optimization to meet timing constraints. It is currently up to the designer to ensure that the CORE_UTILIZATION is set appropriately, which may require some trial and error."
+            },
+            {
+              "__uid": "33257d24-4618-4a81-bfd4-42291d1ebca1",
+              "c0": "What does the argument -disallow_one_site_gaps do in the detailed_placement command?",
+              "c1": "detailed_place -disallow_one_site_gaps will disallow the detailed placer from leaving gaps between cells that are exactly one cell sitewide. This feature is mainly useful for PDKs that do not have filler cells which are one site-wide. In this case, one-site-wide gaps are unfillable and will cause DRC violations."
+            },
+            {
+              "__uid": "90affacc-5619-48cd-b8f6-ed4c39c7206e",
+              "c0": "What is DFT?",
+              "c1": "This tool is an implementation of Design For Testing. New nets and logic are added to allow IC designs to be tested for errors in manufacturing. Physical imperfections can cause hard failures and variability can cause timing errors."
+            },
+            {
+              "__uid": "522aebf8-d13f-4c80-8fe0-9d1e6f44cb95",
+              "c0": "Upon attempting to read an invalid ODB file, OpenROAD doesn't attempt to validate it and instead crashes with a cryptic message of Error: read_db.tcl, 1 ios_base::clear: unspecified iostream_category error. Why is this happening?",
+              "c1": "I would advise against using low-level OBD APIs to interact with OpenROAD. User-facing APIs in OpenROAD have documentation and error checking to prevent improper usage, however low-level APIs may not have error checking for performance reasons. In this case, it appears the db you are creating does not have a logger and can't issue any messages."
+            },
+            {
+              "__uid": "f96434bc-7e59-4b9d-a3ed-e666bead668b",
+              "c0": "Tell me about Detailed Placement in OpenROAD?",
+              "c1": "The detailed placement module in OpenROAD (dpl) is based on OpenDP or Open-Source Detailed Placement Engine. Its key features are\nfence region and fragmented ROWs."
+            },
+            {
+              "__uid": "cc549dd1-cdc8-4237-8385-e167a3d04618",
+              "c0": "What does the argument -verbose in the check_placement command do?",
+              "c1": "The -verbose argument enables verbose logging in the check_placement command."
+            },
+            {
+              "__uid": "85d172a3-c915-403e-87fa-f6bb7c9ac511",
+              "c0": "What does the argument -report_file_name do in the detailed_placement command?",
+              "c1": "The -report_file_name argument for the detailed_placement command specifies where the report for detailed placement should be saved. The report is saved in the JSON format and contains metrics related to detailed_placement. If this argument is not provided, no report will be saved for the detailed_placement command."
+            },
+            {
+              "__uid": "5a504448-7431-4a47-89e8-60c214024c17",
+              "c0": "What does the global_connect command do?",
+              "c1": "Global connections are typically used to define connections between a supply net (such as power/ground) and the supply pins on cells. The global_connect command is used to define logical connections between supply pins on design instances and their respective supply nets. Note that the global_connect command only creates a logical connection; it does not perform any routing for a physical connection."
+            },
+            {
+              "__uid": "a607675e-bc47-4f7f-ba64-36d5fa426577",
+              "c0": "What does DRT-0297 mean?",
+              "c1": "DRT-0297 means that an ERROR occurred in the ORFS file io.cpp at line number 3679."
+            },
+            {
+              "__uid": "2a71303d-b35d-43aa-866c-df7d719d4ca6",
+              "c0": "What are some useful developer commands in the detailed placement module in OpenROAD (dpl)?",
+              "c1": "If you are a developer, you might find the following commands useful, 1. detailed_placement_debug: debug detailed placement. 2. get_masters_arg: get masters from a design. 3. get_inst_bbox: get the bounding box of an instance. 4. get_inst_grid_bbox: get the grid bounding box of an instance. 5. format_grid: format grid (takes in length x and site width w as inputs). 6. get_row_site: get row site name."
+            },
+            {
+              "__uid": "e9e9fcd8-8fd8-4589-bc15-e19519f24f5d",
+              "c0": "What does the argument -skip_pin_swap & -skip_gate_cloning do in repair_timing?",
+              "c1": "These flags disable optimizations in case of trouble or unexpected results. They are mainly included as a failsafe for users, rather than something that is expected to be used."
+            },
+            {
+              "__uid": "bbc774d3-f565-4e0b-9381-62ce4723b394",
+              "c0": "Describe the Restructure module in OpenROAD?",
+              "c1": "The restructure module in OpenROAD (rmp) is based on an interface to ABC for local resynthesis. The package allows logic restructuring that targets area or timing. It extracts a cloud of logic using the OpenSTA timing engine and passes it to ABC through the blif interface. Multiple recipes for area or timing are run to obtain multiple structures from ABC; the most desirable among these is used to improve the netlist. The ABC output is read back by a blif reader which is integrated into OpenDB. Blif writer and reader also support constants from and to OpenDB. Reading back of constants requires insertion of tie cells which should be provided by the user as per the interface described below."
+            },
+            {
+              "__uid": "61f91220-ba25-4a01-8ced-07aefd82ae03",
+              "c0": "Brief me on OpenROAD Flow?",
+              "c1": "OpenROAD-flow-scripts (ORFS) is a fully autonomous, RTL-GDSII flow for rapid architecture and design space exploration, early prediction of QoR, and detailed physical design implementation. However, ORFS also enables manual intervention for finer user control of individual flow stages through Tcl commands and Python APIs."
+            },
+            {
+              "__uid": "cafec4b3-1da4-4619-bd10-d59e17927498",
+              "c0": "Is SystemVerilog support limited to the constructs that Yosys supports?",
+              "c1": "The OpenROAD Flow is limited to the RTL language support that the Yosys synthesizer provides. Yosys currently provides support for a limited subset of SystemVerilog and full support for Verilog. OpenROAD only supports structural Verilog netlists."
+            },
+            {
+              "__uid": "57f0b15e-b427-4e78-978b-f1dc208017b9",
+              "c0": "What are the features of IR Drop analysis?",
+              "c1": "The features of IR Drope analysis are: reporting the worst IR drop, reporting the worst current density over all nodes and wire segments in the power distribution network (given a placed and PDN-synthesized design), checking for floating PDN stripes on the power and ground nets, and spice netlist writer for power distribution network wire segments."
+            },
+            {
+              "__uid": "75c0453e-5920-4d30-a3e2-9d4f6d76d2d5",
+              "c0": "What is the purpose of the remove_fillers command?",
+              "c1": "This command removes all filler cells."
+            },
+            {
+              "__uid": "2bde6fe3-7edf-4a3b-be07-44d35cacf602",
+              "c0": "Is TritonRoute the foundation of drt?",
+              "c1": "The Detailed Routing (drt) module in OpenROAD is based on the open-source detailed router TritonRoute. TritonRoute consists of several main building blocks, including pin access analysis, track assignment, initial detailed routing, search and repair, and a DRC engine. The initial development of the router is inspired by the ISPD-2018 initial detailed routing contest. However, the current drt framework differs and is built from scratch, aiming for an industrial-oriented, scalable, and flexible flow."
+            },
+            {
+              "__uid": "9e7cb38f-522a-4dc7-acda-0a57687f0084",
+              "c0": "What dependencies are required for TritonPart?",
+              "c1": "TritonPart in OpenROAD uses Google OR-Tools as the ILP solver. Please install Google OR-Tools."
+            },
+            {
+              "__uid": "85b4f351-7821-4039-810e-030b87cff403",
+              "c0": "Brief me on the parasitics extraction module?",
+              "c1": "The parasitics extraction module in OpenROAD (rcx) is based on the open-source OpenRCX, a Parasitic Extraction (PEX, or RCX) tool that works on OpenDB design APIs. It extracts routed designs based on the LEF/DEF layout model.\nOpenRCX extracts both Resistance and Capacitance for wires, based on coupling distance to the nearest wire and the track density context over and/or under the wire of interest, as well as cell abstracts. The capacitance and resistance measurements are based on equations of coupling distance interpolated on exact measurements from a calibration file, called the Extraction Rules file. The Extraction Rules file (RC technology file) is generated once for every process node and corner, using a provided utility for DEF wire pattern generation and regression modeling.\nOpenRCX stores resistance, coupling capacitance, and ground (i.e., grounded) capacitance on OpenDB objects with direct pointers to the associated wire and via db objects. Optionally, OpenRCX can generate a .spef file."
+            },
+            {
+              "__uid": "85139d13-9535-48bb-9606-bef4f7ae4b0b",
+              "c0": "Tell me about the parts of DFT insertion?",
+              "c1": "A simple DFT insertion consists of the following parts: a scan_in pin where the test patterns are shifted in, a scan_out pin where the test patterns are read from, scan cells that replace flops with registers that allow for testing, one or more scan chains (shift registers created from your scan cells), a scan_enable pin to allow your design to enter and leave the test mode."
+            },
+            {
+              "__uid": "ae89b283-8171-4e11-acc6-b30921ee0aec",
+              "c0": "What are the Gate Resizer commands?",
+              "c1": "The resizer commands stop when the design area is -max_utilization util percent of the core area. util is between 0 and 100. The resizer stops and reports an error if the maximum utilization is exceeded."
+            },
+            {
+              "__uid": "5809b2e2-2e08-4ff4-85c2-01588722574c",
+              "c0": "What is Automatic Code Generator used for?",
+              "c1": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files"
+            },
+            {
+              "__uid": "f2c067a9-d01b-434f-ae89-43b491e5e292",
+              "c0": "How is Hier-RTLMP different from RTL-MP?",
+              "c1": "Hier-RTLMP consists of an auto-clustering engine that transforms the logical hierarchy into a physical hierarchy. Unlike RTL-MP where the physical hierarchy is a single level, Hier-RTLMP’s autoclustering engine creates a multilevel physical hierarchy of physical clusters. This enables the handling of large RTLs with hundreds of macros and allows for the placement of macros within the core area."
+            },
+            {
+              "__uid": "0a730ff4-e224-47c6-9e71-17c6bd8a009d",
+              "c0": "Is there no need to re-synthesize with different timing constraints with Yosys? Or does it also use different/bigger non-buffer cells that also need to be resized?",
+              "c1": "Empirically, applying timing constraints to Yosys for synthesis does not have much impact on the output netlist. However, the results may not be identical if the timing constraints are changed."
+            },
+            {
+              "__uid": "5b320666-1d84-4e01-9d1b-4873f565596d",
+              "c0": "What is PDNGEN?",
+              "c1": "The PDNGEN module (pdn) in OpenROAD aims to simplify the process of adding a power grid into a floorplan. A user can specify a small set of power grid policies to be applied to the design, such as the layers to use, stripe width, and spacing, and then pdn will generate the actual metal straps. Power grid policies can be defined over both the standard cell area and areas occupied by macros."
+            },
+            {
+              "__uid": "8d7e8c99-8682-4b87-b3a5-ef29727d89fc",
+              "c0": "What does the check_placement command do?",
+              "c1": "The check_placement command checks the placement legality. It returns 0 if the placement is legal."
+            },
+            {
+              "__uid": "20eadcb6-418b-4f15-bb60-8e17fc13ac6b",
+              "c0": "I'm trying to port ORFS to a TSMC process. During the detailed route step, I get a lot of DRT-0073 errors. Utilization is set to 20% at the beginning of the P&R flow and it is a pretty simple design. Give me some tips about what to look into?\nI have tried to run the pin_access command directly but the -verbose parameter does not seem to work as I don't get any more information",
+              "c1": "You can try the developer debugs to get a sense of what is going on. Put detailed_route_debug -pa -pa_markers -pin _3504_:A1 before you call detailed_route and run it in the GUI. It will stop at the pin and show you how it is trying to access it and any associated drc markers. You click the continue button to see the various steps. Hopefully, that gives you an idea as to what is going on. The other option is a support contract with precisioninno.com where we can help under NDA.\n"
+            },
+            {
+              "__uid": "11ed5a83-d225-40f5-a505-65f36159bf3d",
+              "c0": "What was the need to develop Hier-RTLMP?",
+              "c1": "Recently, with the increasing complexity of IP blocks, and in particular with auto-generated RTL for machine learning (ML) accelerators, the number of macros in a single RTL block can easily run into several hundred. This makes the task of generating an automatic floorplan (.def) with IO pin and macro placements for front-end physical synthesis even more critical and challenging. The so-called peripheral approach of forcing macros to the periphery of the layout is no longer viable when the ratio of the sum of the macro perimeters to the floorplan perimeter is large since this increases the required stacking depth of macros. Thus, a novel multilevel physical planning approach that exploits the hierarchy and dataflow inherent in the design RTL, and describes its realization in a new hierarchical macro placer, Hier-RTLMP was developed. "
+            },
+            {
+              "__uid": "de766c22-78d9-40ee-85e9-3a9357fe51b5",
+              "c0": "What does the optimize_mirroring command do?",
+              "c1": "The optimize_mirroring command mirrors instances about the Y axis in a weak attempt to reduce the total half-perimeter wirelength (HPWL). No arguments are needed for this function."
+            },
+            {
+              "__uid": "69579f47-31ca-4aa7-a9e7-95c9c32c4121",
+              "c0": "What is macro placement?",
+              "c1": "The macro placement module in OpenROAD (mpl) is based on TritonMacroPlacer, an open-source ParquetFP-based macro cell placer. The macro placer places macros/blocks honoring halos, channels, and cell row \"snapping\". Run global_placement before macro placement."
+            },
+            {
+              "__uid": "f3d975b0-f55d-41ea-96fb-7703d6fee7f8",
+              "c0": "Does space padding influence the design utilization? I feel like it shouldn't.",
+              "c1": "Cell padding only impacts the way the global placer (gpl) and detailed placer (dpl) sees the cells. Cell padding does not change the logic area of the cell from the user perspective. If you were to use the report_design_area command, you would see the unpadded design utilization reported."
+            },
+            {
+              "__uid": "a423f1f2-1381-4480-baaf-052165236b02",
+              "c0": ""
+            }
+          ],
+          "sel_rows": [
+            {
+              "__uid": "12867f9f-370f-4b3f-aeef-be9a1175befb",
+              "c0": "What does the detailed_placement command do in OpenROAD?",
+              "c1": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells."
+            },
+            {
+              "__uid": "5809b2e2-2e08-4ff4-85c2-01588722574c",
+              "c0": "What is Automatic Code Generator used for?",
+              "c1": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files"
+            }
+          ],
+          "sample": true,
+          "sampleNum": 2,
+          "title": "LLM Based Auto Eval"
+        },
+        "dragging": false,
+        "id": "table-aime_evaluation",
+        "position": {
+          "x": -576,
+          "y": 528
+        },
+        "positionAbsolute": {
+          "x": -576,
+          "y": 528
+        },
+        "selected": false,
+        "type": "table"
+      },
+      {
+        "width": 312,
+        "height": 482,
+        "id": "llmeval-1719140644134",
+        "type": "llmeval",
+        "data": {
+          "grader": {
+            "key": "1e789a5a-800b-4cea-99ce-e8c0438cdcc3",
+            "name": "Gemini 1.5 Pro",
+            "emoji": "🔮",
+            "base_model": "__custom/Gemini 1.5 Pro/",
+            "model": "__custom/Gemini 1.5 Pro/gemini-1.5-pro",
+            "settings": {},
+            "formData": {
+              "shortname": "Gemini 1.5 Pro"
+            }
+          },
+          "prompt": "Evaluate the response's accuracy by comparing it to the ground truth answer {#Answers}. Assign a numerical value between 0.00 and 1.00, where 0.00 represents completely inaccurate and 1.00 represents exactly accurate. Provide reasoning to justify the assigned accuracy score. If the response fails to provide a correct answer, contains apologies such as 'sorry,' or states 'it's not in my context,' assign a score of 0.00..",
+          "refresh": false,
+          "format": "num",
+          "title": "Performance Benchmark"
+        },
+        "position": {
+          "x": 1392,
+          "y": -128
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1392,
+          "y": -128
+        },
+        "dragging": false
+      },
+      {
+        "width": 334,
+        "height": 1701,
+        "id": "multieval-1719141336060",
+        "type": "multieval",
+        "data": {
+          "evaluators": [
+            {
+              "name": "Availability in Dataset",
+              "uid": "6a7d094c-9f2e-43e3-8e0f-c4f65715324f",
+              "type": "llm",
+              "state": {
+                "prompt": "return 'false' if unable to provide  or says something along the lines of \" provided document does not contain information\" else return 'true'.",
+                "format": "cat",
+                "grader": {
+                  "key": "6eccd60d-70cf-4a74-9f67-38f9a236f0e0",
+                  "name": "Gemini 1.5 Pro",
+                  "emoji": "🔮",
+                  "base_model": "__custom/Gemini 1.5 Pro/",
+                  "model": "__custom/Gemini 1.5 Pro/gemini-1.5-pro",
+                  "settings": {},
+                  "formData": {
+                    "shortname": "Gemini 1.5 Pro"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Question Type Labeling",
+              "uid": "4e981cbd-5466-4aeb-9c05-a69378872227",
+              "type": "llm",
+              "state": {
+                "prompt": "Label the question's type: Installation, Usage, Error, General, etc according to the type {#Answers}",
+                "format": "cat",
+                "grader": {
+                  "key": "2fa6f68a-96cf-45c1-b5a0-9c70a60193c8",
+                  "name": "Gemini 1.5 Pro",
+                  "emoji": "🔮",
+                  "base_model": "__custom/Gemini 1.5 Pro/",
+                  "model": "__custom/Gemini 1.5 Pro/gemini-1.5-pro",
+                  "settings": {},
+                  "formData": {
+                    "shortname": "Gemini 1.5 Pro"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Grounding",
+              "uid": "2d12cb34-2748-48bc-afb5-a2bac3d8e92f",
+              "type": "llm",
+              "state": {
+                "prompt": "How well the answer is supported by facts. fact = {#Answers}.",
+                "format": "bin",
+                "grader": {
+                  "key": "c032fb1f-4192-4c84-8cac-e9cf36907ea8",
+                  "name": "Gemini 1.5 Pro",
+                  "emoji": "🔮",
+                  "base_model": "__custom/Gemini 1.5 Pro/",
+                  "model": "__custom/Gemini 1.5 Pro/gemini-1.5-pro",
+                  "settings": {},
+                  "formData": {
+                    "shortname": "Gemini 1.5 Pro"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Grounding Reasoning",
+              "uid": "08a44e68-aaf5-4f99-952f-5bfa663fa580",
+              "type": "llm",
+              "state": {
+                "prompt": "Provide a proper reasoning if the answer is not correct according to the ground truth {#Answers}",
+                "format": "open",
+                "grader": {
+                  "key": "73dc9c2a-3f14-4f35-8b56-7bddb8300387",
+                  "name": "Gemini 1.5 Pro",
+                  "emoji": "🔮",
+                  "base_model": "__custom/Gemini 1.5 Pro/",
+                  "model": "__custom/Gemini 1.5 Pro/gemini-1.5-pro",
+                  "settings": {},
+                  "formData": {
+                    "shortname": "Gemini 1.5 Pro"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Score",
+              "uid": "bfe857af-1d1d-46a1-aa88-7f04374dc2e5",
+              "type": "llm",
+              "state": {
+                "prompt": "Evaluate the response's accuracy by comparing it to the ground truth answer {#Answers}. Assign a numerical value between 0.00 and 1.00, where 0.00 represents completely inaccurate and 1.00 represents exactly accurate. Provide reasoning to justify the assigned accuracy score. If the response fails to provide a correct answer, contains apologies such as 'sorry,' or states 'it's not in my context,' assign a score of 0.00.",
+                "format": "num",
+                "grader": {
+                  "key": "2f376329-8612-4f10-83c0-2f54dcd225f8",
+                  "name": "Gemini 1.5 Pro",
+                  "emoji": "🔮",
+                  "base_model": "__custom/Gemini 1.5 Pro/",
+                  "model": "__custom/Gemini 1.5 Pro/gemini-1.5-pro",
+                  "settings": {},
+                  "formData": {
+                    "shortname": "Gemini 1.5 Pro"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Word Count",
+              "uid": "566fea58-97ca-49f8-ad8d-4123a1fda298",
+              "type": "python",
+              "state": {
+                "code": "def evaluate(response):\n    word_count = len(response.text.split())\n    return word_count",
+                "sandbox": true
+              }
+            }
+          ],
+          "title": "Multi Eval"
+        },
+        "position": {
+          "x": 704,
+          "y": 1200
+        },
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 704,
+          "y": 1200
+        }
+      },
+      {
+        "width": 722,
+        "height": 557,
+        "id": "visNode-1719141436351",
+        "type": "vis",
+        "data": {
+          "input": "llmeval-1719140644134",
+          "refresh": false,
+          "vars": [
+            {
+              "value": "LLM (default)",
+              "label": "LLM (default)"
+            },
+            {
+              "value": "Prompts",
+              "label": "Prompts"
+            },
+            {
+              "value": "__meta_Answers",
+              "label": "Answers (meta)"
+            }
+          ],
+          "selected_vars": [
+            "LLM (default)"
+          ],
+          "llm_groups": [
+            {
+              "value": "LLM",
+              "label": "LLMs (last)"
+            },
+            {
+              "value": "Answers",
+              "label": "LLMs #NaN"
+            }
+          ]
+        },
+        "position": {
+          "x": 2096,
+          "y": -112
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2096,
+          "y": -112
+        },
+        "dragging": false
+      },
+      {
+        "width": 312,
+        "height": 482,
+        "id": "llmeval-1720092987833",
+        "type": "llmeval",
+        "data": {
+          "grader": {
+            "key": "c5afd298-1f23-4350-831a-f2998692d128",
+            "name": "Gemini 1.5 Pro",
+            "emoji": "🔮",
+            "base_model": "__custom/Gemini 1.5 Pro/",
+            "model": "__custom/Gemini 1.5 Pro/gemini-1.5-pro",
+            "settings": {},
+            "formData": {
+              "shortname": "Gemini 1.5 Pro"
+            }
+          },
+          "prompt": "Evaluate the response to determine if the model is hallucinating by comparing it to the ground truth answer {#Answers}. Assign a numerical value between 0.00 and 1.00, where 0.00 indicates severe hallucination (very incorrect answer) and 1.00 indicates no hallucination (correct answer, stating it doesn't have the answer, or reasonably correct answer). Provide a score with decimal precision to reflect the level of hallucination. Include reasoning for your score. If the response gives a very incorrect answer, assign a score closer to 0.00. If the response is accurate, states it doesn't know, or is reasonably correct, assign a score closer to or at 1.00.",
+          "refresh": false,
+          "format": "num",
+          "title": "Hallunication Benchmark"
+        },
+        "position": {
+          "x": 1440,
+          "y": 528
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1440,
+          "y": 528
+        },
+        "dragging": false
+      },
+      {
+        "width": 722,
+        "height": 557,
+        "id": "visNode-1720094074998",
+        "type": "vis",
+        "data": {
+          "input": "llmeval-1720092987833",
+          "refresh": false,
+          "vars": [
+            {
+              "value": "LLM (default)",
+              "label": "LLM (default)"
+            },
+            {
+              "value": "Prompts",
+              "label": "Prompts"
+            },
+            {
+              "value": "__meta_Answers",
+              "label": "Answers (meta)"
+            }
+          ],
+          "selected_vars": [
+            "LLM (default)"
+          ],
+          "llm_groups": [
+            {
+              "value": "LLM",
+              "label": "LLMs (last)"
+            },
+            {
+              "value": "Answers",
+              "label": "LLMs #NaN"
+            }
+          ]
+        },
+        "position": {
+          "x": 2112,
+          "y": 560
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2112,
+          "y": 560
+        },
+        "dragging": false
+      },
+      {
+        "width": 423,
+        "height": 422,
+        "id": "table-1720095783050",
+        "type": "table",
+        "data": {
+          "rows": [
+            {
+              "__uid": "faa52712-bc60-4c48-845c-5f14564f2aa8",
+              "c0": "what is the full form of odb",
+              "c1": "OpenDB"
+            },
+            {
+              "__uid": "a76f6f4f-e38b-4284-88b7-60d692acd52a",
+              "c0": "what is the full form of par",
+              "c1": "TritonPart: constraints-driven partitioner"
+            },
+            {
+              "__uid": "fb273349-3f21-48c3-9679-bb4fcb18dbcf",
+              "c0": "what is the full form of ppl",
+              "c1": "Pin Placer"
+            },
+            {
+              "__uid": "cf1b5d54-1887-43f7-a68b-0c7877afa5e7",
+              "c0": "what is the full form of pdn",
+              "c1": "Power Distribution Network Generator"
+            },
+            {
+              "__uid": "ea169d80-8c67-4f67-bf2c-2998622a1580",
+              "c0": "what is the full form of tap",
+              "c1": "Tapcell"
+            },
+            {
+              "__uid": "6731fdb8-fc7f-4915-a0f7-228e10d41bc4",
+              "c0": "what is the full form of mpl",
+              "c1": "Macro Placement"
+            },
+            {
+              "__uid": "b4252293-1f25-4af2-a015-12164570e244",
+              "c0": "what is the full form of mpl2",
+              "c1": "Hierarchical Macro Placement Macro Placement 2"
+            },
+            {
+              "__uid": "fd1990ba-56ad-4bfd-9181-49dcbb2ba2d1",
+              "c0": "what is the full form of gpl",
+              "c1": "Global Placement"
+            },
+            {
+              "__uid": "3f4277dc-46b6-47ca-bdeb-1283de128def",
+              "c0": "what is the full form of rsz",
+              "c1": "Gate Resizer"
+            },
+            {
+              "__uid": "b42af974-8582-4678-9393-92830c2d1ee3",
+              "c0": "what is the full form of dpl",
+              "c1": "Detailed Placement"
+            },
+            {
+              "__uid": "4e27c50a-2a36-49b3-8508-26b2c8489207",
+              "c0": "what is the full form of cts",
+              "c1": "Clock Tree Synthesis"
+            },
+            {
+              "__uid": "e2631029-e717-4ff7-962e-504cb82fa921",
+              "c0": "what is the full form of grt",
+              "c1": "Global Routing"
+            },
+            {
+              "__uid": "f0dade81-4240-4dc0-849a-22174c9aaa46",
+              "c0": "what is the full form of ant",
+              "c1": "Antenna Rule Checker"
+            },
+            {
+              "__uid": "6d5d41fb-e40d-4279-8949-ed88c67a7002",
+              "c0": "what is the full form of drt",
+              "c1": "Detailed Routing"
+            },
+            {
+              "__uid": "db47c57b-5aee-49a7-9d73-1e08a6d07fe6",
+              "c0": "what is the full form of dft",
+              "c1": "Design for Test"
+            },
+            {
+              "__uid": "5160fdb3-c006-4d7c-a85a-c9b9439a65cc",
+              "c0": "what is the full form of rcx",
+              "c1": "Parasitics Extraction"
+            },
+            {
+              "__uid": "7cbaddcf-9e9e-46ab-9a19-78c9e10afa30",
+              "c0": "what is the full form of rmp",
+              "c1": "Restructure"
+            },
+            {
+              "__uid": "e6ff4ff6-a346-4799-b938-b32f5da971c9",
+              "c0": "what is the full form of sta",
+              "c1": "OpenSTA timing/power analyzer"
+            },
+            {
+              "__uid": "0837dc0a-c58b-4511-a87a-877360957c2b",
+              "c0": "what is the full form of gui",
+              "c1": "Graphical User Interface"
+            },
+            {
+              "__uid": "42ce2283-8277-46e2-8587-49469114b228",
+              "c0": "what is the full form of psm",
+              "c1": "IR Drop Analysis"
+            },
+            {
+              "__uid": "aef1a91b-b4fa-4a20-9236-f6739757c6e9",
+              "c0": "what is the full form of utl",
+              "c1": "Utilities"
+            },
+            {
+              "__uid": "a17268f1-1b09-408f-a30e-eaa4e5ec0ca2",
+              "c0": "what is the full form of upf",
+              "c1": "Unified Power Format"
+            },
+            {
+              "__uid": "1fb84156-5e43-484f-a882-77553f9331a1",
+              "c0": "what is the full form of stt",
+              "c1": "Rectilinear Steiner Tree"
+            },
+            {
+              "__uid": "6a67b304-2d8e-43df-9cbd-ac7c08ca4ce0",
+              "c0": "what is the full form of ord",
+              "c1": "OpenROAD"
+            },
+            {
+              "__uid": "bf6aed07-9939-4435-8e6d-96b93c0f315c",
+              "c0": "what is the full form of dst",
+              "c1": "Distributed Utilities"
+            },
+            {
+              "__uid": "2fd0ab7d-8d90-4dfd-96a8-3cff80754a94",
+              "c0": "what is the full form of dpo",
+              "c1": "Detailed Placement Optimization"
+            }
+          ],
+          "columns": [
+            {
+              "header": "prompt",
+              "key": "c0"
+            },
+            {
+              "header": "answer",
+              "key": "c1"
+            }
+          ],
+          "sel_rows": [
+            {
+              "__uid": "fb273349-3f21-48c3-9679-bb4fcb18dbcf",
+              "c0": "what is the full form of ppl",
+              "c1": "Pin Placer"
+            },
+            {
+              "__uid": "4e27c50a-2a36-49b3-8508-26b2c8489207",
+              "c0": "what is the full form of cts",
+              "c1": "Clock Tree Synthesis"
+            },
+            {
+              "__uid": "6731fdb8-fc7f-4915-a0f7-228e10d41bc4",
+              "c0": "what is the full form of mpl",
+              "c1": "Macro Placement"
+            },
+            {
+              "__uid": "faa52712-bc60-4c48-845c-5f14564f2aa8",
+              "c0": "what is the full form of odb",
+              "c1": "OpenDB"
+            },
+            {
+              "__uid": "cf1b5d54-1887-43f7-a68b-0c7877afa5e7",
+              "c0": "what is the full form of pdn",
+              "c1": "Power Distribution Network Generator"
+            }
+          ],
+          "sample": true,
+          "title": "Basic Abbreviation Testing",
+          "sampleNum": 5
+        },
+        "position": {
+          "x": -576,
+          "y": -256
+        },
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": -576,
+          "y": -256
+        }
+      },
+      {
+        "width": 312,
+        "height": 370,
+        "data": {
+          "llms": [
+            {
+              "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+              "name": "Similarity",
+              "emoji": "🌐",
+              "base_model": "__custom/OR Assistant/",
+              "model": "__custom/OR Assistant//default-model",
+              "settings": {
+                "endpoint": "/chains/sim",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "agent-retriever"
+              },
+              "formData": {
+                "shortname": "Similarity",
+                "model": "default-model",
+                "endpoint": "/chains/sim",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "agent-retriever"
+              }
+            },
+            {
+              "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+              "name": "Agent Retriever",
+              "emoji": "🌐",
+              "base_model": "__custom/OR Assistant/",
+              "model": "__custom/OR Assistant//default-model",
+              "settings": {
+                "endpoint": "/graphs/agent-retriever",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "agent-retriever"
+              },
+              "formData": {
+                "shortname": "Agent Retriever",
+                "model": "default-model",
+                "endpoint": "/graphs/agent-retriever",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "agent-retriever"
+              }
+            }
+          ],
+          "n": 1,
+          "prompt": "{Prompts} ",
+          "fields": [
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of ppl ",
+              "fill_history": {
+                "Prompts": "what is the full form of ppl"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "ce81fb14-8f6d-4ab9-ba3f-d08599dabdb1",
+              "metavars": {
+                "answer": "Pin Placer",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              }
+            },
+            {
+              "text": "The full form of PPL is **Pin Placement and Layer Assignment**. It is a tool used in the OpenROAD project for pin placement and layer assignment, particularly for 3D interconnections. \n\n\nSources:\n",
+              "prompt": "what is the full form of ppl ",
+              "fill_history": {
+                "Prompts": "what is the full form of ppl"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "6b1b2de2-d8f0-47fc-89ab-a2742869027f",
+              "metavars": {
+                "answer": "Pin Placer",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              }
+            },
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of cts ",
+              "fill_history": {
+                "Prompts": "what is the full form of cts"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "66edc0bc-e2c7-4694-ac9f-74fbbd55a746",
+              "metavars": {
+                "answer": "Clock Tree Synthesis",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              }
+            },
+            {
+              "text": "The full form of CTS is **Clock Tree Synthesis**. \n\n\nSources:\n",
+              "prompt": "what is the full form of cts ",
+              "fill_history": {
+                "Prompts": "what is the full form of cts"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "a6617026-1492-452a-9467-8d42aa8271c4",
+              "metavars": {
+                "answer": "Clock Tree Synthesis",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              }
+            },
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of mpl ",
+              "fill_history": {
+                "Prompts": "what is the full form of mpl"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "0bdcd051-75d4-40f2-bddf-06004a8e5ca3",
+              "metavars": {
+                "answer": "Macro Placement",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              }
+            },
+            {
+              "text": "The full form of mpl is **Macro Placement**. \n\n\nSources:\n",
+              "prompt": "what is the full form of mpl ",
+              "fill_history": {
+                "Prompts": "what is the full form of mpl"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "f04af7a7-39cb-414f-b9e5-f096d727ca1a",
+              "metavars": {
+                "answer": "Macro Placement",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              }
+            },
+            {
+              "text": "OpenDB \n\n\nSources:\n",
+              "prompt": "what is the full form of odb ",
+              "fill_history": {
+                "Prompts": "what is the full form of odb"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "cbb89577-c525-422a-a659-a19e4f0e1d7b",
+              "metavars": {
+                "answer": "OpenDB",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              }
+            },
+            {
+              "text": "OpenDB is the full form of odb. \n\n\nSources:\n",
+              "prompt": "what is the full form of odb ",
+              "fill_history": {
+                "Prompts": "what is the full form of odb"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "b6172aa4-aee5-4047-bbcb-7748cfbbcf29",
+              "metavars": {
+                "answer": "OpenDB",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              }
+            },
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of pdn ",
+              "fill_history": {
+                "Prompts": "what is the full form of pdn"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "801ab116-b315-48ca-9648-8ae88cda6487",
+              "metavars": {
+                "answer": "Power Distribution Network Generator",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              }
+            },
+            {
+              "text": "The full form of PDN is **Power Distribution Network**. \n\n\nSources:\n",
+              "prompt": "what is the full form of pdn ",
+              "fill_history": {
+                "Prompts": "what is the full form of pdn"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "c0b924f2-a771-47f7-a912-29a0b7eee964",
+              "metavars": {
+                "answer": "Power Distribution Network Generator",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              }
+            }
+          ],
+          "refresh": false,
+          "refreshLLMList": false
+        },
+        "dragging": false,
+        "id": "prompt-1720096011302",
+        "position": {
+          "x": 16,
+          "y": -288
+        },
+        "positionAbsolute": {
+          "x": 16,
+          "y": -288
+        },
+        "selected": false,
+        "type": "prompt"
+      },
+      {
+        "width": 359,
+        "height": 221,
+        "id": "evalNode-1720096035197",
+        "type": "evaluator",
+        "data": {
+          "language": "python",
+          "code": "import re\n\ndef evaluate(response):\n    # Extract the ground truth answer from the meta dictionary\n    ground_truth = response.meta.get('answer', \"\")\n  \n    # Split the response text and the ground truth text into words\n    response_words = re.findall(r'\\b\\w+\\b', response.text.lower())\n    ground_truth_words = re.findall(r'\\b\\w+\\b', ground_truth.lower())\n    \n    # Calculate the score based on word matches\n    score = 0\n    if ground_truth_words:\n        matches = sum(1 for word in response_words if word in ground_truth_words)\n        score = matches / len(ground_truth_words)\n    \n    return score",
+          "refresh": false,
+          "fields": [
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of ppl ",
+              "fill_history": {
+                "Prompts": "what is the full form of ppl"
+              },
+              "metavars": {
+                "answer": "Pin Placer",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "ce81fb14-8f6d-4ab9-ba3f-d08599dabdb1"
+            },
+            {
+              "text": "The full form of PPL is **Pin Placement and Layer Assignment**. It is a tool used in the OpenROAD project for pin placement and layer assignment, particularly for 3D interconnections. \n\n\nSources:\n",
+              "prompt": "what is the full form of ppl ",
+              "fill_history": {
+                "Prompts": "what is the full form of ppl"
+              },
+              "metavars": {
+                "answer": "Pin Placer",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "6b1b2de2-d8f0-47fc-89ab-a2742869027f"
+            },
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of cts ",
+              "fill_history": {
+                "Prompts": "what is the full form of cts"
+              },
+              "metavars": {
+                "answer": "Clock Tree Synthesis",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "66edc0bc-e2c7-4694-ac9f-74fbbd55a746"
+            },
+            {
+              "text": "The full form of CTS is **Clock Tree Synthesis**. \n\n\nSources:\n",
+              "prompt": "what is the full form of cts ",
+              "fill_history": {
+                "Prompts": "what is the full form of cts"
+              },
+              "metavars": {
+                "answer": "Clock Tree Synthesis",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "a6617026-1492-452a-9467-8d42aa8271c4"
+            },
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of mpl ",
+              "fill_history": {
+                "Prompts": "what is the full form of mpl"
+              },
+              "metavars": {
+                "answer": "Macro Placement",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "0bdcd051-75d4-40f2-bddf-06004a8e5ca3"
+            },
+            {
+              "text": "The full form of mpl is **Macro Placement**. \n\n\nSources:\n",
+              "prompt": "what is the full form of mpl ",
+              "fill_history": {
+                "Prompts": "what is the full form of mpl"
+              },
+              "metavars": {
+                "answer": "Macro Placement",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "f04af7a7-39cb-414f-b9e5-f096d727ca1a"
+            },
+            {
+              "text": "OpenDB \n\n\nSources:\n",
+              "prompt": "what is the full form of odb ",
+              "fill_history": {
+                "Prompts": "what is the full form of odb"
+              },
+              "metavars": {
+                "answer": "OpenDB",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "cbb89577-c525-422a-a659-a19e4f0e1d7b"
+            },
+            {
+              "text": "OpenDB is the full form of odb. \n\n\nSources:\n",
+              "prompt": "what is the full form of odb ",
+              "fill_history": {
+                "Prompts": "what is the full form of odb"
+              },
+              "metavars": {
+                "answer": "OpenDB",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "b6172aa4-aee5-4047-bbcb-7748cfbbcf29"
+            },
+            {
+              "text": "I'm not sure. \n\n\nSources:\n",
+              "prompt": "what is the full form of pdn ",
+              "fill_history": {
+                "Prompts": "what is the full form of pdn"
+              },
+              "metavars": {
+                "answer": "Power Distribution Network Generator",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Similarity"
+              },
+              "llm": {
+                "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+                "name": "Similarity",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Similarity",
+                  "model": "default-model",
+                  "endpoint": "/chains/sim",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 100,
+                  "error": 0
+                }
+              },
+              "uid": "801ab116-b315-48ca-9648-8ae88cda6487"
+            },
+            {
+              "text": "The full form of PDN is **Power Distribution Network**. \n\n\nSources:\n",
+              "prompt": "what is the full form of pdn ",
+              "fill_history": {
+                "Prompts": "what is the full form of pdn"
+              },
+              "metavars": {
+                "answer": "Power Distribution Network Generator",
+                "__pt": "{Prompts} ",
+                "LLM_0": "Agent Retriever"
+              },
+              "llm": {
+                "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+                "name": "Agent Retriever",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "formData": {
+                  "shortname": "Agent Retriever",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "agent-retriever"
+                },
+                "progress": {
+                  "success": 80,
+                  "error": 0
+                }
+              },
+              "uid": "c0b924f2-a771-47f7-a912-29a0b7eee964"
+            }
+          ]
+        },
+        "position": {
+          "x": 400,
+          "y": -512
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 400,
+          "y": -512
+        },
+        "dragging": false
+      },
+      {
+        "width": 722,
+        "height": 557,
+        "id": "visNode-1720096318013",
+        "type": "vis",
+        "data": {
+          "input": "evalNode-1720096035197",
+          "refresh": false,
+          "vars": [
+            {
+              "value": "LLM (default)",
+              "label": "LLM (default)"
+            },
+            {
+              "value": "Prompts",
+              "label": "Prompts"
+            },
+            {
+              "value": "__meta_answer",
+              "label": "answer (meta)"
+            }
+          ],
+          "selected_vars": [
+            "LLM (default)"
+          ],
+          "llm_groups": [
+            {
+              "value": "LLM",
+              "label": "LLMs (last)"
+            },
+            {
+              "value": "answer",
+              "label": "LLMs #NaN"
+            }
+          ]
+        },
+        "position": {
+          "x": 1200,
+          "y": -864
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1200,
+          "y": -864
+        },
+        "dragging": false
+      },
+      {
+        "width": 302,
+        "height": 319,
+        "id": "inspectNode-1720096439794",
+        "type": "inspect",
+        "data": {
+          "input": "prompt-1720096011302",
+          "refresh": false
+        },
+        "position": {
+          "x": 384,
+          "y": -192
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 384,
+          "y": -192
+        },
+        "dragging": false
+      },
+      {
+        "width": 282,
+        "height": 319,
+        "id": "comment-1720369198191",
+        "type": "comment",
+        "data": {
+          "text": "This is Basic Abbreviation Testing. The LLM is given all these questions as prompts, and then a score is provided based on how many words are correct. It calculates a score based on the number of matching words between the response and the ground truth. The score is the ratio of matching words to the total number of words in the ground truth, ranging from 0 to 1.",
+          "title": "About Basic Eval"
+        },
+        "position": {
+          "x": -576,
+          "y": -592
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": -576,
+          "y": -592
+        },
+        "dragging": false
+      },
+      {
+        "width": 282,
+        "height": 124,
+        "id": "comment-1720369434704",
+        "type": "comment",
+        "data": {
+          "title": "OR Assistant Config",
+          "text": "Click \"⚙️\" and set the architecture endpoint. "
+        },
+        "position": {
+          "x": 16,
+          "y": -432
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 16,
+          "y": -432
+        },
+        "dragging": false
+      },
+      {
+        "width": 282,
+        "height": 145,
+        "id": "comment-1720369898441",
+        "type": "comment",
+        "data": {
+          "title": "Score ",
+          "text": "(number of matching words) / (total words in ground truth), ranging from 0 to 1."
+        },
+        "position": {
+          "x": 416,
+          "y": -688
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 416,
+          "y": -688
+        },
+        "dragging": false
+      },
+      {
+        "width": 282,
+        "height": 167,
+        "id": "comment-1720370960863",
+        "type": "comment",
+        "data": {
+          "title": "Multi Eval",
+          "text": "Multi-Eval has multiple criteria to test the model on availability, grounding, grounding reasoning, and performance score."
+        },
+        "position": {
+          "x": 624,
+          "y": 1024
+        },
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 624,
+          "y": 1024
+        }
+      },
+      {
+        "width": 282,
+        "height": 210,
+        "id": "comment-1720371057164",
+        "type": "comment",
+        "data": {
+          "text": "This is Auto Eval, which is based on LLM-based judge evaluation of the model. Here, we are using Gemini 1.5 Flash as our judge. We are currently testing 3 different architectures of our model.",
+          "title": "About Auto Eval"
+        },
+        "position": {
+          "x": -576,
+          "y": 304
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": -576,
+          "y": 304
+        },
+        "dragging": false
+      },
+      {
+        "width": 312,
+        "height": 302,
+        "id": "promptNode-1724009407641",
+        "type": "prompt",
+        "data": {
+          "prompt": "What is CTS ?",
+          "llms": [
+            {
+              "key": "d2b03278-77fe-478d-b1f3-1531d7a8fe1f",
+              "name": "OR Assistant",
+              "emoji": "🌐",
+              "base_model": "__custom/OR Assistant/",
+              "model": "__custom/OR Assistant//default-model",
+              "settings": {
+                "endpoint": "/graphs/agent-retriever",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "ensemble"
+              },
+              "formData": {
+                "shortname": "OR Assistant",
+                "model": "default-model",
+                "endpoint": "/graphs/agent-retriever",
+                "listContext": false,
+                "listSources": false,
+                "retriever": "ensemble"
+              }
+            }
+          ],
+          "fields": [
+            {
+              "text": "CTS stands for Clock Tree Synthesis. It is a module within the OpenROAD project that is responsible for generating a clock tree for a design. \n\nHere are some key aspects of CTS:\n\n* **Based on TritonCTS 2.0:** The CTS module in OpenROAD utilizes the TritonCTS 2.0 engine, which performs on-the-fly characterization, eliminating the need to create separate characterization data.\n* **On-the-fly characterization:** This feature allows TritonCTS 2.0 to determine the characteristics of the clock tree during the synthesis process, making it more efficient.\n* **Customization:**  The `configure_cts_characterization` command allows users to adjust certain key parameters of the characterization process, such as maximum slew and capacitance, and the number of steps they are divided into. \n* **`clock_tree_synthesis` command:** The `clock_tree_synthesis` command initiates the actual clock tree generation. It offers various options for controlling the tree's structure, including specifying buffer types, distances between buffers, and clustering settings. \n* **Report generation:** The `report_cts` command allows users to extract useful metrics from the synthesized clock tree, including the number of clock roots, inserted buffers, clock subnets, and sinks. \n\n\nSources:\n",
+              "prompt": "What is CTS ?",
+              "fill_history": {},
+              "llm": {
+                "key": "d2b03278-77fe-478d-b1f3-1531d7a8fe1f",
+                "name": "OR Assistant",
+                "emoji": "🌐",
+                "base_model": "__custom/OR Assistant/",
+                "model": "__custom/OR Assistant//default-model",
+                "settings": {
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "ensemble"
+                },
+                "formData": {
+                  "shortname": "OR Assistant",
+                  "model": "default-model",
+                  "endpoint": "/graphs/agent-retriever",
+                  "listContext": false,
+                  "listSources": false,
+                  "retriever": "ensemble"
+                },
+                "progress": {
+                  "success": 0,
+                  "error": 0
+                }
+              },
+              "uid": "3e7d1882-bc1a-4253-9f5f-dfcbb88c88c0",
+              "metavars": {
+                "__pt": "What is CTS ?",
+                "LLM_0": "OR Assistant"
+              }
+            }
+          ],
+          "refreshLLMList": false
+        },
+        "position": {
+          "x": -1056,
+          "y": -192
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": -1056,
+          "y": -192
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "reactflow__edge-prompt-1686756357355prompt-eval-1686756357355responseBatch",
+        "interactionWidth": 100,
+        "markerEnd": {
+          "height": "22px",
+          "type": "arrow",
+          "width": "22px"
+        },
+        "source": "prompt-aime_evaluation",
+        "sourceHandle": "prompt",
+        "target": "eval-aime_evaluation",
+        "targetHandle": "responseBatch",
+        "selected": false
+      },
+      {
+        "id": "reactflow__edge-prompt-1686756357355prompt-inspect-1686756357355input",
+        "interactionWidth": 100,
+        "markerEnd": {
+          "height": "22px",
+          "type": "arrow",
+          "width": "22px"
+        },
+        "source": "prompt-aime_evaluation",
+        "sourceHandle": "prompt",
+        "target": "inspect-aime_evaluation",
+        "targetHandle": "input",
+        "selected": false
+      },
+      {
+        "id": "reactflow__edge-eval-1686756357355output-vis-1686756357355input",
+        "interactionWidth": 100,
+        "markerEnd": {
+          "height": "22px",
+          "type": "arrow",
+          "width": "22px"
+        },
+        "source": "eval-aime_evaluation",
+        "sourceHandle": "output",
+        "target": "vis-aime_evaluation",
+        "targetHandle": "input",
+        "selected": false
+      },
+      {
+        "source": "table-aime_evaluation",
+        "sourceHandle": "Prompts",
+        "target": "prompt-aime_evaluation",
+        "targetHandle": "Prompts",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-table-aime_evaluationPrompts-prompt-aime_evaluationPrompts",
+        "selected": false
+      },
+      {
+        "source": "llmeval-1719140644134",
+        "sourceHandle": "output",
+        "target": "visNode-1719141436351",
+        "targetHandle": "input",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-llmeval-1719140644134output-visNode-1719141436351input",
+        "selected": false
+      },
+      {
+        "source": "prompt-aime_evaluation",
+        "sourceHandle": "prompt",
+        "target": "llmeval-1719140644134",
+        "targetHandle": "responseBatch",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-prompt-aime_evaluationprompt-llmeval-1719140644134responseBatch",
+        "selected": false
+      },
+      {
+        "source": "prompt-aime_evaluation",
+        "sourceHandle": "prompt",
+        "target": "llmeval-1720092987833",
+        "targetHandle": "responseBatch",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-prompt-aime_evaluationprompt-llmeval-1720092987833responseBatch",
+        "selected": false
+      },
+      {
+        "source": "promptNode-1720092693203",
+        "sourceHandle": "prompt",
+        "target": "evalNode-1720093629267",
+        "targetHandle": "responseBatch",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-promptNode-1720092693203prompt-evalNode-1720093629267responseBatch",
+        "selected": false
+      },
+      {
+        "source": "prompt-aime_evaluation",
+        "sourceHandle": "prompt",
+        "target": "multieval-1719141336060",
+        "targetHandle": "responseBatch",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-prompt-aime_evaluationprompt-multieval-1719141336060responseBatch",
+        "selected": false
+      },
+      {
+        "source": "llmeval-1720092987833",
+        "sourceHandle": "output",
+        "target": "visNode-1720094074998",
+        "targetHandle": "input",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-llmeval-1720092987833output-visNode-1720094074998input",
+        "selected": false
+      },
+      {
+        "source": "textFieldsNode-1720094888648",
+        "sourceHandle": "output",
+        "target": "chatTurn-1720094859409",
+        "targetHandle": "__past_chats",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-textFieldsNode-1720094888648output-chatTurn-1720094859409__past_chats",
+        "selected": false
+      },
+      {
+        "source": "table-1720095783050",
+        "sourceHandle": "prompt",
+        "target": "prompt-1720096011302",
+        "targetHandle": "Prompts",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-table-1720095783050prompt-prompt-1720096011302Prompts",
+        "selected": false
+      },
+      {
+        "source": "prompt-1720096011302",
+        "sourceHandle": "prompt",
+        "target": "evalNode-1720096035197",
+        "targetHandle": "responseBatch",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-prompt-1720096011302prompt-evalNode-1720096035197responseBatch",
+        "selected": false
+      },
+      {
+        "source": "evalNode-1720096035197",
+        "sourceHandle": "output",
+        "target": "visNode-1720096318013",
+        "targetHandle": "input",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-evalNode-1720096035197output-visNode-1720096318013input",
+        "selected": false
+      },
+      {
+        "source": "prompt-1720096011302",
+        "sourceHandle": "prompt",
+        "target": "inspectNode-1720096439794",
+        "targetHandle": "input",
+        "interactionWidth": 40,
+        "markerEnd": {
+          "type": "arrow",
+          "width": 22,
+          "height": 22
+        },
+        "type": "default",
+        "id": "reactflow__edge-prompt-1720096011302prompt-inspectNode-1720096439794input",
+        "selected": false
+      }
+    ],
+    "viewport": {
+      "x": -403.6316861896087,
+      "y": 748.7278262185343,
+      "zoom": 0.7835719308391319
+    }
+  },
+  "cache": {
+    "prompt-aime_evaluation_8.json": {
+      "What does the detailed_placement command do in OpenROAD? ": [
+        {
+          "prompt": "What does the detailed_placement command do in OpenROAD? ",
+          "query": {
+            "prompt": "What does the detailed_placement command do in OpenROAD? ",
+            "model": "__custom/OR Assistant/default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "uid": "5db52fac-f624-44ae-9ea4-27913513f5b2",
+          "responses": [
+            "The `detailed_placement` command in OpenROAD performs detailed placement of instances to legal locations after global placement. It places instances in a way that avoids overlaps and ensures that each instance is placed on a valid site. \n\nHere are some of the key features of the `detailed_placement` command:\n\n* **Legalization:** The command legalizes the placement of instances by ensuring that they are placed on valid sites and do not overlap with other instances or design elements.\n* **Fence Region:** It supports fence regions, which are areas of the design where instances are not allowed to be placed.\n* **Fragmented ROWs:** The command can handle fragmented ROWs, which are rows of sites that have been divided into smaller sections.\n\nThe `detailed_placement` command has several options that can be used to control its behavior. These options include:\n\n* **-max_displacement:** This option specifies the maximum distance that an instance can be moved during placement.\n* **-disallow_one_site_gaps:** This option disables one-site gaps during placement checking.\n* **-report_file_name:** This option specifies the file name for saving the placement report.\n\nThe `detailed_placement` command is an important part of the OpenROAD flow, as it ensures that instances are placed in a legal and efficient manner.\n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The `detailed_placement` command in OpenROAD performs detailed placement of instances to legal locations after global placement. It places instances in a way that avoids overlaps and ensures that each instance is placed on a valid site. \n\nHere are some of the key features of the `detailed_placement` command:\n\n* **Legalization:** The command legalizes the placement of instances by ensuring that they are placed on valid sites and do not overlap with other instances or design elements.\n* **Fence Region:** It supports fence regions, which are areas of the design where instances are not allowed to be placed.\n* **Fragmented ROWs:** The command can handle fragmented ROWs, which are rows of sites that have been divided into smaller sections.\n\nThe `detailed_placement` command has several options that can be used to control its behavior. These options include:\n\n* **-max_displacement:** This option specifies the maximum distance that an instance can be moved during placement.\n* **-disallow_one_site_gaps:** This option disables one-site gaps during placement checking.\n* **-report_file_name:** This option specifies the file name for saving the placement report.\n\nThe `detailed_placement` command is an important part of the OpenROAD flow, as it ensures that instances are placed in a legal and efficient manner.\n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {
+            "Prompts": "What does the detailed_placement command do in OpenROAD?"
+          },
+          "metavars": {
+            "Answers": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells.",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ],
+      "What is Automatic Code Generator used for? ": [
+        {
+          "prompt": "What is Automatic Code Generator used for? ",
+          "query": {
+            "prompt": "What is Automatic Code Generator used for? ",
+            "model": "__custom/OR Assistant/default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "uid": "4b16fd23-79de-4dba-b099-f555932cae2e",
+          "responses": [
+            "The Automatic Code Generator is a tool for generating code for OpenDB objects and Iterators. \n\nHere are the steps involved in using the Automatic Code Generator:\n\n* **Provide input JSON:** The tool requires a JSON file (schema.json) specifying the requirements for code generation.\n* **Specify source directory:** You must indicate the directory containing the source files for the code generation (src_dir).\n* **Specify include directory:** The directory containing the include files (include_dir) must also be provided.\n* **Specify template directory:** Lastly, the directory with Jinja templates used for defining the classes (templates) needs to be specified.\n* **Run the generator:** Execute the provided command: `python3 gen.py --json schema.json --src_dir ../db --include_dir ../../include/odb --templates templates` to start the code generation process.\n* **Keep empty sections:** The tool removes empty sections from the output by default, but you can preserve them by running the generator with the `--keep_empty` flag.\n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The Automatic Code Generator is a tool for generating code for OpenDB objects and Iterators. \n\nHere are the steps involved in using the Automatic Code Generator:\n\n* **Provide input JSON:** The tool requires a JSON file (schema.json) specifying the requirements for code generation.\n* **Specify source directory:** You must indicate the directory containing the source files for the code generation (src_dir).\n* **Specify include directory:** The directory containing the include files (include_dir) must also be provided.\n* **Specify template directory:** Lastly, the directory with Jinja templates used for defining the classes (templates) needs to be specified.\n* **Run the generator:** Execute the provided command: `python3 gen.py --json schema.json --src_dir ../db --include_dir ../../include/odb --templates templates` to start the code generation process.\n* **Keep empty sections:** The tool removes empty sections from the output by default, but you can preserve them by running the generator with the `--keep_empty` flag.\n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {
+            "Prompts": "What is Automatic Code Generator used for?"
+          },
+          "metavars": {
+            "Answers": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ]
+    },
+    "prompt-aime_evaluation.json": {
+      "cache_files": {
+        "prompt-aime_evaluation_8.json": {
+          "key": "40f5edc7-4acc-404d-aae5-36898538dbac",
+          "name": "OR Assistant",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant/default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "formData": {
+            "shortname": "OR Assistant"
+          },
+          "progress": {
+            "success": 0,
+            "error": 0
+          }
+        }
+      },
+      "responses_last_run": [
+        {
+          "vars": {
+            "Prompts": "What does the detailed_placement command do in OpenROAD?"
+          },
+          "metavars": {
+            "Answers": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells.",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          },
+          "llm": "OR Assistant",
+          "prompt": "What does the detailed_placement command do in OpenROAD? ",
+          "responses": [
+            "The `detailed_placement` command in OpenROAD performs detailed placement of instances to legal locations after global placement. It places instances in a way that avoids overlaps and ensures that each instance is placed on a valid site. \n\nHere are some of the key features of the `detailed_placement` command:\n\n* **Legalization:** The command legalizes the placement of instances by ensuring that they are placed on valid sites and do not overlap with other instances or design elements.\n* **Fence Region:** It supports fence regions, which are areas of the design where instances are not allowed to be placed.\n* **Fragmented ROWs:** The command can handle fragmented ROWs, which are rows of sites that have been divided into smaller sections.\n\nThe `detailed_placement` command has several options that can be used to control its behavior. These options include:\n\n* **-max_displacement:** This option specifies the maximum distance that an instance can be moved during placement.\n* **-disallow_one_site_gaps:** This option disables one-site gaps during placement checking.\n* **-report_file_name:** This option specifies the file name for saving the placement report.\n\nThe `detailed_placement` command is an important part of the OpenROAD flow, as it ensures that instances are placed in a legal and efficient manner.\n\n\nSources:\n"
+          ],
+          "uid": "5db52fac-f624-44ae-9ea4-27913513f5b2"
+        },
+        {
+          "vars": {
+            "Prompts": "What is Automatic Code Generator used for?"
+          },
+          "metavars": {
+            "Answers": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          },
+          "llm": "OR Assistant",
+          "prompt": "What is Automatic Code Generator used for? ",
+          "responses": [
+            "The Automatic Code Generator is a tool for generating code for OpenDB objects and Iterators. \n\nHere are the steps involved in using the Automatic Code Generator:\n\n* **Provide input JSON:** The tool requires a JSON file (schema.json) specifying the requirements for code generation.\n* **Specify source directory:** You must indicate the directory containing the source files for the code generation (src_dir).\n* **Specify include directory:** The directory containing the include files (include_dir) must also be provided.\n* **Specify template directory:** Lastly, the directory with Jinja templates used for defining the classes (templates) needs to be specified.\n* **Run the generator:** Execute the provided command: `python3 gen.py --json schema.json --src_dir ../db --include_dir ../../include/odb --templates templates` to start the code generation process.\n* **Keep empty sections:** The tool removes empty sections from the output by default, but you can preserve them by running the generator with the `--keep_empty` flag.\n\n\nSources:\n"
+          ],
+          "uid": "4b16fd23-79de-4dba-b099-f555932cae2e"
+        }
+      ]
+    },
+    "table-aime_evaluation.json": {},
+    "llmeval-1719140644134.json": [
+      {
+        "vars": {
+          "Prompts": "What does the detailed_placement command do in OpenROAD?"
+        },
+        "metavars": {
+          "Answers": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells.",
+          "__pt": "{Prompts} ",
+          "LLM_0": "OR Assistant"
+        },
+        "llm": "OR Assistant",
+        "prompt": "What does the detailed_placement command do in OpenROAD? ",
+        "responses": [
+          "The `detailed_placement` command in OpenROAD performs detailed placement of instances to legal locations after global placement. It places instances in a way that avoids overlaps and ensures that each instance is placed on a valid site. \n\nHere are some of the key features of the `detailed_placement` command:\n\n* **Legalization:** The command legalizes the placement of instances by ensuring that they are placed on valid sites and do not overlap with other instances or design elements.\n* **Fence Region:** It supports fence regions, which are areas of the design where instances are not allowed to be placed.\n* **Fragmented ROWs:** The command can handle fragmented ROWs, which are rows of sites that have been divided into smaller sections.\n\nThe `detailed_placement` command has several options that can be used to control its behavior. These options include:\n\n* **-max_displacement:** This option specifies the maximum distance that an instance can be moved during placement.\n* **-disallow_one_site_gaps:** This option disables one-site gaps during placement checking.\n* **-report_file_name:** This option specifies the file name for saving the placement report.\n\nThe `detailed_placement` command is an important part of the OpenROAD flow, as it ensures that instances are placed in a legal and efficient manner.\n\n\nSources:\n"
+        ],
+        "uid": "5db52fac-f624-44ae-9ea4-27913513f5b2",
+        "eval_res": {
+          "items": [
+            0.75
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "What is Automatic Code Generator used for?"
+        },
+        "metavars": {
+          "Answers": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files",
+          "__pt": "{Prompts} ",
+          "LLM_0": "OR Assistant"
+        },
+        "llm": "OR Assistant",
+        "prompt": "What is Automatic Code Generator used for? ",
+        "responses": [
+          "The Automatic Code Generator is a tool for generating code for OpenDB objects and Iterators. \n\nHere are the steps involved in using the Automatic Code Generator:\n\n* **Provide input JSON:** The tool requires a JSON file (schema.json) specifying the requirements for code generation.\n* **Specify source directory:** You must indicate the directory containing the source files for the code generation (src_dir).\n* **Specify include directory:** The directory containing the include files (include_dir) must also be provided.\n* **Specify template directory:** Lastly, the directory with Jinja templates used for defining the classes (templates) needs to be specified.\n* **Run the generator:** Execute the provided command: `python3 gen.py --json schema.json --src_dir ../db --include_dir ../../include/odb --templates templates` to start the code generation process.\n* **Keep empty sections:** The tool removes empty sections from the output by default, but you can preserve them by running the generator with the `--keep_empty` flag.\n\n\nSources:\n"
+        ],
+        "uid": "4b16fd23-79de-4dba-b099-f555932cae2e",
+        "eval_res": {
+          "items": [
+            0.95
+          ],
+          "dtype": "Numeric"
+        }
+      }
+    ],
+    "multieval-1719141336060.json": [
+      {
+        "vars": {
+          "Prompts": "What does the detailed_placement command do in OpenROAD?"
+        },
+        "metavars": {
+          "Answers": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells.",
+          "__pt": "{Prompts} ",
+          "LLM_0": "OR Assistant"
+        },
+        "uid": "5db52fac-f624-44ae-9ea4-27913513f5b2",
+        "llm": {
+          "key": "40f5edc7-4acc-404d-aae5-36898538dbac",
+          "name": "OR Assistant",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant/default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "formData": {
+            "shortname": "OR Assistant"
+          },
+          "progress": {
+            "success": 50,
+            "error": 0
+          }
+        },
+        "prompt": "What does the detailed_placement command do in OpenROAD? ",
+        "responses": [
+          "The `detailed_placement` command in OpenROAD performs detailed placement of instances to legal locations after global placement. It places instances in a way that avoids overlaps and ensures that each instance is placed on a valid site. \n\nHere are some of the key features of the `detailed_placement` command:\n\n* **Legalization:** The command legalizes the placement of instances by ensuring that they are placed on valid sites and do not overlap with other instances or design elements.\n* **Fence Region:** It supports fence regions, which are areas of the design where instances are not allowed to be placed.\n* **Fragmented ROWs:** The command can handle fragmented ROWs, which are rows of sites that have been divided into smaller sections.\n\nThe `detailed_placement` command has several options that can be used to control its behavior. These options include:\n\n* **-max_displacement:** This option specifies the maximum distance that an instance can be moved during placement.\n* **-disallow_one_site_gaps:** This option disables one-site gaps during placement checking.\n* **-report_file_name:** This option specifies the file name for saving the placement report.\n\nThe `detailed_placement` command is an important part of the OpenROAD flow, as it ensures that instances are placed in a legal and efficient manner.\n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            198
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "What is Automatic Code Generator used for?"
+        },
+        "metavars": {
+          "Answers": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files",
+          "__pt": "{Prompts} ",
+          "LLM_0": "OR Assistant"
+        },
+        "uid": "4b16fd23-79de-4dba-b099-f555932cae2e",
+        "llm": {
+          "key": "40f5edc7-4acc-404d-aae5-36898538dbac",
+          "name": "OR Assistant",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant/default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "formData": {
+            "shortname": "OR Assistant"
+          },
+          "progress": {
+            "success": 50,
+            "error": 0
+          }
+        },
+        "prompt": "What is Automatic Code Generator used for? ",
+        "responses": [
+          "The Automatic Code Generator is a tool for generating code for OpenDB objects and Iterators. \n\nHere are the steps involved in using the Automatic Code Generator:\n\n* **Provide input JSON:** The tool requires a JSON file (schema.json) specifying the requirements for code generation.\n* **Specify source directory:** You must indicate the directory containing the source files for the code generation (src_dir).\n* **Specify include directory:** The directory containing the include files (include_dir) must also be provided.\n* **Specify template directory:** Lastly, the directory with Jinja templates used for defining the classes (templates) needs to be specified.\n* **Run the generator:** Execute the provided command: `python3 gen.py --json schema.json --src_dir ../db --include_dir ../../include/odb --templates templates` to start the code generation process.\n* **Keep empty sections:** The tool removes empty sections from the output by default, but you can preserve them by running the generator with the `--keep_empty` flag.\n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            148
+          ],
+          "dtype": "Numeric"
+        }
+      }
+    ],
+    "visNode-1719141436351.json": {},
+    "llmeval-1720092987833.json": [
+      {
+        "vars": {
+          "Prompts": "What does the detailed_placement command do in OpenROAD?"
+        },
+        "metavars": {
+          "Answers": "The detailed_placement command moves instances to legal locations after global placement. While the global placer (gpl) may place cells in a roughly optimal position, gpl may not place the cells in legal locations because they may not be aligned to cell rows or sites. The detailed placer (dpl) will legalize the cell by shifting it to a nearby location which is aligned to the cell site grid. The detailed_placement command only performs basic legalization and does not attempt to optimize placement. The optimize_mirroring and improve_placement commands will perform optimization on the legalized cells.",
+          "__pt": "{Prompts} ",
+          "LLM_0": "OR Assistant"
+        },
+        "llm": "OR Assistant",
+        "prompt": "What does the detailed_placement command do in OpenROAD? ",
+        "responses": [
+          "The `detailed_placement` command in OpenROAD performs detailed placement of instances to legal locations after global placement. It places instances in a way that avoids overlaps and ensures that each instance is placed on a valid site. \n\nHere are some of the key features of the `detailed_placement` command:\n\n* **Legalization:** The command legalizes the placement of instances by ensuring that they are placed on valid sites and do not overlap with other instances or design elements.\n* **Fence Region:** It supports fence regions, which are areas of the design where instances are not allowed to be placed.\n* **Fragmented ROWs:** The command can handle fragmented ROWs, which are rows of sites that have been divided into smaller sections.\n\nThe `detailed_placement` command has several options that can be used to control its behavior. These options include:\n\n* **-max_displacement:** This option specifies the maximum distance that an instance can be moved during placement.\n* **-disallow_one_site_gaps:** This option disables one-site gaps during placement checking.\n* **-report_file_name:** This option specifies the file name for saving the placement report.\n\nThe `detailed_placement` command is an important part of the OpenROAD flow, as it ensures that instances are placed in a legal and efficient manner.\n\n\nSources:\n"
+        ],
+        "uid": "5db52fac-f624-44ae-9ea4-27913513f5b2",
+        "eval_res": {
+          "items": [
+            0.85
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "What is Automatic Code Generator used for?"
+        },
+        "metavars": {
+          "Answers": "The automatic code generator in OpenROAD is used to generate code for OpenDB objects and Iterators. It uses JSON input and automatically generates corresponding C++ files",
+          "__pt": "{Prompts} ",
+          "LLM_0": "OR Assistant"
+        },
+        "llm": "OR Assistant",
+        "prompt": "What is Automatic Code Generator used for? ",
+        "responses": [
+          "The Automatic Code Generator is a tool for generating code for OpenDB objects and Iterators. \n\nHere are the steps involved in using the Automatic Code Generator:\n\n* **Provide input JSON:** The tool requires a JSON file (schema.json) specifying the requirements for code generation.\n* **Specify source directory:** You must indicate the directory containing the source files for the code generation (src_dir).\n* **Specify include directory:** The directory containing the include files (include_dir) must also be provided.\n* **Specify template directory:** Lastly, the directory with Jinja templates used for defining the classes (templates) needs to be specified.\n* **Run the generator:** Execute the provided command: `python3 gen.py --json schema.json --src_dir ../db --include_dir ../../include/odb --templates templates` to start the code generation process.\n* **Keep empty sections:** The tool removes empty sections from the output by default, but you can preserve them by running the generator with the `--keep_empty` flag.\n\n\nSources:\n"
+        ],
+        "uid": "4b16fd23-79de-4dba-b099-f555932cae2e",
+        "eval_res": {
+          "items": [
+            0
+          ],
+          "dtype": "Numeric"
+        }
+      }
+    ],
+    "visNode-1720094074998.json": {},
+    "table-1720095783050.json": {},
+    "prompt-1720096011302_3.json": {
+      "what is the full form of tap ": [
+        {
+          "prompt": "what is the full form of tap ",
+          "query": {
+            "prompt": "what is the full form of tap ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "55cbc231-ff74-4a75-b141-45e6a3c60d70",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {
+            "Prompts": "what is the full form of tap"
+          },
+          "metavars": {
+            "answer": "Tapcell",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ],
+      "what is the full form of gui ": [
+        {
+          "prompt": "what is the full form of gui ",
+          "query": {
+            "prompt": "what is the full form of gui ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "99975082-f74c-4598-9839-85ba73997edb",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {
+            "Prompts": "what is the full form of gui"
+          },
+          "metavars": {
+            "answer": "Graphical User Interface",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ],
+      "what is the full form of odb ": [
+        {
+          "prompt": "what is the full form of odb ",
+          "query": {
+            "prompt": "what is the full form of odb ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "cbb89577-c525-422a-a659-a19e4f0e1d7b",
+          "responses": [
+            "OpenDB \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "OpenDB \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {
+            "Prompts": "what is the full form of odb"
+          },
+          "metavars": {
+            "answer": "OpenDB: Open Database",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ],
+      "what is the full form of dpo ": [
+        {
+          "prompt": "what is the full form of dpo ",
+          "query": {
+            "prompt": "what is the full form of dpo ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "6f5c6f68-2e7e-49fb-b84b-7b4816035054",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {
+            "Prompts": "what is the full form of dpo"
+          },
+          "metavars": {
+            "answer": "Detailed Placement Optimization",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ],
+      "what is the full form of rcx ": [
+        {
+          "prompt": "what is the full form of rcx ",
+          "query": {
+            "prompt": "what is the full form of rcx ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "14945e72-3794-4ecb-96e4-1004f2fd3091",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {
+            "Prompts": "what is the full form of rcx"
+          },
+          "metavars": {
+            "answer": "Parasitics Extraction",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ],
+      "what is the full form of ppl ": [
+        {
+          "prompt": "what is the full form of ppl ",
+          "query": {
+            "prompt": "what is the full form of ppl ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "ce81fb14-8f6d-4ab9-ba3f-d08599dabdb1",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "Similarity",
+          "vars": {
+            "Prompts": "what is the full form of ppl"
+          },
+          "metavars": {
+            "answer": "Pin Placer",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          }
+        }
+      ],
+      "what is the full form of cts ": [
+        {
+          "prompt": "what is the full form of cts ",
+          "query": {
+            "prompt": "what is the full form of cts ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "66edc0bc-e2c7-4694-ac9f-74fbbd55a746",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "Similarity",
+          "vars": {
+            "Prompts": "what is the full form of cts"
+          },
+          "metavars": {
+            "answer": "Clock Tree Synthesis",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          }
+        }
+      ],
+      "what is the full form of mpl ": [
+        {
+          "prompt": "what is the full form of mpl ",
+          "query": {
+            "prompt": "what is the full form of mpl ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "0bdcd051-75d4-40f2-bddf-06004a8e5ca3",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "Similarity",
+          "vars": {
+            "Prompts": "what is the full form of mpl"
+          },
+          "metavars": {
+            "answer": "Macro Placement",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          }
+        }
+      ],
+      "what is the full form of pdn ": [
+        {
+          "prompt": "what is the full form of pdn ",
+          "query": {
+            "prompt": "what is the full form of pdn ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "801ab116-b315-48ca-9648-8ae88cda6487",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "Similarity",
+          "vars": {
+            "Prompts": "what is the full form of pdn"
+          },
+          "metavars": {
+            "answer": "Power Distribution Network Generator",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          }
+        }
+      ]
+    },
+    "prompt-1720096011302_4.json": {
+      "what is the full form of gui ": [
+        {
+          "prompt": "what is the full form of gui ",
+          "query": {
+            "prompt": "what is the full form of gui ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "c9322b04-2d01-4f8c-8fd5-733957a116a2",
+          "responses": [
+            "The full form of \"gui\" is **Graphical User Interface**. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The full form of \"gui\" is **Graphical User Interface**. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant (2)",
+          "vars": {
+            "Prompts": "what is the full form of gui"
+          },
+          "metavars": {
+            "answer": "Graphical User Interface",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant (2)"
+          }
+        }
+      ],
+      "what is the full form of tap ": [
+        {
+          "prompt": "what is the full form of tap ",
+          "query": {
+            "prompt": "what is the full form of tap ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "6a156b10-1588-4ad3-b3c8-10117b1f17b1",
+          "responses": [
+            "The full form of \"tap\" in the context of the OpenROAD project is \"tapcell\". \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The full form of \"tap\" in the context of the OpenROAD project is \"tapcell\". \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant (2)",
+          "vars": {
+            "Prompts": "what is the full form of tap"
+          },
+          "metavars": {
+            "answer": "Tapcell",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant (2)"
+          }
+        }
+      ],
+      "what is the full form of rcx ": [
+        {
+          "prompt": "what is the full form of rcx ",
+          "query": {
+            "prompt": "what is the full form of rcx ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "c8859e22-f87a-4cf4-b027-7edc4773cf6b",
+          "responses": [
+            "RCX stands for **Parasitic Extraction** in OpenROAD. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "RCX stands for **Parasitic Extraction** in OpenROAD. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant (2)",
+          "vars": {
+            "Prompts": "what is the full form of rcx"
+          },
+          "metavars": {
+            "answer": "Parasitics Extraction",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant (2)"
+          }
+        }
+      ],
+      "what is the full form of odb ": [
+        {
+          "prompt": "what is the full form of odb ",
+          "query": {
+            "prompt": "what is the full form of odb ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "b6172aa4-aee5-4047-bbcb-7748cfbbcf29",
+          "responses": [
+            "OpenDB is the full form of odb. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "OpenDB is the full form of odb. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant (2)",
+          "vars": {
+            "Prompts": "what is the full form of odb"
+          },
+          "metavars": {
+            "answer": "OpenDB: Open Database",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant (2)"
+          }
+        }
+      ],
+      "what is the full form of dpo ": [
+        {
+          "prompt": "what is the full form of dpo ",
+          "query": {
+            "prompt": "what is the full form of dpo ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "b7e4f571-8527-4af8-b25d-486ab9594db1",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant (2)",
+          "vars": {
+            "Prompts": "what is the full form of dpo"
+          },
+          "metavars": {
+            "answer": "Detailed Placement Optimization",
+            "__pt": "{Prompts} ",
+            "LLM_0": "OR Assistant (2)"
+          }
+        }
+      ],
+      "what is the full form of cts ": [
+        {
+          "prompt": "what is the full form of cts ",
+          "query": {
+            "prompt": "what is the full form of cts ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "a6617026-1492-452a-9467-8d42aa8271c4",
+          "responses": [
+            "The full form of CTS is **Clock Tree Synthesis**. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The full form of CTS is **Clock Tree Synthesis**. \n\n\nSources:\n"
+          ],
+          "llm": "Agent Retriever",
+          "vars": {
+            "Prompts": "what is the full form of cts"
+          },
+          "metavars": {
+            "answer": "Clock Tree Synthesis",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          }
+        }
+      ],
+      "what is the full form of ppl ": [
+        {
+          "prompt": "what is the full form of ppl ",
+          "query": {
+            "prompt": "what is the full form of ppl ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "6b1b2de2-d8f0-47fc-89ab-a2742869027f",
+          "responses": [
+            "The full form of PPL is **Pin Placement and Layer Assignment**. It is a tool used in the OpenROAD project for pin placement and layer assignment, particularly for 3D interconnections. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The full form of PPL is **Pin Placement and Layer Assignment**. It is a tool used in the OpenROAD project for pin placement and layer assignment, particularly for 3D interconnections. \n\n\nSources:\n"
+          ],
+          "llm": "Agent Retriever",
+          "vars": {
+            "Prompts": "what is the full form of ppl"
+          },
+          "metavars": {
+            "answer": "Pin Placer",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          }
+        }
+      ],
+      "what is the full form of mpl ": [
+        {
+          "prompt": "what is the full form of mpl ",
+          "query": {
+            "prompt": "what is the full form of mpl ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "f04af7a7-39cb-414f-b9e5-f096d727ca1a",
+          "responses": [
+            "The full form of mpl is **Macro Placement**. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The full form of mpl is **Macro Placement**. \n\n\nSources:\n"
+          ],
+          "llm": "Agent Retriever",
+          "vars": {
+            "Prompts": "what is the full form of mpl"
+          },
+          "metavars": {
+            "answer": "Macro Placement",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          }
+        }
+      ],
+      "what is the full form of pdn ": [
+        {
+          "prompt": "what is the full form of pdn ",
+          "query": {
+            "prompt": "what is the full form of pdn ",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "uid": "c0b924f2-a771-47f7-a912-29a0b7eee964",
+          "responses": [
+            "The full form of PDN is **Power Distribution Network**. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "The full form of PDN is **Power Distribution Network**. \n\n\nSources:\n"
+          ],
+          "llm": "Agent Retriever",
+          "vars": {
+            "Prompts": "what is the full form of pdn"
+          },
+          "metavars": {
+            "answer": "Power Distribution Network Generator",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          }
+        }
+      ]
+    },
+    "prompt-1720096011302.json": {
+      "cache_files": {
+        "prompt-1720096011302_3.json": {
+          "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+          "name": "Similarity",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Similarity",
+            "model": "default-model",
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 0,
+            "error": 0
+          }
+        },
+        "prompt-1720096011302_4.json": {
+          "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+          "name": "Agent Retriever",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Agent Retriever",
+            "model": "default-model",
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 0,
+            "error": 0
+          }
+        }
+      },
+      "responses_last_run": [
+        {
+          "vars": {
+            "Prompts": "what is the full form of ppl"
+          },
+          "metavars": {
+            "answer": "Pin Placer",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          },
+          "llm": "Similarity",
+          "prompt": "what is the full form of ppl ",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "uid": "ce81fb14-8f6d-4ab9-ba3f-d08599dabdb1"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of ppl"
+          },
+          "metavars": {
+            "answer": "Pin Placer",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          },
+          "llm": "Agent Retriever",
+          "prompt": "what is the full form of ppl ",
+          "responses": [
+            "The full form of PPL is **Pin Placement and Layer Assignment**. It is a tool used in the OpenROAD project for pin placement and layer assignment, particularly for 3D interconnections. \n\n\nSources:\n"
+          ],
+          "uid": "6b1b2de2-d8f0-47fc-89ab-a2742869027f"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of cts"
+          },
+          "metavars": {
+            "answer": "Clock Tree Synthesis",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          },
+          "llm": "Similarity",
+          "prompt": "what is the full form of cts ",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "uid": "66edc0bc-e2c7-4694-ac9f-74fbbd55a746"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of cts"
+          },
+          "metavars": {
+            "answer": "Clock Tree Synthesis",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          },
+          "llm": "Agent Retriever",
+          "prompt": "what is the full form of cts ",
+          "responses": [
+            "The full form of CTS is **Clock Tree Synthesis**. \n\n\nSources:\n"
+          ],
+          "uid": "a6617026-1492-452a-9467-8d42aa8271c4"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of mpl"
+          },
+          "metavars": {
+            "answer": "Macro Placement",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          },
+          "llm": "Similarity",
+          "prompt": "what is the full form of mpl ",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "uid": "0bdcd051-75d4-40f2-bddf-06004a8e5ca3"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of mpl"
+          },
+          "metavars": {
+            "answer": "Macro Placement",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          },
+          "llm": "Agent Retriever",
+          "prompt": "what is the full form of mpl ",
+          "responses": [
+            "The full form of mpl is **Macro Placement**. \n\n\nSources:\n"
+          ],
+          "uid": "f04af7a7-39cb-414f-b9e5-f096d727ca1a"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of odb"
+          },
+          "metavars": {
+            "answer": "OpenDB",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          },
+          "llm": "Similarity",
+          "prompt": "what is the full form of odb ",
+          "responses": [
+            "OpenDB \n\n\nSources:\n"
+          ],
+          "uid": "cbb89577-c525-422a-a659-a19e4f0e1d7b"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of odb"
+          },
+          "metavars": {
+            "answer": "OpenDB",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          },
+          "llm": "Agent Retriever",
+          "prompt": "what is the full form of odb ",
+          "responses": [
+            "OpenDB is the full form of odb. \n\n\nSources:\n"
+          ],
+          "uid": "b6172aa4-aee5-4047-bbcb-7748cfbbcf29"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of pdn"
+          },
+          "metavars": {
+            "answer": "Power Distribution Network Generator",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Similarity"
+          },
+          "llm": "Similarity",
+          "prompt": "what is the full form of pdn ",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "uid": "801ab116-b315-48ca-9648-8ae88cda6487"
+        },
+        {
+          "vars": {
+            "Prompts": "what is the full form of pdn"
+          },
+          "metavars": {
+            "answer": "Power Distribution Network Generator",
+            "__pt": "{Prompts} ",
+            "LLM_0": "Agent Retriever"
+          },
+          "llm": "Agent Retriever",
+          "prompt": "what is the full form of pdn ",
+          "responses": [
+            "The full form of PDN is **Power Distribution Network**. \n\n\nSources:\n"
+          ],
+          "uid": "c0b924f2-a771-47f7-a912-29a0b7eee964"
+        }
+      ]
+    },
+    "evalNode-1720096035197.json": [
+      {
+        "vars": {
+          "Prompts": "what is the full form of ppl"
+        },
+        "metavars": {
+          "answer": "Pin Placer",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Similarity"
+        },
+        "uid": "ce81fb14-8f6d-4ab9-ba3f-d08599dabdb1",
+        "llm": {
+          "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+          "name": "Similarity",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Similarity",
+            "model": "default-model",
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 100,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of ppl ",
+        "responses": [
+          "I'm not sure. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            0
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of ppl"
+        },
+        "metavars": {
+          "answer": "Pin Placer",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Agent Retriever"
+        },
+        "uid": "6b1b2de2-d8f0-47fc-89ab-a2742869027f",
+        "llm": {
+          "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+          "name": "Agent Retriever",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Agent Retriever",
+            "model": "default-model",
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 80,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of ppl ",
+        "responses": [
+          "The full form of PPL is **Pin Placement and Layer Assignment**. It is a tool used in the OpenROAD project for pin placement and layer assignment, particularly for 3D interconnections. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            1
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of cts"
+        },
+        "metavars": {
+          "answer": "Clock Tree Synthesis",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Similarity"
+        },
+        "uid": "66edc0bc-e2c7-4694-ac9f-74fbbd55a746",
+        "llm": {
+          "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+          "name": "Similarity",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Similarity",
+            "model": "default-model",
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 100,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of cts ",
+        "responses": [
+          "I'm not sure. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            0
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of cts"
+        },
+        "metavars": {
+          "answer": "Clock Tree Synthesis",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Agent Retriever"
+        },
+        "uid": "a6617026-1492-452a-9467-8d42aa8271c4",
+        "llm": {
+          "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+          "name": "Agent Retriever",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Agent Retriever",
+            "model": "default-model",
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 80,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of cts ",
+        "responses": [
+          "The full form of CTS is **Clock Tree Synthesis**. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            1
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of mpl"
+        },
+        "metavars": {
+          "answer": "Macro Placement",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Similarity"
+        },
+        "uid": "0bdcd051-75d4-40f2-bddf-06004a8e5ca3",
+        "llm": {
+          "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+          "name": "Similarity",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Similarity",
+            "model": "default-model",
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 100,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of mpl ",
+        "responses": [
+          "I'm not sure. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            0
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of mpl"
+        },
+        "metavars": {
+          "answer": "Macro Placement",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Agent Retriever"
+        },
+        "uid": "f04af7a7-39cb-414f-b9e5-f096d727ca1a",
+        "llm": {
+          "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+          "name": "Agent Retriever",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Agent Retriever",
+            "model": "default-model",
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 80,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of mpl ",
+        "responses": [
+          "The full form of mpl is **Macro Placement**. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            1
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of odb"
+        },
+        "metavars": {
+          "answer": "OpenDB",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Similarity"
+        },
+        "uid": "cbb89577-c525-422a-a659-a19e4f0e1d7b",
+        "llm": {
+          "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+          "name": "Similarity",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Similarity",
+            "model": "default-model",
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 100,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of odb ",
+        "responses": [
+          "OpenDB \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            1
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of odb"
+        },
+        "metavars": {
+          "answer": "OpenDB",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Agent Retriever"
+        },
+        "uid": "b6172aa4-aee5-4047-bbcb-7748cfbbcf29",
+        "llm": {
+          "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+          "name": "Agent Retriever",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Agent Retriever",
+            "model": "default-model",
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 80,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of odb ",
+        "responses": [
+          "OpenDB is the full form of odb. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            1
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of pdn"
+        },
+        "metavars": {
+          "answer": "Power Distribution Network Generator",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Similarity"
+        },
+        "uid": "801ab116-b315-48ca-9648-8ae88cda6487",
+        "llm": {
+          "key": "17459e7d-0e37-470a-b7f0-4f2693cf4fb2",
+          "name": "Similarity",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Similarity",
+            "model": "default-model",
+            "endpoint": "/chains/sim",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 100,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of pdn ",
+        "responses": [
+          "I'm not sure. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            0
+          ],
+          "dtype": "Numeric"
+        }
+      },
+      {
+        "vars": {
+          "Prompts": "what is the full form of pdn"
+        },
+        "metavars": {
+          "answer": "Power Distribution Network Generator",
+          "__pt": "{Prompts} ",
+          "LLM_0": "Agent Retriever"
+        },
+        "uid": "c0b924f2-a771-47f7-a912-29a0b7eee964",
+        "llm": {
+          "key": "b475cfd5-6052-4bc6-9745-a37fbc657279",
+          "name": "Agent Retriever",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "formData": {
+            "shortname": "Agent Retriever",
+            "model": "default-model",
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "agent-retriever"
+          },
+          "progress": {
+            "success": 80,
+            "error": 0
+          }
+        },
+        "prompt": "what is the full form of pdn ",
+        "responses": [
+          "The full form of PDN is **Power Distribution Network**. \n\n\nSources:\n"
+        ],
+        "tokens": {},
+        "eval_res": {
+          "items": [
+            0.75
+          ],
+          "dtype": "Numeric"
+        }
+      }
+    ],
+    "visNode-1720096318013.json": {},
+    "inspectNode-1720096439794.json": {},
+    "comment-1720369198191.json": {},
+    "comment-1720369434704.json": {},
+    "comment-1720369898441.json": {},
+    "comment-1720370960863.json": {},
+    "comment-1720371057164.json": {},
+    "promptNode-1724009407641_2.json": {
+      "hi": [
+        {
+          "prompt": "hi",
+          "query": {
+            "prompt": "hi",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "uid": "826e3214-fcd1-41e5-a867-f0cf57c74b07",
+          "responses": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "I'm not sure. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {},
+          "metavars": {
+            "__pt": "hi",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ],
+      "What is CTS ?": [
+        {
+          "prompt": "What is CTS ?",
+          "query": {
+            "prompt": "What is CTS ?",
+            "model": "__custom/OR Assistant//default-model",
+            "temperature": 1,
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "uid": "3e7d1882-bc1a-4253-9f5f-dfcbb88c88c0",
+          "responses": [
+            "CTS stands for Clock Tree Synthesis. It is a module within the OpenROAD project that is responsible for generating a clock tree for a design. \n\nHere are some key aspects of CTS:\n\n* **Based on TritonCTS 2.0:** The CTS module in OpenROAD utilizes the TritonCTS 2.0 engine, which performs on-the-fly characterization, eliminating the need to create separate characterization data.\n* **On-the-fly characterization:** This feature allows TritonCTS 2.0 to determine the characteristics of the clock tree during the synthesis process, making it more efficient.\n* **Customization:**  The `configure_cts_characterization` command allows users to adjust certain key parameters of the characterization process, such as maximum slew and capacitance, and the number of steps they are divided into. \n* **`clock_tree_synthesis` command:** The `clock_tree_synthesis` command initiates the actual clock tree generation. It offers various options for controlling the tree's structure, including specifying buffer types, distances between buffers, and clustering settings. \n* **Report generation:** The `report_cts` command allows users to extract useful metrics from the synthesized clock tree, including the number of clock roots, inserted buffers, clock subnets, and sinks. \n\n\nSources:\n"
+          ],
+          "raw_response": [
+            "CTS stands for Clock Tree Synthesis. It is a module within the OpenROAD project that is responsible for generating a clock tree for a design. \n\nHere are some key aspects of CTS:\n\n* **Based on TritonCTS 2.0:** The CTS module in OpenROAD utilizes the TritonCTS 2.0 engine, which performs on-the-fly characterization, eliminating the need to create separate characterization data.\n* **On-the-fly characterization:** This feature allows TritonCTS 2.0 to determine the characteristics of the clock tree during the synthesis process, making it more efficient.\n* **Customization:**  The `configure_cts_characterization` command allows users to adjust certain key parameters of the characterization process, such as maximum slew and capacitance, and the number of steps they are divided into. \n* **`clock_tree_synthesis` command:** The `clock_tree_synthesis` command initiates the actual clock tree generation. It offers various options for controlling the tree's structure, including specifying buffer types, distances between buffers, and clustering settings. \n* **Report generation:** The `report_cts` command allows users to extract useful metrics from the synthesized clock tree, including the number of clock roots, inserted buffers, clock subnets, and sinks. \n\n\nSources:\n"
+          ],
+          "llm": "OR Assistant",
+          "vars": {},
+          "metavars": {
+            "__pt": "What is CTS ?",
+            "LLM_0": "OR Assistant"
+          }
+        }
+      ]
+    },
+    "promptNode-1724009407641.json": {
+      "cache_files": {
+        "promptNode-1724009407641_2.json": {
+          "key": "d2b03278-77fe-478d-b1f3-1531d7a8fe1f",
+          "name": "OR Assistant",
+          "emoji": "🌐",
+          "base_model": "__custom/OR Assistant/",
+          "model": "__custom/OR Assistant//default-model",
+          "settings": {
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "formData": {
+            "shortname": "OR Assistant",
+            "model": "default-model",
+            "endpoint": "/graphs/agent-retriever",
+            "listContext": false,
+            "listSources": false,
+            "retriever": "ensemble"
+          },
+          "progress": {
+            "success": 0,
+            "error": 0
+          }
+        }
+      },
+      "responses_last_run": [
+        {
+          "vars": {},
+          "metavars": {
+            "__pt": "What is CTS ?",
+            "LLM_0": "OR Assistant"
+          },
+          "llm": "OR Assistant",
+          "prompt": "What is CTS ?",
+          "responses": [
+            "CTS stands for Clock Tree Synthesis. It is a module within the OpenROAD project that is responsible for generating a clock tree for a design. \n\nHere are some key aspects of CTS:\n\n* **Based on TritonCTS 2.0:** The CTS module in OpenROAD utilizes the TritonCTS 2.0 engine, which performs on-the-fly characterization, eliminating the need to create separate characterization data.\n* **On-the-fly characterization:** This feature allows TritonCTS 2.0 to determine the characteristics of the clock tree during the synthesis process, making it more efficient.\n* **Customization:**  The `configure_cts_characterization` command allows users to adjust certain key parameters of the characterization process, such as maximum slew and capacitance, and the number of steps they are divided into. \n* **`clock_tree_synthesis` command:** The `clock_tree_synthesis` command initiates the actual clock tree generation. It offers various options for controlling the tree's structure, including specifying buffer types, distances between buffers, and clustering settings. \n* **Report generation:** The `report_cts` command allows users to extract useful metrics from the synthesized clock tree, including the number of clock roots, inserted buffers, clock subnets, and sinks. \n\n\nSources:\n"
+          ],
+          "uid": "3e7d1882-bc1a-4253-9f5f-dfcbb88c88c0"
+        }
+      ]
+    }
+  }
+}

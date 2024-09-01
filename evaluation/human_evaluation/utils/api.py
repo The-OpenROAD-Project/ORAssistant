@@ -5,24 +5,12 @@ from typing import Any
 API_BASE_URL = os.getenv('CHAT_ENDPOINT', 'http://localhost:8000')
 HEADERS = {'accept': 'application/json', 'Content-Type': 'application/json'}
 
-
-
-def fetch_endpoints() -> list[str]:
-    url = f'{API_BASE_URL}/chains/listAll'
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return list(response.json())
-    except requests.exceptions.RequestException:
-        return []
-
-
 def get_responses(
     questions: list[str],
     progress: Any,
     status_text: Any,
     current_question_text: Any,
-    selected_endpoint: str,
+    endpoint: str = '/graphs/agent-retriever'
 ) -> list[str]:
     """
     Fetch responses from AI for a list of questions.
@@ -32,7 +20,7 @@ def get_responses(
     - progress (Any): Streamlit progress bar object.
     - status_text (Any): Streamlit text object for status updates.
     - current_question_text (Any): Streamlit text object for current question display.
-    - selected_endpoint (str): The selected endpoint to use for the API call.
+    - endpoint (str): Optional endpoint to use for the API call. Defaults to '/graphs/agent-retriever'.
 
     Returns:
     - list[str]: List of responses from the AI combined with sources.
@@ -44,7 +32,7 @@ def get_responses(
         payload = {'query': question, 'list_sources': True}
 
         try:
-            url = f'{API_BASE_URL}/{selected_endpoint}'
+            url = f'{API_BASE_URL}{endpoint}'
             response = requests.post(url, headers=HEADERS, json=payload)
             response.raise_for_status()
 

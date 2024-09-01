@@ -1,9 +1,10 @@
 import streamlit as st
+
 from dotenv import load_dotenv
 import os
 
 from utils.sheets import read_questions_and_answers, write_responses, find_new_questions
-from utils.api import fetch_endpoints, get_responses
+from utils.api import get_responses
 from utils.utils import (
     parse_custom_input,
     selected_questions,
@@ -32,15 +33,9 @@ def main() -> None:
     Add questions to be tested by OR Assistant in this Google Sheet:
     [Google Sheet Link](https://docs.google.com/spreadsheets/d/{google_sheet_id}/edit)
     """)
-
-    endpoints = fetch_endpoints()
-
-    selected_endpoint = st.selectbox(
-        'Select preferred architecture',
-        options=endpoints,
-        index=0,
-        format_func=lambda x: x.split('/')[-1].capitalize(),
-    )
+    
+    # Fixed endpoint
+    selected_endpoint = '/graphs/agent-retriever'
 
     options = ['', 'All', 'All New Questions', 'Custom']
     selected_option: str = st.selectbox(
