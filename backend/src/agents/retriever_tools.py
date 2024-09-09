@@ -1,15 +1,13 @@
-from ..chains.hybrid_retriever_chain import HybridRetrieverChain
-
-from langchain_core.tools import tool
-
-from langchain.retrievers import EnsembleRetriever
-from langchain.retrievers import ContextualCompressionRetriever
-
-from ..tools.format_docs import format_docs
-
 import os
 from typing import Tuple, Optional, Union
 from dotenv import load_dotenv
+
+from langchain_core.tools import tool
+from langchain.retrievers import EnsembleRetriever
+from langchain.retrievers import ContextualCompressionRetriever
+
+from ..chains.hybrid_retriever_chain import HybridRetrieverChain
+from ..tools.format_docs import format_docs
 
 load_dotenv()
 
@@ -126,7 +124,7 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=['./data/html/KLayout_docs'],
+            html_docs_path=['./data/html/klayout_docs'],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -170,7 +168,7 @@ class RetrieverTools:
     @tool
     def retrieve_cmds(query: str) -> Tuple[str, list[str], list[str]]:
         """
-        Retrieve information on the commands available in the OpenROAD, OpenROAD-Flow-Scripts and OpenSTA.\
+        Retrieve information on the commands available in OpenROAD, OpenROAD-Flow-Scripts and OpenSTA.\
         This includes usage guidelines, command syntax, examples, and best practices about commands that cover various \
         aspects of electronic design automation, such as synthesis, placement, routing, analysis, and \
         optimization within the OpenROAD environment.
@@ -182,7 +180,8 @@ class RetrieverTools:
         Partition Manager (PAR), Power Distribution Network (PDN), Pin Placement (PPL), IR Drop Analysis (PSM), Parasitics Extraction (RSX),\
         Restructure (RMP), Gate Resizer (RSZ), Rectilinear Steiner Tree (STT), TapCell (TAP), Read Unified Power Format (UPF), Timing Optimization\
        
-        OpenSTA is an open-source gate-level static timing verifier that has been used by many design houses.\
+        OpenSTA is an open-source gate-level static timing verifier.\
+        It can verify the timing of deisgns in the form of Verilog netlists.\
         Timing Analysis: Perform static timing analysis using standard file formats (Verilog, Liberty, SDC, SDF, SPEF).
         Multiple Process Corners: Conduct analysis across different process variations.
         Power Analysis: Evaluate power consumption in designs.

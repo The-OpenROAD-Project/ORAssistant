@@ -1,28 +1,18 @@
 import os
 from typing import Any
-
 from fastapi import APIRouter
 from pydantic import BaseModel
-
-from ...chains.hybrid_retriever_chain import HybridRetrieverChain
-from ...chains.similarity_retriever_chain import SimilarityRetrieverChain
-from ...chains.multi_retriever_chain import MultiRetrieverChain
-
-from ...prompts.prompt_templates import summarise_prompt_template
+from dotenv import load_dotenv
+from typing import Union
 
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
-from dotenv import load_dotenv
-
-from typing import Union
-
-
-class UserInput(BaseModel):
-    query: str
-    list_sources: bool = False
-    list_context: bool = False
+from ...chains.hybrid_retriever_chain import HybridRetrieverChain
+from ...chains.similarity_retriever_chain import SimilarityRetrieverChain
+from ...chains.multi_retriever_chain import MultiRetrieverChain
+from ...prompts.prompt_templates import summarise_prompt_template
 
 
 load_dotenv()
@@ -121,6 +111,12 @@ multi_retriever_chain = MultiRetrieverChain(
 )
 multi_retriever_chain.create_multi_retriever()
 multi_llm_chain = multi_retriever_chain.get_llm_chain()
+
+
+class UserInput(BaseModel):
+    query: str
+    list_sources: bool = False
+    list_context: bool = False
 
 
 @router.get('/listAll')

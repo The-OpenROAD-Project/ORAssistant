@@ -1,35 +1,18 @@
 import os
+import logging
+from dotenv import load_dotenv
+from typing import Union
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-
-from ...agents.retriever_graph import RetrieverGraph
 
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
-from dotenv import load_dotenv
-from typing import Union
-import logging
+from ...agents.retriever_graph import RetrieverGraph
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
-
-
-def get_history_str(chat_history: list[dict[str, str]]) -> str:
-    history_str = ''
-    for i in chat_history:
-        history_str += f"User : {i['User']}\nAI : {i['AI']}\n\n"
-    return history_str
-
-
-class UserInput(BaseModel):
-    query: str
-    chat_history: list[dict[str, str]] = []
-    list_sources: bool = False
-    list_context: bool = False
-
-
 load_dotenv()
 
 required_env_vars = [
@@ -95,8 +78,29 @@ rg = RetrieverGraph(
 rg.initialize()
 
 
-@router.post('/agent-retriever')
-async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list[str]]]:
+def get_history_str(chat_history: list[dict[str, str]]) -> str:
+    history_str = ''
+    for i in chat_history:
+        history_str += f"User : {i['User']}\nAI : {i['AI']}\n\n"
+    return history_str
+
+
+class UserInput(BaseModel):
+    query: str
+    chat_history: list[dict[str, str]] = []
+    list_sources: bool = False
+    list_context: bool = False
+
+
+class ChatResponse(BaseModel):
+    response: str
+    sources: list[str] = []
+    context: list[str] = []
+    tool: str
+
+
+@router.post('/agent-retriever', response_model=ChatResponse)
+async def get_agent_response(user_input: UserInput) -> ChatResponse:
     user_question = user_input.query
 
     inputs = {
@@ -125,6 +129,7 @@ async def get_agent_response(user_input: UserInput) -> dict[str, Union[str, list
         tool = list(output[-2].keys())[0]
         urls = list(set(output[-2][tool]['urls']))
     else:
+        llm_response = 'LLM response extraction failed'
         logging.error('LLM response extraction failed')
 
     if user_input.list_sources and user_input.list_context:

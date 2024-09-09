@@ -1,12 +1,20 @@
-from .retriever_tools import RetrieverTools
+import os
+import logging
+from typing import TypedDict, Annotated, Union, Optional
 
-from typing import TypedDict, Annotated, Union, Optional, Any
 from langchain_core.messages import AnyMessage
-
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.tools import BaseTool
 from langgraph.graph import START, END, StateGraph
 from langgraph.graph.graph import CompiledGraph
 from langgraph.graph.message import add_messages
+from langchain.tools.render import render_text_description
+from langchain.prompts import ChatPromptTemplate
+from langchain_google_vertexai import ChatVertexAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 
+from .retriever_tools import RetrieverTools
 from ..chains.base_chain import BaseChain
 from ..prompts.prompt_templates import (
     summarise_prompt_template,
@@ -14,15 +22,6 @@ from ..prompts.prompt_templates import (
     rephrase_prompt_template,
 )
 
-from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_ollama import ChatOllama
-from langchain.tools.render import render_text_description
-from langchain_core.output_parsers import JsonOutputParser
-from langchain.prompts import ChatPromptTemplate
-
-import os
-import logging
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
@@ -37,7 +36,7 @@ class AgentState(TypedDict):
 
 
 class ToolNode:
-    def __init__(self, tool_fn: Any) -> None:
+    def __init__(self, tool_fn: BaseTool) -> None:
         self.tool_fn = tool_fn
 
     def get_node(self, state: AgentState) -> dict[str, list[str]]:
@@ -45,7 +44,7 @@ class ToolNode:
         if query is None:
             raise ValueError('Query is None')
 
-        response, sources, urls = self.tool_fn(query)
+        response, sources, urls = self.tool_fn.invoke(query)
 
         if response != []:
             response = (

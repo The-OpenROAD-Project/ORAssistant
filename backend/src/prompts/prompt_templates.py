@@ -40,7 +40,9 @@ You may infer information from the conversation to answer the question.
 
 """
 
-tool_rephrase_prompt_template = """You are an assistant that has access to the following set of tools.\
+tool_rephrase_prompt_template = """You are an assistant tasked with answering any question about the OpenROAD (OR) project \
+and the OpenROAD-Flow-Scripts (ORFS). You have access to the following set of tools.\
+
 Here are the names and descriptions for each tool:
 
 {tool_descriptions}

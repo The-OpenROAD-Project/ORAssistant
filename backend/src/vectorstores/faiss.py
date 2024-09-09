@@ -1,3 +1,8 @@
+import os
+import logging
+from typing import Optional, Union
+from dotenv import load_dotenv
+
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -9,12 +14,6 @@ from ..tools.process_md import process_md
 from ..tools.process_pdf import process_pdf_docs
 from ..tools.process_html import process_html
 from ..tools.process_json import generate_knowledge_base
-
-import os
-import logging
-
-from typing import Optional, Union
-from dotenv import load_dotenv
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 

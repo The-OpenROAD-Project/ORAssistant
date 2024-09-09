@@ -17,12 +17,12 @@ cur_dir: str = os.getcwd()
 or_docs_url = 'https://openroad.readthedocs.io/en/latest'
 orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
 opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
-opensta_readme_url = (
-    'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
-)
 yosys_html_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 klayout_html_url = 'https://www.klayout.de/doc.html'
 or_website_url = 'https://theopenroadproject.org/'
+opensta_readme_url = (
+    'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
+)
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
@@ -261,14 +261,12 @@ def build_orfs_docs() -> None:
 def build_manpages() -> None:
     logging.debug('Starting manpages build...')
 
-    # check if pandoc is installed, if not error out.
     res = subprocess.run('pandoc --version', shell=True, capture_output=True)
     if res.returncode != 0:
         logging.error('Pandoc is not installed. Please install it.')
         sys.exit(1)
     logging.debug('Pandoc is installed.')
 
-    # generate manpages
     command = '../../etc/find_messages.py > messages.txt'
     for module in os.listdir(os.path.join(cur_dir, 'OpenROAD/src')):
         path = os.path.join(cur_dir, 'OpenROAD/src', module)
@@ -287,7 +285,6 @@ def build_manpages() -> None:
     res = subprocess.run(command, shell=True, capture_output=True)
     logging.debug('Finished building manpages.')
 
-    # copy folder contents to data/markdown/manpages
     src_dir = os.path.join(cur_dir, 'OpenROAD/docs/md')
     dest_dir = os.path.join(cur_dir, 'data/markdown/manpages')
 

@@ -2,15 +2,13 @@ import os
 import glob
 import json
 import logging
-
+import markdown as md
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-import markdown as md
 from typing import Optional
 
 from langchain.docstore.document import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 from .chunk_documents import chunk_documents
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())

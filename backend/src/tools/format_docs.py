@@ -1,4 +1,5 @@
 from langchain.docstore.document import Document
+
 from ..prompts.prompt_templates import gh_discussion_prompt_template
 
 

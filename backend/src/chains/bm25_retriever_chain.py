@@ -1,4 +1,4 @@
-from .similarity_retriever_chain import SimilarityRetrieverChain
+from typing import Optional, Iterable, Union
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.vectorstores import VectorStoreRetriever
@@ -7,7 +7,7 @@ from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
-from typing import Optional, Iterable, Union
+from .similarity_retriever_chain import SimilarityRetrieverChain
 
 
 class BM25RetrieverChain(SimilarityRetrieverChain):
