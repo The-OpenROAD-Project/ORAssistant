@@ -146,4 +146,4 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
     else:
         response = {'response': llm_response, 'tool': tool}
 
-    return response
+    return ChatResponse(**response)
