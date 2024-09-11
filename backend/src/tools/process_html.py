@@ -36,7 +36,7 @@ def process_html(
         logging.error(f'{folder_path} is not populated, returning empty list.')
         return []
 
-    with open('src/source_list.json') as f:
+    with open('data/source_list.json') as f:
         src_dict = json.loads(f.read())
 
     html_files = glob.glob(os.path.join(folder_path, '**/*.html'), recursive=True)

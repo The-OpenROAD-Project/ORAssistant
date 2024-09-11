@@ -23,7 +23,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 def process_pdf_docs(file_path: str) -> list[Document]:
     loader = PyPDFLoader(file_path)
 
-    with open('src/source_list.json') as f:
+    with open('data/source_list.json') as f:
         src_dict = json.loads(f.read())
 
     documents = loader.load_and_split(text_splitter=text_splitter)

@@ -475,7 +475,7 @@ if __name__ == '__main__':
         full_path = os.path.join(gh_disc_path, file)
         source_dict[full_path] = gh_disc_src[file]['url']
 
-    with open('src/source_list.json', 'w+') as src:
+    with open('data/source_list.json', 'w+') as src:
         src.write(json.dumps(source_dict))
 
     repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']

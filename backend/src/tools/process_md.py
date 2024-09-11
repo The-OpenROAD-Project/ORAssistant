@@ -54,7 +54,7 @@ def process_md(
         logging.error(f'{folder_path} is not populated, returning empty list.')
         return []
 
-    with open('src/source_list.json') as f:
+    with open('data/source_list.json') as f:
         src_dict = json.loads(f.read())
 
     documents = load_docs(folder_path=folder_path)
