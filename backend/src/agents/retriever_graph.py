@@ -44,7 +44,7 @@ class ToolNode:
         if query is None:
             raise ValueError('Query is None')
 
-        response, sources, urls = self.tool_fn.invoke(query)
+        response, sources, urls = self.tool_fn.invoke(query) # type: ignore
 
         if response != []:
             response = (
@@ -121,7 +121,7 @@ class RetrieverGraph:
             return {'tools': []}
 
         if self.inbuit_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice='any')
+            model = self.llm.bind_tools(self.tools, tool_choice='any') # type: ignore
 
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
@@ -135,10 +135,10 @@ class RetrieverGraph:
 
             response = model.invoke(followup_question)
 
-            if response is None or response.tool_calls is None:
+            if response is None or response.tool_calls is None: # type: ignore
                 return {'tools': []}
 
-            return {'tools': response.tool_calls}
+            return {'tools': response.tool_calls} # type: ignore
 
         else:
             tool_rephrase_chain = (
@@ -200,12 +200,12 @@ class RetrieverGraph:
     def initialize(self) -> None:
         workflow = StateGraph(AgentState)
 
-        commands = ToolNode(self.retriever_tools.retrieve_cmds)
-        install = ToolNode(self.retriever_tools.retrieve_install)
-        general = ToolNode(self.retriever_tools.retrieve_general)
-        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs)
-        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)
-        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)
+        commands = ToolNode(self.retriever_tools.retrieve_cmds) # type: ignore
+        install = ToolNode(self.retriever_tools.retrieve_install) # type: ignore
+        general = ToolNode(self.retriever_tools.retrieve_general) # type: ignore
+        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs) # type: ignore
+        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo) # type: ignore
+        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs) # type: ignore
 
         workflow.add_node('agent', self.agent)
         workflow.add_node('generate', self.generate)
