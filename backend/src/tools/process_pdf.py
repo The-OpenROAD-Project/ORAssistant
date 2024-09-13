@@ -30,8 +30,8 @@ def process_pdf_docs(file_path: str) -> list[Document]:
     try:
         documents = loader.load_and_split(text_splitter=text_splitter)
     except PdfStreamError:
-        logging.error(f"Error processing PDF: {file_path} is corrupted or incomplete.")
-    
+        logging.error(f'Error processing PDF: {file_path} is corrupted or incomplete.')
+
     for doc in documents:
         try:
             doc.metadata['source'] = file_path.split('./')[-1]

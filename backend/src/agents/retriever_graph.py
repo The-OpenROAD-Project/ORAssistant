@@ -44,7 +44,7 @@ class ToolNode:
         if query is None:
             raise ValueError('Query is None')
 
-        response, sources, urls = self.tool_fn.invoke(query) # type: ignore
+        response, sources, urls = self.tool_fn.invoke(query)  # type: ignore
 
         if response != []:
             response = (
@@ -200,12 +200,12 @@ class RetrieverGraph:
     def initialize(self) -> None:
         workflow = StateGraph(AgentState)
 
-        commands = ToolNode(self.retriever_tools.retrieve_cmds) # type: ignore
-        install = ToolNode(self.retriever_tools.retrieve_install) # type: ignore
-        general = ToolNode(self.retriever_tools.retrieve_general) # type: ignore
-        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs) # type: ignore
-        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo) # type: ignore
-        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs) # type: ignore
+        commands = ToolNode(self.retriever_tools.retrieve_cmds)  # type: ignore
+        install = ToolNode(self.retriever_tools.retrieve_install)  # type: ignore
+        general = ToolNode(self.retriever_tools.retrieve_general)  # type: ignore
+        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs)  # type: ignore
+        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)  # type: ignore
+        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)  # type: ignore
 
         workflow.add_node('agent', self.agent)
         workflow.add_node('generate', self.generate)
