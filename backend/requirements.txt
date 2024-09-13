@@ -19,3 +19,4 @@ sphinx-copybutton==0.5.2
 sphinx-external-toc==1.0.1
 pypdf==4.2.0
 unstructured==0.15.1
+nltk==3.9.1
