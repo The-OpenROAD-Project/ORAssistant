@@ -153,7 +153,7 @@ class RetrieverGraph:
             })
 
             if response is None:
-                logging.warn(
+                logging.warning(
                     'Tool selection response not found. Returning empty tool list.'
                 )
                 return {'tools': []}
@@ -162,15 +162,15 @@ class RetrieverGraph:
                 tool_calls = response.get('tool_names', [])
                 for tool in tool_calls:
                     if tool not in self.tool_names:
-                        logging.warn(f'Tool {tool} not found in tool list.')
+                        logging.warning(f'Tool {tool} not found in tool list.')
                         tool_calls.remove(tool)
             else:
-                logging.warn('Tool selection failed. Returning empty tool list.')
+                logging.warning('Tool selection failed. Returning empty tool list.')
 
             if 'rephrased_question' in str(response):
                 state['messages'][-1].content = response.get('rephrased_question')
             else:
-                logging.warn('Rephrased question not found in response.')
+                logging.warning('Rephrased question not found in response.')
 
             return {'tools': tool_calls}
 

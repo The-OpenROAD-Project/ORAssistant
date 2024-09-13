@@ -63,7 +63,7 @@ def process_md(
         try:
             url = src_dict[doc.metadata['source']]
         except KeyError:
-            logging.warn(f"Could not find source for {doc.metadata['source']}")
+            logging.warning(f"Could not find source for {doc.metadata['source']}")
             url = ''
 
         new_metadata = {
