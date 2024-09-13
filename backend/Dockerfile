@@ -8,12 +8,13 @@ RUN pip install --upgrade -r /ORAssistant-backend/requirements.txt
 
 COPY . .
 
-# Prereqs
-RUN apt-get update && apt-get install -y pandoc git wget
+RUN apt-get update && apt-get install -y git
 
-RUN if ! command -v make &> /dev/null; then apt-get install -y make; fi
-
-RUN python /ORAssistant-backend/build_docs.py
+RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
+    rm -rf data && \
+    mkdir -p data && \
+    mv ORAssistant_RAG_Dataset/* data/ && \
+    rm -rf ORAssistant_RAG_Dataset
 
 EXPOSE 8000
 
