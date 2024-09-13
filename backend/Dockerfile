@@ -2,19 +2,22 @@ FROM python:3.12.3-slim
 
 WORKDIR /ORAssistant-backend
 
+RUN apt-get update && apt-get install -y \
+    pandoc git wget \
+    git-lfs
+
+RUN git lfs install
+
 COPY ./requirements.txt /ORAssistant-backend/requirements.txt
 
 RUN pip install --upgrade -r /ORAssistant-backend/requirements.txt
 
-COPY . .
-
-RUN apt-get update && apt-get install -y git
-
 RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
-    rm -rf data && \
     mkdir -p data && \
     mv ORAssistant_RAG_Dataset/* data/ && \
     rm -rf ORAssistant_RAG_Dataset
+
+COPY . .
 
 EXPOSE 8000
 
