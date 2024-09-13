@@ -1,7 +1,6 @@
 import os
 from typing import Any
 from fastapi import APIRouter
-from pydantic import BaseModel
 from dotenv import load_dotenv
 from typing import Union
 
@@ -11,9 +10,8 @@ from langchain_ollama import ChatOllama
 
 from ...chains.hybrid_retriever_chain import HybridRetrieverChain
 from ...chains.similarity_retriever_chain import SimilarityRetrieverChain
-from ...chains.multi_retriever_chain import MultiRetrieverChain
 from ...prompts.prompt_templates import summarise_prompt_template
-
+from ..models.response_model import ChatResponse, UserInput
 
 load_dotenv()
 
@@ -78,8 +76,7 @@ hybrid_retriever_chain = HybridRetrieverChain(
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
     markdown_docs_path=['./data/markdown'],
-    manpages_path=['./data/markdown/manpages'],
-    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    other_docs_path=['./data/pdf'],
     html_docs_path=['./data/html'],
 )
 hybrid_retriever_chain.create_hybrid_retriever()
@@ -92,31 +89,11 @@ sim_retriever_chain = SimilarityRetrieverChain(
     embeddings_config=embeddings_config,
     use_cuda=use_cuda,
     markdown_docs_path=['./data/markdown'],
-    manpages_path=['./data/markdown/manpages'],
-    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
+    other_docs_path=['./data/pdf'],
     html_docs_path=['./data/html'],
 )
 sim_retriever_chain.create_similarity_retriever()
 sim_llm_chain = sim_retriever_chain.get_llm_chain()
-
-multi_retriever_chain = MultiRetrieverChain(
-    llm_model=llm,
-    prompt_template_str=summarise_prompt_template,
-    embeddings_config=embeddings_config,
-    use_cuda=use_cuda,
-    markdown_docs_path=['./data/markdown'],
-    manpages_path=['./data/markdown/manpages'],
-    other_docs_path=['./data/pdf/OpenSTA/OpenSTA_docs.pdf'],
-    html_docs_path=['./data/html'],
-)
-multi_retriever_chain.create_multi_retriever()
-multi_llm_chain = multi_retriever_chain.get_llm_chain()
-
-
-class UserInput(BaseModel):
-    query: str
-    list_sources: bool = False
-    list_context: bool = False
 
 
 @router.get('/listAll')
@@ -129,8 +106,8 @@ async def list_all_chains() -> list[str]:
     ]
 
 
-@router.post('/hybrid')
-async def get_hybrid_response(user_input: UserInput) -> dict[str, Any]:
+@router.post('/hybrid', response_model=ChatResponse)
+async def get_hybrid_response(user_input: UserInput) -> ChatResponse:
     user_question = user_input.query
     result = hybrid_llm_chain.invoke(user_question)
 
@@ -159,7 +136,7 @@ async def get_hybrid_response(user_input: UserInput) -> dict[str, Any]:
     else:
         response = {'response': result['answer']}
 
-    return response
+    return ChatResponse(**response)
 
 
 @router.post('/hybrid/get_chunks')
@@ -178,44 +155,8 @@ async def get_hybrid_chunks(user_input: UserInput) -> dict[str, Any]:
     return response
 
 
-@router.post('/sim/get_chunks')
-async def get_sim_chunks(user_input: UserInput) -> dict[str, Any]:
-    user_question = user_input.query
-
-    if sim_retriever_chain.retriever is not None:
-        doc_chunks = sim_retriever_chain.retriever.invoke(input=user_question)
-        response = {
-            'response': [
-                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
-                for doc in doc_chunks
-            ]
-        }
-    else:
-        raise ValueError('Similarity retriever not initialized')
-
-    return response
-
-
-@router.post('/ensemble/get_chunks')
-async def get_ensemble_chunks(user_input: UserInput) -> dict[str, Any]:
-    user_question = user_input.query
-
-    if multi_retriever_chain.retriever is not None:
-        doc_chunks = multi_retriever_chain.retriever.invoke(input=user_question)
-        response = {
-            'response': [
-                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
-                for doc in doc_chunks
-            ]
-        }
-    else:
-        raise ValueError('Ensemble retriever not initialized')
-
-    return response
-
-
 @router.post('/sim')
-async def get_sim_response(user_input: UserInput) -> dict[str, Any]:
+async def get_sim_response(user_input: UserInput) -> ChatResponse:
     user_question = user_input.query
     result = sim_llm_chain.invoke(user_question)
 
@@ -243,37 +184,22 @@ async def get_sim_response(user_input: UserInput) -> dict[str, Any]:
     else:
         response = {'response': result['answer']}
 
-    return response
+    return ChatResponse(**response)
 
 
-@router.post('/ensemble')
-async def get_response(user_input: UserInput) -> dict[str, Any]:
+@router.post('/sim/get_chunks')
+async def get_sim_chunks(user_input: UserInput) -> dict[str, Any]:
     user_question = user_input.query
-    result = multi_llm_chain.invoke(user_question)
 
-    links = []
-    context = []
-    for i in result['context']:
-        if 'url' in i.metadata:
-            links.append(i.metadata['url'])
-        elif 'source' in i.metadata:
-            links.append(i.metadata['source'])
-        context.append(i.page_content)
-
-    links = list(set(links))
-    links = list(set(links))
-
-    if user_input.list_sources and user_input.list_context:
+    if sim_retriever_chain.retriever is not None:
+        doc_chunks = sim_retriever_chain.retriever.invoke(input=user_question)
         response = {
-            'response': result['answer'],
-            'sources': (links),
-            'context': (context),
+            'response': [
+                {'page_content': doc.page_content, 'src': doc.metadata.get('source')}
+                for doc in doc_chunks
+            ]
         }
-    elif user_input.list_sources:
-        response = {'response': result['answer'], 'sources': (links)}
-    elif user_input.list_context:
-        response = {'response': result['answer'], 'context': (context)}
     else:
-        response = {'response': result['answer']}
+        raise ValueError('Similarity retriever not initialized')
 
     return response

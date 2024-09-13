@@ -4,13 +4,13 @@ from dotenv import load_dotenv
 from typing import Union
 
 from fastapi import APIRouter
-from pydantic import BaseModel
 
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
 from ...agents.retriever_graph import RetrieverGraph
+from ..models.response_model import ChatResponse, UserInput
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 load_dotenv()
@@ -83,20 +83,6 @@ def get_history_str(chat_history: list[dict[str, str]]) -> str:
     for i in chat_history:
         history_str += f"User : {i['User']}\nAI : {i['AI']}\n\n"
     return history_str
-
-
-class UserInput(BaseModel):
-    query: str
-    chat_history: list[dict[str, str]] = []
-    list_sources: bool = False
-    list_context: bool = False
-
-
-class ChatResponse(BaseModel):
-    response: str
-    sources: list[str] = []
-    context: list[str] = []
-    tool: str
 
 
 @router.post('/agent-retriever', response_model=ChatResponse)
