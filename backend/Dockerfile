@@ -19,6 +19,8 @@ RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_R
 
 COPY . .
 
+RUN python /ORAssistant-backend/src/post_install.py
+
 EXPOSE 8000
 
 CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
