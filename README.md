@@ -182,3 +182,21 @@ pip install pre-commit
 pre-commit install
 ```
 
+## Acknowledgements
+
+This work is completed as part of the Google Summer of Code 2024 project under the 
+[UCSC Open-Source Program Office](https://ucsc-ospo.github.io/osre24/).
+Please see their contributions at this [link](https://github.com/The-OpenROAD-Project/ORAssistant/wiki/Google-Summer-of-Code-2024)
+
+## Citing this work
+
+If you use this software in any published work, we would appreciate a citation! Please use the following reference:
+```
+@misc{orassistant2024,
+  author = {The-OpenROAD-Project},
+  title = {Kaintura, Aviral and R, Palaniappan and Luar, Shui Song and Iyer, Indira},
+  year = {2024},
+  url = {https://github.com/The-OpenROAD-Project/ORAssistant},
+  note = {Accessed: 20xx-xx-xx}
+}
+```
