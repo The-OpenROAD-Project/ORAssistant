@@ -9,7 +9,6 @@ from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
 from bs4 import BeautifulSoup
-from huggingface_hub import snapshot_download
 
 
 load_dotenv()
@@ -464,7 +463,7 @@ if __name__ == '__main__':
 
     build_or_docs()
     build_orfs_docs()
-    download_manpages()
+    build_manpages()
 
     os.chdir(cur_dir)
     copy_file_track_src(
