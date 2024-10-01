@@ -9,6 +9,8 @@ from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
 from bs4 import BeautifulSoup
+from huggingface_hub import snapshot_download
+
 
 load_dotenv()
 source_dict: dict[str, str] = {}
@@ -37,8 +39,12 @@ def update_src(src_path: str, dst_path: str) -> None:
             f"{orfs_docs_url}/{src_path.split('_sources/')[-1].replace('.md', '.html')}"
         )
     elif 'manpages' in dst_path:
+        manpage_path = dst_path.replace('data/markdown/', '')
+        commit_hash = os.getenv(
+            'ORQA_RAG_DATASETS_COMMIT', '470c7ecd67d3a22557500a451b73a31fc8c4ec15'
+        )
         source_dict[dst_path] = (
-            f"OpenROAD Manpages - {dst_path.split('data/markdown/manpages')[-1]}"
+            f'https://huggingface.co/datasets/The-OpenROAD-Project/ORQA_RAG_datasets/raw/{commit_hash}/{manpage_path}'
         )
     elif 'yosys' in dst_path:
         source_dict[dst_path] = f"https://{dst_path[len('data/html/yosys_docs') :]}"
@@ -458,7 +464,7 @@ if __name__ == '__main__':
 
     build_or_docs()
     build_orfs_docs()
-    build_manpages()
+    download_manpages()
 
     os.chdir(cur_dir)
     copy_file_track_src(
