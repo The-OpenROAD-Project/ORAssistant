@@ -193,8 +193,8 @@ Please see their contributions at this [link](https://github.com/The-OpenROAD-Pr
 If you use this software in any published work, we would appreciate a citation! Please use the following reference:
 ```
 @misc{orassistant2024,
-  author = {The-OpenROAD-Project},
-  title = {Kaintura, Aviral and R, Palaniappan and Luar, Shui Song and Iyer, Indira},
+  author = {Kaintura, Aviral and R, Palaniappan and Luar, Shui Song and Iyer, Indira},
+  title = {ORAssistant Repository},
   year = {2024},
   url = {https://github.com/The-OpenROAD-Project/ORAssistant},
   note = {Accessed: 20xx-xx-xx}
