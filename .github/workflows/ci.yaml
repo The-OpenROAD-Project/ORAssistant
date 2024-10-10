@@ -1,0 +1,19 @@
+name: ORAssistant CI
+run-name: ${{ github.actor }} started CI
+
+on: [push, pull_request]
+
+jobs:
+  build-backend-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup prereqs
+      run: make init
+    - name: Run formatting checks
+      run: |
+        make format
+        make check
+    - name: Build Docker image
+      run: make docker
