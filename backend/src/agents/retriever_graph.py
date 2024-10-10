@@ -1,12 +1,20 @@
-from .retriever_tools import RetrieverTools
+import os
+import logging
+from typing import TypedDict, Annotated, Union, Optional
 
-from typing import TypedDict, Annotated, Union, Optional, Any
 from langchain_core.messages import AnyMessage
-
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.tools import BaseTool
 from langgraph.graph import START, END, StateGraph
 from langgraph.graph.graph import CompiledGraph
 from langgraph.graph.message import add_messages
+from langchain.tools.render import render_text_description
+from langchain.prompts import ChatPromptTemplate
+from langchain_google_vertexai import ChatVertexAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 
+from .retriever_tools import RetrieverTools
 from ..chains.base_chain import BaseChain
 from ..prompts.prompt_templates import (
     summarise_prompt_template,
@@ -14,15 +22,6 @@ from ..prompts.prompt_templates import (
     rephrase_prompt_template,
 )
 
-from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_ollama import ChatOllama
-from langchain.tools.render import render_text_description
-from langchain_core.output_parsers import JsonOutputParser
-from langchain.prompts import ChatPromptTemplate
-
-import os
-import logging
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
@@ -37,7 +36,7 @@ class AgentState(TypedDict):
 
 
 class ToolNode:
-    def __init__(self, tool_fn: Any) -> None:
+    def __init__(self, tool_fn: BaseTool) -> None:
         self.tool_fn = tool_fn
 
     def get_node(self, state: AgentState) -> dict[str, list[str]]:
@@ -45,7 +44,7 @@ class ToolNode:
         if query is None:
             raise ValueError('Query is None')
 
-        response, sources, urls = self.tool_fn(query)
+        response, sources, urls = self.tool_fn.invoke(query)  # type: ignore
 
         if response != []:
             response = (
@@ -89,9 +88,17 @@ class RetrieverGraph:
             self.retriever_tools.retrieve_cmds,
             self.retriever_tools.retrieve_install,
             self.retriever_tools.retrieve_general,
-            self.retriever_tools.retrieve_opensta,
+            self.retriever_tools.retrieve_klayout_docs,
             self.retriever_tools.retrieve_errinfo,
             self.retriever_tools.retrieve_yosys_rtdocs,
+        ]
+        self.tool_names = [
+            'retrieve_cmds',
+            'retrieve_install',
+            'retrieve_general',
+            'retrieve_klayout_docs',
+            'retrieve_errinfo',
+            'retrieve_yosys_rtdocs',
         ]
         self.inbuit_tool_calling = inbuit_tool_calling
 
@@ -132,6 +139,7 @@ class RetrieverGraph:
                 return {'tools': []}
 
             return {'tools': response.tool_calls}
+
         else:
             tool_rephrase_chain = (
                 ChatPromptTemplate.from_template(tool_rephrase_prompt_template)
@@ -145,20 +153,24 @@ class RetrieverGraph:
             })
 
             if response is None:
-                logging.warn(
+                logging.warning(
                     'Tool selection response not found. Returning empty tool list.'
                 )
                 return {'tools': []}
 
             if 'tool_names' in str(response):
                 tool_calls = response.get('tool_names', [])
+                for tool in tool_calls:
+                    if tool not in self.tool_names:
+                        logging.warning(f'Tool {tool} not found in tool list.')
+                        tool_calls.remove(tool)
             else:
-                logging.warn('Tool selection failed. Returning empty tool list.')
+                logging.warning('Tool selection failed. Returning empty tool list.')
 
             if 'rephrased_question' in str(response):
                 state['messages'][-1].content = response.get('rephrased_question')
             else:
-                logging.warn('Rephrased question not found in response.')
+                logging.warning('Rephrased question not found in response.')
 
             return {'tools': tool_calls}
 
@@ -188,12 +200,12 @@ class RetrieverGraph:
     def initialize(self) -> None:
         workflow = StateGraph(AgentState)
 
-        commands = ToolNode(self.retriever_tools.retrieve_cmds)
-        install = ToolNode(self.retriever_tools.retrieve_install)
-        general = ToolNode(self.retriever_tools.retrieve_general)
-        opensta = ToolNode(self.retriever_tools.retrieve_opensta)
-        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)
-        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)
+        commands = ToolNode(self.retriever_tools.retrieve_cmds)  # type: ignore
+        install = ToolNode(self.retriever_tools.retrieve_install)  # type: ignore
+        general = ToolNode(self.retriever_tools.retrieve_general)  # type: ignore
+        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs)  # type: ignore
+        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)  # type: ignore
+        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)  # type: ignore
 
         workflow.add_node('agent', self.agent)
         workflow.add_node('generate', self.generate)
@@ -201,7 +213,7 @@ class RetrieverGraph:
         workflow.add_node('retrieve_cmds', commands.get_node)
         workflow.add_node('retrieve_install', install.get_node)
         workflow.add_node('retrieve_general', general.get_node)
-        workflow.add_node('retrieve_opensta', opensta.get_node)
+        workflow.add_node('retrieve_klayout_docs', klayout_docs.get_node)
         workflow.add_node('retrieve_errinfo', errinfo.get_node)
         workflow.add_node('retrieve_yosys_rtdocs', yosys_rtdocs.get_node)
 
@@ -213,7 +225,7 @@ class RetrieverGraph:
                 'retrieve_cmds',
                 'retrieve_install',
                 'retrieve_general',
-                'retrieve_opensta',
+                'retrieve_klayout_docs',
                 'retrieve_errinfo',
                 'retrieve_yosys_rtdocs',
             ],
@@ -222,7 +234,7 @@ class RetrieverGraph:
         workflow.add_edge('retrieve_cmds', 'generate')
         workflow.add_edge('retrieve_install', 'generate')
         workflow.add_edge('retrieve_general', 'generate')
-        workflow.add_edge('retrieve_opensta', 'generate')
+        workflow.add_edge('retrieve_klayout_docs', 'generate')
         workflow.add_edge('retrieve_errinfo', 'generate')
         workflow.add_edge('retrieve_yosys_rtdocs', 'generate')
 

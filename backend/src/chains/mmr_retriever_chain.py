@@ -1,12 +1,12 @@
+from typing import Optional, Union
+
+from ..vectorstores.faiss import FAISSVectorDatabase
 from .similarity_retriever_chain import SimilarityRetrieverChain
+
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from ..vectorstores.faiss import FAISSVectorDatabase
-
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_ollama import ChatOllama
-
-from typing import Optional, Union
 
 
 class MMRRetrieverChain(SimilarityRetrieverChain):

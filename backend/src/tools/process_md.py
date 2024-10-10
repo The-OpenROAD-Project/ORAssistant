@@ -2,15 +2,13 @@ import os
 import glob
 import json
 import logging
-
+import markdown as md
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-import markdown as md
 from typing import Optional
 
 from langchain.docstore.document import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 from .chunk_documents import chunk_documents
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
@@ -56,7 +54,7 @@ def process_md(
         logging.error(f'{folder_path} is not populated, returning empty list.')
         return []
 
-    with open('src/source_list.json') as f:
+    with open('data/source_list.json') as f:
         src_dict = json.loads(f.read())
 
     documents = load_docs(folder_path=folder_path)
@@ -65,7 +63,7 @@ def process_md(
         try:
             url = src_dict[doc.metadata['source']]
         except KeyError:
-            logging.warn(f"Could not find source for {doc.metadata['source']}")
+            logging.warning(f"Could not find source for {doc.metadata['source']}")
             url = ''
 
         new_metadata = {

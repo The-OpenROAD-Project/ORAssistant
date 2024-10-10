@@ -6,7 +6,6 @@ API_BASE_URL = os.getenv('CHAT_ENDPOINT', 'http://localhost:8000')
 HEADERS = {'accept': 'application/json', 'Content-Type': 'application/json'}
 
 
-
 def fetch_endpoints() -> list[str]:
     url = f'{API_BASE_URL}/chains/listAll'
     try:

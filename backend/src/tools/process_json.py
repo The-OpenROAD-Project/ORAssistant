@@ -1,9 +1,9 @@
 import os
 import json
 import logging
+from typing import Any
 
 from langchain.docstore.document import Document
-from typing import Any
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 

@@ -9,7 +9,6 @@ from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
 from bs4 import BeautifulSoup
-from huggingface_hub import snapshot_download
 
 
 load_dotenv()
@@ -19,11 +18,12 @@ cur_dir: str = os.getcwd()
 or_docs_url = 'https://openroad.readthedocs.io/en/latest'
 orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
 opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
+yosys_html_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
+klayout_html_url = 'https://www.klayout.de/doc.html'
+or_website_url = 'https://theopenroadproject.org/'
 opensta_readme_url = (
     'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
 )
-yosys_html_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
-or_website_url = 'https://theopenroadproject.org/'
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
@@ -47,6 +47,8 @@ def update_src(src_path: str, dst_path: str) -> None:
         )
     elif 'yosys' in dst_path:
         source_dict[dst_path] = f"https://{dst_path[len('data/html/yosys_docs') :]}"
+    elif 'klayout' in dst_path:
+        source_dict[dst_path] = f"https://{dst_path[len('data/html/klayout_docs') :]}"
     elif 'OpenSTA' in dst_path and 'pdf' in dst_path:
         source_dict[dst_path] = opensta_docs_url
     elif 'OpenSTA' in dst_path and 'markdown' in dst_path:
@@ -261,21 +263,42 @@ def build_orfs_docs() -> None:
     return
 
 
-def download_manpages() -> None:
-    os.chdir(cur_dir)
-    logging.debug('Downloading Manpages...')
-    commit_hash = os.getenv(
-        'ORQA_RAG_DATASETS_COMMIT', '470c7ecd67d3a22557500a451b73a31fc8c4ec15'
-    )
-    snapshot_download(
-        repo_id='The-OpenROAD-Project/ORQA_RAG_datasets',
-        revision=commit_hash,
-        repo_type='dataset',
-        local_dir='data/markdown',
-        ignore_patterns=['.gitattributes', 'README.md'],
-    )
-    logging.debug('HF docs downloaded successfully.')
-    track_src(f'{cur_dir}/data/markdown/manpages')
+def build_manpages() -> None:
+    logging.debug('Starting manpages build...')
+
+    res = subprocess.run('pandoc --version', shell=True, capture_output=True)
+    if res.returncode != 0:
+        logging.error('Pandoc is not installed. Please install it.')
+        sys.exit(1)
+    logging.debug('Pandoc is installed.')
+
+    command = '../../etc/find_messages.py > messages.txt'
+    for module in os.listdir(os.path.join(cur_dir, 'OpenROAD/src')):
+        path = os.path.join(cur_dir, 'OpenROAD/src', module)
+        if not os.path.isdir(path):
+            continue
+        os.chdir(path)
+        res = subprocess.run(command, shell=True, capture_output=True)
+        if res.returncode != 0:
+            logging.error(
+                f"Error in finding messages for {module}: {res.stderr.decode('utf-8')}"
+            )
+            continue
+    os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
+    num_cores = os.cpu_count()
+    command = f'make clean && make preprocess && make -j{num_cores}'
+    res = subprocess.run(command, shell=True, capture_output=True)
+    logging.debug('Finished building manpages.')
+
+    src_dir = os.path.join(cur_dir, 'OpenROAD/docs/md')
+    dest_dir = os.path.join(cur_dir, 'data/markdown/manpages')
+
+    copy_tree_track_src(src_dir, dest_dir)
+    logging.debug('Copied manpages to data/markdown/manpages.')
+
+    logging.debug('Finished building manpages.')
+
+    return
 
 
 def get_opensta_docs() -> None:
@@ -369,11 +392,26 @@ def get_yosys_docs_html() -> None:
             shell=True,
         )
     except Exception as e:
-        logging.debug(f'Error in downloading Yosys RT docs: {e}')
+        logging.debug(f'Error in downloading Yosys docs: {e}')
         sys.exit(1)
 
-    logging.debug('Yosys RT docs downloaded successfully.')
+    logging.debug('Yosys docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/yosys_docs')
+
+
+def get_klayout_docs_html() -> None:
+    logging.debug('Scraping KLayout docs...')
+    try:
+        subprocess.run(
+            f'wget -r -A.html -l 3 -P data/html/klayout_docs {klayout_html_url} ',
+            shell=True,
+        )
+    except Exception as e:
+        logging.debug(f'Error in downloading KLayout docs: {e}')
+        sys.exit(1)
+
+    logging.debug('KLayout docs downloaded successfully.')
+    track_src(f'{cur_dir}/data/html/klayout_docs')
 
 
 if __name__ == '__main__':
@@ -401,10 +439,12 @@ if __name__ == '__main__':
     os.makedirs('data/pdf/OR_publications', exist_ok=True)
     os.makedirs('data/html', exist_ok=True)
 
+    get_klayout_docs_html()
+    get_yosys_docs_html()
+
     get_or_publications()
     get_or_website_html()
     get_opensta_docs()
-    get_yosys_docs_html()
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
@@ -423,7 +463,7 @@ if __name__ == '__main__':
 
     build_or_docs()
     build_orfs_docs()
-    download_manpages()
+    build_manpages()
 
     os.chdir(cur_dir)
     copy_file_track_src(
@@ -440,7 +480,7 @@ if __name__ == '__main__':
         full_path = os.path.join(gh_disc_path, file)
         source_dict[full_path] = gh_disc_src[file]['url']
 
-    with open('src/source_list.json', 'w+') as src:
+    with open('data/source_list.json', 'w+') as src:
         src.write(json.dumps(source_dict))
 
     repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
