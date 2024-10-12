@@ -10,7 +10,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Setup prereqs
-      run: make init
+      run: make init-dev
     - name: Run formatting checks
       run: |
         make format

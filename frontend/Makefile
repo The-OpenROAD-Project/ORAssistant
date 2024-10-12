@@ -7,11 +7,11 @@ init-dev: init
 	@. .venv/bin/activate && \
 		pip install -r requirements-test.txt
 
-format: init-dev
+format:
 	@. .venv/bin/activate && \
 		ruff format
 
-check: init-dev
+check:
 	@. .venv/bin/activate && \
-		ruff check -fix && \
+		ruff check --fix && \
 		mypy .
