@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from backend.src.api.routers import graphs, healthcheck
+from .routers import graphs, healthcheck
 
 app = FastAPI()
 

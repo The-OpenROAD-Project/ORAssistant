@@ -2,7 +2,7 @@ import os
 import uvicorn
 from dotenv import load_dotenv
 
-from backend.src.api.main import app
+from src.api.main import app
 
 load_dotenv()
 
