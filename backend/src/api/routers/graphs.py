@@ -26,7 +26,7 @@ required_env_vars = [
 missing_vars = [var for var in required_env_vars if os.getenv(var) is None]
 if missing_vars:
     raise ValueError(
-        f'The following environment variables are not set: {', '.join(missing_vars)}'
+        f"The following environment variables are not set: {', '.join(missing_vars)}"
     )
 
 use_cuda: bool = False
