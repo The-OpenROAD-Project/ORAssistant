@@ -24,7 +24,7 @@ def generate_knowledge_base(file_paths: list[str]) -> list[Document]:
     for file_path in file_paths:
         try:
             with open(file_path, 'r') as file:
-                logging.debug(f'Processing {file_path}...')
+                logging.debug(f"Processing {file_path}...")
                 for line in file:
                     try:
                         json_object = json.loads(line)
@@ -37,6 +37,6 @@ def generate_knowledge_base(file_paths: list[str]) -> list[Document]:
                     except json.JSONDecodeError:
                         logging.error('Error: Invalid JSON format line:', line)
         except FileNotFoundError:
-            logging.error(f'{file_path} not found.')
+            logging.error(f"{file_path} not found.")
 
     return json_knowledge_base

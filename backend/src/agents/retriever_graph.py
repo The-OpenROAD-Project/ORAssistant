@@ -166,7 +166,7 @@ class RetrieverGraph:
                 tool_calls = response.get('tool_names', [])
                 for tool in tool_calls:
                     if tool not in self.tool_names:
-                        logging.warning(f'Tool {tool} not found in tool list.')
+                        logging.warning(f"Tool {tool} not found in tool list.")
                         tool_calls.remove(tool)
             else:
                 logging.warning('Tool selection failed. Returning empty tool list.')

@@ -45,7 +45,7 @@ if __name__ == '__main__':
             urls = output[-2][tool]['urls']
             chat_history.append({'User': user_question, 'AI': llm_response})
 
-            print(f'LLM: {llm_response} \nSources: {srcs} \nURLs: {urls}\n\n')
+            print(f"LLM: {llm_response} \nSources: {srcs} \nURLs: {urls}\n\n")
 
         else:
             print('LLM response extraction failed')
