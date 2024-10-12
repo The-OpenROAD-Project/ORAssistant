@@ -10,22 +10,10 @@ repos:
     -   id: check-executables-have-shebangs
     -   id: check-shebang-scripts-are-executable
     -   id: detect-private-key
-    -   id: double-quote-string-fixer
     -   id: check-added-large-files
         args:
         - --maxkb=120
         - --enforce-all
-
--   repo: local
-    hooks:
-    -   id: mypy
-        name: mypy
-        entry: mypy
-        language: system
-        types: [python]
-        args:
-        - --local-partial-types
-        - --explicit-package-bases
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.5.1

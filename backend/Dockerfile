@@ -3,7 +3,7 @@ FROM python:3.12.3-slim
 WORKDIR /ORAssistant-backend
 
 RUN apt-get update && apt-get install -y \
-    pandoc git wget \
+    pandoc git wget curl \
     git-lfs
 
 RUN git lfs install

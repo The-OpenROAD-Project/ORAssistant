@@ -85,7 +85,7 @@ def main() -> None:
     st.set_page_config(page_title='OR Assistant', page_icon=img)
 
     deployment_time = datetime.datetime.now(pytz.timezone('UTC'))
-    st.info(f'Deployment time: {deployment_time.strftime('%m/%d/%Y %H:%M')} UTC')
+    st.info(f"Deployment time: {deployment_time.strftime('%m/%d/%Y %H:%M')} UTC")
 
     st.title('OR Assistant')
 

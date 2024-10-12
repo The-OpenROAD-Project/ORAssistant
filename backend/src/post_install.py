@@ -1,4 +1,4 @@
-import nltk
+import nltk  # type: ignore
 
 nltk.download('punkt')
 nltk.download('punkt_tab')
