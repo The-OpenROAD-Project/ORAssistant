@@ -51,7 +51,7 @@ def process_md(
     """
     # if no files in the directory
     if not os.path.exists(folder_path) or not os.listdir(folder_path):
-        logging.error(f'{folder_path} is not populated, returning empty list.')
+        logging.error(f"{folder_path} is not populated, returning empty list.")
         return []
 
     with open('data/source_list.json') as f:

@@ -91,7 +91,7 @@ class FAISSVectorDatabase:
         processed_mddocs: list[Document] = []
 
         for folder_path in folder_paths:
-            logging.debug(f'Processing [{folder_path}]...')
+            logging.debug(f"Processing [{folder_path}]...")
             processed_mddocs.extend(
                 process_md(
                     folder_path=folder_path,
@@ -101,7 +101,7 @@ class FAISSVectorDatabase:
             )
 
         if processed_mddocs:
-            logging.info(f'Adding {folder_paths} to FAISS database...\n')
+            logging.info(f"Adding {folder_paths} to FAISS database...\n")
             self._add_to_db(documents=processed_mddocs)
             self.processed_docs.extend(processed_mddocs)
         else:
@@ -119,7 +119,7 @@ class FAISSVectorDatabase:
 
         processed_manpages: list[Document] = []
         for folder_path in folder_paths:
-            logging.debug(f'Processing [{folder_path}]...')
+            logging.debug(f"Processing [{folder_path}]...")
             processed_manpages.extend(
                 process_md(
                     folder_path=folder_path, split_text=False, chunk_size=chunk_size
@@ -127,7 +127,7 @@ class FAISSVectorDatabase:
             )
 
         if processed_manpages:
-            logging.info(f'Adding {folder_paths} to FAISS database...\n')
+            logging.info(f"Adding {folder_paths} to FAISS database...\n")
             self._add_to_db(documents=processed_manpages)
             self.processed_docs.extend(processed_manpages)
         else:
@@ -145,7 +145,7 @@ class FAISSVectorDatabase:
 
         processed_html_docs: list[Document] = []
         for folder_path in folder_paths:
-            logging.debug(f'Processing [{folder_path}]...')
+            logging.debug(f"Processing [{folder_path}]...")
             processed_html_docs.extend(
                 process_html(
                     folder_path=folder_path, split_text=True, chunk_size=chunk_size
@@ -153,11 +153,11 @@ class FAISSVectorDatabase:
             )
 
         if processed_html_docs:
-            logging.info(f'Adding {folder_paths} to FAISS database...\n')
+            logging.info(f"Adding {folder_paths} to FAISS database...\n")
             self._add_to_db(documents=processed_html_docs)
             self.processed_docs.extend(processed_html_docs)
         else:
-            raise ValueError(f'Could not add {folder_paths}. No HTML docs processed.')
+            raise ValueError(f"Could not add {folder_paths}. No HTML docs processed.")
 
         if return_docs:
             return processed_html_docs
@@ -172,14 +172,14 @@ class FAISSVectorDatabase:
         processed_otherdocs: list[Document] = []
 
         for file_path in file_paths:
-            logging.debug(f'Processing [{file_path}]...')
+            logging.debug(f"Processing [{file_path}]...")
             if file_type == 'pdf':
                 processed_otherdocs.extend(process_pdf_docs(file_path=file_path))
             else:
                 raise ValueError('File type not supported.')
 
         if processed_otherdocs:
-            logging.info(f'Adding [{file_paths}] to FAISS database...\n')
+            logging.info(f"Adding [{file_paths}] to FAISS database...\n")
             self._add_to_db(documents=processed_otherdocs)
             self.processed_docs.extend(processed_otherdocs)
         else:

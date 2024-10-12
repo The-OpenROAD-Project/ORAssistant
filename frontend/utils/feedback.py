@@ -142,7 +142,7 @@ def submit_feedback_to_google_sheet(
         sheet.append_row(data_to_append)
         st.sidebar.success('Feedback submitted successfully.')
     else:
-        st.sidebar.error(f'Sheet with GID {target_gid} not found.')
+        st.sidebar.error(f"Sheet with GID {target_gid} not found.")
 
 
 def show_feedback_form(

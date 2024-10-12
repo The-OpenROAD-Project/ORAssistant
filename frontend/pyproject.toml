@@ -3,7 +3,7 @@ requires = ['setuptools>=60', 'Cython==3.0.7', 'wheel==0.42.0']
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ora-backend"
+name = "ora-frontend"
 version = "1.0.0"
 dynamic = ["dependencies", "optional-dependencies"]
 requires-python = ">=3.12"
@@ -69,7 +69,7 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E4", "E7", "E9","E301","E304","E305","E401","E223","E224","E242", "E", "F" ,"N", "W", "C90"]
 extend-select = ["D203", "D204"]
-ignore = ["E501"]
+ignore = ["E501", "C901"]
 preview = true
 
 # Allow fix for all enabled rules (when `--fix` is provided).
