@@ -128,10 +128,12 @@ class RetrieverGraph:
                 | self.llm
                 | JsonOutputParser()
             )
-            response = tool_choice_chain.invoke({
-                'question': followup_question,
-                'chat_history': state['chat_history'],
-            })
+            response = tool_choice_chain.invoke(
+                {
+                    'question': followup_question,
+                    'chat_history': state['chat_history'],
+                }
+            )
 
             response = model.invoke(followup_question)
 
@@ -146,11 +148,13 @@ class RetrieverGraph:
                 | self.llm
                 | JsonOutputParser()
             )
-            response = tool_rephrase_chain.invoke({
-                'question': followup_question,
-                'tool_descriptions': self.tool_descriptions,
-                'chat_history': state['chat_history'],
-            })
+            response = tool_rephrase_chain.invoke(
+                {
+                    'question': followup_question,
+                    'tool_descriptions': self.tool_descriptions,
+                    'chat_history': state['chat_history'],
+                }
+            )
 
             if response is None:
                 logging.warning(

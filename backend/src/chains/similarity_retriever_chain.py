@@ -133,10 +133,12 @@ class SimilarityRetrieverChain(BaseChain):
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
-        llm_chain_with_source = RunnableParallel({
-            'context': self.retriever,
-            'question': RunnablePassthrough(),
-        }).assign(answer=self.llm_chain)
+        llm_chain_with_source = RunnableParallel(
+            {
+                'context': self.retriever,
+                'question': RunnablePassthrough(),
+            }
+        ).assign(answer=self.llm_chain)
 
         self.llm_chain = llm_chain_with_source
 
