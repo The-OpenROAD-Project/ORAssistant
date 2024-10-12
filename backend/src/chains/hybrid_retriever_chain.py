@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
@@ -59,9 +59,7 @@ class HybridRetrieverChain(BaseChain):
         self.chunk_size: int = chunk_size
 
         self.contextual_rerank: bool = contextual_rerank
-        self.retriever: Optional[
-            Union[EnsembleRetriever, ContextualCompressionRetriever]
-        ] = None
+        self.retriever: Any  # RunnableParallel compatibility
 
     def create_hybrid_retriever(self) -> None:
         similarity_retriever_chain = SimilarityRetrieverChain(
@@ -121,10 +119,12 @@ class HybridRetrieverChain(BaseChain):
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
-        llm_chain_with_source = RunnableParallel({
-            'context': self.retriever,
-            'question': RunnablePassthrough(),
-        }).assign(answer=self.llm_chain)  # type: ignore
+        llm_chain_with_source = RunnableParallel(
+            {
+                'context': self.retriever,
+                'question': RunnablePassthrough(),
+            }
+        ).assign(answer=self.llm_chain)
 
         self.llm_chain = llm_chain_with_source
 

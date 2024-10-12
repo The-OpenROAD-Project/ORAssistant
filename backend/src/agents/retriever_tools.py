@@ -179,7 +179,7 @@ class RetrieverTools:
         Initialize Floorplan (IFP), Macro Placement (MPL), Hierarchical Macro Placement (MPL2), OpenDB (ODB), Chip-level Connections (PAD),\
         Partition Manager (PAR), Power Distribution Network (PDN), Pin Placement (PPL), IR Drop Analysis (PSM), Parasitics Extraction (RSX),\
         Restructure (RMP), Gate Resizer (RSZ), Rectilinear Steiner Tree (STT), TapCell (TAP), Read Unified Power Format (UPF), Timing Optimization\
-       
+
         OpenSTA is an open-source gate-level static timing verifier.\
         It can verify the timing of deisgns in the form of Verilog netlists.\
         Timing Analysis: Perform static timing analysis using standard file formats (Verilog, Liberty, SDC, SDF, SPEF).
@@ -230,7 +230,7 @@ class RetrieverTools:
         """
         Retrieve detailed information regarding the Yosys application.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of Yosys.\
-        
+
         Yosys is a framework for Verilog RTL synthesis.\
         It currently has extensive Verilog-2005 support and provides a basic set of synthesis algorithms for various application domains.\
         Setup: Configure Yosys for synthesis tasks.
@@ -250,7 +250,7 @@ class RetrieverTools:
         """
         Retrieve detailed information regarding the KLayout application.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of KLayout.\
-        
+
         KLayout is a powerful open-source layout viewer and editor designed for integrated circuit (IC) design.\
         It supports various file formats, including GDSII, OASIS, and DXF
         """

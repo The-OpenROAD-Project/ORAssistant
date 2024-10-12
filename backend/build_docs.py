@@ -1,9 +1,9 @@
+import json
 import os
 import subprocess
 import requests
 import sys
 import shutil
-import json
 import logging
 from shutil import copyfile
 from dotenv import load_dotenv
@@ -43,7 +43,7 @@ def update_src(src_path: str, dst_path: str) -> None:
             'ORQA_RAG_DATASETS_COMMIT', '470c7ecd67d3a22557500a451b73a31fc8c4ec15'
         )
         source_dict[dst_path] = (
-            f'https://huggingface.co/datasets/The-OpenROAD-Project/ORQA_RAG_datasets/raw/{commit_hash}/{manpage_path}'
+            f"https://huggingface.co/datasets/The-OpenROAD-Project/ORQA_RAG_datasets/raw/{commit_hash}/{manpage_path}"
         )
     elif 'yosys' in dst_path:
         source_dict[dst_path] = f"https://{dst_path[len('data/html/yosys_docs') :]}"
@@ -65,13 +65,13 @@ def purge_folders(folder_paths: list[str]) -> None:
     for folder_path in folder_paths:
         if os.path.exists(folder_path):
             shutil.rmtree(folder_path)
-            logging.debug(f'Purging, Folder {folder_path} deleted.')
+            logging.debug(f"Purging, Folder {folder_path} deleted.")
 
 
 def track_src(src: str) -> None:
-    logging.debug(f'Updating source dict for {src}...')
+    logging.debug(f"Updating source dict for {src}...")
     if not os.path.exists(src):
-        logging.error(f'File {src} does not exist. Exiting.')
+        logging.error(f"File {src} does not exist. Exiting.")
         sys.exit(1)
 
     for root, _, files in os.walk(src):
@@ -84,7 +84,7 @@ def track_src(src: str) -> None:
 
 def copy_file_track_src(src: str, dst: str) -> None:
     if not os.path.exists(src):
-        logging.error(f'File {src} does not exist. Exiting.')
+        logging.error(f"File {src} does not exist. Exiting.")
         sys.exit(1)
 
     if os.path.isfile(src):
@@ -92,8 +92,8 @@ def copy_file_track_src(src: str, dst: str) -> None:
             base, ext = os.path.splitext(dst)
             counter = 2
             while os.path.exists(dst):
-                new_file_name = f'{base}_{counter}{ext}'
-                logging.debug(f'File {dst} already exists. Renaming to {new_file_name}')
+                new_file_name = f"{base}_{counter}{ext}"
+                logging.debug(f"File {dst} already exists. Renaming to {new_file_name}")
                 dst = new_file_name
                 counter += 1
 
@@ -106,7 +106,7 @@ def copy_file_track_src(src: str, dst: str) -> None:
 
 def copy_tree_track_src(src: str, dst: str) -> None:
     if not os.path.exists(src):
-        logging.debug(f'Folder {src} does not exist. Exiting.')
+        logging.debug(f"Folder {src} does not exist. Exiting.")
         sys.exit(1)
 
     for root, _, files in os.walk(src):
@@ -122,10 +122,10 @@ def copy_tree_track_src(src: str, dst: str) -> None:
                 base, ext = os.path.splitext(file)
                 counter = 2
                 while os.path.exists(dst_file):
-                    new_file_name = f'{base}_{counter}{ext}'
+                    new_file_name = f"{base}_{counter}{ext}"
                     dst_file = os.path.join(dst_dir, new_file_name)
                     logging.debug(
-                        f'File {dst_file} already exists. Renaming to {new_file_name}'
+                        f"File {dst_file} already exists. Renaming to {new_file_name}"
                     )
                     counter += 1
 
@@ -137,15 +137,15 @@ def copy_tree_track_src(src: str, dst: str) -> None:
 
 def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) -> None:
     target_dir = os.path.join(cur_dir, folder_name)
-    logging.debug(f'Cloning repo from {url} to {target_dir}...')
-    command = f'git clone {url} {target_dir}'
+    logging.debug(f"Cloning repo from {url} to {target_dir}...")
+    command = f"git clone {url} {target_dir}"
     res = subprocess.run(command, shell=True, capture_output=True)
     if res.returncode != 0:
         logging.debug(f"Error in cloning repo: {res.stderr.decode('utf-8')}")
         sys.exit(1)
     if commit_hash:
         os.chdir(target_dir)
-        command = f'git fetch origin {commit_hash} && git checkout {commit_hash}'
+        command = f"git fetch origin {commit_hash} && git checkout {commit_hash}"
         res = subprocess.run(command, shell=True, capture_output=True)
         if res.returncode != 0:
             logging.debug(
@@ -166,32 +166,32 @@ def build_or_docs() -> None:
     md_or_docs = os.path.join(cur_dir, 'OpenROAD/docs/build/html/_sources')
 
     if not os.path.isdir(md_or_docs):
-        logging.debug(f'Directory {md_or_docs} does not exist. Exiting.')
+        logging.debug(f"Directory {md_or_docs} does not exist. Exiting.")
         sys.exit(1)
 
     copy_tree_track_src(
-        f'{md_or_docs}/user', f'{cur_dir}/data/markdown/OR_docs/installation'
+        f"{md_or_docs}/user", f"{cur_dir}/data/markdown/OR_docs/installation"
     )
-    copy_tree_track_src(f'{md_or_docs}/main', f'{cur_dir}/data/markdown/OR_docs/tools')
+    copy_tree_track_src(f"{md_or_docs}/main", f"{cur_dir}/data/markdown/OR_docs/tools")
     copy_file_track_src(
-        f'{md_or_docs}/main/README.md',
-        f'{cur_dir}/data/markdown/OR_docs/general/README.md',
+        f"{md_or_docs}/main/README.md",
+        f"{cur_dir}/data/markdown/OR_docs/general/README.md",
     )
     copy_tree_track_src(
-        f'{md_or_docs}/tutorials', f'{cur_dir}/data/markdown/OR_docs/general'
+        f"{md_or_docs}/tutorials", f"{cur_dir}/data/markdown/OR_docs/general"
     )
     copy_tree_track_src(
-        f'{md_or_docs}/contrib', f'{cur_dir}/data/markdown/OR_docs/general'
+        f"{md_or_docs}/contrib", f"{cur_dir}/data/markdown/OR_docs/general"
     )
     copy_tree_track_src(
-        f'{md_or_docs}/src/test', f'{cur_dir}/data/markdown/OR_docs/general'
+        f"{md_or_docs}/src/test", f"{cur_dir}/data/markdown/OR_docs/general"
     )
 
-    for file in os.listdir(f'{md_or_docs}'):
+    for file in os.listdir(f"{md_or_docs}"):
         if file.endswith('.md'):
             copyfile(
-                f'{md_or_docs}/{file}',
-                f'{cur_dir}/data/markdown/OR_docs/general/{file}',
+                f"{md_or_docs}/{file}",
+                f"{cur_dir}/data/markdown/OR_docs/general/{file}",
             )
 
     logging.debug('Finished building OR docs.')
@@ -212,14 +212,14 @@ def build_orfs_docs() -> None:
     )
 
     if not os.path.isdir(md_orfs_docs):
-        logging.debug(f'Directory {md_orfs_docs} does not exist. Exiting.')
+        logging.debug(f"Directory {md_orfs_docs} does not exist. Exiting.")
         sys.exit(1)
 
     copy_tree_track_src(
-        f'{md_orfs_docs}/tutorials', f'{cur_dir}/data/markdown/ORFS_docs/general'
+        f"{md_orfs_docs}/tutorials", f"{cur_dir}/data/markdown/ORFS_docs/general"
     )
     copy_tree_track_src(
-        f'{md_orfs_docs}/contrib', f'{cur_dir}/data/markdown/ORFS_docs/general'
+        f"{md_orfs_docs}/contrib", f"{cur_dir}/data/markdown/ORFS_docs/general"
     )
 
     installation_files = [
@@ -232,30 +232,30 @@ def build_orfs_docs() -> None:
         'index2.md',
     ]
 
-    for file in os.listdir(f'{md_orfs_docs}/user'):
+    for file in os.listdir(f"{md_orfs_docs}/user"):
         if file.endswith('.md'):
             if file in installation_files:
                 copy_file_track_src(
-                    f'{md_orfs_docs}/user/{file}',
-                    f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
+                    f"{md_orfs_docs}/user/{file}",
+                    f"{cur_dir}/data/markdown/ORFS_docs/installation/{file}",
                 )
             else:
                 copy_file_track_src(
-                    f'{md_orfs_docs}/user/{file}',
-                    f'{cur_dir}/data/markdown/ORFS_docs/general/{file}',
+                    f"{md_orfs_docs}/user/{file}",
+                    f"{cur_dir}/data/markdown/ORFS_docs/general/{file}",
                 )
 
-    for file in os.listdir(f'{md_orfs_docs}/'):
+    for file in os.listdir(f"{md_orfs_docs}/"):
         if file.endswith('.md'):
             if file in installation_files:
                 copy_file_track_src(
-                    f'{md_orfs_docs}/{file}',
-                    f'{cur_dir}/data/markdown/ORFS_docs/installation/{file}',
+                    f"{md_orfs_docs}/{file}",
+                    f"{cur_dir}/data/markdown/ORFS_docs/installation/{file}",
                 )
             else:
                 copy_file_track_src(
-                    f'{md_orfs_docs}/{file}',
-                    f'{cur_dir}/data/markdown/ORFS_docs/general/{file}',
+                    f"{md_orfs_docs}/{file}",
+                    f"{cur_dir}/data/markdown/ORFS_docs/general/{file}",
                 )
 
     logging.debug('Finished building ORFS docs.')
@@ -286,7 +286,7 @@ def build_manpages() -> None:
             continue
     os.chdir(os.path.join(cur_dir, 'OpenROAD/docs'))
     num_cores = os.cpu_count()
-    command = f'make clean && make preprocess && make -j{num_cores}'
+    command = f"make clean && make preprocess && make -j{num_cores}"
     res = subprocess.run(command, shell=True, capture_output=True)
     logging.debug('Finished building manpages.')
 
@@ -327,23 +327,23 @@ def get_opensta_docs() -> None:
     else:
         logging.debug('Failed to download file. Status code:', response.status_code)
 
-    track_src(f'{cur_dir}/data/markdown/OpenSTA_docs')
-    track_src(f'{cur_dir}/data/pdf/OpenSTA')
+    track_src(f"{cur_dir}/data/markdown/OpenSTA_docs")
+    track_src(f"{cur_dir}/data/pdf/OpenSTA")
 
 
 def get_or_website_html() -> None:
     logging.debug('Scraping OR website...')
     try:
         subprocess.run(
-            f'wget -r -A.html -P data/html/or_website {or_website_url}',
+            f"wget -r -A.html -P data/html/or_website {or_website_url}",
             shell=True,
         )
     except Exception as e:
-        logging.debug(f'Error in downloading OR website docs: {e}')
+        logging.debug(f"Error in downloading OR website docs: {e}")
         sys.exit(1)
 
     logging.debug('OR website docs downloaded successfully.')
-    track_src(f'{cur_dir}/data/html/or_website')
+    track_src(f"{cur_dir}/data/html/or_website")
 
 
 def get_or_publications() -> None:
@@ -360,25 +360,27 @@ def get_or_publications() -> None:
 
         for paper_link in papers:
             paper_name = paper_link.split('/')[-1]
-            logging.debug(f'Downloading {paper_name}. . .')
+            logging.debug(f"Downloading {paper_name}. . .")
 
             counter = 2
-            while os.path.exists(f'{cur_dir}/data/pdf/OR_publications/{paper_name}'):
-                logging.debug(f'File {paper_name} already exists. Renaming. . .')
+            while os.path.exists(f"{cur_dir}/data/pdf/OR_publications/{paper_name}"):
+                logging.debug(f"File {paper_name} already exists. Renaming. . .")
                 paper_name = f"{paper_name.split('.')[0]}_{counter}.pdf"
                 counter += 1
 
-            subprocess.run([
-                'wget',
-                paper_link,
-                '-O',
-                f'data/pdf/OR_publications/{paper_name}',
-            ])
+            subprocess.run(
+                [
+                    'wget',
+                    paper_link,
+                    '-O',
+                    f"data/pdf/OR_publications/{paper_name}",
+                ]
+            )
 
-            source_dict[f'data/pdf/OR_publications/{paper_name}'] = paper_link
+            source_dict[f"data/pdf/OR_publications/{paper_name}"] = paper_link
 
     except Exception as e:
-        logging.debug(f'Error in downloading OR publications: {e}')
+        logging.debug(f"Error in downloading OR publications: {e}")
         sys.exit(1)
 
     logging.debug('OR publications downloaded successfully.')
@@ -388,30 +390,30 @@ def get_yosys_docs_html() -> None:
     logging.debug('Scraping Yosys RT docs...')
     try:
         subprocess.run(
-            f'wget -r -A.html -P data/html/yosys_docs {yosys_html_url} ',
+            f"wget -r -A.html -P data/html/yosys_docs {yosys_html_url} ",
             shell=True,
         )
     except Exception as e:
-        logging.debug(f'Error in downloading Yosys docs: {e}')
+        logging.debug(f"Error in downloading Yosys docs: {e}")
         sys.exit(1)
 
     logging.debug('Yosys docs downloaded successfully.')
-    track_src(f'{cur_dir}/data/html/yosys_docs')
+    track_src(f"{cur_dir}/data/html/yosys_docs")
 
 
 def get_klayout_docs_html() -> None:
     logging.debug('Scraping KLayout docs...')
     try:
         subprocess.run(
-            f'wget -r -A.html -l 3 -P data/html/klayout_docs {klayout_html_url} ',
+            f"wget -r -A.html -l 3 -P data/html/klayout_docs {klayout_html_url} ",
             shell=True,
         )
     except Exception as e:
-        logging.debug(f'Error in downloading KLayout docs: {e}')
+        logging.debug(f"Error in downloading KLayout docs: {e}")
         sys.exit(1)
 
     logging.debug('KLayout docs downloaded successfully.')
-    track_src(f'{cur_dir}/data/html/klayout_docs')
+    track_src(f"{cur_dir}/data/html/klayout_docs")
 
 
 if __name__ == '__main__':
@@ -467,13 +469,13 @@ if __name__ == '__main__':
 
     os.chdir(cur_dir)
     copy_file_track_src(
-        f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
-        f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
+        f"{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md",
+        f"{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md",
     )
 
-    os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
+    os.remove(f"{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md")
 
-    gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
+    gh_disc_src_json = open(f"{cur_dir}/data/markdown/gh_discussions/mapping.json", 'r')
     gh_disc_src = json.load(gh_disc_src_json)
     gh_disc_path = 'data/markdown/gh_discussions'
     for file in gh_disc_src.keys():

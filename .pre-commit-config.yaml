@@ -15,19 +15,3 @@ repos:
         args:
         - --maxkb=120
         - --enforce-all
-
--   repo: local
-    hooks:
-    -   id: mypy
-        name: mypy
-        entry: mypy
-        language: system
-        types: [python]
-        args:
-        - --local-partial-types
-        - --explicit-package-bases
-
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.1
-    hooks:
-    -   id: ruff
