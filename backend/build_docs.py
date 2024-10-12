@@ -3,7 +3,6 @@ import subprocess
 import requests
 import sys
 import shutil
-import json
 import logging
 from shutil import copyfile
 from dotenv import load_dotenv
@@ -368,12 +367,14 @@ def get_or_publications() -> None:
                 paper_name = f"{paper_name.split('.')[0]}_{counter}.pdf"
                 counter += 1
 
-            subprocess.run([
-                'wget',
-                paper_link,
-                '-O',
-                f'data/pdf/OR_publications/{paper_name}',
-            ])
+            subprocess.run(
+                [
+                    'wget',
+                    paper_link,
+                    '-O',
+                    f'data/pdf/OR_publications/{paper_name}',
+                ]
+            )
 
             source_dict[f'data/pdf/OR_publications/{paper_name}'] = paper_link
 
@@ -416,72 +417,72 @@ def get_klayout_docs_html() -> None:
 
 if __name__ == '__main__':
     logging.info('Building knowledge base...')
-    docs_paths = [
-        'data/markdown/manpages',
-        'data/markdown/OR_docs',
-        'data/markdown/ORFS_docs',
-        'data/markdown/OpenSTA_docs',
-        'data/pdf',
-        'data/html',
-    ]
-    purge_folders(folder_paths=docs_paths)
+    # docs_paths = [
+    #     'data/markdown/manpages',
+    #     'data/markdown/OR_docs',
+    #     'data/markdown/ORFS_docs',
+    #     'data/markdown/OpenSTA_docs',
+    #     'data/pdf',
+    #     'data/html',
+    # ]
+    # purge_folders(folder_paths=docs_paths)
 
-    os.makedirs('data/markdown/manpages', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
-    os.makedirs('data/markdown/OR_docs/general', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
-    os.makedirs('data/markdown/ORFS_docs/general', exist_ok=True)
-    os.makedirs('data/markdown/OpenSTA_docs', exist_ok=True)
-    os.makedirs('data/pdf/OpenSTA', exist_ok=True)
-    os.makedirs('data/pdf/OR_publications', exist_ok=True)
-    os.makedirs('data/html', exist_ok=True)
+    # os.makedirs('data/markdown/manpages', exist_ok=True)
+    # os.makedirs('data/markdown/OR_docs', exist_ok=True)
+    # os.makedirs('data/markdown/OR_docs/installation', exist_ok=True)
+    # os.makedirs('data/markdown/OR_docs/tools', exist_ok=True)
+    # os.makedirs('data/markdown/OR_docs/general', exist_ok=True)
+    # os.makedirs('data/markdown/ORFS_docs', exist_ok=True)
+    # os.makedirs('data/markdown/ORFS_docs/installation', exist_ok=True)
+    # os.makedirs('data/markdown/ORFS_docs/general', exist_ok=True)
+    # os.makedirs('data/markdown/OpenSTA_docs', exist_ok=True)
+    # os.makedirs('data/pdf/OpenSTA', exist_ok=True)
+    # os.makedirs('data/pdf/OR_publications', exist_ok=True)
+    # os.makedirs('data/html', exist_ok=True)
 
-    get_klayout_docs_html()
-    get_yosys_docs_html()
+    # get_klayout_docs_html()
+    # get_yosys_docs_html()
 
-    get_or_publications()
-    get_or_website_html()
-    get_opensta_docs()
+    # get_or_publications()
+    # get_or_website_html()
+    # get_opensta_docs()
 
-    clone_repo(
-        url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
-        commit_hash=os.getenv(
-            'OR_REPO_COMMIT', 'ffc5760f2df639cd184c40ceba253c7e02a006d5'
-        ),
-        folder_name='OpenROAD',
-    )
-    clone_repo(
-        url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
-        commit_hash=os.getenv(
-            'ORFS_REPO_COMMIT', 'b94834df01cb58915bc0e8dabf85a314fbd8fb9e'
-        ),
-        folder_name='OpenROAD-flow-scripts',
-    )
+    # clone_repo(
+    #     url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
+    #     commit_hash=os.getenv(
+    #         'OR_REPO_COMMIT', 'ffc5760f2df639cd184c40ceba253c7e02a006d5'
+    #     ),
+    #     folder_name='OpenROAD',
+    # )
+    # clone_repo(
+    #     url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
+    #     commit_hash=os.getenv(
+    #         'ORFS_REPO_COMMIT', 'b94834df01cb58915bc0e8dabf85a314fbd8fb9e'
+    #     ),
+    #     folder_name='OpenROAD-flow-scripts',
+    # )
 
-    build_or_docs()
-    build_orfs_docs()
-    build_manpages()
+    # build_or_docs()
+    # build_orfs_docs()
+    # build_manpages()
 
-    os.chdir(cur_dir)
-    copy_file_track_src(
-        f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
-        f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
-    )
+    # os.chdir(cur_dir)
+    # copy_file_track_src(
+    #     f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
+    #     f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
+    # )
 
-    os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
+    # os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
 
-    gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
-    gh_disc_src = json.load(gh_disc_src_json)
-    gh_disc_path = 'data/markdown/gh_discussions'
-    for file in gh_disc_src.keys():
-        full_path = os.path.join(gh_disc_path, file)
-        source_dict[full_path] = gh_disc_src[file]['url']
+    # gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
+    # gh_disc_src = json.load(gh_disc_src_json)
+    # gh_disc_path = 'data/markdown/gh_discussions'
+    # for file in gh_disc_src.keys():
+    #     full_path = os.path.join(gh_disc_path, file)
+    #     source_dict[full_path] = gh_disc_src[file]['url']
 
-    with open('data/source_list.json', 'w+') as src:
-        src.write(json.dumps(source_dict))
+    # with open('data/source_list.json', 'w+') as src:
+    #     src.write(json.dumps(source_dict))
 
-    repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
-    purge_folders(folder_paths=repo_paths)
+    # repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
+    # purge_folders(folder_paths=repo_paths)
