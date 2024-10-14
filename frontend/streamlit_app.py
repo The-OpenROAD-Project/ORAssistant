@@ -22,6 +22,37 @@ def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, 
     return wrapper
 
 
+def translate_chat_history_to_api(chat_history: list[dict[str, str]], max_pairs: int = 4) -> list[dict[str, str]]:
+    """
+    Translate the chat history to the format expected by the API.
+
+    Args:
+    - chat_history (list): The chat history.
+    - max_pairs (int): The maximum number of chat pairs to include in the API request.
+
+    Returns:
+    - list: The chat history formatted for the API.
+    """
+    api_format: list[dict[str, str]] = []
+    # Skip the first AI message (starter message) and get the last messages
+    relevant_history = [msg for msg in chat_history[1:] if msg['role'] in ['user', 'ai']]
+    
+    # Process messages in reverse order to get the most recent pairs
+    user_msg = None
+    for msg in reversed(relevant_history):
+        if msg['role'] == 'user' and user_msg is None:
+            user_msg = msg
+        elif msg['role'] == 'ai' and user_msg is not None:
+            api_format.insert(0, {
+                "User": user_msg['content'],
+                "AI": msg['content']
+            })
+            user_msg = None
+            if len(api_format) == max_pairs:
+                break
+    
+    return api_format
+
 @measure_response_time
 def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
     """
@@ -33,11 +64,18 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
     Returns:
     - tuple: Contains the AI response and sources.
     """
-    url = f'{st.session_state.base_url}{st.session_state.selected_endpoint}'
+    url = f"{st.session_state.base_url}{st.session_state.selected_endpoint}"
 
     headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
 
-    payload = {'query': user_input, 'list_sources': True, 'list_context': True}
+    chat_history = translate_chat_history_to_api(st.session_state.chat_history)
+    
+    payload = {
+        'query': user_input,
+        'list_sources': True,
+        'list_context': True,
+        'chat_history': chat_history
+    }
 
     try:
         response = requests.post(url, headers=headers, json=payload)
@@ -65,19 +103,6 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
         return None, None
 
 
-def fetch_endpoints() -> tuple[str, list[str]]:
-    base_url = os.getenv('CHAT_ENDPOINT', 'http://localhost:8000')
-    url = f'{base_url}/chains/listAll'
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        endpoints = response.json()
-        return base_url, endpoints
-    except requests.exceptions.RequestException as e:
-        st.error(f'Failed to fetch endpoints: {e}')
-        return base_url, []
-
-
 def main() -> None:
     load_dotenv()
 
@@ -85,22 +110,14 @@ def main() -> None:
     st.set_page_config(page_title='OR Assistant', page_icon=img)
 
     deployment_time = datetime.datetime.now(pytz.timezone('UTC'))
-    st.info(f'Deployment time: {deployment_time.strftime('%m/%d/%Y %H:%M')} UTC')
+    st.info(f'Deployment time: {deployment_time.strftime("%m/%d/%Y %H:%M")} UTC')
 
     st.title('OR Assistant')
 
-    base_url, endpoints = fetch_endpoints()
-
-    selected_endpoint = st.selectbox(
-        'Select preferred architecture',
-        options=endpoints,
-        index=0,
-        format_func=lambda x: x.split('/')[-1].capitalize(),
-    )
+    base_url = os.getenv('CHAT_ENDPOINT', 'http://localhost:8000')
+    selected_endpoint = '/graphs/agent-retriever'  # Hardcoded endpoint
 
     if 'selected_endpoint' not in st.session_state:
-        st.session_state.selected_endpoint = selected_endpoint
-    else:
         st.session_state.selected_endpoint = selected_endpoint
 
     if 'base_url' not in st.session_state:
@@ -115,6 +132,8 @@ def main() -> None:
         st.session_state.chat_history = []
     if 'metadata' not in st.session_state:
         st.session_state.metadata = {}
+    if 'sources' not in st.session_state:
+        st.session_state.sources = {}
 
     if not st.session_state.chat_history:
         st.session_state.chat_history.append({
@@ -125,6 +144,27 @@ def main() -> None:
     for message in st.session_state.chat_history:
         with st.chat_message(message['role']):
             st.markdown(message['content'])
+
+        if message['role'] == 'user' and message['content'] in st.session_state.sources:
+            with st.expander('Sources:'):
+                sources = st.session_state.sources[message['content']]
+                try:
+                    if isinstance(sources, str):
+                        cleaned_sources = sources.replace('{', '[').replace('}', ']')
+                        parsed_sources = ast.literal_eval(cleaned_sources)
+                    else:
+                        parsed_sources = sources
+                    if isinstance(parsed_sources, (list, set)):
+                        sources_list = '\n'.join(
+                            f"- [{link}]({link})"
+                            for link in parsed_sources
+                            if link.strip()
+                        )
+                        st.markdown(sources_list)
+                    else:
+                        st.markdown('No valid sources found.')
+                except (ValueError, SyntaxError) as e:
+                    st.markdown(f'Failed to parse sources: {e}')
 
     user_input = st.chat_input('Enter your queries ...')
 
@@ -144,19 +184,18 @@ def main() -> None:
         ):
             response, sources = response_tuple
             if response is not None:
-                response_buffer = ''
+                response_buffer = response  # Include the AI response in the response buffer
 
                 with st.chat_message('ai'):
                     message_placeholder = st.empty()
 
-                    response_buffer = ''
+                    # Option 1: Streaming effect - Send response in chunks
                     for chunk in response.split(' '):
                         response_buffer += chunk + ' '
-                        if chunk.endswith('\n'):
-                            response_buffer += ' '
-                        message_placeholder.markdown(response_buffer)
-                        time.sleep(0.05)
+                        message_placeholder.markdown(response_buffer)  # Update message with current buffer
+                        time.sleep(0.05)  # Delay for streaming effect
 
+                    # Final update to ensure complete response is shown
                     message_placeholder.markdown(response_buffer)
 
                 response_time_text = (
@@ -168,6 +207,8 @@ def main() -> None:
                     'content': response_buffer,
                     'role': 'ai',
                 })
+
+                st.session_state.sources[user_input] = sources
 
                 if sources:
                     with st.expander('Sources:'):
