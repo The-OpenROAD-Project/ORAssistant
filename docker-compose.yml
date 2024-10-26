@@ -1,6 +1,35 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile_slim
     container_name: "orassistant-backend"
     ports:
       - "8000:8000"
+    networks:
+      - orassistant-network
+    healthcheck:
+      test: "curl -f http://localhost:8000/healthcheck || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  health-checker:
+    build: ./common
+    container_name: "orassistant-health-checker"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - orassistant-network
+    healthcheck:
+      test: "ls /app || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  orassistant-network:
+    driver: bridge

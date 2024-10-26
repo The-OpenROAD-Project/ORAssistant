@@ -1,0 +1,29 @@
+name: ORAssistant CI
+run-name: ${{ github.actor }} started CI
+
+on: [push, pull_request]
+
+jobs:
+  build-backend-docker:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup prereqs
+      run: make init-dev
+    - name: Run formatting checks
+      run: |
+        make format
+        make check
+    - name: Populate environment variables
+      run: |
+        cp backend/.env.example backend/.env
+        sed -i 's|{{GOOGLE_API_KEY}}|${{ secrets.GOOGLE_API_KEY }}|g' backend/.env
+        sed -i 's|{{PATH_TO_GOOGLE_APPLICATION_CREDENTIALS}}|${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }}|g' backend/.env
+        cp backend/.env .env
+    - name: Build Docker image
+      run: |
+        make docker
+    - name: Teardown
+      run: |
+        docker compose down
