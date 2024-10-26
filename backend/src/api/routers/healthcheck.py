@@ -8,6 +8,6 @@ class HealthCheckResponse(BaseModel):
     status: str
 
 
-@router.get('/healthcheck', response_model=HealthCheckResponse)
+@router.get("/healthcheck", response_model=HealthCheckResponse)
 async def healthcheck() -> HealthCheckResponse:
-    return HealthCheckResponse(status='ok')
+    return HealthCheckResponse(status="ok")

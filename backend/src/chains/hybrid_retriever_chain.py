@@ -121,8 +121,8 @@ class HybridRetrieverChain(BaseChain):
 
         llm_chain_with_source = RunnableParallel(
             {
-                'context': self.retriever,
-                'question': RunnablePassthrough(),
+                "context": self.retriever,
+                "question": RunnablePassthrough(),
             }
         ).assign(answer=self.llm_chain)
 

@@ -23,7 +23,7 @@ from ..prompts.prompt_templates import (
 )
 
 
-logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 
 class AgentState(TypedDict):
@@ -40,9 +40,9 @@ class ToolNode:
         self.tool_fn = tool_fn
 
     def get_node(self, state: AgentState) -> dict[str, list[str]]:
-        query = state['messages'][-1].content
+        query = state["messages"][-1].content
         if query is None:
-            raise ValueError('Query is None')
+            raise ValueError("Query is None")
 
         response, sources, urls = self.tool_fn.invoke(query)  # type: ignore
 
@@ -64,7 +64,7 @@ class ToolNode:
                 if isinstance(urls[0], list)
                 else urls
             )
-        return {'context': response, 'sources': sources, 'urls': urls}
+        return {"context": response, "sources": sources, "urls": urls}
 
 
 class RetrieverGraph:
@@ -93,20 +93,20 @@ class RetrieverGraph:
             self.retriever_tools.retrieve_yosys_rtdocs,
         ]
         self.tool_names = [
-            'retrieve_cmds',
-            'retrieve_install',
-            'retrieve_general',
-            'retrieve_klayout_docs',
-            'retrieve_errinfo',
-            'retrieve_yosys_rtdocs',
+            "retrieve_cmds",
+            "retrieve_install",
+            "retrieve_general",
+            "retrieve_klayout_docs",
+            "retrieve_errinfo",
+            "retrieve_yosys_rtdocs",
         ]
         self.inbuit_tool_calling = inbuit_tool_calling
 
-        self.tool_descriptions = ''
+        self.tool_descriptions = ""
         for tool in self.tools:
             text_desc = render_text_description([tool])  # type: ignore
-            text_desc.replace('(query: str) -> Tuple[str, list[str], list[str]]', ' ')
-            self.tool_descriptions += text_desc + '\n\n'
+            text_desc.replace("(query: str) -> Tuple[str, list[str], list[str]]", " ")
+            self.tool_descriptions += text_desc + "\n\n"
 
         self.graph: Optional[CompiledGraph] = None
         self.llm_chain = BaseChain(
@@ -115,13 +115,13 @@ class RetrieverGraph:
         ).get_llm_chain()
 
     def agent(self, state: AgentState) -> dict[str, list[str]]:
-        followup_question = state['messages'][-1].content
+        followup_question = state["messages"][-1].content
 
         if self.llm is None:
-            return {'tools': []}
+            return {"tools": []}
 
         if self.inbuit_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice='any')
+            model = self.llm.bind_tools(self.tools, tool_choice="any")
 
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
@@ -130,17 +130,17 @@ class RetrieverGraph:
             )
             response = tool_choice_chain.invoke(
                 {
-                    'question': followup_question,
-                    'chat_history': state['chat_history'],
+                    "question": followup_question,
+                    "chat_history": state["chat_history"],
                 }
             )
 
             response = model.invoke(followup_question)
 
             if response is None or response.tool_calls is None:
-                return {'tools': []}
+                return {"tools": []}
 
-            return {'tools': response.tool_calls}
+            return {"tools": response.tool_calls}
 
         else:
             tool_rephrase_chain = (
@@ -150,53 +150,53 @@ class RetrieverGraph:
             )
             response = tool_rephrase_chain.invoke(
                 {
-                    'question': followup_question,
-                    'tool_descriptions': self.tool_descriptions,
-                    'chat_history': state['chat_history'],
+                    "question": followup_question,
+                    "tool_descriptions": self.tool_descriptions,
+                    "chat_history": state["chat_history"],
                 }
             )
 
             if response is None:
                 logging.warning(
-                    'Tool selection response not found. Returning empty tool list.'
+                    "Tool selection response not found. Returning empty tool list."
                 )
-                return {'tools': []}
+                return {"tools": []}
 
-            if 'tool_names' in str(response):
-                tool_calls = response.get('tool_names', [])
+            if "tool_names" in str(response):
+                tool_calls = response.get("tool_names", [])
                 for tool in tool_calls:
                     if tool not in self.tool_names:
                         logging.warning(f"Tool {tool} not found in tool list.")
                         tool_calls.remove(tool)
             else:
-                logging.warning('Tool selection failed. Returning empty tool list.')
+                logging.warning("Tool selection failed. Returning empty tool list.")
 
-            if 'rephrased_question' in str(response):
-                state['messages'][-1].content = response.get('rephrased_question')
+            if "rephrased_question" in str(response):
+                state["messages"][-1].content = response.get("rephrased_question")
             else:
-                logging.warning('Rephrased question not found in response.')
+                logging.warning("Rephrased question not found in response.")
 
-            return {'tools': tool_calls}
+            return {"tools": tool_calls}
 
     def generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
-        query = state['messages'][-1].content
-        context = state['context'][-1].content
+        query = state["messages"][-1].content
+        context = state["context"][-1].content
 
-        ans = self.llm_chain.invoke({'context': context, 'question': query})
+        ans = self.llm_chain.invoke({"context": context, "question": query})
 
         if ans is not None:
-            return {'messages': [ans]}
+            return {"messages": [ans]}
 
-        return {'messages': []}
+        return {"messages": []}
 
     def route(self, state: AgentState) -> list[str]:
-        tools = state['tools']
+        tools = state["tools"]
 
         if tools == []:
-            return ['retrieve_general']
+            return ["retrieve_general"]
 
         if self.inbuit_tool_calling:
-            tool_names = [tool['name'] for tool in tools if 'name' in tool]  # type: ignore
+            tool_names = [tool["name"] for tool in tools if "name" in tool]  # type: ignore
             return tool_names
         else:
             return tools
@@ -211,38 +211,38 @@ class RetrieverGraph:
         errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)  # type: ignore
         yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)  # type: ignore
 
-        workflow.add_node('agent', self.agent)
-        workflow.add_node('generate', self.generate)
+        workflow.add_node("agent", self.agent)
+        workflow.add_node("generate", self.generate)
 
-        workflow.add_node('retrieve_cmds', commands.get_node)
-        workflow.add_node('retrieve_install', install.get_node)
-        workflow.add_node('retrieve_general', general.get_node)
-        workflow.add_node('retrieve_klayout_docs', klayout_docs.get_node)
-        workflow.add_node('retrieve_errinfo', errinfo.get_node)
-        workflow.add_node('retrieve_yosys_rtdocs', yosys_rtdocs.get_node)
+        workflow.add_node("retrieve_cmds", commands.get_node)
+        workflow.add_node("retrieve_install", install.get_node)
+        workflow.add_node("retrieve_general", general.get_node)
+        workflow.add_node("retrieve_klayout_docs", klayout_docs.get_node)
+        workflow.add_node("retrieve_errinfo", errinfo.get_node)
+        workflow.add_node("retrieve_yosys_rtdocs", yosys_rtdocs.get_node)
 
-        workflow.add_edge(START, 'agent')
+        workflow.add_edge(START, "agent")
         workflow.add_conditional_edges(
-            'agent',
+            "agent",
             self.route,  # type: ignore
             [
-                'retrieve_cmds',
-                'retrieve_install',
-                'retrieve_general',
-                'retrieve_klayout_docs',
-                'retrieve_errinfo',
-                'retrieve_yosys_rtdocs',
+                "retrieve_cmds",
+                "retrieve_install",
+                "retrieve_general",
+                "retrieve_klayout_docs",
+                "retrieve_errinfo",
+                "retrieve_yosys_rtdocs",
             ],
         )
 
-        workflow.add_edge('retrieve_cmds', 'generate')
-        workflow.add_edge('retrieve_install', 'generate')
-        workflow.add_edge('retrieve_general', 'generate')
-        workflow.add_edge('retrieve_klayout_docs', 'generate')
-        workflow.add_edge('retrieve_errinfo', 'generate')
-        workflow.add_edge('retrieve_yosys_rtdocs', 'generate')
+        workflow.add_edge("retrieve_cmds", "generate")
+        workflow.add_edge("retrieve_install", "generate")
+        workflow.add_edge("retrieve_general", "generate")
+        workflow.add_edge("retrieve_klayout_docs", "generate")
+        workflow.add_edge("retrieve_errinfo", "generate")
+        workflow.add_edge("retrieve_yosys_rtdocs", "generate")
 
-        workflow.add_edge('generate', END)
+        workflow.add_edge("generate", END)
 
         self.graph = workflow.compile()
 

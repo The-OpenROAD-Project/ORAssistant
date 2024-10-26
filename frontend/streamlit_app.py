@@ -35,9 +35,9 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
     """
     url = f"{st.session_state.base_url}{st.session_state.selected_endpoint}"
 
-    headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
+    headers = {"accept": "application/json", "Content-Type": "application/json"}
 
-    payload = {'query': user_input, 'list_sources': True, 'list_context': True}
+    payload = {"query": user_input, "list_sources": True, "list_context": True}
 
     try:
         response = requests.post(url, headers=headers, json=payload)
@@ -46,19 +46,19 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
         try:
             data = response.json()
             if not isinstance(data, dict):
-                st.error('Invalid response format')
+                st.error("Invalid response format")
                 return None, None
         except ValueError:
-            st.error('Failed to decode JSON response')
+            st.error("Failed to decode JSON response")
             return None, None
 
-        sources = data.get('sources', '')
+        sources = data.get("sources", "")
         st.session_state.metadata[user_input] = {
-            'sources': sources,
-            'context': data.get('context', ''),
+            "sources": sources,
+            "context": data.get("context", ""),
         }
 
-        return data.get('response', ''), sources
+        return data.get("response", ""), sources
 
     except requests.exceptions.RequestException as e:
         st.error(f"Request failed: {e}")
@@ -66,7 +66,7 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
 
 
 def fetch_endpoints() -> tuple[str, list[str]]:
-    base_url = os.getenv('CHAT_ENDPOINT', 'http://localhost:8000')
+    base_url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
     url = f"{base_url}/chains/listAll"
     try:
         response = requests.get(url)
@@ -81,59 +81,59 @@ def fetch_endpoints() -> tuple[str, list[str]]:
 def main() -> None:
     load_dotenv()
 
-    img = Image.open('assets/or_logo.png')
-    st.set_page_config(page_title='OR Assistant', page_icon=img)
+    img = Image.open("assets/or_logo.png")
+    st.set_page_config(page_title="OR Assistant", page_icon=img)
 
-    deployment_time = datetime.datetime.now(pytz.timezone('UTC'))
+    deployment_time = datetime.datetime.now(pytz.timezone("UTC"))
     st.info(f"Deployment time: {deployment_time.strftime('%m/%d/%Y %H:%M')} UTC")
 
-    st.title('OR Assistant')
+    st.title("OR Assistant")
 
     base_url, endpoints = fetch_endpoints()
 
     selected_endpoint = st.selectbox(
-        'Select preferred architecture',
+        "Select preferred architecture",
         options=endpoints,
         index=0,
-        format_func=lambda x: x.split('/')[-1].capitalize(),
+        format_func=lambda x: x.split("/")[-1].capitalize(),
     )
 
-    if 'selected_endpoint' not in st.session_state:
+    if "selected_endpoint" not in st.session_state:
         st.session_state.selected_endpoint = selected_endpoint
     else:
         st.session_state.selected_endpoint = selected_endpoint
 
-    if 'base_url' not in st.session_state:
+    if "base_url" not in st.session_state:
         st.session_state.base_url = base_url
 
-    if not os.getenv('CHAT_ENDPOINT'):
+    if not os.getenv("CHAT_ENDPOINT"):
         st.warning(
-            'The CHAT_ENDPOINT environment variable is not set or is empty. DEFAULT: http://localhost:8000'
+            "The CHAT_ENDPOINT environment variable is not set or is empty. DEFAULT: http://localhost:8000"
         )
 
-    if 'chat_history' not in st.session_state:
+    if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
-    if 'metadata' not in st.session_state:
+    if "metadata" not in st.session_state:
         st.session_state.metadata = {}
 
     if not st.session_state.chat_history:
         st.session_state.chat_history.append(
             {
-                'content': 'Hi, I am the OpenROAD assistant. Type your query about OpenROAD',
-                'role': 'ai',
+                "content": "Hi, I am the OpenROAD assistant. Type your query about OpenROAD",
+                "role": "ai",
             }
         )
 
     for message in st.session_state.chat_history:
-        with st.chat_message(message['role']):
-            st.markdown(message['content'])
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-    user_input = st.chat_input('Enter your queries ...')
+    user_input = st.chat_input("Enter your queries ...")
 
     if user_input:
-        st.session_state.chat_history.append({'content': user_input, 'role': 'user'})
+        st.session_state.chat_history.append({"content": user_input, "role": "user"})
 
-        with st.chat_message('user'):
+        with st.chat_message("user"):
             st.markdown(user_input)
 
         response_tuple, response_time = response_generator(user_input)
@@ -146,16 +146,16 @@ def main() -> None:
         ):
             response, sources = response_tuple
             if response is not None:
-                response_buffer = ''
+                response_buffer = ""
 
-                with st.chat_message('ai'):
+                with st.chat_message("ai"):
                     message_placeholder = st.empty()
 
-                    response_buffer = ''
-                    for chunk in response.split(' '):
-                        response_buffer += chunk + ' '
-                        if chunk.endswith('\n'):
-                            response_buffer += ' '
+                    response_buffer = ""
+                    for chunk in response.split(" "):
+                        response_buffer += chunk + " "
+                        if chunk.endswith("\n"):
+                            response_buffer += " "
                         message_placeholder.markdown(response_buffer)
                         time.sleep(0.05)
 
@@ -168,42 +168,42 @@ def main() -> None:
                 st.markdown(response_time_colored)
                 st.session_state.chat_history.append(
                     {
-                        'content': response_buffer,
-                        'role': 'ai',
+                        "content": response_buffer,
+                        "role": "ai",
                     }
                 )
 
                 if sources:
-                    with st.expander('Sources:'):
+                    with st.expander("Sources:"):
                         try:
                             if isinstance(sources, str):
-                                cleaned_sources = sources.replace('{', '[').replace(
-                                    '}', ']'
+                                cleaned_sources = sources.replace("{", "[").replace(
+                                    "}", "]"
                                 )
                                 parsed_sources = ast.literal_eval(cleaned_sources)
                             else:
                                 parsed_sources = sources
                             if isinstance(parsed_sources, (list, set)):
-                                sources_list = '\n'.join(
+                                sources_list = "\n".join(
                                     f"- [{link}]({link})"
                                     for link in parsed_sources
                                     if link.strip()
                                 )
                                 st.markdown(sources_list)
                             else:
-                                st.markdown('No valid sources found.')
+                                st.markdown("No valid sources found.")
                         except (ValueError, SyntaxError) as e:
                             st.markdown(f"Failed to parse sources: {e}")
         else:
-            st.error('Invalid response from the API')
+            st.error("Invalid response from the API")
 
     question_dict = {
-        interaction['content']: i
+        interaction["content"]: i
         for i, interaction in enumerate(st.session_state.chat_history)
-        if interaction['role'] == 'user'
+        if interaction["role"] == "user"
     }
-    if question_dict and os.getenv('FEEDBACK_SHEET_ID'):
-        if 'feedback_button' not in st.session_state:
+    if question_dict and os.getenv("FEEDBACK_SHEET_ID"):
+        if "feedback_button" not in st.session_state:
             st.session_state.feedback_button = False
 
         def update_state() -> None:
@@ -213,7 +213,7 @@ def main() -> None:
             st.session_state.feedback_button = True
 
         if (
-            st.button('Feedback', on_click=update_state)
+            st.button("Feedback", on_click=update_state)
             or st.session_state.feedback_button
         ):
             try:
@@ -226,5 +226,5 @@ def main() -> None:
                 st.error(f"Failed to load feedback form: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

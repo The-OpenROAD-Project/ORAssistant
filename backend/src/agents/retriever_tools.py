@@ -11,8 +11,8 @@ from ..tools.format_docs import format_docs
 
 load_dotenv()
 
-search_k = int(os.getenv('SEARCH_K', 10))
-chunk_size = int(os.getenv('CHUNK_SIZE', 4000))
+search_k = int(os.getenv("SEARCH_K", 10))
+chunk_size = int(os.getenv("CHUNK_SIZE", 4000))
 
 
 class RetrieverTools:
@@ -37,7 +37,7 @@ class RetrieverTools:
     klayout_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
     ]
-    tool_descriptions: str = ''
+    tool_descriptions: str = ""
 
     def initialize(
         self,
@@ -49,15 +49,15 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=['./data/html/or_website/'],
+            html_docs_path=["./data/html/or_website/"],
             markdown_docs_path=[
-                './data/markdown/OR_docs',
-                './data/markdown/ORFS_docs',
-                './data/markdown/gh_discussions',
-                './data/markdown/manpages/man1',
-                './data/markdown/manpages/man2',
+                "./data/markdown/OR_docs",
+                "./data/markdown/ORFS_docs",
+                "./data/markdown/gh_discussions",
+                "./data/markdown/manpages/man1",
+                "./data/markdown/manpages/man2",
             ],
-            other_docs_path=['./data/pdf/OR_publications'],
+            other_docs_path=["./data/pdf/OR_publications"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -71,10 +71,10 @@ class RetrieverTools:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             markdown_docs_path=[
-                './data/markdown/ORFS_docs/installation',
-                './data/markdown/OR_docs/installation',
-                './data/markdown/gh_discussions/Build',
-                './data/markdown/gh_discussions/Installation',
+                "./data/markdown/ORFS_docs/installation",
+                "./data/markdown/OR_docs/installation",
+                "./data/markdown/gh_discussions/Build",
+                "./data/markdown/gh_discussions/Installation",
             ],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
@@ -89,16 +89,16 @@ class RetrieverTools:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             markdown_docs_path=[
-                './data/markdown/OR_docs/tools',
-                './data/markdown/ORFS_docs/general',
-                './data/markdown/gh_discussions/Query',
-                './data/markdown/gh_discussions/Runtime',
-                './data/markdown/gh_discussions/Documentation',
-                './data/markdown/manpages/man1',
-                './data/markdown/manpages/man2',
-                './data/markdown/OpenSTA_docs',
+                "./data/markdown/OR_docs/tools",
+                "./data/markdown/ORFS_docs/general",
+                "./data/markdown/gh_discussions/Query",
+                "./data/markdown/gh_discussions/Runtime",
+                "./data/markdown/gh_discussions/Documentation",
+                "./data/markdown/manpages/man1",
+                "./data/markdown/manpages/man2",
+                "./data/markdown/OpenSTA_docs",
             ],
-            other_docs_path=['./data/pdf'],
+            other_docs_path=["./data/pdf"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -111,7 +111,7 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=['./data/html/yosys_docs'],
+            html_docs_path=["./data/html/yosys_docs"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -124,7 +124,7 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=['./data/html/klayout_docs'],
+            html_docs_path=["./data/html/klayout_docs"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -138,8 +138,8 @@ class RetrieverTools:
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
             markdown_docs_path=[
-                './data/markdown/manpages/man3',
-                './data/markdown/gh_discussions/Bug',
+                "./data/markdown/manpages/man3",
+                "./data/markdown/gh_discussions/Bug",
             ],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
@@ -159,7 +159,7 @@ class RetrieverTools:
         and relevant information that enhances their understanding and efficient use of OpenROAD and OpenROAD-Flow-Scripts.\
         """
         if RetrieverTools.general_retriever is None:
-            raise ValueError('General Retriever not initialized')
+            raise ValueError("General Retriever not initialized")
 
         docs = RetrieverTools.general_retriever.invoke(input=query)
         return format_docs(docs)
@@ -188,7 +188,7 @@ class RetrieverTools:
         TCL Interpreter: Use TCL scripts for command automation and customization.
         """
         if RetrieverTools.commands_retriever is None:
-            raise ValueError('Commands Retriever not initialized')
+            raise ValueError("Commands Retriever not initialized")
 
         docs = RetrieverTools.commands_retriever.invoke(input=query)
         return format_docs(docs)
@@ -204,7 +204,7 @@ class RetrieverTools:
         - Using pre-built binaries\
         """
         if RetrieverTools.install_retriever is None:
-            raise ValueError('Install Retriever not initialized')
+            raise ValueError("Install Retriever not initialized")
 
         docs = RetrieverTools.install_retriever.invoke(input=query)
         return format_docs(docs)
@@ -219,7 +219,7 @@ class RetrieverTools:
         """
 
         if RetrieverTools.errinfo_retriever is None:
-            raise ValueError('Error Info Retriever not initialized')
+            raise ValueError("Error Info Retriever not initialized")
 
         docs = RetrieverTools.errinfo_retriever.invoke(input=query)
         return format_docs(docs)
@@ -239,7 +239,7 @@ class RetrieverTools:
         """
 
         if RetrieverTools.yosys_rtdocs_retriever is None:
-            raise ValueError('Yosys RTDocs Retriever not initialized')
+            raise ValueError("Yosys RTDocs Retriever not initialized")
 
         docs = RetrieverTools.yosys_rtdocs_retriever.invoke(input=query)
         return format_docs(docs)
@@ -256,7 +256,7 @@ class RetrieverTools:
         """
 
         if RetrieverTools.klayout_retriever is None:
-            raise ValueError('KLayout Retriever not initialized')
+            raise ValueError("KLayout Retriever not initialized")
 
         docs = RetrieverTools.klayout_retriever.invoke(input=query)
         return format_docs(docs)
