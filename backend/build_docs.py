@@ -431,12 +431,7 @@ def get_klayout_docs_html() -> None:
 if __name__ == '__main__':
     logging.info('Building knowledge base...')
     docs_paths = [
-        'data/markdown/manpages',
-        'data/markdown/OR_docs',
-        'data/markdown/ORFS_docs',
-        'data/markdown/OpenSTA_docs',
-        'data/pdf',
-        'data/html',
+        "data"
     ]
     purge_folders(folder_paths=docs_paths)
 
