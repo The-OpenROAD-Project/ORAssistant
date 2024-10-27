@@ -15,7 +15,6 @@ env:
 jobs:
   or-manpages:
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: Setup python
         uses: actions/setup-python@v5
@@ -27,7 +26,7 @@ jobs:
           pip install huggingface-hub[cli]
       - name: check hfcli
         run: |
-          huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+          huggingface-cli login --token ${{ secrets._AHF_TOKEN }}
           huggingface-cli whoami
     # - name: Checkout
     #   uses: actions/checkout@v4
