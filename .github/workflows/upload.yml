@@ -2,12 +2,9 @@ name: Upload latest documentation
 
 on:
   workflow_dispatch:
-  pull_request: # to comment on merge
-    branches:
-      - master
 
 env:
-  HF_RAG_REPO: The-OpenROAD-Project/test_repo # To replace with ORAssistant_RAG_Dataset
+  HF_RAG_REPO: The-OpenROAD-Project/ORAssistant_RAG_Dataset
   OR_COMMIT_HASH: ffc5760f2df639cd184c40ceba253c7e02a006d5
   ORFS_COMMIT_HASH: b94834df01cb58915bc0e8dabf85a314fbd8fb9e
   OPENSTA_COMMIT_HASH: 1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5
