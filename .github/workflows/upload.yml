@@ -19,16 +19,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Set up prerequisites
+      working-directory: ./backend
       run: |
         sudo apt-get update
         sudo apt-get install -y make pandoc git
-    - name: Set up python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    - name: Install huggingface CLI
-      run: |
-        pip install huggingface_hub[cli] python-dotenv beautifulsoup4
+        make init-dev
     - name: Populate environment variables
       working-directory: ./backend
       run: |
