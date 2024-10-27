@@ -17,8 +17,9 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: check hfcli
-        shell: bash --norc -leo pipefail {0}
+        environment: production
         run:
+          huggingface-cli login --token ${{ secrets.HF_TOKEN }}
           huggingface-cli whoami
     # - name: Checkout
     #   uses: actions/checkout@v4
