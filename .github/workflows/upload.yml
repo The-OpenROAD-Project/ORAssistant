@@ -14,7 +14,7 @@ env:
 
 jobs:
   or-manpages:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: production
     steps:
       - name: check hfcli
