@@ -454,8 +454,8 @@ if __name__ == '__main__':
     os.makedirs('data/pdf/OR_publications', exist_ok=True)
     os.makedirs('data/html', exist_ok=True)
 
-    get_klayout_docs_html()
-    get_yosys_docs_html()
+    # get_klayout_docs_html()
+    # get_yosys_docs_html()
 
     get_or_publications()
     get_or_website_html()
