@@ -15,9 +15,9 @@ env:
 jobs:
   or-manpages:
     runs-on: self-hosted
+    environment: production
     steps:
       - name: check hfcli
-        environment: production
         run:
           huggingface-cli login --token ${{ secrets.HF_TOKEN }}
           huggingface-cli whoami
