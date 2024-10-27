@@ -12,11 +12,8 @@ format:
 check:
 	@for folder in $(FOLDERS); do (cd $$folder && make check && cd ../); done
 	@. ./backend/.venv/bin/activate && \
-		mypy backend/ && \
 		pre-commit run --files backend/* && \
 		pre-commit run --files frontend/*
-	@. ./frontend/.venv/bin/activate && \
-		mypy frontend
 
 docker:
 	@docker compose up --build --wait

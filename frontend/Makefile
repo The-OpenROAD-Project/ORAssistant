@@ -9,7 +9,8 @@ init-dev: init
 
 format:
 	@. .venv/bin/activate && \
-		ruff format
+		ruff format && \
+		mypy .
 
 check:
 	@. .venv/bin/activate && \

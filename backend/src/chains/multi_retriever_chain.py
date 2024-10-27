@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -43,7 +43,7 @@ class MultiRetrieverChain(BaseChain):
         self.html_docs_path: Optional[list[str]] = html_docs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path
 
-        self.retriever: Optional[EnsembleRetriever] = None
+        self.retriever: Any  # RunnableParallel compatibility
 
     def create_multi_retriever(self) -> None:
         docs_similarity_retriever_chain = SimilarityRetrieverChain(
@@ -117,10 +117,12 @@ class MultiRetrieverChain(BaseChain):
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
-        llm_chain_with_source = RunnableParallel({
-            'context': self.retriever,
-            'question': RunnablePassthrough(),
-        }).assign(answer=self.llm_chain)  # type: ignore
+        llm_chain_with_source = RunnableParallel(
+            {
+                "context": self.retriever,
+                "question": RunnablePassthrough(),
+            }
+        ).assign(answer=self.llm_chain)
 
         self.llm_chain = llm_chain_with_source
 

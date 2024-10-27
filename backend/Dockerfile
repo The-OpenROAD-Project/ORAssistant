@@ -11,6 +11,7 @@ RUN git lfs install
 COPY ./requirements.txt /ORAssistant-backend/requirements.txt
 
 RUN pip install --upgrade -r /ORAssistant-backend/requirements.txt
+RUN pip install -e .
 
 RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
     mkdir -p data && \

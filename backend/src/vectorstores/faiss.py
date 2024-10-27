@@ -15,7 +15,7 @@ from ..tools.process_pdf import process_pdf_docs
 from ..tools.process_html import process_html
 from ..tools.process_json import generate_knowledge_base
 
-logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 load_dotenv()
 
@@ -31,36 +31,36 @@ class FAISSVectorDatabase:
     ):
         self.embeddings_model_name = embeddings_model_name
 
-        model_kwargs = {'device': 'cuda'} if use_cuda else {}
+        model_kwargs = {"device": "cuda"} if use_cuda else {}
 
         self.embedding_model: Union[
             HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
         ]
 
-        if embeddings_type == 'GOOGLE_GENAI':
+        if embeddings_type == "GOOGLE_GENAI":
             self.embedding_model = GoogleGenerativeAIEmbeddings(
                 model=self.embeddings_model_name,
-                task_type='retrieval_document',
-            )  # type: ignore
-            logging.info('Using Google GenerativeAI embeddings...')
+                task_type="retrieval_document",
+            )
+            logging.info("Using Google GenerativeAI embeddings...")
 
-        elif embeddings_type == 'GOOGLE_VERTEXAI':
+        elif embeddings_type == "GOOGLE_VERTEXAI":
             self.embedding_model = VertexAIEmbeddings(
                 model_name=self.embeddings_model_name
             )
-            logging.info('Using Google VertexAI embeddings...')
+            logging.info("Using Google VertexAI embeddings...")
 
-        elif embeddings_type == 'HF':
+        elif embeddings_type == "HF":
             self.embedding_model = HuggingFaceEmbeddings(
                 model_name=self.embeddings_model_name,
                 multi_process=False,
-                encode_kwargs={'normalize_embeddings': True},
+                encode_kwargs={"normalize_embeddings": True},
                 model_kwargs=model_kwargs,
             )
-            logging.info('Using HuggingFace embeddings...')
+            logging.info("Using HuggingFace embeddings...")
 
         else:
-            raise ValueError('Invalid embdeddings type specified.')
+            raise ValueError("Invalid embdeddings type specified.")
 
         self.debug = debug
         self.distance_strategy = distance_strategy
@@ -86,12 +86,12 @@ class FAISSVectorDatabase:
     def add_md_docs(
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
-        logging.info('Processing markdown docs...')
+        logging.info("Processing markdown docs...")
 
         processed_mddocs: list[Document] = []
 
         for folder_path in folder_paths:
-            logging.debug(f'Processing [{folder_path}]...')
+            logging.debug(f"Processing [{folder_path}]...")
             processed_mddocs.extend(
                 process_md(
                     folder_path=folder_path,
@@ -101,11 +101,11 @@ class FAISSVectorDatabase:
             )
 
         if processed_mddocs:
-            logging.info(f'Adding {folder_paths} to FAISS database...\n')
+            logging.info(f"Adding {folder_paths} to FAISS database...\n")
             self._add_to_db(documents=processed_mddocs)
             self.processed_docs.extend(processed_mddocs)
         else:
-            raise ValueError('No markdown documents processed.')
+            raise ValueError("No markdown documents processed.")
 
         if return_docs:
             return processed_mddocs
@@ -115,11 +115,11 @@ class FAISSVectorDatabase:
     def add_md_manpages(
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
-        logging.info('Processing markdown manpages...')
+        logging.info("Processing markdown manpages...")
 
         processed_manpages: list[Document] = []
         for folder_path in folder_paths:
-            logging.debug(f'Processing [{folder_path}]...')
+            logging.debug(f"Processing [{folder_path}]...")
             processed_manpages.extend(
                 process_md(
                     folder_path=folder_path, split_text=False, chunk_size=chunk_size
@@ -127,11 +127,11 @@ class FAISSVectorDatabase:
             )
 
         if processed_manpages:
-            logging.info(f'Adding {folder_paths} to FAISS database...\n')
+            logging.info(f"Adding {folder_paths} to FAISS database...\n")
             self._add_to_db(documents=processed_manpages)
             self.processed_docs.extend(processed_manpages)
         else:
-            raise ValueError('No manpages documents processed.')
+            raise ValueError("No manpages documents processed.")
 
         if return_docs:
             return processed_manpages
@@ -141,11 +141,11 @@ class FAISSVectorDatabase:
     def add_html(
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
-        logging.info('Process HTML docs...')
+        logging.info("Process HTML docs...")
 
         processed_html_docs: list[Document] = []
         for folder_path in folder_paths:
-            logging.debug(f'Processing [{folder_path}]...')
+            logging.debug(f"Processing [{folder_path}]...")
             processed_html_docs.extend(
                 process_html(
                     folder_path=folder_path, split_text=True, chunk_size=chunk_size
@@ -153,11 +153,11 @@ class FAISSVectorDatabase:
             )
 
         if processed_html_docs:
-            logging.info(f'Adding {folder_paths} to FAISS database...\n')
+            logging.info(f"Adding {folder_paths} to FAISS database...\n")
             self._add_to_db(documents=processed_html_docs)
             self.processed_docs.extend(processed_html_docs)
         else:
-            raise ValueError(f'Could not add {folder_paths}. No HTML docs processed.')
+            raise ValueError(f"Could not add {folder_paths}. No HTML docs processed.")
 
         if return_docs:
             return processed_html_docs
@@ -167,23 +167,23 @@ class FAISSVectorDatabase:
     def add_documents(
         self, file_paths: list[str], file_type: str, return_docs: bool = False
     ) -> Optional[list[Document]]:
-        logging.info('Processing docs...')
+        logging.info("Processing docs...")
 
         processed_otherdocs: list[Document] = []
 
         for file_path in file_paths:
-            logging.debug(f'Processing [{file_path}]...')
-            if file_type == 'pdf':
+            logging.debug(f"Processing [{file_path}]...")
+            if file_type == "pdf":
                 processed_otherdocs.extend(process_pdf_docs(file_path=file_path))
             else:
-                raise ValueError('File type not supported.')
+                raise ValueError("File type not supported.")
 
         if processed_otherdocs:
-            logging.info(f'Adding [{file_paths}] to FAISS database...\n')
+            logging.info(f"Adding [{file_paths}] to FAISS database...\n")
             self._add_to_db(documents=processed_otherdocs)
             self.processed_docs.extend(processed_otherdocs)
         else:
-            raise ValueError('No PDF documents processed.')
+            raise ValueError("No PDF documents processed.")
 
         if return_docs:
             return processed_otherdocs
@@ -192,17 +192,17 @@ class FAISSVectorDatabase:
 
     def save_db(self) -> None:
         if self._faiss_db is None:
-            raise ValueError('No documents in FAISS database')
+            raise ValueError("No documents in FAISS database")
 
-        self._faiss_db.save_local(os.getenv('FAISS_DB_PATH', 'faiss_db'))
+        self._faiss_db.save_local(os.getenv("FAISS_DB_PATH", "faiss_db"))
 
     def load_db(self) -> None:
         self._faiss_db = FAISS.load_local(
-            os.getenv('FAISS_DB_PATH', 'faiss db'), self.embedding_model
+            os.getenv("FAISS_DB_PATH", "faiss db"), self.embedding_model
         )
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
-        logging.info('Processing json files...')
+        logging.info("Processing json files...")
 
         embeddings = self.embedding_model
         json_docs_processed = generate_knowledge_base(folder_paths)
@@ -213,11 +213,11 @@ class FAISSVectorDatabase:
 
     def get_relevant_documents(self, query: str, k: int = 2) -> str:
         if self._faiss_db is None:
-            raise ValueError('No documents in FAISS database')
+            raise ValueError("No documents in FAISS database")
         retrieved_docs = self._faiss_db.similarity_search(query=query, k=k)
-        retrieved_text = ''
+        retrieved_text = ""
 
         for doc in retrieved_docs:
-            retrieved_text += doc.page_content.replace('\n', '') + '\n\n'
+            retrieved_text += doc.page_content.replace("\n", "") + "\n\n"
 
         return retrieved_text

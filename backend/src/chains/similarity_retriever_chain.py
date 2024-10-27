@@ -80,15 +80,15 @@ class SimilarityRetrieverChain(BaseChain):
                 for root, _, files in os.walk(folder_name):
                     for file in files:
                         other_docs_path = os.path.join(root, file)
-                        if other_docs_path.endswith('.pdf'):
+                        if other_docs_path.endswith(".pdf"):
                             self.processed_pdfs = self.vector_db.add_documents(
                                 file_paths=[other_docs_path],
-                                file_type='pdf',
+                                file_type="pdf",
                                 return_docs=return_docs,
                             )
                         else:
                             raise ValueError(
-                                'File type not supported. Only PDFs are supported.'
+                                "File type not supported. Only PDFs are supported."
                             )
 
         if self.html_docs_path is not None and self.vector_db is not None:
@@ -107,16 +107,16 @@ class SimilarityRetrieverChain(BaseChain):
     def create_vector_db(self) -> None:
         if (
             self.embeddings_config is not None
-            and self.embeddings_config['name'] is not None
-            and self.embeddings_config['type'] is not None
+            and self.embeddings_config["name"] is not None
+            and self.embeddings_config["type"] is not None
         ):
             self.vector_db = FAISSVectorDatabase(
-                embeddings_model_name=self.embeddings_config['name'],
-                embeddings_type=self.embeddings_config['type'],
+                embeddings_model_name=self.embeddings_config["name"],
+                embeddings_type=self.embeddings_config["type"],
                 use_cuda=self.use_cuda,
             )
         else:
-            raise ValueError('Embeddings model config not provided correctly.')
+            raise ValueError("Embeddings model config not provided correctly.")
 
     def create_similarity_retriever(self, search_k: Optional[int] = 5) -> None:
         if self.vector_db is None:
@@ -124,19 +124,21 @@ class SimilarityRetrieverChain(BaseChain):
 
         if self.vector_db is not None and self.vector_db.faiss_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
-                search_type='similarity',
-                search_kwargs={'k': search_k},
+                search_type="similarity",
+                search_kwargs={"k": search_k},
             )
         else:
-            raise ValueError('FAISS Vector DB not created.')
+            raise ValueError("FAISS Vector DB not created.")
 
     def create_llm_chain(self) -> None:
         super().create_llm_chain()
 
-        llm_chain_with_source = RunnableParallel({
-            'context': self.retriever,
-            'question': RunnablePassthrough(),
-        }).assign(answer=self.llm_chain)
+        llm_chain_with_source = RunnableParallel(
+            {
+                "context": self.retriever,
+                "question": RunnablePassthrough(),
+            }
+        ).assign(answer=self.llm_chain)
 
         self.llm_chain = llm_chain_with_source
 

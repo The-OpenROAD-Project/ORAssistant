@@ -53,6 +53,6 @@ class MMRRetrieverChain(SimilarityRetrieverChain):
 
         if self.vector_db is not None and self.vector_db.faiss_db is not None:
             self.retriever = self.vector_db.faiss_db.as_retriever(
-                search_type='mmr',
-                search_kwargs={'k': search_k, 'lambda_mult': lambda_mult},
+                search_type="mmr",
+                search_kwargs={"k": search_k, "lambda_mult": lambda_mult},
             )

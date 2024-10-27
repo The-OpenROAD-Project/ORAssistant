@@ -64,5 +64,5 @@ class BM25RetrieverChain(SimilarityRetrieverChain):
                 embedded_docs += processed_rtdocs
 
         self.retriever = BM25Retriever.from_documents(
-            documents=embedded_docs, search_kwargs={'k': search_k}
+            documents=embedded_docs, search_kwargs={"k": search_k}
         )
