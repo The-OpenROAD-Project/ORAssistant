@@ -5,24 +5,42 @@ import sys
 import shutil
 import json
 import logging
+
 from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
 from bs4 import BeautifulSoup
+from huggingface_hub import snapshot_download
 
 
 load_dotenv()
 source_dict: dict[str, str] = {}
-cur_dir: str = os.getcwd()
+
+# This code must in run in ./backend
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(cur_dir)
+
+# Get commit hashes from env
+or_repo_commit = os.getenv('OR_REPO_COMMIT', 'ffc5760f2df639cd184c40ceba253c7e02a006d5')
+orfs_repo_commit = os.getenv(
+    'ORFS_REPO_COMMIT', 'b94834df01cb58915bc0e8dabf85a314fbd8fb9e'
+)
+opensta_repo_commit = os.getenv(
+    'OPENSTA_REPO_COMMIT', '1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5'
+)
 
 or_docs_url = 'https://openroad.readthedocs.io/en/latest'
 orfs_docs_url = 'https://openroad-flow-scripts.readthedocs.io/en/latest'
-opensta_docs_url = 'https://github.com/The-OpenROAD-Project/OpenSTA/raw/1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5/doc/OpenSTA.pdf'
+opensta_docs_url = (
+    'https://github.com/The-OpenROAD-Project/OpenSTA/raw/'
+    f'{opensta_repo_commit}/doc/OpenSTA.pdf'
+)
 yosys_html_url = 'https://yosyshq.readthedocs.io/projects/yosys/en/latest'
 klayout_html_url = 'https://www.klayout.de/doc.html'
 or_website_url = 'https://theopenroadproject.org/'
 opensta_readme_url = (
-    'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/master/README.md'
+    'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/'
+    f'{opensta_repo_commit}/README.md'
 )
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
@@ -38,12 +56,9 @@ def update_src(src_path: str, dst_path: str) -> None:
             f"{orfs_docs_url}/{src_path.split('_sources/')[-1].replace('.md', '.html')}"
         )
     elif 'manpages' in dst_path:
-        manpage_path = dst_path.replace('data/markdown/', '')
-        commit_hash = os.getenv(
-            'ORQA_RAG_DATASETS_COMMIT', '470c7ecd67d3a22557500a451b73a31fc8c4ec15'
-        )
+        manpage_path = dst_path.replace('data/markdown/', 'markdown/')
         source_dict[dst_path] = (
-            f'https://huggingface.co/datasets/The-OpenROAD-Project/ORQA_RAG_datasets/raw/{commit_hash}/{manpage_path}'
+            f'https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset/raw/main/{manpage_path}'
         )
     elif 'yosys' in dst_path:
         source_dict[dst_path] = f"https://{dst_path[len('data/html/yosys_docs') :]}"
@@ -448,16 +463,12 @@ if __name__ == '__main__':
 
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
-        commit_hash=os.getenv(
-            'OR_REPO_COMMIT', 'ffc5760f2df639cd184c40ceba253c7e02a006d5'
-        ),
+        commit_hash=or_repo_commit,
         folder_name='OpenROAD',
     )
     clone_repo(
         url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
-        commit_hash=os.getenv(
-            'ORFS_REPO_COMMIT', 'b94834df01cb58915bc0e8dabf85a314fbd8fb9e'
-        ),
+        commit_hash=orfs_repo_commit,
         folder_name='OpenROAD-flow-scripts',
     )
 
@@ -473,9 +484,23 @@ if __name__ == '__main__':
 
     os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
 
-    gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
-    gh_disc_src = json.load(gh_disc_src_json)
+    snapshot_download(
+        repo_id='The-OpenROAD-Project/ORAssistant_RAG_Dataset',
+        repo_type='dataset',
+        revision='main',
+        allow_patterns=[
+            'markdown/gh_discussions/**/*',
+            'markdown/gh_discussions/*',
+        ],
+        local_dir='data',
+    )
+
+    with open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json') as gh_disc:
+        gh_disc_src = json.load(gh_disc)
+    # gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
+    # gh_disc_src = json.load(gh_disc_src_json)
     gh_disc_path = 'data/markdown/gh_discussions'
+    source_dict = {}
     for file in gh_disc_src.keys():
         full_path = os.path.join(gh_disc_path, file)
         source_dict[full_path] = gh_disc_src[file]['url']
