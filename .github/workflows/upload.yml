@@ -30,6 +30,7 @@ jobs:
     - name: Populate environment variables
       run: |
         rm -f backend/.env
+        touch backend/.env
         echo "OR_REPO_COMMIT=$OR_COMMIT_HASH" >> backend/.env
         echo "ORFS_REPO_COMMIT=$ORFS_COMMIT_HASH" >> backend/.env
         echo "OPENSTA_REPO_COMMIT=$OPENSTA_COMMIT_HASH" >> backend/.env
