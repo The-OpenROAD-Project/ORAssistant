@@ -4,52 +4,39 @@ on:
   workflow_dispatch:
 
 env:
-  HF_RAG_REPO: The-OpenROAD-Project/ORQA_RAG_datasets
+  HF_RAG_REPO: The-OpenROAD-Project/ORAssistant_RAG_Dataset
   OR_COMMIT_HASH: ffc5760f2df639cd184c40ceba253c7e02a006d5
   ORFS_COMMIT_HASH: b94834df01cb58915bc0e8dabf85a314fbd8fb9e
+  OPENSTA_COMMIT_HASH: 1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5
 
 jobs:
   or-manpages:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Set up prerequisites
+      working-directory: ./backend
       run: |
         sudo apt-get update
         sudo apt-get install -y make pandoc git
-    - name: Set up python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    - name: Install huggingface CLI
+        make init-dev
+    - name: Populate environment variables
+      working-directory: ./backend
       run: |
-        pip install huggingface_hub[cli]
-    - name: Clone OpenROAD
+        rm -f .env && touch .env
+        echo "OR_REPO_COMMIT=$OR_COMMIT_HASH" >> .env
+        echo "ORFS_REPO_COMMIT=$ORFS_COMMIT_HASH" >> .env
+        echo "OPENSTA_REPO_COMMIT=$OPENSTA_COMMIT_HASH" >> .env
+    - name: Preprocess docs
+      working-directory: ./backend
       run: |
-        git clone https://github.com/The-OpenROAD-Project/OpenROAD
-    - name: Checkout OpenROAD hash
-      working-directory: OpenROAD
+        . .venv/bin/activate
+        python build_docs.py
+    - name: Upload files
+      working-directory: ./backend
       run: |
-        git fetch origin ${{ env.OR_COMMIT_HASH }}
-        git checkout ${{ env.OR_COMMIT_HASH }}
-    - name: Preprocess manpages
-      working-directory: OpenROAD/src
-      run: |
-        for folder in $(ls -d */); do
-          cd $folder
-          ../../etc/find_messages.py > messages.txt
-          cd ..
-        done
-    - name: Build manpages
-      working-directory: OpenROAD/docs
-      run: |
-        make clean && make preprocess && make doc
-    - name: Login to Huggingface
-      run: |
+        . .venv/bin/activate
         huggingface-cli login --token ${{ secrets.HF_TOKEN }}
-    - name: Upload manpages
-      working-directory: OpenROAD/docs
-      run: |
-        huggingface-cli upload ${{ env.HF_RAG_REPO }} ./md /manpages --repo-type dataset
-    - name: Logout from Huggingface
-      run: |
+        huggingface-cli upload ${{ env.HF_RAG_REPO }} ./data / --repo-type dataset
         huggingface-cli logout
