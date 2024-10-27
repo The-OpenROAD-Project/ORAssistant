@@ -24,22 +24,20 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y make pandoc git
         make init-dev
-    # - name: Populate environment variables
-    #   working-directory: ./backend
-    #   run: |
-    #     rm -f .env && touch .env
-    #     echo "OR_REPO_COMMIT=$OR_COMMIT_HASH" >> .env
-    #     echo "ORFS_REPO_COMMIT=$ORFS_COMMIT_HASH" >> .env
-    #     echo "OPENSTA_REPO_COMMIT=$OPENSTA_COMMIT_HASH" >> .env
-    # - name: Preprocess docs
-    #   working-directory: ./backend
-    #   run: |
-    #     . .venv/bin/activate
-    #     python build_docs.py
+    - name: Populate environment variables
+      working-directory: ./backend
+      run: |
+        rm -f .env && touch .env
+        echo "OR_REPO_COMMIT=$OR_COMMIT_HASH" >> .env
+        echo "ORFS_REPO_COMMIT=$ORFS_COMMIT_HASH" >> .env
+        echo "OPENSTA_REPO_COMMIT=$OPENSTA_COMMIT_HASH" >> .env
+    - name: Preprocess docs
+      working-directory: ./backend
+      run: |
+        . .venv/bin/activate
+        python build_docs.py
     - name: Upload files
       working-directory: ./backend
       run: |
         . .venv/bin/activate
-        huggingface-cli login --token "${{ secrets.HUGGINGFACE_TOKEN }}"
         huggingface-cli upload ${{ env.HF_RAG_REPO }} ./data / --repo-type dataset
-        huggingface-cli logout
