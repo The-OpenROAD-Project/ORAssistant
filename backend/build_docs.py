@@ -1,16 +1,13 @@
 import os
 import subprocess
 import requests
-import sys
 import shutil
-import json
 import logging
 
 from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
 from bs4 import BeautifulSoup
-from huggingface_hub import snapshot_download
 
 
 load_dotenv()
@@ -42,6 +39,7 @@ opensta_readme_url = (
     'https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/'
     f'{opensta_repo_commit}/README.md'
 )
+or_publications_url = 'https://theopenroadproject.org/publications/'
 
 logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
 
@@ -87,7 +85,7 @@ def track_src(src: str) -> None:
     logging.debug(f'Updating source dict for {src}...')
     if not os.path.exists(src):
         logging.error(f'File {src} does not exist. Exiting.')
-        sys.exit(1)
+        # sys.exit(1)
 
     for root, _, files in os.walk(src):
         for file in files:
@@ -100,7 +98,7 @@ def track_src(src: str) -> None:
 def copy_file_track_src(src: str, dst: str) -> None:
     if not os.path.exists(src):
         logging.error(f'File {src} does not exist. Exiting.')
-        sys.exit(1)
+        # sys.exit(1)
 
     if os.path.isfile(src):
         if os.path.exists(dst):
@@ -122,7 +120,7 @@ def copy_file_track_src(src: str, dst: str) -> None:
 def copy_tree_track_src(src: str, dst: str) -> None:
     if not os.path.exists(src):
         logging.debug(f'Folder {src} does not exist. Exiting.')
-        sys.exit(1)
+        # sys.exit(1)
 
     for root, _, files in os.walk(src):
         rel_path = os.path.relpath(root, src)
@@ -157,7 +155,7 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
     res = subprocess.run(command, shell=True, capture_output=True)
     if res.returncode != 0:
         logging.debug(f"Error in cloning repo: {res.stderr.decode('utf-8')}")
-        sys.exit(1)
+        # sys.exit(1)
     if commit_hash:
         os.chdir(target_dir)
         command = f'git fetch origin {commit_hash} && git checkout {commit_hash}'
@@ -166,7 +164,7 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
             logging.debug(
                 f"Error in checking out commit hash: {res.stderr.decode('utf-8')}"
             )
-            sys.exit(1)
+            # sys.exit(1)
     logging.debug('Cloned repo successfully.')
 
 
@@ -182,7 +180,7 @@ def build_or_docs() -> None:
 
     if not os.path.isdir(md_or_docs):
         logging.debug(f'Directory {md_or_docs} does not exist. Exiting.')
-        sys.exit(1)
+        # sys.exit(1)
 
     copy_tree_track_src(
         f'{md_or_docs}/user', f'{cur_dir}/data/markdown/OR_docs/installation'
@@ -228,7 +226,7 @@ def build_orfs_docs() -> None:
 
     if not os.path.isdir(md_orfs_docs):
         logging.debug(f'Directory {md_orfs_docs} does not exist. Exiting.')
-        sys.exit(1)
+        # sys.exit(1)
 
     copy_tree_track_src(
         f'{md_orfs_docs}/tutorials', f'{cur_dir}/data/markdown/ORFS_docs/general'
@@ -284,7 +282,7 @@ def build_manpages() -> None:
     res = subprocess.run('pandoc --version', shell=True, capture_output=True)
     if res.returncode != 0:
         logging.error('Pandoc is not installed. Please install it.')
-        sys.exit(1)
+        # sys.exit(1)
     logging.debug('Pandoc is installed.')
 
     command = '../../etc/find_messages.py > messages.txt'
@@ -355,15 +353,16 @@ def get_or_website_html() -> None:
         )
     except Exception as e:
         logging.debug(f'Error in downloading OR website docs: {e}')
-        sys.exit(1)
+        # sys.exit(1)
 
     logging.debug('OR website docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/or_website')
 
 
 def get_or_publications() -> None:
+    # TODO: verify if this is indeed all publications. New format seem to truncate to 10 latest.
     try:
-        html = requests.get('https://theopenroadproject.org/publications/').text
+        html = requests.get(or_publications_url).text
         soup = BeautifulSoup(html, 'lxml')
         links = soup.find_all('a')
         papers = []
@@ -394,7 +393,7 @@ def get_or_publications() -> None:
 
     except Exception as e:
         logging.debug(f'Error in downloading OR publications: {e}')
-        sys.exit(1)
+        # sys.exit(1)
 
     logging.debug('OR publications downloaded successfully.')
 
@@ -408,7 +407,7 @@ def get_yosys_docs_html() -> None:
         )
     except Exception as e:
         logging.debug(f'Error in downloading Yosys docs: {e}')
-        sys.exit(1)
+        # sys.exit(1)
 
     logging.debug('Yosys docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/yosys_docs')
@@ -423,7 +422,7 @@ def get_klayout_docs_html() -> None:
         )
     except Exception as e:
         logging.debug(f'Error in downloading KLayout docs: {e}')
-        sys.exit(1)
+        # sys.exit(1)
 
     logging.debug('KLayout docs downloaded successfully.')
     track_src(f'{cur_dir}/data/html/klayout_docs')
@@ -458,53 +457,53 @@ if __name__ == '__main__':
     # get_yosys_docs_html()
 
     get_or_publications()
-    get_or_website_html()
-    get_opensta_docs()
+    # get_or_website_html()
+    # get_opensta_docs()
 
-    clone_repo(
-        url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
-        commit_hash=or_repo_commit,
-        folder_name='OpenROAD',
-    )
-    clone_repo(
-        url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
-        commit_hash=orfs_repo_commit,
-        folder_name='OpenROAD-flow-scripts',
-    )
+    # clone_repo(
+    #     url='https://github.com/The-OpenROAD-Project/OpenROAD.git',
+    #     commit_hash=or_repo_commit,
+    #     folder_name='OpenROAD',
+    # )
+    # clone_repo(
+    #     url='https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git',
+    #     commit_hash=orfs_repo_commit,
+    #     folder_name='OpenROAD-flow-scripts',
+    # )
 
-    build_or_docs()
-    build_orfs_docs()
-    build_manpages()
+    # build_or_docs()
+    # build_orfs_docs()
+    # build_manpages()
 
-    os.chdir(cur_dir)
-    copy_file_track_src(
-        f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
-        f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
-    )
+    # os.chdir(cur_dir)
+    # copy_file_track_src(
+    #     f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md',
+    #     f'{cur_dir}/data/markdown/manpages/man3/ErrorMessages.md',
+    # )
 
-    os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
+    # os.remove(f'{cur_dir}/data/markdown/OR_docs/installation/MessagesFinal.md')
 
-    snapshot_download(
-        repo_id='The-OpenROAD-Project/ORAssistant_RAG_Dataset',
-        repo_type='dataset',
-        revision='main',
-        allow_patterns=[
-            'markdown/gh_discussions/**/*',
-            'markdown/gh_discussions/*',
-        ],
-        local_dir='data',
-    )
+    # snapshot_download(
+    #     repo_id='The-OpenROAD-Project/ORAssistant_RAG_Dataset',
+    #     repo_type='dataset',
+    #     revision='main',
+    #     allow_patterns=[
+    #         'markdown/gh_discussions/**/*',
+    #         'markdown/gh_discussions/*',
+    #     ],
+    #     local_dir='data',
+    # )
 
-    with open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json') as gh_disc:
-        gh_disc_src = json.load(gh_disc)
-    gh_disc_path = 'data/markdown/gh_discussions'
-    source_dict = {}
-    for file in gh_disc_src.keys():
-        full_path = os.path.join(gh_disc_path, file)
-        source_dict[full_path] = gh_disc_src[file]['url']
+    # with open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json') as gh_disc:
+    #     gh_disc_src = json.load(gh_disc)
+    # gh_disc_path = 'data/markdown/gh_discussions'
+    # source_dict = {}
+    # for file in gh_disc_src.keys():
+    #     full_path = os.path.join(gh_disc_path, file)
+    #     source_dict[full_path] = gh_disc_src[file]['url']
 
-    with open('data/source_list.json', 'w+') as src:
-        src.write(json.dumps(source_dict))
+    # with open('data/source_list.json', 'w+') as src:
+    #     src.write(json.dumps(source_dict))
 
-    repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
-    purge_folders(folder_paths=repo_paths)
+    # repo_paths = ['OpenROAD', 'OpenROAD-flow-scripts']
+    # purge_folders(folder_paths=repo_paths)
