@@ -31,56 +31,61 @@ Ensure you have `docker` and `docker-compose` installed in your system.
 **Step 1**: Clone the repository:
 
 ```bash
-  git clone https://github.com/The-OpenROAD-Project/ORAssistant.git
+git clone https://github.com/The-OpenROAD-Project/ORAssistant.git
 ```
 
 **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
 
 ```bash
-  cd backend
-  cp .env.example .env
+cd backend
+cp .env.example .env
 ```
 
 **Step 3**: Start the docker container by running the following command:
 
 ```bash
-  docker compose up
+docker compose up
 ```
 
 #### Option 2 - Local Install
 
 Prerequisites: 
-  - `Python 3.12`, recommended using a virtual environment like `conda`.
-  - `wget`
-  - `pandoc`
-  - `git`
+- `Python 3.12`, recommended using a virtual environment like `conda`.
+- `wget`
+- `pandoc`
+- `git`
 
-**Step 1**:
-Install the required dependencies.
+**Step 1**: Install the required dependencies.
+
  ```bash
 pip install -r backend/requirements.txt
 ```
+
 **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
 
 ```bash
-  cd backend
-  cp .env.example .env
+cd backend
+cp .env.example .env
 ```
-
 
 **Step 3**: For populating the `data` folder with OR/ORFS docs, OpenSTA docs and Yosys docs, run:
 
 ```bash
-  cd backend && python build_docs.py
+python build_docs.py
+
+# Alternatively, pull the latest docs
+mkdir data
+huggingface-cli download The-OpenROAD-Project/ORAssistant_RAG_Dataset --repo-type dataset --local-dir data/
 ```
 
-**Step 4**: 
-To run the server:
+**Step 4**: To run the server, run:
+
 ```bash
-  python main.py
+python main.py
 ```
 
 **Optionally**: To interact with the chatbot in your terminal, run:
+
 ```bash
 python chatbot.py
 ```
@@ -94,17 +99,20 @@ Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
 **Note**: Please refer to the frontend [README](./frontend/README.md) for more detailed instructions.
 
 - **Step 1**: Set up the `.env` as per the instructions in the frontend [README](./frontend/README.md). Get the [Google Sheet API Key](https://developers.google.com/sheets/api/guides/concepts)
+
 ```bash
 cd frontend
 cp .env.example .env
 ```
 
 - **Step 2**: Install the necessary requirements. You are encouraged to use a virtual environment for this.
+
 ```bash
 pip install -r requirements.txt
 ```
 
 - **Step 3**: Run streamlit application
+
 ```bash
 streamlit run streamlit_app.py
 ```
@@ -114,6 +122,7 @@ streamlit run streamlit_app.py
 OpenROAD documentation, OpenROAD-flow-scripts documentation, manpages and OpenSTA documentation is chunked and embedded into FAISS Vector Databases.  
 
 Documents are first retrieved from the vectorstore using a hybrid retriever, combining vector and semantic search methods. These retrieved documents undergo re-ranking using a cross-encoder re-ranker model.
+
 ```mermaid
 flowchart LR
     id0([Query]) --> id1
@@ -137,6 +146,7 @@ Depending on the input query, each query can be forwarded to any one of the foll
 4. OR Error Messages
 5. OpenSTA docs
 6. Yosys docs
+7. Klayout docs
 
 The retrievers act as separate tools and can be accessed by the LLM's tool-calling capabilities.
 
@@ -151,46 +161,51 @@ graph TD
     router_agent -.-> retrieve_errinfo
     router_agent -.-> retrieve_opensta
     router_agent -.-> retrieve_yosys
+    router_agent -.-> retrieve_klayout
     retrieve_general --> generate
     retrieve_cmds --> generate
     retrieve_install --> generate
     retrieve_errinfo --> generate
     retrieve_opensta --> generate
     retrieve_yosys --> generate
+    retrieve_klayout --> generate
     generate --> __end__
 ```
 
+## Dataset overview
+
+The RAG dataset used in this project can be found [here](https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset).
+
+To modify the dataset, please refer to [build_docs.py](./backend/build_docs.py)
+
 ## Tests
 
-1) Ruff: Auto-formatter and checker for python
-
 ```
-pip install ruff
-ruff format && ruff check
-```
-
-2) Mypy: A static type checker for python
-
-```
-pip install mypy 
-mypy .
-```
-
-To install it as a pre-commit hook:
-```
-pip install pre-commit
-pre-commit install
+make format
+make check
 ```
 
 ## Acknowledgements
 
 This work is completed as part of the Google Summer of Code 2024 project under the 
 [UCSC Open-Source Program Office](https://ucsc-ospo.github.io/osre24/).
-Please see their contributions at this [link](https://github.com/The-OpenROAD-Project/ORAssistant/wiki/Google-Summer-of-Code-2024)
+Please see their contributions at this [link](https://github.com/The-OpenROAD-Project/ORAssistant/wiki/Google-Summer-of-Code-2024).
 
 ## Citing this work
 
+**2024-10-27**: Our work has been accepted to [Workshop on Open-Source EDA Technology 2024](https://woset-workshop.github.io/). Kudos to our talented contributors Palaniappan R and Aviral Kaintura (contributed equally)!
+
 If you use this software in any published work, we would appreciate a citation! Please use the following reference:
+
+```
+@article{kaintura2024orassistant,
+  title={ORAssistant: A Custom RAG-based Conversational Assistant for OpenROAD},
+  author={Kaintura, Aviral and R, Palaniappan and Luar, Shui Song and Almeida, Indira Iyer},
+  journal={arXiv preprint arXiv:2410.03845},
+  year={2024}
+}
+```
+
 ```
 @misc{orassistant2024,
   author = {Kaintura, Aviral and R, Palaniappan and Luar, Shui Song and Iyer, Indira},
