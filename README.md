@@ -161,6 +161,7 @@ graph TD
     router_agent -.-> retrieve_errinfo
     router_agent -.-> retrieve_opensta
     router_agent -.-> retrieve_yosys
+    router_agent -.-> retrieve_klayout
     retrieve_general --> generate
     retrieve_cmds --> generate
     retrieve_install --> generate
@@ -188,7 +189,7 @@ make check
 
 This work is completed as part of the Google Summer of Code 2024 project under the 
 [UCSC Open-Source Program Office](https://ucsc-ospo.github.io/osre24/).
-Please see their contributions at this [link](https://github.com/The-OpenROAD-Project/ORAssistant/wiki/Google-Summer-of-Code-2024)
+Please see their contributions at this [link](https://github.com/The-OpenROAD-Project/ORAssistant/wiki/Google-Summer-of-Code-2024).
 
 ## Citing this work
 
@@ -199,7 +200,7 @@ If you use this software in any published work, we would appreciate a citation! 
 ```
 @article{kaintura2024orassistant,
   title={ORAssistant: A Custom RAG-based Conversational Assistant for OpenROAD},
-  author={Kaintura, Aviral and Luar, Shui Song and Almeida, Indira Iyer and others},
+  author={Kaintura, Aviral and R, Palaniappan and Luar, Shui Song and Almeida, Indira Iyer},
   journal={arXiv preprint arXiv:2410.03845},
   year={2024}
 }
