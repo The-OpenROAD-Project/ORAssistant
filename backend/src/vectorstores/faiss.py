@@ -41,7 +41,7 @@ class FAISSVectorDatabase:
             self.embedding_model = GoogleGenerativeAIEmbeddings(
                 model=self.embeddings_model_name,
                 task_type="retrieval_document",
-            )  # type: ignore
+            )
             logging.info("Using Google GenerativeAI embeddings...")
 
         elif embeddings_type == "GOOGLE_VERTEXAI":
