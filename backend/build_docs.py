@@ -497,8 +497,6 @@ if __name__ == '__main__':
 
     with open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json') as gh_disc:
         gh_disc_src = json.load(gh_disc)
-    # gh_disc_src_json = open(f'{cur_dir}/data/markdown/gh_discussions/mapping.json', 'r')
-    # gh_disc_src = json.load(gh_disc_src_json)
     gh_disc_path = 'data/markdown/gh_discussions'
     source_dict = {}
     for file in gh_disc_src.keys():
