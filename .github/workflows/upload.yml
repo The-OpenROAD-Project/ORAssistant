@@ -18,7 +18,7 @@ jobs:
     environment: production
     steps:
       - name: check hfcli
-        run:
+        run: |
           huggingface-cli login --token ${{ secrets.HF_TOKEN }}
           huggingface-cli whoami
     # - name: Checkout
