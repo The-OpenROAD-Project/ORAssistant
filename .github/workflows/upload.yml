@@ -11,7 +11,6 @@ env:
   OR_COMMIT_HASH: ffc5760f2df639cd184c40ceba253c7e02a006d5
   ORFS_COMMIT_HASH: b94834df01cb58915bc0e8dabf85a314fbd8fb9e
   OPENSTA_COMMIT_HASH: 1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5
-  HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
 jobs:
   or-manpages:
@@ -25,21 +24,22 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y make pandoc git
         make init-dev
-    - name: Populate environment variables
-      working-directory: ./backend
-      run: |
-        rm -f .env && touch .env
-        echo "OR_REPO_COMMIT=$OR_COMMIT_HASH" >> .env
-        echo "ORFS_REPO_COMMIT=$ORFS_COMMIT_HASH" >> .env
-        echo "OPENSTA_REPO_COMMIT=$OPENSTA_COMMIT_HASH" >> .env
-    - name: Preprocess docs
-      working-directory: ./backend
-      run: |
-        python build_docs.py
+    # - name: Populate environment variables
+    #   working-directory: ./backend
+    #   run: |
+    #     rm -f .env && touch .env
+    #     echo "OR_REPO_COMMIT=$OR_COMMIT_HASH" >> .env
+    #     echo "ORFS_REPO_COMMIT=$ORFS_COMMIT_HASH" >> .env
+    #     echo "OPENSTA_REPO_COMMIT=$OPENSTA_COMMIT_HASH" >> .env
+    # - name: Preprocess docs
+    #   working-directory: ./backend
+    #   run: |
+    #     . .venv/bin/activate
+    #     python build_docs.py
     - name: Upload files
       working-directory: ./backend
       run: |
+        . .venv/bin/activate
+        huggingface-cli login --token ${{ secrets.HF_TOKEN }}
         huggingface-cli upload ${{ env.HF_RAG_REPO }} ./data / --repo-type dataset
-    - name: Logout from Huggingface
-      run: |
         huggingface-cli logout
