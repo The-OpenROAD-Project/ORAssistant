@@ -1,7 +1,7 @@
 name: ORAssistant CI
 run-name: ${{ github.actor }} started CI
 
-# on: [push, pull_request]
+on: [push, pull_request]
 
 jobs:
   build-backend-docker:
