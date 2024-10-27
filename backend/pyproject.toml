@@ -30,6 +30,10 @@ disable_error_code = ["call-arg"]
 exclude = "src/post_install.py"
 
 [[tool.mypy.overrides]]
+module = "huggingface_hub.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "transformers.*"
 ignore_missing_imports = true
 
