@@ -103,7 +103,6 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
         output = list(rg.graph.stream(inputs))
     else:
         raise ValueError("RetrieverGraph not initialized.")
-
     urls: list[str] = []
     context: list[str] = []
 

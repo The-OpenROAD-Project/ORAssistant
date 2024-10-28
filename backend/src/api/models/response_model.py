@@ -12,11 +12,11 @@ class ChatResponse(BaseModel):
     response: str
     sources: list[str] = []
     context: list[str] = []
-    tool: str
+    tools: list[str] = []
 
 
 class ChatToolResponse(BaseModel):
     response: str
     sources: list[str] = []
     context: list[str] = []
-    tool: str
+    tools: list[str] = []
