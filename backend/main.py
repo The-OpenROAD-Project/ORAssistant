@@ -9,7 +9,7 @@ load_dotenv()
 
 def main() -> None:
     uvicorn.run(
-        app, host="127.0.0.1", port=8000, workers=int(os.getenv("BACKEND_WORKERS", 1))
+        app, host=os.getenv('BACKEND_URL','0.0.0.0'), port=8000, workers=int(os.getenv('BACKEND_WORKERS', 1))
     )
 
 
