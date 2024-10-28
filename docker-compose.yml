@@ -2,7 +2,6 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile_slim
     container_name: "orassistant-backend"
     ports:
       - "8000:8000"
