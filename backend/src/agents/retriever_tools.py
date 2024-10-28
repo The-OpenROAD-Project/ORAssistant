@@ -182,10 +182,10 @@ class RetrieverTools:
 
         OpenSTA is an open-source gate-level static timing verifier.\
         It can verify the timing of deisgns in the form of Verilog netlists.\
-        Timing Analysis: Perform static timing analysis using standard file formats (Verilog, Liberty, SDC, SDF, SPEF).
-        Multiple Process Corners: Conduct analysis across different process variations.
-        Power Analysis: Evaluate power consumption in designs.
-        TCL Interpreter: Use TCL scripts for command automation and customization.
+        Timing Analysis: Perform static timing analysis using standard file formats (Verilog, Liberty, SDC, SDF, SPEF). \
+        Multiple Process Corners: Conduct analysis across different process variations. \
+        Power Analysis: Evaluate power consumption in designs. \
+        TCL Interpreter: Use TCL scripts for command automation  and customization. \
         """
         if RetrieverTools.commands_retriever is None:
             raise ValueError("Commands Retriever not initialized")
