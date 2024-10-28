@@ -1,10 +1,10 @@
-langchain==0.2.12
-langchain-community==0.2.11
-langchain-huggingface==0.0.3
-langchain-google-genai==1.0.7
-langchain-google-vertexai==1.0.8
-langchain-ollama==0.1.1
-langgraph==0.1.19
+langchain==0.3.0
+langchain-community==0.3.0
+langchain-huggingface==0.1.0
+langchain-google-genai==2.0.0
+langchain-google-vertexai==2.0.1
+langchain-ollama==0.2.0
+langgraph==0.2.22
 fastapi==0.111.0
 faiss-cpu==1.8.0
 markdown==3.0.0
