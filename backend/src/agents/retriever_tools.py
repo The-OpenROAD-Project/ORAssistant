@@ -56,8 +56,9 @@ class RetrieverTools:
                 "./data/markdown/gh_discussions",
                 "./data/markdown/manpages/man1",
                 "./data/markdown/manpages/man2",
+                "./data/markdown/OpenSTA_docs",
             ],
-            other_docs_path=["./data/pdf/OR_publications"],
+            other_docs_path=["./data/pdf"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -75,6 +76,7 @@ class RetrieverTools:
                 "./data/markdown/OR_docs/installation",
                 "./data/markdown/gh_discussions/Build",
                 "./data/markdown/gh_discussions/Installation",
+                "./data/markdown/OpenSTA_docs/",
             ],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
@@ -153,7 +155,7 @@ class RetrieverTools:
     @tool
     def retrieve_general(query: str) -> Tuple[str, list[str], list[str]]:
         """
-        Retrieve comprehensive and detailed information pertaining to the OpenROAD project and OpenROAD-Flow-Scripts.\
+        Retrieve comprehensive and detailed information pertaining to the OpenROAD project, OpenROAD-Flow-Scripts and OpenSTA.\
         This includes, but is not limited to, general information, specific functionalities, usage guidelines,\
         troubleshooting steps, and best practices. The tool is designed to assist users by providing clear, accurate,\
         and relevant information that enhances their understanding and efficient use of OpenROAD and OpenROAD-Flow-Scripts.\
@@ -197,7 +199,7 @@ class RetrieverTools:
     @tool
     def retrieve_install(query: str) -> Tuple[str, list[str], list[str]]:
         """
-        Retrieve comprehensive and detailed information pertaining to the installaion of OpenROAD project and OpenROAD-Flow-Scripts.\
+        Retrieve comprehensive and detailed information pertaining to the installaion of OpenROAD, OpenROAD-Flow-Scripts and OpenSTA.\
         This includes, but is not limited to, various dependencies, system requirements, installation methods such as,\
         - Building from source\
         - Using Docker\
