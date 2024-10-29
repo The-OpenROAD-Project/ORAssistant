@@ -26,4 +26,4 @@ jobs:
         make docker
     - name: Teardown
       run: |
-        docker compose down
+        docker compose down --remove-orphans
