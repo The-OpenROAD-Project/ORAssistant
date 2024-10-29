@@ -15,3 +15,7 @@ format:
 check:
 	@. .venv/bin/activate && \
 		ruff check --fix
+
+test:
+	@. .venv/bin/activate && \
+		pytest
