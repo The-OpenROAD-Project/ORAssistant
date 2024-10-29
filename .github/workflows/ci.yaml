@@ -1,7 +1,11 @@
 name: ORAssistant CI
 run-name: ${{ github.actor }} started CI
 
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   build-backend-docker:
@@ -25,5 +29,6 @@ jobs:
       run: |
         make docker
     - name: Teardown
+      if: always()
       run: |
         docker compose down --remove-orphans
