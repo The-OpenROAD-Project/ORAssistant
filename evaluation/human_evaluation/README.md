@@ -72,7 +72,7 @@ This project helps populate a Google Form for human evaluation based on question
     # (e.g., http://your-api-endpoint.com/chatApp)
     CHAT_ENDPOINT=
 
-    # Google Sheets IDs (Note: These will be filled by setup.py script if you choose to create a new sheet)
+    # Google Sheets IDs (Note: These will be filled by init_google.py script if you choose to create a new sheet)
     GOOGLE_SHEET_ID=
     
     # (Optional, e.g., A2:A)
@@ -85,7 +85,7 @@ This project helps populate a Google Form for human evaluation based on question
     # (e.g., /path/to/your/secrets.json)
     GOOGLE_CREDENTIALS_JSON=
 
-    # Google Form ID (Note: This will be filled by setup.py script if you choose to create a new form.)
+    # Google Form ID (Note: This will be filled by init_google.py script if you choose to create a new form.)
     GOOGLE_FORM_ID=
 
     ```
