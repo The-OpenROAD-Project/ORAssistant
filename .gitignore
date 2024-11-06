@@ -23,3 +23,5 @@ documents.txt
 # evaluations
 .deepeval_telemtry.txt
 *.csv
+*.deepeval-cache.json
+temp_test_run_data.json

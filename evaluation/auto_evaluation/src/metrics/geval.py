@@ -1,5 +1,6 @@
 """
-Accuracy related metrics from DeepEval
+GEval metrics wrapper for DeepEval.
+GEval refers to custom LLM-based metrics with non-traditional definitions (e.g. precision, recall, relevancy, etc.)
 """
 
 from deepeval.metrics import GEval
@@ -19,3 +20,7 @@ def make_correctness_metric(model: DeepEvalBaseLLM) -> GEval:
         evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
         model=model,
     )
+
+
+if __name__ == "__main__":
+    pass
