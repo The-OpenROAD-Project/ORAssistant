@@ -8,3 +8,6 @@ requests==2.32.3
 requests-oauthlib==2.0.0
 streamlit==1.37.0
 gspread==6.1.2
+deepeval==1.4.9
+langchain-google-vertexai==2.0.6
+asyncio==3.4.3
