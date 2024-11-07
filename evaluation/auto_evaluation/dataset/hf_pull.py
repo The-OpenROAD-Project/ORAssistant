@@ -1,7 +1,8 @@
 from huggingface_hub import snapshot_download
 import os
 
-if __name__ == "__main__":
+
+def main():
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     snapshot_download(
         "The-OpenROAD-Project/ORAssistant_Public_Evals",
@@ -13,3 +14,7 @@ if __name__ == "__main__":
             "README.md",
         ],
     )
+
+
+if __name__ == "__main__":
+    main()

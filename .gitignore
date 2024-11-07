@@ -4,6 +4,7 @@ __pycache__/
 backend/data/*
 backend/src/*.json
 *.pyc
+*.egg-info/
 frontend/*.json  
 evaluation/human_evaluation/*.json  
 /*.json
