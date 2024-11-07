@@ -1,0 +1,4 @@
+mypy==1.10.1
+ruff==0.5.1
+types-requests==2.32.0.20240622
+google-api-python-client-stubs==1.28.0
