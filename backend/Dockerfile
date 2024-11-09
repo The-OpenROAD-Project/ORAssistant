@@ -9,8 +9,13 @@ RUN apt-get update && apt-get install -y \
 RUN git lfs install
 
 COPY ./requirements.txt /ORAssistant-backend/requirements.txt
+COPY ./requirements-test.txt /ORAssistant-backend/requirements-test.txt
+COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
 
-RUN pip install --upgrade -r /ORAssistant-backend/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements-test.txt && \
+    pip install --no-cache-dir -e .
 
 RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
     mkdir -p data && \

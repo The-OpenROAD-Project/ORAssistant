@@ -7,6 +7,7 @@ backend/src/*.json
 frontend/*.json  
 evaluation/human_evaluation/*.json  
 /*.json
+secret.json
 venv/
 .ruff_cache/
 .mypy_cache/
@@ -18,3 +19,9 @@ documents.txt
 
 # virtualenv
 .venv
+
+# evaluations
+.deepeval_telemtry.txt
+*.csv
+*.deepeval-cache.json
+temp_test_run_data.json

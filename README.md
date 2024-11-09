@@ -1,5 +1,7 @@
 # OR-Assistant
 
+[![ORAssistant CI](https://github.com/The-OpenROAD-Project/ORAssistant/actions/workflows/ci.yaml/badge.svg)](https://github.com/The-OpenROAD-Project/ORAssistant/actions/workflows/ci.yaml)
+
 ## Introduction
 
 The OpenROAD chat assistant aims to provide easy and quick access to information regarding tools, responses to questions and commonly occurring problems in OpenROAD and its native flow OpenROAD-flow-scripts.

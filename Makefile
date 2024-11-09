@@ -12,8 +12,7 @@ format:
 check:
 	@for folder in $(FOLDERS); do (cd $$folder && make check && cd ../); done
 	@. ./backend/.venv/bin/activate && \
-		pre-commit run --files backend/* && \
-		pre-commit run --files frontend/*
+		pre-commit run --all-files
 
 docker:
 	@docker compose up --build --wait
