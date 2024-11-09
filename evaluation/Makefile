@@ -1,3 +1,5 @@
+.PHONY: init init-dev format check clean
+
 init:
 	@python3 -m venv .venv && \
 		. .venv/bin/activate && \
@@ -16,3 +18,10 @@ format:
 check:
 	@. .venv/bin/activate && \
 		ruff check --fix
+
+clean:
+	@rm -f llm_tests_output.txt
+
+llm-tests: clean
+	@. .venv/bin/activate && \
+		./auto_evaluation/llm_tests.sh > llm_tests_output.txt 2>&1

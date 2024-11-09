@@ -28,6 +28,16 @@ jobs:
     - name: Build Docker image
       run: |
         make docker
+    - name: Run LLM CI
+      working-directory: evaluation
+      run: |
+        make llm-tests
+    - name: Create commit comment
+      working-directory: evaluation
+      uses: peter-evans/commit-comment@v3
+      with:
+        token: ${{ secrets.GH_PATH }}
+        body-path: llm-tests-output.txt
     - name: Teardown
       if: always()
       run: |
