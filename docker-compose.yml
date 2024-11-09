@@ -7,27 +7,27 @@ services:
       - "8000:8000"
     networks:
       - orassistant-network
-    healthcheck:
-      test: "curl -f http://localhost:8000/healthcheck || exit 1"
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 900s
+    # healthcheck:
+    #   test: "curl -f http://localhost:8000/healthcheck || exit 1"
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 30 s # todo: make sure that this healthcheck starts after the API in the backend is ready.
 
-  health-checker:
-    build: ./common
-    container_name: "orassistant-health-checker"
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - orassistant-network
-    healthcheck:
-      test: "ls /app || exit 1"
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 5s
+  # health-checker:
+  #   build: ./common
+  #   container_name: "orassistant-health-checker"
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
+  #   networks:
+  #     - orassistant-network
+  #   healthcheck:
+  #     test: "ls /app || exit 1"
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 5s
 
 networks:
   orassistant-network:

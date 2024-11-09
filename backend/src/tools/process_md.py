@@ -46,9 +46,6 @@ def process_md(
     split_text: bool = True,
     chunk_size: Optional[int] = None,
 ) -> list[Document]:
-    """
-    For processing OR/ORFS docs
-    """
     # if no files in the directory
     if not os.path.exists(folder_path) or not os.listdir(folder_path):
         logging.error(f"{folder_path} is not populated, returning empty list.")

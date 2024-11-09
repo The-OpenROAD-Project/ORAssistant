@@ -1,6 +1,6 @@
 import os
 
-from backend.src.api.routers import graphs
+from src.api.routers import graphs
 
 
 def get_history_str(chat_history: list[dict[str, str]]) -> str:
