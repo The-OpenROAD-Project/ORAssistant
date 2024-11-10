@@ -4,6 +4,7 @@ __pycache__/
 backend/data/*
 backend/src/*.json
 *.pyc
+*.egg-info/
 frontend/*.json  
 evaluation/human_evaluation/*.json  
 /*.json
@@ -21,7 +22,8 @@ documents.txt
 .venv
 
 # evaluations
-.deepeval_telemtry.txt
+**/.deepeval_telemtry.txt
 *.csv
-*.deepeval-cache.json
+**/.deepeval-cache.json
 temp_test_run_data.json
+**/llm_tests_output.txt

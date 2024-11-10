@@ -1,4 +1,6 @@
-FOLDERS=backend frontend
+.PHONY: init init-dev format check
+
+FOLDERS=backend frontend evaluation
 
 init:
 	@for folder in $(FOLDERS); do (cd $$folder && make init && cd ../); done

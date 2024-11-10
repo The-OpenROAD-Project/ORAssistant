@@ -35,18 +35,14 @@ def make_contextual_recall_metric(model: DeepEvalBaseLLM) -> ContextualRecallMet
 def make_contextual_relevancy_metric(
     model: DeepEvalBaseLLM,
 ) -> ContextualRelevancyMetric:
-    return ContextualRelevancyMetric(
-        threshold=RELEVANCY_THRESHOLD,
-        model=model,
-        include_reason=True,
+    raise NotImplementedError(
+        "ContextualRelevancyMetric is not implemented due to protobuf incompatability"
     )
 
 
 def make_faithfulness_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
-    return FaithfulnessMetric(
-        threshold=FAITHFULNESS_THRESHOLD,
-        model=model,
-        include_reason=True,
+    raise NotImplementedError(
+        "FaithfulnessMetric is not implemented due to protobuf incompatability"
     )
 
 

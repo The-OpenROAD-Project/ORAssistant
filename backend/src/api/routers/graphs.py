@@ -121,7 +121,7 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
         tool_index = 1
         for tool in tools:
             urls.extend(list(output[tool_index].values())[0]["urls"])
-            context.extend(list(set(list(output[tool_index].values())[0]["context"])))
+            context.append(list(output[tool_index].values())[0]["context"])
             tool_index += 1
     else:
         llm_response = "LLM response extraction failed"

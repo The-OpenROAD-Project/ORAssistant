@@ -11,6 +11,10 @@ jobs:
   build-backend-docker:
     runs-on: self-hosted
     steps:
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Setup prereqs
@@ -24,10 +28,23 @@ jobs:
         cp backend/.env.example backend/.env
         sed -i 's|{{GOOGLE_API_KEY}}|${{ secrets.GOOGLE_API_KEY }}|g' backend/.env
         sed -i 's|{{PATH_TO_GOOGLE_APPLICATION_CREDENTIALS}}|src/secret.json|g' backend/.env
+        cp backend/.env evaluation/.env
+        cp backend/.env frontend/.env
         cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} backend/src
+        cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} evaluation/auto_evaluation/src
     - name: Build Docker image
       run: |
         make docker
+        sleep 900 # TODO: Remove this after docker-compose healthcheck timeout restored fixed.
+    - name: Run LLM CI
+      working-directory: evaluation
+      run: |
+        make llm-tests
+    - name: Create commit comment
+      uses: peter-evans/commit-comment@v3
+      with:
+        token: ${{ secrets.GH_PAT }}
+        body-path: evaluation/auto_evaluation/llm_tests_output.txt
     - name: Teardown
       if: always()
       run: |

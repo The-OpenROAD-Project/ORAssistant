@@ -20,6 +20,9 @@ classifiers = [
 dependencies = { file = ["requirements.txt"] }
 optional-dependencies = { test = { file = ["requirements-test.txt"] } }
 
+[tool.setuptools.packages.find]
+include = ["auto_evaluation", "human_evaluation"]
+
 [tool.mypy]
 python_version = "3.12"
 warn_unused_configs = true
