@@ -16,5 +16,8 @@ check:
 	@. ./backend/.venv/bin/activate && \
 		pre-commit run --all-files
 
-docker:
+docker-up:
 	@docker compose up --build --wait
+
+docker-down:
+	@docker compose down --remove-orphans

@@ -1,6 +1,6 @@
-# FrontEnd For Streamlit
+# Frontend For Streamlit
 
-This Folder contains the frontend code for the OR Assistant using Streamlit. Follow the instructions below to set up the environment, run the application, and perform testing using a mock API.
+This folder contains the frontend code for the OR Assistant using Streamlit. Follow the instructions below to set up the environment, run the application, and perform testing using a mock API.
 
 ## Preparing the Environment Variables
 
@@ -39,6 +39,7 @@ To collect feedback, you need to set up a Google Sheet and configure the necessa
     ```
 4. **Set the Current Version for Feedback Evaluation:**
    - Add the current version of the feedback evaluation to the environment variables.
+   - If unset, this defaults to the commit hash of `master`.
     
     ```plaintext
     RAG_VERSION=<current-version>
@@ -73,4 +74,4 @@ This will start a mock API server that simulates responses for testing purposes.
 
 ## License
 
-This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](../../LICENSE) file for details.
+This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](../LICENSE) file for details.

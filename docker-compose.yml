@@ -13,6 +13,15 @@ services:
     #   timeout: 10s
     #   retries: 5
     #   start_period: 30 s # todo: make sure that this healthcheck starts after the API in the backend is ready.
+  
+  frontend:
+    build:
+      context: ./frontend
+    container_name: "orassistant-frontend"
+    ports:
+      - "8501:8501"
+    networks:
+      - orassistant-network
 
   # health-checker:
   #   build: ./common
