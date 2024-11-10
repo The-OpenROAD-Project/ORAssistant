@@ -12,3 +12,4 @@ deepeval==1.4.9
 langchain-google-vertexai==2.0.6
 asyncio==3.4.3
 huggingface-hub==0.26.2
+instructor[vertexai]==1.5.2

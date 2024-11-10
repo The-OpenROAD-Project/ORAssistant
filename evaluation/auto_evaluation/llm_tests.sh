@@ -2,7 +2,6 @@
 
 retrievers=(
     "agent-retriever" \
-    "ensemble" \
 )
 
 echo "==================================="
@@ -13,6 +12,5 @@ for retriever in "${retrievers[@]}" ; do
        --base_url http://localhost:8000 \
        --dataset ./dataset/EDA_Corpus_100_Question.csv \
        --retriever $retriever
-    echo "==> Done"
 done
 echo "==================================="

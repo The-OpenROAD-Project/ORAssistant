@@ -1,4 +1,5 @@
 import csv
+import json
 from typing import Any
 
 
@@ -23,3 +24,33 @@ def write_data(results_list: list[dict[str, Any]], results_path: str):
         for result in results_list:
             writer.writerow([result[key] for key in keys])
     print(f"Results written to {results_path}")
+
+
+def read_deepeval_cache():
+    metric_scores = {
+        "Contextual Precision": [],
+        "Contextual Recall": [],
+        "Hallucination": [],
+    }
+    metric_passes = {
+        "Contextual Precision": [],
+        "Contextual Recall": [],
+        "Hallucination": [],
+    }
+    with open(".deepeval-cache.json") as f:
+        results = json.load(f)
+    for _, value in results["test_cases_lookup_map"].items():
+        for metric in value["cached_metrics_data"]:
+            metric_scores[metric["metric_data"]["name"]].append(
+                metric["metric_data"]["score"]
+            )
+            metric_passes[metric["metric_data"]["name"]].append(
+                metric["metric_data"]["success"]
+            )
+
+    print("Metric Scores: ", metric_scores)
+    print("Metric Passes: ", metric_passes)
+
+
+if __name__ == "__main__":
+    read_deepeval_cache()

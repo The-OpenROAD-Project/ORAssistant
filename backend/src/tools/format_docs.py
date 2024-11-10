@@ -5,7 +5,7 @@ from ..prompts.prompt_templates import gh_discussion_prompt_template
 
 def format_docs(docs: list[Document]) -> tuple[str, list[str], list[str]]:
     doc_text = ""
-    doc_texts = ""
+    doc_texts = []
     doc_urls = []
     doc_srcs = []
 
@@ -19,10 +19,11 @@ def format_docs(docs: list[Document]) -> tuple[str, list[str], list[str]]:
                 doc_text = f"{gh_discussion_prompt_template}\n\n{doc.page_content}"
             else:
                 doc_text = doc.page_content
+            doc_texts.append(doc_text)
 
         if "url" in doc.metadata:
             doc_urls.append(doc.metadata["url"])
+    
+    doc_output = "\n\n -------------------------- \n\n".join(doc_texts)
 
-        doc_texts += f"\n\n- - - - - - - - - - - - - - - \n\n{doc_text}"
-
-    return doc_texts, doc_srcs, doc_urls
+    return doc_output, doc_srcs, doc_urls

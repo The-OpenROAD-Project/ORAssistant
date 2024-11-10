@@ -3,10 +3,18 @@ Code is adapted from https://github.com/meteatamel/genai-beyond-basics/blob/main
 Custom DeepEvalLLM wrapper.
 """
 
+import instructor
+
 from typing import Any
 
-from langchain_google_vertexai import ChatVertexAI, HarmBlockThreshold, HarmCategory
+# from langchain_google_vertexai import ChatVertexAI, HarmBlockThreshold, HarmCategory
+from vertexai.generative_models import GenerativeModel, HarmBlockThreshold, HarmCategory  # type: ignore
 from deepeval.models.base_model import DeepEvalBaseLLM
+from pydantic import BaseModel
+
+
+class Response(BaseModel):
+    content: str
 
 
 class GoogleVertexAILangChain(DeepEvalBaseLLM):
@@ -26,17 +34,43 @@ class GoogleVertexAILangChain(DeepEvalBaseLLM):
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
         }
 
-        return ChatVertexAI(
+        return GenerativeModel(
             model_name=self.model_name,
             safety_settings=safety_settings,
         )
 
-    def generate(self, prompt: str) -> Any:
-        return self.model.invoke(prompt).content
+    def generate(self, prompt: str, schema: BaseModel) -> Any:
+        instructor_client = instructor.from_vertexai(
+            client=self.load_model(),
+            mode=instructor.Mode.VERTEXAI_TOOLS,
+        )
+        resp = instructor_client.messages.create(  # type: ignore
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            response_model=schema,
+        )
+        return resp
 
-    async def a_generate(self, prompt: str) -> Any:
-        response = await self.model.ainvoke(prompt)
-        return response.content
+    async def a_generate(self, prompt: str, schema: BaseModel) -> Any:
+        instructor_client = instructor.from_vertexai(
+            client=self.load_model(),
+            mode=instructor.Mode.VERTEXAI_TOOLS,
+            _async=True,
+        )
+        resp = await instructor_client.messages.create(  # type: ignore
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            response_model=schema,
+        )
+        return resp
 
     def get_model_name(self):
         return self.model_name
@@ -46,7 +80,7 @@ def main():
     model = GoogleVertexAILangChain(model_name="gemini-1.5-pro-002")
     prompt = "Write me a joke"
     print(f"Prompt: {prompt}")
-    response = model.generate(prompt)
+    response = model.generate(prompt, schema=Response)
     print(f"Response: {response}")
 
 
@@ -54,13 +88,14 @@ async def main_async():
     model = GoogleVertexAILangChain(model_name="gemini-1.5-pro-002")
     prompt = "Write me a joke"
     print(f"Prompt: {prompt}")
-    response = await model.a_generate(prompt)
+    response = await model.a_generate(prompt, Response)
     print(f"Response: {response}")
 
 
 if __name__ == "__main__":
+    import asyncio
     from dotenv import load_dotenv
 
     load_dotenv()
-    main()
-    # asyncio.run(main_async())
+    # main()
+    asyncio.run(main_async())

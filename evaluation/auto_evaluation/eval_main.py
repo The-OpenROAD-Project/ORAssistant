@@ -4,6 +4,7 @@ the model to evaluate on the dataset.
 """
 
 import argparse
+import time
 import requests
 import os
 
@@ -15,8 +16,6 @@ from auto_evaluation.src.models.vertex_ai import GoogleVertexAILangChain
 from auto_evaluation.src.metrics.retrieval import (
     make_contextual_precision_metric,
     make_contextual_recall_metric,
-    make_contextual_relevancy_metric,
-    make_faithfulness_metric,
     make_hallucination_metric,
 )
 from auto_evaluation.dataset import hf_pull, preprocess
@@ -65,29 +64,29 @@ class EvaluationHarness:
         response_times = []
 
         # metrics
-        precision, recall, relevancy, faithfulness, hallucination = (
+        precision, recall, hallucination = (
             make_contextual_precision_metric(self.eval_model),
             make_contextual_recall_metric(self.eval_model),
-            make_contextual_relevancy_metric(self.eval_model),
-            make_faithfulness_metric(self.eval_model),
             make_hallucination_metric(self.eval_model),
         )
 
         # retrieval test cases
         for i, qa_pair in enumerate(tqdm(self.qns, desc="Evaluating")):
-            if i < 20:
+            if i >= 1:
                 continue
             question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
             response, response_time = self.query(retriever, question)
             response_text = response["response"]
             context = response["context"]
+            context_list = context[0].split("--------------------------")
 
+            # works for: precision, recall, hallucination
             retrieval_tc = LLMTestCase(
                 input=question,
                 actual_output=response_text,
                 expected_output=ground_truth,
-                context=context,
-                retrieval_context=context,
+                context=context_list,
+                retrieval_context=context_list,
             )
             retrieval_tcs.append(retrieval_tc)
             response_times.append(response_time)
@@ -95,27 +94,12 @@ class EvaluationHarness:
         # parallel evaluate
         evaluate(
             retrieval_tcs,
-            [precision, recall, relevancy, faithfulness, hallucination],
+            [precision, recall, hallucination],
+            print_results=False,
         )
 
-        #     result = {
-        #         "question": f"{i + 1}. {question}",
-        #         "ground_truth": ground_truth,
-        #         "retriever_type": retriever,
-        #         "response_time": response_time,
-        #         "response_text": response_text,
-        #         "tool": retriever,
-        #         "contextual_precision": precision.score,
-        #         "contextual_recall": recall.score,
-        #         "contextual_relevancy": relevancy.score,
-        #         "faithfulness": faithfulness.score,
-        #         "hallucination": hallucination.score,
-        #     }
-        #     print(result)
-        #     overall.append(result)
-
-        # Write to log file
-        # preprocess.write_data(overall, log_file)
+        # parse deepeval results
+        preprocess.read_deepeval_cache()
 
     def query(self, retriever: str, query: str) -> tuple[dict, float]:
         """
@@ -127,8 +111,9 @@ class EvaluationHarness:
             if retriever != "agent-retriever-reranker"
             else f"{self.reranker_base_url}/{endpoint}"
         )
-        payload = {"query": query, "list_context": True, "list_sources": True}
+        payload = {"query": query, "list_context": True, "list_sources": False}
         try:
+            time.sleep(5)
             response = requests.post(url, json=payload)
             return response.json(), response.elapsed.total_seconds() * 1000
         except Exception as e:

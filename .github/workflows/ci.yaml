@@ -40,7 +40,7 @@ jobs:
     - name: Create commit comment
       uses: peter-evans/commit-comment@v3
       with:
-        token: ${{ secrets.GH_PATH }}
+        token: ${{ secrets.GH_PAT }}
         body-path: evaluation/auto_evaluation/llm_tests_output.txt
     - name: Teardown
       if: always()
