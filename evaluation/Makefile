@@ -21,7 +21,9 @@ check:
 
 clean:
 	@rm -f llm_tests_output.txt
+	@rm -f **/.deepeval-cache.json
 
 llm-tests: clean
 	@. .venv/bin/activate && \
-		./auto_evaluation/llm_tests.sh > llm_tests_output.txt 2>&1
+		cd auto_evaluation && \
+		./llm_tests.sh 2>&1 | tee llm_tests_output.txt

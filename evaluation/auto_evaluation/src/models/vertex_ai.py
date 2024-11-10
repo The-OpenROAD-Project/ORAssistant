@@ -59,5 +59,8 @@ async def main_async():
 
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+
+    load_dotenv()
     main()
     # asyncio.run(main_async())

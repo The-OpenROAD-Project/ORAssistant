@@ -31,13 +31,13 @@ jobs:
     - name: Run LLM CI
       working-directory: evaluation
       run: |
+        cp ../backend/.env .
         make llm-tests
     - name: Create commit comment
-      working-directory: evaluation
       uses: peter-evans/commit-comment@v3
       with:
         token: ${{ secrets.GH_PATH }}
-        body-path: llm-tests-output.txt
+        body-path: evaluation/auto_evaluation/llm_tests_output.txt
     - name: Teardown
       if: always()
       run: |

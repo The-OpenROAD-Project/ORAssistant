@@ -1,16 +1,0 @@
-===================================
-==> Dataset: EDA Corpus
-==> Running tests for agent-retriever
-/home/luars/ORAssistant/evaluation/.venv/lib/python3.12/site-packages/deepeval/__init__.py:49: UserWarning: You are using deepeval version 1.4.9, however version 1.5.0 is available. You should consider upgrading via the "pip install --upgrade deepeval" command.
-  warnings.warn(
-Fetching 3 files:   0%|          | 0/3 [00:00<?, ?it/s]Fetching 3 files: 100%|██████████| 3/3 [00:00<00:00, 33.41it/s]
-Traceback (most recent call last):
-  File "/home/luars/ORAssistant/evaluation/auto_evaluation/eval_main.py", line 146, in <module>
-    harness = EvaluationHarness(args.base_url, args.dataset, args.reranker_base_url)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/luars/ORAssistant/evaluation/auto_evaluation/eval_main.py", line 44, in __init__
-    self.qns = preprocess.read_data(self.dataset)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/luars/ORAssistant/evaluation/auto_evaluation/dataset/preprocess.py", line 10, in read_data
-    assert len(header) == 2, "CSV file must have exactly 2 columns"
-AssertionError: CSV file must have exactly 2 columns

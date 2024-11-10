@@ -7,7 +7,6 @@ import argparse
 import requests
 import os
 
-from datetime import datetime
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
 from deepeval import evaluate
@@ -21,8 +20,10 @@ from auto_evaluation.src.metrics.retrieval import (
     make_hallucination_metric,
 )
 from auto_evaluation.dataset import hf_pull, preprocess
+from tqdm import tqdm  # type: ignore
 
-load_dotenv()
+eval_root_path = os.path.join(os.path.dirname(__file__), "..")
+load_dotenv(dotenv_path=os.path.join(eval_root_path, ".env"))
 
 # List of all available retrievers
 ALL_RETRIEVERS = {
@@ -48,32 +49,39 @@ class EvaluationHarness:
         self.sanity_check()
 
     def sanity_check(self):
-        if not requests.get(f"{self.base_url}/health-check").status_code == 200:
+        if not requests.get(f"{self.base_url}/healthcheck").status_code == 200:
             raise ValueError("Endpoint is not running")
         if not os.path.exists(self.dataset):
             raise ValueError("Dataset path does not exist")
         if (
             self.reranker_base_url
-            and not requests.get(f"{self.reranker_base_url}/health-check").status_code
+            and not requests.get(f"{self.reranker_base_url}/healthcheck").status_code
             == 200
         ):
             raise ValueError("Reranker endpoint is not running")
 
-    def get_logfile(self, retriever: str):
-        return os.path.join(
-            self.log_dir, f"{retriever}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    def evaluate(self, retriever: str):
+        retrieval_tcs = []
+        response_times = []
+
+        # metrics
+        precision, recall, relevancy, faithfulness, hallucination = (
+            make_contextual_precision_metric(self.eval_model),
+            make_contextual_recall_metric(self.eval_model),
+            make_contextual_relevancy_metric(self.eval_model),
+            make_faithfulness_metric(self.eval_model),
+            make_hallucination_metric(self.eval_model),
         )
 
-    def evaluate(self, retriever: str):
-        log_file = self.get_logfile(retriever)
-        overall = []
-        for i, qa_pair in enumerate(self.qns):
+        # retrieval test cases
+        for i, qa_pair in enumerate(tqdm(self.qns, desc="Evaluating")):
+            if i < 20:
+                continue
             question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
             response, response_time = self.query(retriever, question)
             response_text = response["response"]
             context = response["context"]
 
-            # deepeval parallel evals
             retrieval_tc = LLMTestCase(
                 input=question,
                 actual_output=response_text,
@@ -81,36 +89,33 @@ class EvaluationHarness:
                 context=context,
                 retrieval_context=context,
             )
-            print("Retrieval metrics")
-            precision, recall, relevancy, faithfulness, hallucination = (
-                make_contextual_precision_metric(self.eval_model),
-                make_contextual_recall_metric(self.eval_model),
-                make_contextual_relevancy_metric(self.eval_model),
-                make_faithfulness_metric(self.eval_model),
-                make_hallucination_metric(self.eval_model),
-            )
-            evaluate(
-                [retrieval_tc],
-                [precision, recall, relevancy, faithfulness, hallucination],
-            )
+            retrieval_tcs.append(retrieval_tc)
+            response_times.append(response_time)
 
-            result = {
-                "question": f"{i + 1}. {question}",
-                "ground_truth": ground_truth,
-                "retriever_type": retriever,
-                "response_time": response_time,
-                "response_text": response_text,
-                "tool": retriever,
-                "contextual_precision": precision.score,
-                "contextual_recall": recall.score,
-                "contextual_relevancy": relevancy.score,
-                "faithfulness": faithfulness.score,
-                "hallucination": hallucination.score,
-            }
-            overall.append(result)
+        # parallel evaluate
+        evaluate(
+            retrieval_tcs,
+            [precision, recall, relevancy, faithfulness, hallucination],
+        )
+
+        #     result = {
+        #         "question": f"{i + 1}. {question}",
+        #         "ground_truth": ground_truth,
+        #         "retriever_type": retriever,
+        #         "response_time": response_time,
+        #         "response_text": response_text,
+        #         "tool": retriever,
+        #         "contextual_precision": precision.score,
+        #         "contextual_recall": recall.score,
+        #         "contextual_relevancy": relevancy.score,
+        #         "faithfulness": faithfulness.score,
+        #         "hallucination": hallucination.score,
+        #     }
+        #     print(result)
+        #     overall.append(result)
 
         # Write to log file
-        preprocess.write_data(overall, log_file)
+        # preprocess.write_data(overall, log_file)
 
     def query(self, retriever: str, query: str) -> tuple[dict, float]:
         """
@@ -123,8 +128,17 @@ class EvaluationHarness:
             else f"{self.reranker_base_url}/{endpoint}"
         )
         payload = {"query": query, "list_context": True, "list_sources": True}
-        response = requests.post(url, json=payload)
-        return response.json(), response.elapsed.total_seconds() * 1000
+        try:
+            response = requests.post(url, json=payload)
+            return response.json(), response.elapsed.total_seconds() * 1000
+        except Exception as e:
+            print(f"Error querying {retriever}: {e}")
+            return {
+                "response": "invalid",
+                "sources": [],
+                "context": [],
+                "tool": "string",
+            }, -999999
 
 
 if __name__ == "__main__":
