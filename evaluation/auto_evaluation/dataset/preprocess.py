@@ -48,8 +48,12 @@ def read_deepeval_cache():
                 metric["metric_data"]["success"]
             )
 
-    print("Metric Scores: ", metric_scores)
-    print("Metric Passes: ", metric_passes)
+    print("Average Metric Scores: ")
+    for key, value in metric_scores.items():
+        print(key, sum(value) / len(value))
+    print("Metric Passrates: ")
+    for key, value in metric_passes.items():
+        print(key, value.count(True) / len(value))
 
 
 if __name__ == "__main__":

@@ -6,8 +6,6 @@ Custom DeepEvalLLM wrapper.
 import instructor
 
 from typing import Any
-
-# from langchain_google_vertexai import ChatVertexAI, HarmBlockThreshold, HarmCategory
 from vertexai.generative_models import GenerativeModel, HarmBlockThreshold, HarmCategory  # type: ignore
 from deepeval.models.base_model import DeepEvalBaseLLM
 from pydantic import BaseModel
