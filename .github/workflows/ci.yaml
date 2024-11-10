@@ -28,14 +28,16 @@ jobs:
         cp backend/.env.example backend/.env
         sed -i 's|{{GOOGLE_API_KEY}}|${{ secrets.GOOGLE_API_KEY }}|g' backend/.env
         sed -i 's|{{PATH_TO_GOOGLE_APPLICATION_CREDENTIALS}}|src/secret.json|g' backend/.env
+        cp backend/.env evaluation/.env
+        cp backend/.env frontend/.env
         cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} backend/src
+        cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} evaluation/src
     - name: Build Docker image
       run: |
         make docker
     - name: Run LLM CI
       working-directory: evaluation
       run: |
-        cp ../backend/.env .
         make llm-tests
     - name: Create commit comment
       uses: peter-evans/commit-comment@v3
