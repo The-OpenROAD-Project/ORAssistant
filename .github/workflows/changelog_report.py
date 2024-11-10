@@ -22,13 +22,14 @@ if __name__ == "__main__":
 
     for year_month in unique:
         # first write the header
-        final_lines.append(f"# {year_month}\n")
+        final_lines.append(f"# {year_month}\n\n")
 
         # loop through and stop when the year_month is lesser 
         for idx in range(len(date)):
             if date[idx][:7] == year_month:
                 l = f"- {commit[idx]} {name[idx]} {date[idx]} {msg[idx]}"
                 final_lines.append(l)
+        final_lines.append("\n")
 
     with open('../../CHANGELOG.md', 'w') as f:
         for l in final_lines:
