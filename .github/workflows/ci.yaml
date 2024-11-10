@@ -31,7 +31,7 @@ jobs:
         cp backend/.env evaluation/.env
         cp backend/.env frontend/.env
         cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} backend/src
-        cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} evaluation/src
+        cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} evaluation/auto_evaluation/src
     - name: Build Docker image
       run: |
         make docker
