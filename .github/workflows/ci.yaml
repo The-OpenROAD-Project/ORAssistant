@@ -35,6 +35,7 @@ jobs:
     - name: Build Docker image
       run: |
         make docker
+        sleep 900 # TODO: Remove this after docker-compose healthcheck timeout restored fixed.
     - name: Run LLM CI
       working-directory: evaluation
       run: |
