@@ -11,6 +11,10 @@ jobs:
   build-backend-docker:
     runs-on: self-hosted
     steps:
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Setup prereqs
