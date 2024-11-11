@@ -5,7 +5,19 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'evaluation/**'
+      - 'Makefile'
+      - 'docker-compose.yml'
   pull_request:
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'evaluation/**'
+      - 'Makefile'
+      - 'docker-compose.yml'
 
 jobs:
   build-backend-docker:
