@@ -38,4 +38,3 @@ jobs:
           labels: |
             docs
           assignees: luarss
-          reviewers: luarss
