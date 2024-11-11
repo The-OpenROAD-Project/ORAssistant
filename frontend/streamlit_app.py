@@ -92,7 +92,7 @@ def main() -> None:
     base_url, endpoints = fetch_endpoints()
 
     selected_endpoint = st.selectbox(
-        "Select preferred architecture",
+        "Select preferred endpoint",
         options=endpoints,
         index=0,
         format_func=lambda x: x.split("/")[-1].capitalize(),

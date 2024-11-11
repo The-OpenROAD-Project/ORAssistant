@@ -34,7 +34,7 @@ jobs:
         cp ${{ secrets.PATH_TO_GOOGLE_APPLICATION_CREDENTIALS }} evaluation/auto_evaluation/src
     - name: Build Docker image
       run: |
-        make docker
+        make docker-up
         sleep 900 # TODO: Remove this after docker-compose healthcheck timeout restored fixed.
     - name: Run LLM CI
       working-directory: evaluation
@@ -48,4 +48,4 @@ jobs:
     - name: Teardown
       if: always()
       run: |
-        docker compose down --remove-orphans
+        make docker-down

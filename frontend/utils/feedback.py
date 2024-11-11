@@ -89,9 +89,6 @@ def submit_feedback_to_google_sheet(
             "The FEEDBACK_SHEET_ID environment variable is not set or is empty."
         )
 
-    if not os.getenv("RAG_VERSION"):
-        raise ValueError("The RAG_VERSION environment variable is not set or is empty.")
-
     service_account_file = os.getenv("GOOGLE_CREDENTIALS_JSON")
     scope = [
         "https://spreadsheets.google.com/feeds",
@@ -186,10 +183,31 @@ def show_feedback_form(
                 sources=sources,
                 context=context,
                 issue=feedback,
-                version=os.getenv("RAG_VERSION", "N/A"),
+                version=os.getenv("RAG_VERSION", get_git_commit_hash()),
             )
 
             st.session_state.submitted = True
 
     if st.session_state.submitted:
         st.sidebar.success("Thank you for your feedback!")
+
+
+def get_git_commit_hash() -> str:
+    """
+    Get the latest commit hash from the Git repository.
+
+    Returns:
+    - str: The latest commit hash.
+    """
+    import subprocess
+
+    try:
+        commit_hash = (
+            subprocess.check_output(["git", "rev-parse", "HEAD"])
+            .strip()
+            .decode("utf-8")
+        )
+    except subprocess.CalledProcessError:
+        commit_hash = "N/A"
+
+    return commit_hash
