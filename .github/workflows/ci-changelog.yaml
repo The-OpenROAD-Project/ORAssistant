@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,10 +29,9 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
           commit-message: Update report
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          committer: Jack Luar <jluar@precisioninno.com>
+          author: Jack Luar <jluar@precisioninno.com>
           signoff: true
-          sign-commits: true
           base: master
           branch: update-chglog
           delete-branch: true
