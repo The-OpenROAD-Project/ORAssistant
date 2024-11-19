@@ -9,15 +9,12 @@ load_dotenv()
 feedback_collection_name = "feedback"
 context_collection_name = "context"
 
-print(os.getenv("MONGO_DB_URI"))
-
-
-def get_mongo_client() -> Database:
+def get_mongo_db_client() -> Database:
     """
     Get the MongoDB client.
 
     Returns:
-    - MongoClient: The MongoDB client.
+    - DatabaseClient: The Database client.
 
     Note:
     MongoDB doesn't create a collection or a database until it gets content, so no need to check if the data already exists or not.
@@ -149,5 +146,6 @@ def create_collection(collection_name:str,client_database:Database,validator:obj
     except Exception as e:
         print(f"Failed to create collection: {e}")
         return None
-    
-submit_feedback()
+
+if __name__ == "__main__":
+    submit_feedback()
