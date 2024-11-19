@@ -96,6 +96,7 @@ def submit_feedback_to_google_sheet(
     ]
 
     creds = Credentials.from_service_account_file(service_account_file, scopes=scope)
+    # this is the place where the client is coming from, need to change this for mongoDB client
     client = gspread.authorize(creds)
 
     sheet_id = os.getenv("FEEDBACK_SHEET_ID", "")
