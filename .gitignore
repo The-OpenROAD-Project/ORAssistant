@@ -18,6 +18,7 @@ venv/
 
 # docs
 documents.txt
+credentials.json
 
 # virtualenv
 .venv

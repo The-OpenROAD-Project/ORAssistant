@@ -217,13 +217,11 @@ def main() -> None:
             or st.session_state.feedback_button
         ):
             try:
-                print("I am above feeedback form")
                 show_feedback_form(
                     question_dict,
                     st.session_state.metadata,
                     st.session_state.chat_history,
-                )
-                
+                )       
             except Exception as e:
                 st.error(f"Failed to load feedback form: {e}")
 
