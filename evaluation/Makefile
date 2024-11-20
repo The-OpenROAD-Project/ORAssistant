@@ -12,12 +12,12 @@ init-dev: init
 
 format:
 	@. .venv/bin/activate && \
-		ruff format && \
-		mypy .
+		ruff format
 
 check:
 	@. .venv/bin/activate && \
-		ruff check --fix
+		mypy . && \
+		ruff check
 
 clean:
 	@rm -f llm_tests_output.txt

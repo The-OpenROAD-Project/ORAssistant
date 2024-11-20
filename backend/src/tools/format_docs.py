@@ -23,7 +23,7 @@ def format_docs(docs: list[Document]) -> tuple[str, list[str], list[str]]:
 
         if "url" in doc.metadata:
             doc_urls.append(doc.metadata["url"])
-    
+
     doc_output = "\n\n -------------------------- \n\n".join(doc_texts)
 
     return doc_output, doc_srcs, doc_urls

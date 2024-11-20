@@ -58,7 +58,7 @@ if os.getenv("LLM_MODEL") == "ollama":
 
 elif os.getenv("LLM_MODEL") == "gemini":
     if os.getenv("GOOGLE_GEMINI") == "1_pro":
-        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=llm_temp)  # type: ignore
+        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=llm_temp)
     elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
         llm = ChatVertexAI(model_name="gemini-1.5-flash", temperature=llm_temp)
     elif os.getenv("GOOGLE_GEMINI") == "1.5_pro":
