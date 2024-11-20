@@ -104,7 +104,7 @@ class RetrieverGraph:
 
         self.tool_descriptions = ""
         for tool in self.tools:
-            text_desc = render_text_description([tool])  # type: ignore
+            text_desc = render_text_description([tool])
             text_desc.replace("(query: str) -> Tuple[str, list[str], list[str]]", " ")
             self.tool_descriptions += text_desc + "\n\n"
 
@@ -196,7 +196,7 @@ class RetrieverGraph:
             return ["retrieve_general"]
 
         if self.inbuit_tool_calling:
-            tool_names = [tool["name"] for tool in tools if "name" in tool]  # type: ignore
+            tool_names = [tool["name"] for tool in tools if "name" in tool]   # type: ignore
             return tool_names
         else:
             return tools
@@ -204,12 +204,12 @@ class RetrieverGraph:
     def initialize(self) -> None:
         workflow = StateGraph(AgentState)
 
-        commands = ToolNode(self.retriever_tools.retrieve_cmds)  # type: ignore
-        install = ToolNode(self.retriever_tools.retrieve_install)  # type: ignore
-        general = ToolNode(self.retriever_tools.retrieve_general)  # type: ignore
-        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs)  # type: ignore
-        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)  # type: ignore
-        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)  # type: ignore
+        commands = ToolNode(self.retriever_tools.retrieve_cmds)
+        install = ToolNode(self.retriever_tools.retrieve_install)
+        general = ToolNode(self.retriever_tools.retrieve_general)
+        klayout_docs = ToolNode(self.retriever_tools.retrieve_klayout_docs)
+        errinfo = ToolNode(self.retriever_tools.retrieve_errinfo)
+        yosys_rtdocs = ToolNode(self.retriever_tools.retrieve_yosys_rtdocs)
 
         workflow.add_node("agent", self.agent)
         workflow.add_node("generate", self.generate)
