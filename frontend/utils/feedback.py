@@ -173,12 +173,10 @@ def show_feedback_form(
     if selected_question:
         sources = metadata[selected_question].get("sources", ["N/A"])
         if isinstance(sources, str):
-           
             sources = [sources]
-        
+
         context = metadata[selected_question].get("context", ["N/A"])
         if isinstance(context, str):
-    
             context = [context]
 
         if st.sidebar.button("Submit"):
