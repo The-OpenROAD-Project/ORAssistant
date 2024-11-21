@@ -96,6 +96,7 @@ def submit_feedback_to_google_sheet(
     ]
 
     creds = Credentials.from_service_account_file(service_account_file, scopes=scope)
+    # this is the place where the client is coming from, need to change this for mongoDB client
     client = gspread.authorize(creds)
 
     sheet_id = os.getenv("FEEDBACK_SHEET_ID", "")
@@ -170,8 +171,13 @@ def show_feedback_form(
     feedback = st.sidebar.text_area("Please provide your feedback or report an issue:")
 
     if selected_question:
-        sources = [metadata[selected_question].get("sources", "N/A")]
-        context = [metadata[selected_question].get("context", "N/A")]
+        sources = metadata[selected_question].get("sources", ["N/A"])
+        if isinstance(sources, str):
+            sources = [sources]
+
+        context = metadata[selected_question].get("context", ["N/A"])
+        if isinstance(context, str):
+            context = [context]
 
         if st.sidebar.button("Submit"):
             selected_index = questions[selected_question]
@@ -180,8 +186,8 @@ def show_feedback_form(
             submit_feedback_to_google_sheet(
                 question=selected_question,
                 answer=gen_ans,
-                sources=sources,
-                context=context,
+                sources=sources,  # Now passing as list
+                context=context,  # Now passing as list
                 issue=feedback,
                 version=os.getenv("RAG_VERSION", get_git_commit_hash()),
             )

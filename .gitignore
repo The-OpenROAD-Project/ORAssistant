@@ -14,9 +14,11 @@ venv/
 .mypy_cache/
 .vscode/
 .venv
+.DS_Store
 
 # docs
 documents.txt
+credentials.json
 
 # virtualenv
 .venv

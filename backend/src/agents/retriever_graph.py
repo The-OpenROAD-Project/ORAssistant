@@ -196,7 +196,7 @@ class RetrieverGraph:
             return ["retrieve_general"]
 
         if self.inbuit_tool_calling:
-            tool_names = [tool["name"] for tool in tools if "name" in tool]   # type: ignore
+            tool_names = [tool["name"] for tool in tools if "name" in tool]  # type: ignore
             return tool_names
         else:
             return tools
