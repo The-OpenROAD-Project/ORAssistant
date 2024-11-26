@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 import os
 from typing import Optional, Any
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))) 
+from common.mongoClient import submit_feedback
 
 load_dotenv()
 
@@ -55,6 +58,43 @@ def format_context(context: list[str]) -> str:
     """
     assert isinstance(context, list), "Context should be a list of strings."
     return "\n".join(context)
+
+
+def submit_feedback_to_mongoDB(
+    question: str,
+    answer: str,
+    sources: list[str],
+    context: list[str],
+    issue: str,
+    version: str,
+) -> None:
+    """
+    Submit feedback to a specific MongoDB database.
+
+    Args:
+    - question (str): The question for which feedback is being submitted.
+    - answer (str): The generated answer to the question.
+    - sources (list[str]): Source data used for the answer.
+    - context (list[str]): Additional context from the RAG.
+    - issue (str): Details about the issue.
+    - version (str): Version information.
+
+    Returns:
+    - None
+    """
+    try:
+        result = submit_feedback(
+            question=question,
+            answer=answer,
+            sources=sources,
+            context=context,
+            issue=issue,
+            version=version,
+        )
+        if not result:
+            st.sidebar.error("Failed to submit feedback to MongoDB")
+    except Exception as e:
+        st.sidebar.error(f"Error submitting feedback to MongoDB: {e}")
 
 
 def submit_feedback_to_google_sheet(
@@ -188,6 +228,14 @@ def show_feedback_form(
             gen_ans = interactions[selected_index + 1]["content"]
 
             submit_feedback_to_google_sheet(
+                question=selected_question,
+                answer=gen_ans,
+                sources=sources,  # Now passing as list
+                context=context,  # Now passing as list
+                issue=feedback,
+                version=os.getenv("RAG_VERSION", get_git_commit_hash()),
+            )
+            submit_feedback_to_mongoDB(
                 question=selected_question,
                 answer=gen_ans,
                 sources=sources,  # Now passing as list
