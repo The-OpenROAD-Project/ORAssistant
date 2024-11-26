@@ -14,5 +14,6 @@ RUN pip install --upgrade pip && \
 COPY streamlit_app.py .
 COPY ./utils ./utils
 COPY ./assets ./assets
+COPY ../common ./common
 
 CMD ["streamlit", "run", "streamlit_app.py"]
