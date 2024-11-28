@@ -16,7 +16,8 @@ services:
   
   frontend:
     build:
-      context: ./frontend
+      context: ..
+      dockerfile: ./frontend/Dockerfile
     container_name: "orassistant-frontend"
     ports:
       - "8501:8501"
