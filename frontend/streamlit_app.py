@@ -6,7 +6,11 @@ import pytz
 import os
 import ast
 from PIL import Image
-from utils.feedback import show_feedback_form
+from utils.feedback import (
+    show_feedback_form,
+    submit_feedback_to_google_sheet,
+    get_git_commit_hash,
+)
 from dotenv import load_dotenv
 from typing import Callable, Any
 
@@ -22,6 +26,24 @@ def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, 
     return wrapper
 
 
+def translate_chat_history_to_api(chat_history, max_pairs=4):
+    api_format = []
+    relevant_history = [
+        msg for msg in chat_history[1:] if msg["role"] in ["user", "ai"]
+    ]
+
+    i = len(relevant_history) - 1
+    while i > 0 and len(api_format) < max_pairs:
+        ai_msg = relevant_history[i]
+        user_msg = relevant_history[i - 1]
+        if ai_msg["role"] == "ai" and user_msg["role"] == "user":
+            api_format.insert(0, {"User": user_msg["content"], "AI": ai_msg["content"]})
+            i -= 2
+        else:
+            i -= 1
+    return api_format
+
+
 @measure_response_time
 def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
     """
@@ -34,73 +56,46 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
     - tuple: Contains the AI response and sources.
     """
     url = f"{st.session_state.base_url}{st.session_state.selected_endpoint}"
-
     headers = {"accept": "application/json", "Content-Type": "application/json"}
-
-    payload = {"query": user_input, "list_sources": True, "list_context": True}
-
+    chat_history = translate_chat_history_to_api(st.session_state.chat_history)
+    payload = {
+        "query": user_input,
+        "list_sources": True,
+        "list_context": True,
+        "chat_history": chat_history,
+    }
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-
-        try:
-            data = response.json()
-            if not isinstance(data, dict):
-                st.error("Invalid response format")
-                return None, None
-        except ValueError:
-            st.error("Failed to decode JSON response")
+        data = response.json()
+        if not isinstance(data, dict):
+            st.error("Invalid response format")
             return None, None
-
         sources = data.get("sources", "")
         st.session_state.metadata[user_input] = {
             "sources": sources,
             "context": data.get("context", ""),
         }
-
         return data.get("response", ""), sources
-
     except requests.exceptions.RequestException as e:
         st.error(f"Request failed: {e}")
         return None, None
 
 
-def fetch_endpoints() -> tuple[str, list[str]]:
-    base_url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
-    url = f"{base_url}/chains/listAll"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        endpoints = response.json()
-        return base_url, endpoints
-    except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch endpoints: {e}")
-        return base_url, []
-
-
 def main() -> None:
     load_dotenv()
-
     img = Image.open("assets/or_logo.png")
     st.set_page_config(page_title="OR Assistant", page_icon=img)
 
     deployment_time = datetime.datetime.now(pytz.timezone("UTC"))
-    st.info(f"Deployment time: {deployment_time.strftime('%m/%d/%Y %H:%M')} UTC")
+    st.info(f'Deployment time: {deployment_time.strftime("%m/%d/%Y %H:%M")} UTC')
 
     st.title("OR Assistant")
 
-    base_url, endpoints = fetch_endpoints()
-
-    selected_endpoint = st.selectbox(
-        "Select preferred endpoint",
-        options=endpoints,
-        index=0,
-        format_func=lambda x: x.split("/")[-1].capitalize(),
-    )
+    base_url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
+    selected_endpoint = "/graphs/agent-retriever"
 
     if "selected_endpoint" not in st.session_state:
-        st.session_state.selected_endpoint = selected_endpoint
-    else:
         st.session_state.selected_endpoint = selected_endpoint
 
     if "base_url" not in st.session_state:
@@ -115,6 +110,8 @@ def main() -> None:
         st.session_state.chat_history = []
     if "metadata" not in st.session_state:
         st.session_state.metadata = {}
+    if "sources" not in st.session_state:
+        st.session_state.sources = {}
 
     if not st.session_state.chat_history:
         st.session_state.chat_history.append(
@@ -124,9 +121,41 @@ def main() -> None:
             }
         )
 
-    for message in st.session_state.chat_history:
+    for idx, message in enumerate(st.session_state.chat_history):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+
+        if message["role"] == "ai" and idx > 0:
+            user_message = st.session_state.chat_history[idx - 1]
+            if user_message["role"] == "user":
+                user_input = user_message["content"]
+                sources = st.session_state.sources.get(user_input)
+                with st.expander("Sources:"):
+                    try:
+                        if sources:
+                            if isinstance(sources, str):
+                                cleaned_sources = sources.replace("{", "[").replace(
+                                    "}", "]"
+                                )
+                                parsed_sources = ast.literal_eval(cleaned_sources)
+                            else:
+                                parsed_sources = sources
+                            if (
+                                isinstance(parsed_sources, (list, set))
+                                and parsed_sources
+                            ):
+                                sources_list = "\n".join(
+                                    f"- [{link}]({link})"
+                                    for link in parsed_sources
+                                    if link.strip()
+                                )
+                                st.markdown(sources_list)
+                            else:
+                                st.markdown("No Sources Attached.")
+                        else:
+                            st.markdown("No Sources Attached.")
+                    except (ValueError, SyntaxError) as e:
+                        st.markdown(f"Failed to parse sources: {e}")
 
     user_input = st.chat_input("Enter your queries ...")
 
@@ -146,26 +175,27 @@ def main() -> None:
         ):
             response, sources = response_tuple
             if response is not None:
-                response_buffer = ""
+                response_buffer = response
 
                 with st.chat_message("ai"):
                     message_placeholder = st.empty()
-
-                    response_buffer = ""
-                    for chunk in response.split(" "):
-                        response_buffer += chunk + " "
-                        if chunk.endswith("\n"):
-                            response_buffer += " "
-                        message_placeholder.markdown(response_buffer)
-                        time.sleep(0.05)
-
                     message_placeholder.markdown(response_buffer)
 
+                # Display response time
                 response_time_text = (
                     f"Response Time: {response_time / 1000:.2f} seconds"
                 )
-                response_time_colored = f":{'green' if response_time < 5000 else 'orange' if response_time < 10000 else 'red'}[{response_time_text}]"
-                st.markdown(response_time_colored)
+                if response_time < 5000:
+                    color = "green"
+                elif response_time < 10000:
+                    color = "orange"
+                else:
+                    color = "red"
+                st.markdown(
+                    f"<span style='color:{color}'>{response_time_text}</span>",
+                    unsafe_allow_html=True,
+                )
+
                 st.session_state.chat_history.append(
                     {
                         "content": response_buffer,
@@ -173,9 +203,11 @@ def main() -> None:
                     }
                 )
 
-                if sources:
-                    with st.expander("Sources:"):
-                        try:
+                st.session_state.sources[user_input] = sources
+
+                with st.expander("Sources:"):
+                    try:
+                        if sources:
                             if isinstance(sources, str):
                                 cleaned_sources = sources.replace("{", "[").replace(
                                     "}", "]"
@@ -183,7 +215,10 @@ def main() -> None:
                                 parsed_sources = ast.literal_eval(cleaned_sources)
                             else:
                                 parsed_sources = sources
-                            if isinstance(parsed_sources, (list, set)):
+                            if (
+                                isinstance(parsed_sources, (list, set))
+                                and parsed_sources
+                            ):
                                 sources_list = "\n".join(
                                     f"- [{link}]({link})"
                                     for link in parsed_sources
@@ -191,17 +226,21 @@ def main() -> None:
                                 )
                                 st.markdown(sources_list)
                             else:
-                                st.markdown("No valid sources found.")
-                        except (ValueError, SyntaxError) as e:
-                            st.markdown(f"Failed to parse sources: {e}")
-        else:
-            st.error("Invalid response from the API")
+                                st.markdown("No Sources Attached.")
+                        else:
+                            st.markdown("No Sources Attached.")
+                    except (ValueError, SyntaxError) as e:
+                        st.markdown(f"Failed to parse sources: {e}")
+            else:
+                st.error("Invalid response from the API")
 
+    # Reaction buttons and feedback form
     question_dict = {
         interaction["content"]: i
         for i, interaction in enumerate(st.session_state.chat_history)
         if interaction["role"] == "user"
     }
+
     if question_dict and os.getenv("FEEDBACK_SHEET_ID"):
         if "feedback_button" not in st.session_state:
             st.session_state.feedback_button = False
@@ -212,10 +251,47 @@ def main() -> None:
             """
             st.session_state.feedback_button = True
 
-        if (
-            st.button("Feedback", on_click=update_state)
-            or st.session_state.feedback_button
-        ):
+        # Display reaction buttons
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col1:
+            thumbs_up = st.button("👍", key="thumbs_up")
+        with col2:
+            thumbs_down = st.button("👎", key="thumbs_down")
+        with col3:
+            feedback_clicked = st.button("Feedback", on_click=update_state)
+
+        # Handle thumbs up and thumbs down reactions
+        if thumbs_up or thumbs_down:
+            try:
+                selected_question = st.session_state.chat_history[-2][
+                    "content"
+                ]  # Last user question
+                gen_ans = st.session_state.chat_history[-1][
+                    "content"
+                ]  # Last AI response
+                sources = st.session_state.metadata.get(selected_question, {}).get(
+                    "sources", ["N/A"]
+                )
+                context = st.session_state.metadata.get(selected_question, {}).get(
+                    "context", ["N/A"]
+                )
+                reaction = "upvote" if thumbs_up else "downvote"
+
+                submit_feedback_to_google_sheet(
+                    question=selected_question,
+                    answer=gen_ans,
+                    sources=sources if isinstance(sources, list) else [sources],
+                    context=context if isinstance(context, list) else [context],
+                    issue="",  # Leave issue blank
+                    version=os.getenv("RAG_VERSION", get_git_commit_hash()),
+                    reaction=reaction,  # Pass the reaction
+                )
+                st.success("Thank you for your feedback!")
+            except Exception as e:
+                st.error(f"Failed to submit feedback: {e}")
+
+        # Feedback form logic
+        if feedback_clicked or st.session_state.feedback_button:
             try:
                 show_feedback_form(
                     question_dict,
