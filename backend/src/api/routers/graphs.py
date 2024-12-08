@@ -184,7 +184,7 @@ async def get_response_stream(user_input: UserInput):
     yield f"Sources: {', '.join(urls)}\n\n"
 
 
-@router.post("/agent-retriever-stream", response_class=StreamingResponse)
+@router.post("/agent-retriever/stream", response_class=StreamingResponse)
 async def get_agent_response_streaming(user_input: UserInput):
     return StreamingResponse(
         get_response_stream(user_input), media_type="text/event-stream"
