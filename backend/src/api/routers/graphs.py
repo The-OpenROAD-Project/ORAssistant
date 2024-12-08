@@ -8,6 +8,9 @@ from fastapi import APIRouter
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
+from langchain_core.messages import AIMessageChunk
+
+from starlette.responses import StreamingResponse
 
 from ...agents.retriever_graph import RetrieverGraph
 from ..models.response_model import ChatResponse, UserInput
@@ -142,3 +145,47 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
         response = {"response": llm_response, "tool": tools}
 
     return ChatResponse(**response)
+
+
+async def get_response_stream(user_input: UserInput):
+    user_question = user_input.query
+
+    inputs = {
+        "messages": [
+            ("user", user_question),
+        ],
+        "chat_history": get_history_str(user_input.chat_history),
+    }
+
+    urls: list[str] = []
+    current_llm_call_count = 1
+
+    if rg.graph is not None:
+        async for event in rg.graph.astream_events(inputs, version="v2"):
+            chunk = event["event"]
+
+            if chunk == "on_chat_model_end":
+                current_llm_call_count += 1
+
+            if chunk == "on_retriever_start" or chunk == "on_retriever_end":
+                for document in event.get("data", {}).get("output", {}):
+                    urls.append(document.metadata["url"])
+
+            if chunk == "on_chat_model_stream" and current_llm_call_count == 2:
+                message_content = event.get("data", {}).get("chunk", {})
+                if isinstance(message_content, AIMessageChunk):
+                    msg = message_content.content
+                else:
+                    msg = None
+
+                yield str(msg) + "\n\n"
+
+    urls = list(set(urls))
+    yield f"Sources: {', '.join(urls)}\n\n"
+
+
+@router.post("/agent-retriever-stream", response_class=StreamingResponse)
+async def get_agent_response_streaming(user_input: UserInput):
+    return StreamingResponse(
+        get_response_stream(user_input), media_type="text/event-stream"
+    )
