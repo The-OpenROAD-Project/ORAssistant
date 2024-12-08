@@ -79,7 +79,7 @@ rg = RetrieverGraph(
     embeddings_config=embeddings_config,
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
-    inbuit_tool_calling=False,
+    inbuilt_tool_calling=False,
 )
 rg.initialize()
 

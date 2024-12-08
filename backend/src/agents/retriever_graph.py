@@ -73,7 +73,7 @@ class RetrieverGraph:
         llm_model: Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama],
         embeddings_config: dict[str, str],
         reranking_model_name: str,
-        inbuit_tool_calling: bool,
+        inbuilt_tool_calling: bool,
         use_cuda: bool = False,
     ):
         self.llm = llm_model
@@ -100,7 +100,7 @@ class RetrieverGraph:
             "retrieve_errinfo",
             "retrieve_yosys_rtdocs",
         ]
-        self.inbuit_tool_calling = inbuit_tool_calling
+        self.inbuilt_tool_calling = inbuilt_tool_calling
 
         self.tool_descriptions = ""
         for tool in self.tools:
@@ -120,7 +120,7 @@ class RetrieverGraph:
         if self.llm is None:
             return {"tools": []}
 
-        if self.inbuit_tool_calling:
+        if self.inbuilt_tool_calling:
             model = self.llm.bind_tools(self.tools, tool_choice="any")
 
             tool_choice_chain = (
@@ -195,7 +195,7 @@ class RetrieverGraph:
         if tools == []:
             return ["retrieve_general"]
 
-        if self.inbuit_tool_calling:
+        if self.inbuilt_tool_calling:
             tool_names = [tool["name"] for tool in tools if "name" in tool]  # type: ignore
             return tool_names
         else:
