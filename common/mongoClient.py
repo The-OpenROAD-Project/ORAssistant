@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from pymongo.database import Database
 from dotenv import load_dotenv
+from datetime import datetime
 import os
 
 load_dotenv()
@@ -25,7 +26,13 @@ def get_mongo_db_client() -> Database:
     # this is the database that is returned by the client
     return client["feedback_db"]
 
-def submit_feedback():
+def submit_feedback( 
+    question: str,
+    answer: str,
+    sources: list[str],
+    context: list[str],
+    issue: str,
+    version: str,):
     """
     Submit feedback Record to the MongoDB database.
 
@@ -41,14 +48,14 @@ def submit_feedback():
     - None
     """
 
-    feedback_db_client = get_mongo_client()
+    feedback_db_client = get_mongo_db_client()
 
     try:
         if not check_collection_exists(feedback_collection_name,feedback_db_client,):
             create_collection(feedback_collection_name,feedback_db_client,                validator={
                     '$jsonSchema': {
                         'bsonType': 'object',
-                        'required': ['question', 'answer', 'sources', 'context_ids', 'issue', 'version', 'timestamp'],
+                        'required': ['question', 'answer', 'sources', 'context', 'issue', 'version', 'timestamp'],
                         'properties': {
                             'question': {
                                 'bsonType': 'string',
@@ -92,26 +99,53 @@ def submit_feedback():
                     }
                 })
         if not check_collection_exists(context_collection_name,feedback_db_client):
-            create_collection(context_collection_name,feedback_db_client,{
-                        'bsonType': 'object',
-                        'required': ['source', 'timestamp'],
-                        'properties': {
-                            'source': {
-                                'bsonType': 'string',
-                                'description': 'must be a string and is required'
-                            },
-                            'metadata': {
-                                'bsonType': 'object',
-                                'description': 'additional metadata for the context'
-                            },
-                            'timestamp': {
-                                'bsonType': 'date',
-                                'description': 'must be a date and is required'
-                            }
+            create_collection(context_collection_name, feedback_db_client, {
+                '$jsonSchema': {
+                    'bsonType': 'object',
+                    'required': ['source', 'timestamp'],
+                    'properties': {
+                        'source': {
+                            'bsonType': 'string',
+                            'description': 'must be a string and is required'
+                        },
+                        'metadata': {
+                            'bsonType': 'object',
+                            'description': 'additional metadata for the context'
+                        },
+                        'timestamp': {
+                            'bsonType': 'date',
+                            'description': 'must be a date and is required'
                         }
                     }
-                )
+                }
+            })
+            # inserting the records 
 
+        sources_ids = []
+        for source in sources:
+            print(source)
+            sources_ids.append(feedback_db_client[context_collection_name].insert_one({
+                'source': str(source),
+                'metadata': {
+                    'url': str(source)
+                },
+                'timestamp': datetime.now()
+            }).inserted_id)
+        
+        feedback_db_client[feedback_collection_name].insert_one({
+            'question': question,
+            'answer': answer,
+            'sources': sources_ids,
+            'context': context,
+            'issue': issue,
+            'version': version,
+            'timestamp': datetime.now(),
+            'status': 'new'
+            })
+
+
+        print("Feedback submitted successfully") 
+        return True
     except Exception as e:
         print(f"Failed to submit feedback: {e}")
         return None
