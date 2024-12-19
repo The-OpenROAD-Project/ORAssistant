@@ -64,6 +64,7 @@ def submit_feedback_to_google_sheet(
     context: list[str],
     issue: str,
     version: str,
+    reaction: Optional[str] = None,  # Added optional reaction parameter
 ) -> None:
     """
     Submit feedback to a specific Google Sheet.
@@ -75,6 +76,7 @@ def submit_feedback_to_google_sheet(
     - context (list[str]): Additional context from the RAG.
     - issue (str): Details about the issue.
     - version (str): Version information.
+    - reaction (Optional[str]): User's reaction ('upvote' or 'downvote').
 
     Returns:
     - None
@@ -96,7 +98,6 @@ def submit_feedback_to_google_sheet(
     ]
 
     creds = Credentials.from_service_account_file(service_account_file, scopes=scope)
-    # this is the place where the client is coming from, need to change this for mongoDB client
     client = gspread.authorize(creds)
 
     sheet_id = os.getenv("FEEDBACK_SHEET_ID", "")
@@ -120,25 +121,30 @@ def submit_feedback_to_google_sheet(
             issue,
             timestamp,
             version,
+            reaction or "",  # Add reaction to data
         ]
 
-        if not sheet.row_values(1):
-            sheet.format("A1:G1", {"textFormat": {"bold": True}})
-            sheet.append_row(
-                [
-                    "Question",
-                    "Answer",
-                    "Sources",
-                    "Context",
-                    "Issue",
-                    "Timestamp",
-                    "Version",
-                ],
-                1,  # type: ignore
-            )
+        # Check if headers exist and include 'Reaction' if necessary
+        headers = sheet.row_values(1)
+        required_headers = [
+            "Question",
+            "Answer",
+            "Sources",
+            "Context",
+            "Issue",
+            "Timestamp",
+            "Version",
+            "Reaction",
+        ]
+
+        if headers != required_headers:
+            sheet.clear()  # Clear existing data if headers don't match
+            sheet.append_row(required_headers)
+            sheet.format("A1:H1", {"textFormat": {"bold": True}})
 
         sheet.append_row(data_to_append)
-        st.sidebar.success("Feedback submitted successfully.")
+        # Removed the sidebar success message
+        # st.sidebar.success("Feedback submitted successfully.")
     else:
         st.sidebar.error(f"Sheet with GID {target_gid} not found.")
 

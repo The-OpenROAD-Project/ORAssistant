@@ -1,7 +1,7 @@
-streamlit==1.37.0
+streamlit==1.40.2
 requests==2.32.3
 requests-oauthlib==2.0.0
-Pillow==10.3.0
+Pillow==11.0.0
 pytz==2024.1
 google-auth==2.30.0
 google-auth-httplib2==0.2.0
