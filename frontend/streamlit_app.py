@@ -191,10 +191,7 @@ def main() -> None:
                     color = "orange"
                 else:
                     color = "red"
-                st.markdown(
-                    f"<span style='color:{color}'>{response_time_text}</span>",
-                    unsafe_allow_html=True,
-                )
+                st.markdown(f":{color}[{response_time_text}]")
 
                 st.session_state.chat_history.append(
                     {
