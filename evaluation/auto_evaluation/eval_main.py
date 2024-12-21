@@ -19,7 +19,7 @@ from auto_evaluation.src.metrics.retrieval import (
     make_hallucination_metric,
 )
 from auto_evaluation.dataset import hf_pull, preprocess
-from tqdm import tqdm  # type: ignore
+from tqdm import tqdm
 
 eval_root_path = os.path.join(os.path.dirname(__file__), "..")
 load_dotenv(dotenv_path=os.path.join(eval_root_path, ".env"))

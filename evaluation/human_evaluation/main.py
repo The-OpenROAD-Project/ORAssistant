@@ -2,9 +2,13 @@ import streamlit as st
 from dotenv import load_dotenv
 import os
 
-from utils.sheets import read_questions_and_answers, write_responses, find_new_questions
-from utils.api import fetch_endpoints, get_responses
-from utils.utils import (
+from human_evaluation.utils.sheets import (
+    read_questions_and_answers,
+    write_responses,
+    find_new_questions,
+)
+from human_evaluation.utils.api import fetch_endpoints, get_responses
+from human_evaluation.utils.utils import (
     parse_custom_input,
     selected_questions,
     update_gform,

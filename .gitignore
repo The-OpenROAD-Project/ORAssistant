@@ -19,6 +19,7 @@ venv/
 # docs
 documents.txt
 credentials.json
+creds.json
 
 # virtualenv
 .venv
@@ -29,3 +30,4 @@ credentials.json
 **/.deepeval-cache.json
 temp_test_run_data.json
 **/llm_tests_output.txt
+**/error_log.txt
