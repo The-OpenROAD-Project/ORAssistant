@@ -1,7 +1,7 @@
 import json
 import traceback
 from typing import Any
-from utils.logging_utils import log_error
+from script_based_evaluation.utils.logging_utils import log_error
 
 
 def initialize_resume_data() -> dict[str, Any]:
@@ -16,7 +16,7 @@ def save_resume_data(resume_data: dict[str, Any], filename: str):
 def load_resume_data(filename: str) -> dict[str, Any]:
     try:
         with open(filename, "r") as f:
-            return json.load(f)
+            return dict(json.load(f))
     except FileNotFoundError:
         return initialize_resume_data()
     except Exception as e:

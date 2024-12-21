@@ -30,6 +30,7 @@ warn_return_any = true
 warn_unused_ignores = true
 strict_optional = true
 disable_error_code = ["call-arg"]
+explicit_package_bases = true
 exclude = "src/post_install.py"
 
 [[tool.mypy.overrides]]

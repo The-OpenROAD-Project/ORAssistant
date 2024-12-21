@@ -1,5 +1,5 @@
 import csv
-from utils.logging_utils import log_error
+from script_based_evaluation.utils.logging_utils import log_error
 import traceback
 
 

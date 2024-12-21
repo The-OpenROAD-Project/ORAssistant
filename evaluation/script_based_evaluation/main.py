@@ -4,10 +4,10 @@ import os
 import csv
 import traceback
 import time
-from utils.data_utils import validate_csv_lines
-from utils.api_utils import send_request, llm_judge
-from utils.logging_utils import log_error
-from config.config import load_environment
+from script_based_evaluation.utils.data_utils import validate_csv_lines
+from script_based_evaluation.utils.api_utils import send_request, llm_judge
+from script_based_evaluation.utils.logging_utils import log_error
+from script_based_evaluation.config.config import load_environment
 from openai import OpenAI
 from tqdm import tqdm
 from typing import Any

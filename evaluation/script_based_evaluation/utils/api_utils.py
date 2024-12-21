@@ -2,9 +2,12 @@ import requests
 import time
 import sys
 import traceback
-from utils.logging_utils import log_error
-from models.gpt_model import base_gpt_4o
-from models.gemini_model import base_gemini_1_5_flash, base_gemini_1_5_pro
+from script_based_evaluation.utils.logging_utils import log_error
+from script_based_evaluation.models.gpt_model import base_gpt_4o
+from script_based_evaluation.models.gemini_model import (
+    base_gemini_1_5_flash,
+    base_gemini_1_5_pro,
+)
 from openai import OpenAI
 
 

@@ -2,7 +2,7 @@ import time
 import sys
 import traceback
 from openai import OpenAI
-from utils.logging_utils import log_error
+from script_based_evaluation.utils.logging_utils import log_error
 
 
 def base_gpt_4o(query: str, client: OpenAI) -> tuple[str, float]:

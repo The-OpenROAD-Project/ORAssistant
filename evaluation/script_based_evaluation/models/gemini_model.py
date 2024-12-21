@@ -7,7 +7,7 @@ from vertexai.generative_models import (  # type: ignore
     HarmBlockThreshold,
     SafetySetting,
 )
-from utils.logging_utils import log_error
+from script_based_evaluation.utils.logging_utils import log_error
 
 
 def base_gemini_1_5_flash(query: str) -> tuple[str, float]:
