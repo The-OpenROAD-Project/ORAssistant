@@ -143,8 +143,6 @@ def submit_feedback_to_google_sheet(
             sheet.format("A1:H1", {"textFormat": {"bold": True}})
 
         sheet.append_row(data_to_append)
-        # Removed the sidebar success message
-        # st.sidebar.success("Feedback submitted successfully.")
     else:
         st.sidebar.error(f"Sheet with GID {target_gid} not found.")
 
