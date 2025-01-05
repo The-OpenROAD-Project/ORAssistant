@@ -21,7 +21,7 @@ dependencies = { file = ["requirements.txt"] }
 optional-dependencies = { test = { file = ["requirements-test.txt"] } }
 
 [tool.setuptools.packages.find]
-include = ["auto_evaluation", "human_evaluation"]
+include = ["auto_evaluation", "human_evaluation", "script_based_evaluation"]
 
 [tool.mypy]
 python_version = "3.12"

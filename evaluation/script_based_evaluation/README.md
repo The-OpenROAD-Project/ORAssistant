@@ -18,12 +18,12 @@ This project automates the evaluation of language model responses using classifi
 
 Create a `.env` file in the root directory with the following variables:
 ```plaintext
-GOOGLE_APPLICATION_CREDENTIALS=path/to/creds.json
+GOOGLE_APPLICATION_CREDENTIALS=path/to/secret.json
 OPENAI_API_KEY=your_openai_api_key  # Required if testing against OpenAI models
 ```
 ### Required Files
 
-- `creds.json`: Ensure you have a Google Vertex AI subscription and the necessary credentials file.
+- `secret.json`: Ensure you have a Google Vertex AI subscription and the necessary credentials file.
 
 ### Data Files
 
@@ -35,24 +35,22 @@ OPENAI_API_KEY=your_openai_api_key  # Required if testing against OpenAI models
 
 ## How to Run
 
-1. **Install Dependencies**
+1. **Activate virtual environment**
 
-   Ensure you have Python installed, then install the required packages:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
+   From the previous directory (`evaluation`), make sure you have run the command
+   `make init` before activating virtual environment. It is needed to recognise
+   this folder as a submodule.
 
 2. **Run the Script**
 
    Use the following command to execute the script with customizable options:
 
    ```bash
-   python script.py --env-path /path/to/.env --creds-path /path/to/creds.json --iterations 10 --llms "base-gemini-1.5-flash,base-gpt-4o" --agent-retrievers "v1=http://url1.com,v2=http://url2.com"
+   python script.py --env-path /path/to/.env --creds-path /path/to/secret.json --iterations 10 --llms "base-gemini-1.5-flash,base-gpt-4o" --agent-retrievers "v1=http://url1.com,v2=http://url2.com"
    ```
 
    - `--env-path`: Path to the `.env` file.
-   - `--creds-path`: Path to the `creds.json` file.
+   - `--creds-path`: Path to the `secret.json` file.
    - `--iterations`: Number of iterations per question.
    - `--llms`: Comma-separated list of LLMs to test.
    - `--agent-retrievers`: Comma-separated list of agent-retriever names and URLs.
@@ -75,10 +73,10 @@ python main.py
 - Tests all available LLMs.
 - No additional agent-retrievers.
 
-### b. Specify .env and creds.json Paths
+### b. Specify .env and secret.json Paths
 
 ```bash
-python main.py --env-path /path/to/.env --creds-path /path/to/creds.json
+python main.py --env-path /path/to/.env --creds-path /path/to/secret.json
 ```
 
 ### c. Customize Iterations and Select Specific LLMs
@@ -98,7 +96,7 @@ python main.py --agent-retrievers "v1=http://url1.com,v2=http://url2.com"
 ```bash
 python main.py \
     --env-path /path/to/.env \
-    --creds-path /path/to/creds.json \
+    --creds-path /path/to/secret.json \
     --iterations 10 \
     --llms "base-gemini-1.5-flash,base-gpt-4o" \
     --agent-retrievers "v1=http://url1.com,v2=http://url2.com"

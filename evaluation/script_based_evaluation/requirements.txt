@@ -1,6 +1,0 @@
-openai==1.58.1
-vertexai==1.71.1
-requests==2.32.3
-tqdm==4.67.1
-python-dotenv==1.0.1
-pydantic==2.10.4
