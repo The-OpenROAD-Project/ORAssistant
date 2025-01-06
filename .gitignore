@@ -39,3 +39,7 @@ faiss_db
 # frontend
 node_modules
 .next
+
+# deployment (Kompose files)
+*-service.yaml
+*-deployment.yaml
