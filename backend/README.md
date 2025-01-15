@@ -8,17 +8,11 @@ To configure the application, you'll need to set up the environment variables in
 
 The given command would copy the template for environment variables to a local `.env` file 
 
-Command for MacOS/Linux Systems
 
 ```
 cp .env.example .env
 ```
 
-Command for Windows Systems
-
-```
-copy .env.example .env
-```
 
 ### Setting Up Google API Key and Credentials Variables
 
@@ -50,7 +44,7 @@ This key is used to access the various google cloud functions.
   - Store securely and add path to .env:
        `GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json`
 
-NOTE: The user might need billing to be set up on google cloud account and make sure to name the file as `credentials.json`  as this would be ignored by `.git` and wouldn't be exposed on Github
+**NOTE**: The user might need billing to be set up on google cloud account and make sure to name the file as `credentials.json`  as this would be ignored by `.git` and wouldn't be exposed on Github
 
 ### Setting Up LangChain Variables
 
@@ -64,7 +58,7 @@ There are 4 variables that needs to be set up
 - `LANGCHAIN_ENDPOINT`
   
   The URL endpoint for LangSmith (LangChain's monitoring platform). 
-  Default value should be "https://api.smith.langchain.com" for cloud-hosted LangSmith.
+  Default value should be `https://api.smith.langchain.com` for cloud-hosted LangSmith.
   Used to send trace data, metrics, and debugging information from your LangChain applications.
 
 - `LANGCHAIN_API_KEY`
@@ -74,9 +68,10 @@ There are 4 variables that needs to be set up
   - Create account if you don't have one
   - Navigate to Settings > API Keys
   - Create new API key
-  - Format: starts with "lsv2_" followed by a unique string
+  - Format: starts with `lsv2_` followed by a unique string
   
 - `LANGCHAIN_PROJECT`
+    
     Project identifier in LangSmith to organize and track your traces.
   - Create new project in LangSmith dashboard
   - Use the project name or ID provided
@@ -112,14 +107,10 @@ pip install -r requirements.txt
 
 If you want to run an isolated container for backend, you can use the following command 
 
-```
+```bash
 docker build -t (image_name) .
 ```
 
-Make sure you are in the backend folder before running the above command\
+Make sure you are in the backend folder before running the above command.
 
-NOTE: The project does support a `docker-compose` file that would run all of the containers together
-
-## License
-
-This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](../LICENSE) file for details.
+**NOTE**: The project does support a `docker-compose` file that would run all of the containers together
