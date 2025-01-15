@@ -91,15 +91,10 @@ To set up the `HF_TOKEN` variable in `.env` file , go through the following inst
 
 - Go the official website for [Huggingface](https://huggingface.co/) and either Login or Sign up.
 - On the main page click on user access token
-  
-  ![User Access Token Image](./assets/user_access_token.png)
-  
 - Click on create access token
-  
-  ![Create Access Token](./assets/token_page.png)
 - Provide only Read Instruction for the token and Click on Generate Token
   
-  ![Permission Token](./assets/permission_token.png)
+  
 
 
 Provide the value for `HF_TOKEN` with the token that is generated
