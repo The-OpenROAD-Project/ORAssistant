@@ -5,8 +5,10 @@ This is the frontend application for ORAssistant built using Next.js.
 ## Setup
 
 ### Prerequisites
-- Node.js
-- Yarn package manager
+
+Installation has been tested with these:
+- Node.js >= `v22.13.0`
+- Yarn package manager >= `v1.22.22`
 
 ### Installation
 
