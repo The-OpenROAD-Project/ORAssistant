@@ -5,8 +5,6 @@ services:
     container_name: "orassistant-backend"
     ports:
       - "8000:8000"
-    networks:
-      - orassistant-network
     # healthcheck:
     #   test: "curl -f http://localhost:8000/healthcheck || exit 1"
     #   interval: 30s
@@ -20,8 +18,8 @@ services:
     container_name: "orassistant-frontend"
     ports:
       - "8501:8501"
-    networks:
-      - orassistant-network
+    environment:
+      - CHAT_ENDPOINT=http://backend:8000
 
   # health-checker:
   #   build: ./common
@@ -29,15 +27,9 @@ services:
   #   depends_on:
   #     backend:
   #       condition: service_healthy
-  #   networks:
-  #     - orassistant-network
   #   healthcheck:
   #     test: "ls /app || exit 1"
   #     interval: 30s
   #     timeout: 10s
   #     retries: 3
   #     start_period: 5s
-
-networks:
-  orassistant-network:
-    driver: bridge
