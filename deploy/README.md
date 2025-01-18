@@ -9,11 +9,15 @@ which can be easily migrated to other services if needed.
 `kompose` CLI for converting `docker-compose.yml` to Kubernetes manifests
 [(guide)](https://kompose.io/installation/).
 
+The `kubectl` [(guide)](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) 
+CLI is also needed for running commands against Kubernetes clusters.
+
 Once installed, verify that these binaries are available:
 
-```
+```bash
 kompose --version
 gcloud --version
+kubectl version --client
 ```
 
 1. Authenticate GCP environment.
