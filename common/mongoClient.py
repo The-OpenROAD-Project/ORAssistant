@@ -8,7 +8,7 @@ load_dotenv()
 
 # HARDCODED collection names
 feedback_collection_name = "feedback"
-context_collection_name = "context"
+source_collection_name = "source"
 
 def get_mongo_db_client() -> Database:
     """
@@ -57,65 +57,65 @@ def submit_feedback(
                         'bsonType': 'object',
                         'required': ['question', 'answer', 'sources', 'context', 'issue', 'version', 'timestamp'],
                         'properties': {
-                            'question': {
+                            'question': 
+                            {
                                 'bsonType': 'string',
                                 'description': 'must be a string and is required'
                             },
-                            'answer': {
+                            'answer': 
+                            {
                                 'bsonType': 'string',
                                 'description': 'must be a string and is required'
                             },
-                            'sources': {
+                            'sources': 
+                            {
                                 'bsonType': 'array',
                                 'items': {
                                     'bsonType': 'objectId'
                                 },
                                 'description': 'must be an array of ObjectIds referencing the sources and is required'
                             },
-                            'context': {
+                            'context':
+                            {
                                 'bsonType': 'array',
                                 'items': {
                                     'bsonType': 'string'
                                 },
                                 'description': 'must be an array of strings and is required'
                             },
-                            'issue': {
+                            'issue': 
+                            {
                                 'bsonType': 'string',
                                 'description': 'must be a string and is required'
                             },
-                            'version': {
+                            'version': 
+                            {
                                 'bsonType': 'string',
                                 'description': 'must be a string and is required'
                             },
-                            'timestamp': {
+                            'timestamp': 
+                            {
                                 'bsonType': 'date',
                                 'description': 'must be a date and is required'
                             },
-                            'status': {
+                            'status': 
+                            {
                                 'enum': ['new', 'processing', 'resolved'],
                                 'description': 'can only be one of the enum values'
                             }
                         }
                     }
                 })
-        if not check_collection_exists(context_collection_name,feedback_db_client):
-            create_collection(context_collection_name, feedback_db_client, {
+        if not check_collection_exists(source_collection_name,feedback_db_client):
+            create_collection(source_collection_name, feedback_db_client, {
                 '$jsonSchema': {
                     'bsonType': 'object',
-                    'required': ['source', 'timestamp'],
+                    'required': ['source'],
                     'properties': {
                         'source': {
                             'bsonType': 'string',
                             'description': 'must be a string and is required'
                         },
-                        'metadata': {
-                            'bsonType': 'object',
-                            'description': 'additional metadata for the context'
-                        },
-                        'timestamp': {
-                            'bsonType': 'date',
-                            'description': 'must be a date and is required'
-                        }
                     }
                 }
             })
@@ -123,15 +123,19 @@ def submit_feedback(
 
         sources_ids = []
         for source in sources:
-            print(source)
-            sources_ids.append(feedback_db_client[context_collection_name].insert_one({
-                'source': str(source),
-                'metadata': {
-                    'url': str(source)
-                },
-                'timestamp': datetime.now()
-            }).inserted_id)
-        
+            
+            existing_source = feedback_db_client[source_collection_name].find_one({
+                'source': str(source)
+            })
+            
+            if existing_source:
+                sources_ids.append(existing_source['_id'])
+            else:
+                new_source = feedback_db_client[source_collection_name].insert_one({
+                    'source': str(source),
+                })
+                sources_ids.append(new_source.inserted_id)
+
         feedback_db_client[feedback_collection_name].insert_one({
             'question': question,
             'answer': answer,
