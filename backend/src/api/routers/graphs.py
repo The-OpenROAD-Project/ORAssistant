@@ -13,7 +13,7 @@ from langchain_core.messages import AIMessageChunk
 from starlette.responses import StreamingResponse
 
 from ...agents.retriever_graph import RetrieverGraph
-from ..models.response_model import ChatResponse, UserInput
+from ..models.response_model import ChatResponse, ContextSource, UserInput
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 load_dotenv()
@@ -119,12 +119,15 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
         llm_response = output[-1]["generate"]["messages"][0]
         tools = output[0]["agent"]["tools"]
 
-        urls = []
-        context = []
+        context_sources = []
         tool_index = 1
         for tool in tools:
             urls.extend(list(output[tool_index].values())[0]["urls"])
             context.append(list(output[tool_index].values())[0]["context"])
+            tool_index += 1
+
+            for url, context in zip(urls, [context]):
+                context_sources.append(ContextSource(context=context, source=url))
             tool_index += 1
     else:
         llm_response = "LLM response extraction failed"
@@ -133,16 +136,15 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
     if user_input.list_sources and user_input.list_context:
         response = {
             "response": llm_response,
-            "sources": (urls),
-            "context": (context),
+            "context_sources": context_sources,
             "tool": tools,
         }
     elif user_input.list_sources:
-        response = {"response": llm_response, "sources": (urls), "tool": tools}
+        response = {"response": llm_response, "context_sources":[ContextSource(context="", source=cs.source) for cs in context_sources], "tool": tools}
     elif user_input.list_context:
-        response = {"response": llm_response, "context": (context), "tool": tools}
+        response = {"response": llm_response, "context_sources":[ContextSource(context=cs.context, source="") for cs in context_sources], "tool": tools}
     else:
-        response = {"response": llm_response, "tool": tools}
+        response = {"response": llm_response,"context_sources":[ContextSource(context="", source="")], "tool": tools}
 
     return ChatResponse(**response)
 
