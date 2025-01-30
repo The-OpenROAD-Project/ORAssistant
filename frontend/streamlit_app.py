@@ -113,7 +113,7 @@ def main() -> None:
     st.title("OR Assistant")
 
     base_url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
-    selected_endpoint = "/chains/mock"
+    selected_endpoint = "/graphs/agent-retriever"
 
     if "selected_endpoint" not in st.session_state:
         st.session_state.selected_endpoint = selected_endpoint
