@@ -11,7 +11,7 @@ from langchain_ollama import ChatOllama
 from ...chains.hybrid_retriever_chain import HybridRetrieverChain
 from ...chains.similarity_retriever_chain import SimilarityRetrieverChain
 from ...prompts.prompt_templates import summarise_prompt_template
-from ..models.response_model import ChatResponse, UserInput
+from ..models.response_model import ChatResponse, UserInput,ContextSource
 
 load_dotenv()
 
