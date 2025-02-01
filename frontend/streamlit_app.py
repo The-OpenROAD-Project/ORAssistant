@@ -226,29 +226,21 @@ def main() -> None:
         # Handle thumbs up and thumbs down reactions
         if thumbs_up or thumbs_down:
             try:
-                selected_question = st.session_state.chat_history[-2][
-                    "content"
-                ]  # Last user question
-                gen_ans = st.session_state.chat_history[-1][
-                    "content"
-                ]  # Last AI response
+                selected_question = st.session_state.chat_history[-2]["content"]  # Last user question
+                gen_ans = st.session_state.chat_history[-1]["content"]  # Last AI response
                 metadata = st.session_state.metadata.get(selected_question, {})
                 context_sources = metadata.get("context_sources", [])
                 
-                # Extract sources and contexts separately for feedback
-                sources = [cs["source"] for cs in context_sources if cs.get("source")]
-                contexts = [cs["context"] for cs in context_sources if cs.get("context")]
-
                 reaction = "upvote" if thumbs_up else "downvote"
 
+                # Submit feedback with coupled context-source pairs
                 submit_feedback_to_google_sheet(
                     question=selected_question,
                     answer=gen_ans,
-                    sources=sources if isinstance(sources, list) else [sources],
-                    context=contexts if isinstance(contexts, list) else [contexts],
-                    issue="",  # Leave issue blank
+                    context_sources=context_sources,
+                    issue="", # Leave the issue blank
                     version=os.getenv("RAG_VERSION", get_git_commit_hash()),
-                    reaction=reaction,  # Pass the reaction
+                    reaction=reaction,
                 )
                 st.success("Thank you for your feedback!")
             except Exception as e:
