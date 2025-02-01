@@ -26,21 +26,20 @@ def get_mongo_db_client() -> Database:
     # this is the database that is returned by the client
     return client["feedback_db"]
 
-def submit_feedback( 
+def submit_feedback(
     question: str,
     answer: str,
-    sources: list[str],
-    context: list[str],
+    context_sources: list[dict[str, str]],
     issue: str,
-    version: str,):
+    version: str,
+):
     """
     Submit feedback Record to the MongoDB database.
 
     Args:
     - question (str): The question for which feedback is being submitted.
     - answer (str): The generated answer to the question.
-    - sources (list[str]): Source data used for the answer.
-    - context (list[str]): Additional context from the RAG.
+    - context_sources (list[dict[str, str]]): List of source-context pairs.
     - issue (str): Details about the issue.
     - version (str): Version information.
 
@@ -55,7 +54,7 @@ def submit_feedback(
             create_collection(feedback_collection_name,feedback_db_client,                validator={
                     '$jsonSchema': {
                         'bsonType': 'object',
-                        'required': ['question', 'answer', 'sources', 'context', 'issue', 'version', 'timestamp'],
+                        'required': ['question', 'answer', 'sources', 'issue', 'version', 'timestamp'],
                         'properties': {
                             'question': 
                             {
@@ -67,21 +66,23 @@ def submit_feedback(
                                 'bsonType': 'string',
                                 'description': 'must be a string and is required'
                             },
-                            'sources': 
-                            {
+                            'sources': {
                                 'bsonType': 'array',
                                 'items': {
-                                    'bsonType': 'objectId'
+                                    'bsonType': 'object',
+                                    'required': ['source', 'context'],
+                                    'properties': {
+                                        'source': {
+                                            'bsonType': 'string',
+                                            'description': 'must be a string and is required'
+                                        },
+                                        'context': {
+                                            'bsonType': 'string',
+                                            'description': 'must be a string and is required'
+                                        }
+                                    }
                                 },
-                                'description': 'must be an array of ObjectIds referencing the sources and is required'
-                            },
-                            'context':
-                            {
-                                'bsonType': 'array',
-                                'items': {
-                                    'bsonType': 'string'
-                                },
-                                'description': 'must be an array of strings and is required'
+                                'description': 'must be an array of source-context pairs and is required'
                             },
                             'issue': 
                             {
@@ -106,47 +107,16 @@ def submit_feedback(
                         }
                     }
                 })
-        if not check_collection_exists(source_collection_name,feedback_db_client):
-            create_collection(source_collection_name, feedback_db_client, {
-                '$jsonSchema': {
-                    'bsonType': 'object',
-                    'required': ['source'],
-                    'properties': {
-                        'source': {
-                            'bsonType': 'string',
-                            'description': 'must be a string and is required'
-                        },
-                    }
-                }
-            })
-            # inserting the records 
-
-        sources_ids = []
-        for source in sources:
-            
-            existing_source = feedback_db_client[source_collection_name].find_one({
-                'source': str(source)
-            })
-            
-            if existing_source:
-                sources_ids.append(existing_source['_id'])
-            else:
-                new_source = feedback_db_client[source_collection_name].insert_one({
-                    'source': str(source),
-                })
-                sources_ids.append(new_source.inserted_id)
 
         feedback_db_client[feedback_collection_name].insert_one({
             'question': question,
             'answer': answer,
-            'sources': sources_ids,
-            'context': context,
+            'sources': context_sources,
             'issue': issue,
             'version': version,
             'timestamp': datetime.now(),
             'status': 'new'
-            })
-
+        })
 
         print("Feedback submitted successfully") 
         return True
