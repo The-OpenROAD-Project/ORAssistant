@@ -140,11 +140,11 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
             "tool": tools,
         }
     elif user_input.list_sources:
-        response = {"response": llm_response, "context_sources":[ContextSource(context="", source=cs.source) for cs in context_sources], "tool": tools}
+        response = {"response": llm_response, "context_sources": [ContextSource(context="", source=cs.source) for cs in context_sources], "tool": tools}
     elif user_input.list_context:
-        response = {"response": llm_response, "context_sources":[ContextSource(context=cs.context, source="") for cs in context_sources], "tool": tools}
+        response = {"response": llm_response, "context_sources": [ContextSource(context=cs.context, source="") for cs in context_sources], "tool": tools}
     else:
-        response = {"response": llm_response,"context_sources":[ContextSource(context="", source="")], "tool": tools}
+        response = {"response": llm_response, "context_sources": [ContextSource(context="", source="")], "tool": tools}
 
     return ChatResponse(**response)
 

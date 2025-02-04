@@ -8,7 +8,7 @@ from typing import Optional, Any
 
 
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))) 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from common.mongoClient import submit_feedback
 
 load_dotenv()
@@ -62,7 +62,7 @@ def format_context(context: list[str]) -> str:
     return "\n".join(context)
 
 
-def submit_feedback_to_mongoDB(
+def submit_feedback_to_mongodb(
     question: str,
     answer: str,
     context_sources: list[dict[str, str]],
@@ -102,7 +102,7 @@ def submit_feedback_to_google_sheet(
     context_sources: list[dict[str, str]],
     issue: str,
     version: str,
-    reaction: Optional[str] = None, # Added optional reaction parameter
+    reaction: Optional[str] = None,  # Added optional reaction parameter
 ) -> None:
     """
     Submit feedback to a specific Google Sheet.
@@ -148,7 +148,7 @@ def submit_feedback_to_google_sheet(
     if sheet_title:
         sheet = spreadsheet.worksheet(sheet_title)
         timestamp = datetime.now(timezone.utc).isoformat()
-        
+
         # Format sources and context as combined pairs
         formatted_pairs = []
         for cs in context_sources:
@@ -156,7 +156,7 @@ def submit_feedback_to_google_sheet(
             context = cs.get('context', '')
             if source or context:
                 formatted_pairs.append(f"Source: {source}\nContext: {context}")
-        
+
         formatted_content = "\n\n".join(formatted_pairs)
 
         data_to_append = [
@@ -232,7 +232,7 @@ def show_feedback_form(
                 issue=feedback,
                 version=os.getenv("RAG_VERSION", get_git_commit_hash()),
             )
-            submit_feedback_to_mongoDB(
+            submit_feedback_to_mongodb(
                 question=selected_question,
                 answer=gen_ans,
                 context_sources=context_sources,

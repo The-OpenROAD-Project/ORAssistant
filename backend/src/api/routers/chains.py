@@ -11,7 +11,7 @@ from langchain_ollama import ChatOllama
 from ...chains.hybrid_retriever_chain import HybridRetrieverChain
 from ...chains.similarity_retriever_chain import SimilarityRetrieverChain
 from ...prompts.prompt_templates import summarise_prompt_template
-from ..models.response_model import ChatResponse, UserInput,ContextSource
+from ..models.response_model import ChatResponse, UserInput, ContextSource
 
 load_dotenv()
 
@@ -125,11 +125,10 @@ async def get_hybrid_response(user_input: UserInput) -> ChatResponse:
             ))
 
     if user_input.list_sources and user_input.list_context:
-       response = {
-            "response": result["answer"],
-            "context_sources": context_sources
+        response = {
+        "response": result["answer"],
+        "context_sources": context_sources
         }
-        
     elif user_input.list_sources:
         response = {
         "response": result["answer"],
@@ -141,7 +140,7 @@ async def get_hybrid_response(user_input: UserInput) -> ChatResponse:
             "context_sources": [ContextSource(context=cs.context, source="") for cs in context_sources]
         }
     else:
-        response = {"response": result["answer"],"context_sources": []}
+        response = {"response": result["answer"], "context_sources": []}
 
     return ChatResponse(**response)
 
@@ -181,11 +180,10 @@ async def get_sim_response(user_input: UserInput) -> ChatResponse:
             ))
 
     if user_input.list_sources and user_input.list_context:
-       response = {
+        response = {
             "response": result["answer"],
             "context_sources": context_sources
         }
-        
     elif user_input.list_sources:
         response = {
         "response": result["answer"],
@@ -193,11 +191,11 @@ async def get_sim_response(user_input: UserInput) -> ChatResponse:
         }
     elif user_input.list_context:
         response = {
-            "response": result["answer"],
-            "context_sources": [ContextSource(context=cs.context, source="") for cs in context_sources]
+        "response": result["answer"],
+        "context_sources": [ContextSource(context=cs.context, source="") for cs in context_sources]
         }
     else:
-        response = {"response": result["answer"],"context_sources": []}
+        response = {"response": result["answer"], "context_sources": []}
 
     return ChatResponse(**response)
 

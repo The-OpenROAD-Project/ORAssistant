@@ -4,7 +4,6 @@ import time
 import datetime
 import pytz
 import os
-import ast
 from PIL import Image
 from utils.feedback import (
     show_feedback_form,
@@ -13,7 +12,6 @@ from utils.feedback import (
 )
 from dotenv import load_dotenv
 from typing import Callable, Any
-
 
 
 def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, float]]:
@@ -44,7 +42,8 @@ def translate_chat_history_to_api(chat_history, max_pairs=4):
             i -= 1
     return api_format
 
-def display_sources_context(context_sources:list[dict[str,str]]):
+
+def display_sources_context(context_sources: list[dict[str, str]]):
 
     with st.expander("Sources and Context"):
         try:
@@ -59,9 +58,7 @@ def display_sources_context(context_sources:list[dict[str,str]]):
             else:
                 st.markdown("No Sources or Context Available.")
         except (ValueError, SyntaxError) as e:
-                        st.markdown(f"Failed to parse sources: {e}")
-
-        
+            st.markdown(f"Failed to parse sources: {e}")
 
 
 @measure_response_time
@@ -94,7 +91,7 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
         context_sources = data.get("context_sources", [])
         st.session_state.metadata[user_input] = {
             "context_sources": context_sources,
-            
+
         }
         return data.get("response", ""), context_sources
     except requests.exceptions.RequestException as e:
@@ -147,7 +144,7 @@ def main() -> None:
             user_message = st.session_state.chat_history[idx - 1]
             if user_message["role"] == "user":
                 user_input = user_message["content"]
-                context_sources = st.session_state.metadata.get(user_input,{}).get("context_sources",[])
+                context_sources = st.session_state.metadata.get(user_input, {}).get("context_sources", [])
                 display_sources_context(context_sources)
 
     user_input = st.chat_input("Enter your queries ...")
@@ -230,7 +227,7 @@ def main() -> None:
                 gen_ans = st.session_state.chat_history[-1]["content"]  # Last AI response
                 metadata = st.session_state.metadata.get(selected_question, {})
                 context_sources = metadata.get("context_sources", [])
-                
+
                 reaction = "upvote" if thumbs_up else "downvote"
 
                 # Submit feedback with coupled context-source pairs
@@ -238,7 +235,7 @@ def main() -> None:
                     question=selected_question,
                     answer=gen_ans,
                     context_sources=context_sources,
-                    issue="", # Leave the issue blank
+                    issue="",  # Leave the issue blank
                     version=os.getenv("RAG_VERSION", get_git_commit_hash()),
                     reaction=reaction,
                 )

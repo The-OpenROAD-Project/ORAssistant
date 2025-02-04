@@ -7,9 +7,12 @@ class UserInput(BaseModel):
     list_sources: bool = False
     list_context: bool = False
 
+
 class ContextSource(BaseModel):
     sources: str = ""
     context: str = ""
+
+
 class ChatResponse(BaseModel):
     response: str
     context_sources: list[ContextSource] = []
