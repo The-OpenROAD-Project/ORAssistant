@@ -9,7 +9,7 @@ class UserInput(BaseModel):
 
 
 class ContextSource(BaseModel):
-    sources: str = ""
+    source: str = ""
     context: str = ""
 
 

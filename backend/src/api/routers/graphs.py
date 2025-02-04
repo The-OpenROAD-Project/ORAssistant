@@ -108,6 +108,7 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
         raise ValueError("RetrieverGraph not initialized.")
     urls: list[str] = []
     context: list[str] = []
+    context_sources: list[ContextSource] = []
 
     if (
         isinstance(output, list)
@@ -121,14 +122,12 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
 
         context_sources = []
         tool_index = 1
-        for tool in tools:
-            urls.extend(list(output[tool_index].values())[0]["urls"])
-            context.append(list(output[tool_index].values())[0]["context"])
-            tool_index += 1
+        for tool_index, tool in enumerate(tools):
+            urls = list(output[tool_index].values())[0]["urls"]
+            context = list(output[tool_index].values())[0]["context"]
 
-            for url, context in zip(urls, [context]):
-                context_sources.append(ContextSource(context=context, source=url))
-            tool_index += 1
+            for _url, _context in zip(urls, context):
+                context_sources.append(ContextSource(context=_context, source=_url))
     else:
         llm_response = "LLM response extraction failed"
         logging.error("LLM response extraction failed")
@@ -140,11 +139,27 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
             "tool": tools,
         }
     elif user_input.list_sources:
-        response = {"response": llm_response, "context_sources": [ContextSource(context="", source=cs.source) for cs in context_sources], "tool": tools}
+        response = {
+            "response": llm_response,
+            "context_sources": [
+                ContextSource(context="", source=cs.source) for cs in context_sources
+            ],
+            "tool": tools,
+        }
     elif user_input.list_context:
-        response = {"response": llm_response, "context_sources": [ContextSource(context=cs.context, source="") for cs in context_sources], "tool": tools}
+        response = {
+            "response": llm_response,
+            "context_sources": [
+                ContextSource(context=cs.context, source="") for cs in context_sources
+            ],
+            "tool": tools,
+        }
     else:
-        response = {"response": llm_response, "context_sources": [ContextSource(context="", source="")], "tool": tools}
+        response = {
+            "response": llm_response,
+            "context_sources": [ContextSource(context="", source="")],
+            "tool": tools,
+        }
 
     return ChatResponse(**response)
 

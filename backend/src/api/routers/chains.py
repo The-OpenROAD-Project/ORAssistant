@@ -114,30 +114,29 @@ async def get_hybrid_response(user_input: UserInput) -> ChatResponse:
     context_sources = []
     for i in result["context"]:
         if "url" in i.metadata:
-            context_sources.append(ContextSource(
-                context=i.page_content,
-                source=i.metadata["url"]
-            ))
+            context_sources.append(
+                ContextSource(context=i.page_content, source=i.metadata["url"])
+            )
         elif "source" in i.metadata:
-            context_sources.append(ContextSource(
-                context=i.page_content,
-                source=i.metadata["source"]
-            ))
+            context_sources.append(
+                ContextSource(context=i.page_content, source=i.metadata["source"])
+            )
 
     if user_input.list_sources and user_input.list_context:
-        response = {
-        "response": result["answer"],
-        "context_sources": context_sources
-        }
+        response = {"response": result["answer"], "context_sources": context_sources}
     elif user_input.list_sources:
         response = {
-        "response": result["answer"],
-        "context_sources": [ContextSource(context="", source=cs.source) for cs in context_sources]
+            "response": result["answer"],
+            "context_sources": [
+                ContextSource(context="", source=cs.source) for cs in context_sources
+            ],
         }
     elif user_input.list_context:
         response = {
             "response": result["answer"],
-            "context_sources": [ContextSource(context=cs.context, source="") for cs in context_sources]
+            "context_sources": [
+                ContextSource(context=cs.context, source="") for cs in context_sources
+            ],
         }
     else:
         response = {"response": result["answer"], "context_sources": []}
@@ -169,30 +168,29 @@ async def get_sim_response(user_input: UserInput) -> ChatResponse:
     context_sources = []
     for i in result["context"]:
         if "url" in i.metadata:
-            context_sources.append(ContextSource(
-                context=i.page_content,
-                source=i.metadata["url"]
-            ))
+            context_sources.append(
+                ContextSource(context=i.page_content, source=i.metadata["url"])
+            )
         elif "source" in i.metadata:
-            context_sources.append(ContextSource(
-                context=i.page_content,
-                source=i.metadata["source"]
-            ))
+            context_sources.append(
+                ContextSource(context=i.page_content, source=i.metadata["source"])
+            )
 
     if user_input.list_sources and user_input.list_context:
-        response = {
-            "response": result["answer"],
-            "context_sources": context_sources
-        }
+        response = {"response": result["answer"], "context_sources": context_sources}
     elif user_input.list_sources:
         response = {
-        "response": result["answer"],
-        "context_sources": [ContextSource(context="", source=cs.source) for cs in context_sources]
+            "response": result["answer"],
+            "context_sources": [
+                ContextSource(context="", source=cs.source) for cs in context_sources
+            ],
         }
     elif user_input.list_context:
         response = {
-        "response": result["answer"],
-        "context_sources": [ContextSource(context=cs.context, source="") for cs in context_sources]
+            "response": result["answer"],
+            "context_sources": [
+                ContextSource(context=cs.context, source="") for cs in context_sources
+            ],
         }
     else:
         response = {"response": result["answer"], "context_sources": []}

@@ -44,7 +44,6 @@ def translate_chat_history_to_api(chat_history, max_pairs=4):
 
 
 def display_sources_context(context_sources: list[dict[str, str]]):
-
     with st.expander("Sources and Context"):
         try:
             if context_sources:
@@ -91,7 +90,6 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
         context_sources = data.get("context_sources", [])
         st.session_state.metadata[user_input] = {
             "context_sources": context_sources,
-
         }
         return data.get("response", ""), context_sources
     except requests.exceptions.RequestException as e:
@@ -144,7 +142,9 @@ def main() -> None:
             user_message = st.session_state.chat_history[idx - 1]
             if user_message["role"] == "user":
                 user_input = user_message["content"]
-                context_sources = st.session_state.metadata.get(user_input, {}).get("context_sources", [])
+                context_sources = st.session_state.metadata.get(user_input, {}).get(
+                    "context_sources", []
+                )
                 display_sources_context(context_sources)
 
     user_input = st.chat_input("Enter your queries ...")
@@ -223,8 +223,12 @@ def main() -> None:
         # Handle thumbs up and thumbs down reactions
         if thumbs_up or thumbs_down:
             try:
-                selected_question = st.session_state.chat_history[-2]["content"]  # Last user question
-                gen_ans = st.session_state.chat_history[-1]["content"]  # Last AI response
+                selected_question = st.session_state.chat_history[-2][
+                    "content"
+                ]  # Last user question
+                gen_ans = st.session_state.chat_history[-1][
+                    "content"
+                ]  # Last AI response
                 metadata = st.session_state.metadata.get(selected_question, {})
                 context_sources = metadata.get("context_sources", [])
 

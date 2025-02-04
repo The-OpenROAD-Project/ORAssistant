@@ -8,8 +8,9 @@ from typing import Optional, Any
 
 
 import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from common.mongoClient import submit_feedback
+from common.mongoClient import submit_feedback  # type: ignore
 
 load_dotenv()
 
@@ -152,8 +153,8 @@ def submit_feedback_to_google_sheet(
         # Format sources and context as combined pairs
         formatted_pairs = []
         for cs in context_sources:
-            source = cs.get('source', '')
-            context = cs.get('context', '')
+            source = cs.get("source", "")
+            context = cs.get("context", "")
             if source or context:
                 formatted_pairs.append(f"Source: {source}\nContext: {context}")
 
@@ -169,7 +170,6 @@ def submit_feedback_to_google_sheet(
             reaction or "",
         ]
 
-        #
         headers = sheet.row_values(1)
         required_headers = [
             "Question",
@@ -193,7 +193,7 @@ def submit_feedback_to_google_sheet(
 
 def show_feedback_form(
     questions: dict[str, int],
-    metadata: dict[str, dict[str, str]],
+    metadata: dict[str, dict[str, list]],
     interactions: list[dict[str, str]],
 ) -> None:
     """
@@ -201,7 +201,7 @@ def show_feedback_form(
 
     Args:
     - questions (dict[str, int]): Dictionary of questions and indices.
-    - metadata (dict[str, dict[str, str]]): Metadata contains sources and context for each question.
+    - metadata (dict[str, dict[str, list]]): Metadata contains sources and context for each question.
     - interactions (list[dict[str, str]]): List of chat interactions from st.session_state.chat_history
 
     Returns:
