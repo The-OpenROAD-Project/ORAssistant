@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import useWindowSize from "../hooks/useWindowSize";
+import { useState, useEffect, useCallback } from 'react';
+import useWindowSize from '../hooks/useWindowSize';
 
 interface SuggestedQuestionsProps {
   onSelectQuestion: (question: string) => void;
@@ -17,11 +17,7 @@ export default function SuggestedQuestions({
   const { width } = useWindowSize();
   const isMobile = width !== undefined && width <= 768;
 
-  useEffect(() => {
-    fetchSuggestedQuestions();
-  }, [latestQuestion, assistantAnswer]);
-
-  const fetchSuggestedQuestions = async () => {
+  const fetchSuggestedQuestions = useCallback(async () => {
     setIsLoading(true);
     const prompt = `If the assistant answer has sufficient knowledge, use it to predict the next 3 suggested questions. Otherwise, strictly restrict to these topics: Given the list of topics related to OpenROAD, suggest 3 relevant questions strictly focused on any of the given topics.
     Getting Started with OpenROAD
@@ -77,9 +73,9 @@ export default function SuggestedQuestions({
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             contents: [
@@ -98,25 +94,27 @@ export default function SuggestedQuestions({
       const data = await response.json();
       const suggestedQuestionsText = data.candidates[0].content.parts[0].text;
       const trimmedText = suggestedQuestionsText.substring(
-        suggestedQuestionsText.indexOf("{"),
-        suggestedQuestionsText.lastIndexOf("}") + 1
+        suggestedQuestionsText.indexOf('{'),
+        suggestedQuestionsText.lastIndexOf('}') + 1
       );
       const suggestedQuestions = JSON.parse(trimmedText);
-      // Trim the response
-
       setQuestions(suggestedQuestions.questions);
     } catch (error) {
-      console.error("Error fetching suggested questions:", error);
+      console.error('Error fetching suggested questions:', error);
       setQuestions([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [latestQuestion, assistantAnswer]);
+
+  useEffect(() => {
+    fetchSuggestedQuestions();
+  }, [fetchSuggestedQuestions]);
 
   return (
     <div
       className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow transition-colors duration-200 ${
-        isMobile ? "max-w-full" : "max-w-[90%]"
+        isMobile ? 'max-w-full' : 'max-w-[90%]'
       }`}
     >
       <h3 className="font-bold mb-2 text-gray-800 dark:text-white">

@@ -1,4 +1,4 @@
-import useWindowSize from "../hooks/useWindowSize";
+import useWindowSize from '../hooks/useWindowSize';
 
 interface SourceListProps {
   sources: string[];
@@ -11,7 +11,7 @@ const SourceList: React.FC<SourceListProps> = ({ sources }) => {
   return (
     <div
       className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow transition-colors duration-200 ${
-        isMobile ? "max-w-full" : "max-w-[90%]"
+        isMobile ? 'max-w-full' : 'max-w-[90%]'
       }`}
     >
       <h3 className="font-bold mb-2 text-gray-800 dark:text-white">Sources:</h3>

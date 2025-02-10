@@ -1,5 +1,5 @@
-import React from "react";
-import useWindowSize from "../hooks/useWindowSize";
+import React from 'react';
+import useWindowSize from '../hooks/useWindowSize';
 
 interface Message {
   question: string;
@@ -31,7 +31,7 @@ const MessageList: React.FC<MessageListProps> = ({
           <div className="flex justify-end">
             <div
               className={`bg-blue-100 dark:bg-blue-900 p-3 rounded-3xl ${
-                isMobile ? "max-w-[90%]" : "max-w-[70%]"
+                isMobile ? 'max-w-[90%]' : 'max-w-[70%]'
               } break-words`}
             >
               {message.question}
@@ -39,7 +39,7 @@ const MessageList: React.FC<MessageListProps> = ({
           </div>
           <div
             className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow ${
-              isMobile ? "max-w-full" : "max-w-[90%]"
+              isMobile ? 'max-w-full' : 'max-w-[90%]'
             }`}
           >
             <div className="mb-2 break-words overflow-x-auto">

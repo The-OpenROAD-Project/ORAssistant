@@ -20,7 +20,14 @@ const truncateText = (text: string, maxLength: number) => {
   return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
 };
 
-export default function ChatHistory({ threads, onNewChat, onSelectThread, onDeleteThread, isMobile, onClose }: ChatHistoryProps) {
+export default function ChatHistory({
+  threads,
+  onNewChat,
+  onSelectThread,
+  onDeleteThread,
+  isMobile,
+  onClose,
+}: ChatHistoryProps) {
   return (
     <div className="h-full bg-gray-200 dark:bg-gray-800 p-4 overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
@@ -30,14 +37,27 @@ export default function ChatHistory({ threads, onNewChat, onSelectThread, onDele
         >
           <PlusIcon className="h-6 w-6" />
         </button>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white flex-grow text-center">Threads</h2>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white flex-grow text-center">
+          Threads
+        </h2>
         {isMobile && (
           <button
             onClick={onClose}
             className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
         )}
@@ -48,8 +68,13 @@ export default function ChatHistory({ threads, onNewChat, onSelectThread, onDele
             key={thread.id}
             className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 flex justify-between items-center"
           >
-            <div onClick={() => onSelectThread(thread.id)} className="flex-1 truncate">
-              <h3 className="font-semibold text-gray-800 dark:text-white">{truncateText(thread.title, 10)}</h3>
+            <div
+              onClick={() => onSelectThread(thread.id)}
+              className="flex-1 truncate"
+            >
+              <h3 className="font-semibold text-gray-800 dark:text-white">
+                {truncateText(thread.title, 10)}
+              </h3>
               {thread.messages.length > 0 && (
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   {truncateText(thread.messages[0].answer, 10)}

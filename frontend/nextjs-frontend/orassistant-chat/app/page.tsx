@@ -1,5 +1,5 @@
-"use client";
-import { useState, useEffect } from "react";
+'use client';
+import { useState, useEffect } from 'react';
 import {
   PaperAirplaneIcon,
   SunIcon,
@@ -9,20 +9,20 @@ import {
   TrashIcon,
   Bars3Icon,
   ArrowLeftIcon,
-} from "@heroicons/react/24/solid";
-import ChatHistory from "../components/ChatHistory";
-import MessageList from "../components/MessageList";
-import SourceList from "../components/SourceList";
-import SuggestedQuestions from "../components/SuggestedQuestions";
-import { useTheme } from "next-themes";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { tomorrow } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import useWindowSize from "../hooks/useWindowSize";
-import "./globals.css";
-import "../styles/markdown-table.css";
-import CopyButton from "../components/CopyButton";
+} from '@heroicons/react/24/solid';
+import ChatHistory from '../components/ChatHistory';
+import MessageList from '../components/MessageList';
+import SourceList from '../components/SourceList';
+import SuggestedQuestions from '../components/SuggestedQuestions';
+import { useTheme } from 'next-themes';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import useWindowSize from '../hooks/useWindowSize';
+import './globals.css';
+import '../styles/markdown-table.css';
+import CopyButton from '../components/CopyButton';
 
 const CHAT_ENDPOINT = process.env.NEXT_PUBLIC_PROXY_ENDPOINT;
 
@@ -48,7 +48,7 @@ interface ApiResponse {
 export default function Home() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [currentThread, setCurrentThread] = useState<Thread | null>(null);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [responseTime, setResponseTime] = useState<number | null>(null);
@@ -62,19 +62,19 @@ export default function Home() {
   }, [isMobile]);
 
   useEffect(() => {
-    const storedThreads = sessionStorage.getItem("chatThreads");
+    const storedThreads = sessionStorage.getItem('chatThreads');
     if (storedThreads) {
       setThreads(JSON.parse(storedThreads));
     }
   }, []);
 
   useEffect(() => {
-    console.log("Current theme:", theme);
+    console.log('Current theme:', theme);
   }, [theme]);
 
   useEffect(() => {
-    setTheme("dark");
-  }, []);
+    setTheme('dark');
+  }, [setTheme]); // Add setTheme to the dependency array
 
   const handleCloseSidebar = () => {
     setIsSidebarOpen(false);
@@ -104,10 +104,10 @@ export default function Home() {
         }
 
         const response = await fetch(CHAT_ENDPOINT, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             Origin: window.location.origin,
           },
           body: JSON.stringify({
@@ -116,7 +116,7 @@ export default function Home() {
             list_sources: true,
             chat_history: chatHistory,
           }),
-          mode: "cors",
+          mode: 'cors',
         });
 
         if (!response.ok) {
@@ -131,7 +131,7 @@ export default function Home() {
         setResponseTime(endTime - startTime);
 
         if (!data.response) {
-          throw new Error("No answer received from the API");
+          throw new Error('No answer received from the API');
         }
 
         const newMessage = {
@@ -158,24 +158,24 @@ export default function Home() {
           const updated = currentThread
             ? prev.map((t) => (t.id === currentThread.id ? updatedThread : t))
             : [updatedThread, ...prev];
-          sessionStorage.setItem("chatThreads", JSON.stringify(updated));
+          sessionStorage.setItem('chatThreads', JSON.stringify(updated));
           return updated;
         });
-        setInput("");
+        setInput('');
 
         setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
       } catch (error) {
-        console.error("Error fetching response:", error);
+        console.error('Error fetching response:', error);
         if (error instanceof Error) {
-          if (error.message.includes("CORS")) {
+          if (error.message.includes('CORS')) {
             setError(
-              "CORS error: The server is not configured to accept requests from this origin. Please contact the API administrator."
+              'CORS error: The server is not configured to accept requests from this origin. Please contact the API administrator.'
             );
           } else {
             setError(error.message);
           }
         } else {
-          setError("An unknown error occurred");
+          setError('An unknown error occurred');
         }
       } finally {
         setIsLoading(false);
@@ -202,7 +202,7 @@ export default function Home() {
   const handleDeleteThread = (threadId: string) => {
     setThreads((prev) => {
       const updated = prev.filter((t) => t.id !== threadId);
-      sessionStorage.setItem("chatThreads", JSON.stringify(updated));
+      sessionStorage.setItem('chatThreads', JSON.stringify(updated));
       return updated;
     });
     if (currentThread?.id === threadId) {
@@ -215,7 +215,7 @@ export default function Home() {
       {(isSidebarOpen || !isMobile) && (
         <div
           className={`${
-            isMobile ? "absolute z-10 h-full" : "relative"
+            isMobile ? 'absolute z-10 h-full' : 'relative'
           } bg-white dark:bg-gray-800 w-64`}
         >
           <ChatHistory
@@ -247,14 +247,14 @@ export default function Home() {
             </div>
             <button
               onClick={() => {
-                const newTheme = theme === "dark" ? "light" : "dark";
-                console.log("Switching theme to:", newTheme); // Add this line
+                const newTheme = theme === 'dark' ? 'light' : 'dark';
+                console.log('Switching theme to:', newTheme); // Add this line
                 setTheme(newTheme);
-                localStorage.setItem("theme", newTheme);
+                localStorage.setItem('theme', newTheme);
               }}
               className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
             >
-              {theme === "dark" ? (
+              {theme === 'dark' ? (
                 <SunIcon className="h-6 w-6 text-yellow-500" />
               ) : (
                 <MoonIcon className="h-6 w-6 text-gray-500" />
@@ -289,7 +289,7 @@ export default function Home() {
                         children,
                         ...props
                       }: any) {
-                        const match = /language-(\w+)/.exec(className || "");
+                        const match = /language-(\w+)/.exec(className || '');
                         return !inline && match ? (
                           <div className="relative group">
                             <SyntaxHighlighter
@@ -298,7 +298,7 @@ export default function Home() {
                               PreTag="div"
                               {...props}
                             >
-                              {String(children).replace(/\n$/, "")}
+                              {String(children).replace(/\n$/, '')}
                             </SyntaxHighlighter>
                             <CopyButton text={String(children)} />
                           </div>
@@ -330,11 +330,11 @@ export default function Home() {
             onSelectQuestion={handleSuggestedQuestion}
             latestQuestion={
               currentThread?.messages[currentThread.messages.length - 1]
-                ?.question || ""
+                ?.question || ''
             }
             assistantAnswer={
               currentThread?.messages[currentThread.messages.length - 1]
-                ?.answer || ""
+                ?.answer || ''
             }
           />
         </div>
