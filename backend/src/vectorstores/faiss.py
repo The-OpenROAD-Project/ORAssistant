@@ -87,6 +87,8 @@ class FAISSVectorDatabase:
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         logging.info("Processing markdown docs...")
+        if not isinstance(folder_paths, list):
+            raise ValueError("folder_paths must be a list.")
 
         processed_mddocs: list[Document] = []
 
@@ -105,7 +107,7 @@ class FAISSVectorDatabase:
             self._add_to_db(documents=processed_mddocs)
             self.processed_docs.extend(processed_mddocs)
         else:
-            raise ValueError("No markdown documents processed.")
+            logging.warning("No markdown documents processed.")
 
         if return_docs:
             return processed_mddocs
@@ -116,6 +118,8 @@ class FAISSVectorDatabase:
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         logging.info("Processing markdown manpages...")
+        if not isinstance(folder_paths, list):
+            raise ValueError("folder_paths must be a list.")
 
         processed_manpages: list[Document] = []
         for folder_path in folder_paths:
@@ -131,7 +135,7 @@ class FAISSVectorDatabase:
             self._add_to_db(documents=processed_manpages)
             self.processed_docs.extend(processed_manpages)
         else:
-            raise ValueError("No manpages documents processed.")
+            logging.warning("No manpages documents processed.")
 
         if return_docs:
             return processed_manpages
@@ -142,6 +146,8 @@ class FAISSVectorDatabase:
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
     ) -> Optional[list[Document]]:
         logging.info("Process HTML docs...")
+        if not isinstance(folder_paths, list):
+            raise ValueError("folder_paths must be a list.")
 
         processed_html_docs: list[Document] = []
         for folder_path in folder_paths:
@@ -157,7 +163,7 @@ class FAISSVectorDatabase:
             self._add_to_db(documents=processed_html_docs)
             self.processed_docs.extend(processed_html_docs)
         else:
-            raise ValueError(f"Could not add {folder_paths}. No HTML docs processed.")
+            logging.warning(f"Could not add {folder_paths}. No HTML docs processed.")
 
         if return_docs:
             return processed_html_docs
@@ -165,13 +171,15 @@ class FAISSVectorDatabase:
         return None
 
     def add_documents(
-        self, file_paths: list[str], file_type: str, return_docs: bool = False
+        self, folder_paths: list[str], file_type: str, return_docs: bool = False
     ) -> Optional[list[Document]]:
         logging.info("Processing docs...")
+        if not isinstance(folder_paths, list):
+            raise ValueError("folder_paths must be a list.")
 
         processed_otherdocs: list[Document] = []
 
-        for file_path in file_paths:
+        for file_path in folder_paths:
             logging.debug(f"Processing [{file_path}]...")
             if file_type == "pdf":
                 processed_otherdocs.extend(process_pdf_docs(file_path=file_path))
@@ -179,11 +187,11 @@ class FAISSVectorDatabase:
                 raise ValueError("File type not supported.")
 
         if processed_otherdocs:
-            logging.info(f"Adding [{file_paths}] to FAISS database...\n")
+            logging.info(f"Adding [{folder_paths}] to FAISS database...\n")
             self._add_to_db(documents=processed_otherdocs)
             self.processed_docs.extend(processed_otherdocs)
         else:
-            raise ValueError("No PDF documents processed.")
+            logging.warning("No PDF documents processed.")
 
         if return_docs:
             return processed_otherdocs
@@ -203,6 +211,8 @@ class FAISSVectorDatabase:
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
         logging.info("Processing json files...")
+        if not isinstance(folder_paths, list):
+            raise ValueError("folder_paths must be a list.")
 
         embeddings = self.embedding_model
         json_docs_processed = generate_knowledge_base(folder_paths)

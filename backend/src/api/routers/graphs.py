@@ -34,9 +34,13 @@ if missing_vars:
 
 use_cuda: bool = False
 llm_temp: float = 0.0
+fast_mode: bool = False
 
 if str(os.getenv("USE_CUDA")).lower() in ("true"):
     use_cuda = True
+
+if str(os.getenv("FAST_MODE")).lower() in ("true"):
+    fast_mode = True
 
 llm_temp_str = os.getenv("LLM_TEMP")
 if llm_temp_str is not None:
@@ -80,6 +84,7 @@ rg = RetrieverGraph(
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
     inbuilt_tool_calling=False,
+    fast_mode=fast_mode,
 )
 rg.initialize()
 
@@ -103,11 +108,11 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
     }
 
     if rg.graph is not None:
-        output = list(rg.graph.stream(inputs))
+        output = list(rg.graph.stream(inputs, stream_mode="updates"))
     else:
         raise ValueError("RetrieverGraph not initialized.")
     urls: list[str] = []
-    context: list[str] = []
+    context_list: list[str] = []
     context_sources: list[ContextSource] = []
 
     if (
@@ -119,14 +124,22 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
     ):
         llm_response = output[-1]["generate"]["messages"][0]
         tools = output[0]["agent"]["tools"]
+        print(output)
 
-        context_sources = []
-        tool_index = 1
         for tool_index, tool in enumerate(tools):
-            urls = list(output[tool_index].values())[0]["urls"]
-            context = list(output[tool_index].values())[0]["context"]
+            """
+            output schema:
+            [
+                "agent": {"tools": ["tool1", "tool2", ...]},
+                "tool1": {"urls": ["url1", "url2", ...], "context_list": ["context1", "context2", ...]},
+                "tool2": {"urls": ["url1", "url2", ...], "context_list": ["context1", "context2", ...]},
+                "generate": "messages": ["response1", "response2", ...]
+            ]
+            """
+            urls = list(output[tool_index + 1].values())[0]["urls"]
+            context_list = list(output[tool_index + 1].values())[0]["context_list"]
 
-            for _url, _context in zip(urls, context):
+            for _url, _context in zip(urls, context_list):
                 context_sources.append(ContextSource(context=_context, source=_url))
     else:
         llm_response = "LLM response extraction failed"

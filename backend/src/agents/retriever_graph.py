@@ -1,6 +1,6 @@
 import os
 import logging
-from typing import TypedDict, Annotated, Union, Optional
+from typing import Any, TypedDict, Annotated, Union, Optional
 
 from langchain_core.messages import AnyMessage
 from langchain_core.output_parsers import JsonOutputParser
@@ -29,6 +29,7 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     context: Annotated[list[AnyMessage], add_messages]
+    context_list: Annotated[list[str], add_messages]
     tools: list[str]
     sources: Annotated[list[str], add_messages]
     urls: Annotated[list[str], add_messages]
@@ -39,12 +40,12 @@ class ToolNode:
     def __init__(self, tool_fn: BaseTool) -> None:
         self.tool_fn = tool_fn
 
-    def get_node(self, state: AgentState) -> dict[str, list[str]]:
+    def get_node(self, state: AgentState) -> dict[str, Any]:
         query = state["messages"][-1].content
         if query is None:
             raise ValueError("Query is None")
 
-        response, sources, urls = self.tool_fn.invoke(query)  # type: ignore
+        response, sources, urls, context_list = self.tool_fn.invoke(query)  # type: ignore
 
         if response != []:
             response = (
@@ -64,7 +65,12 @@ class ToolNode:
                 if isinstance(urls[0], list)
                 else urls
             )
-        return {"context": response, "sources": sources, "urls": urls}
+        return {
+            "context": response,
+            "sources": sources,
+            "urls": urls,
+            "context_list": context_list,
+        }
 
 
 class RetrieverGraph:
@@ -75,6 +81,7 @@ class RetrieverGraph:
         reranking_model_name: str,
         inbuilt_tool_calling: bool,
         use_cuda: bool = False,
+        fast_mode: bool = False,
     ):
         self.llm = llm_model
         self.retriever_tools: RetrieverTools = RetrieverTools()
@@ -82,6 +89,7 @@ class RetrieverGraph:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
+            fast_mode=fast_mode,
         )
 
         self.tools = [
@@ -178,9 +186,10 @@ class RetrieverGraph:
 
             return {"tools": tool_calls}
 
-    def generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
+    def generate(self, state: AgentState) -> dict[str, Any]:
         query = state["messages"][-1].content
         context = state["context"][-1].content
+        print("state keys", state.keys())
 
         ans = self.llm_chain.invoke({"context": context, "question": query})
 
