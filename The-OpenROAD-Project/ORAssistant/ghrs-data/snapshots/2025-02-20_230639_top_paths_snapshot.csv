@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/The-OpenROAD-Project/ORAssistant,70,49
+/The-OpenROAD-Project/ORAssistant/tree/master/backend,25,10
+/The-OpenROAD-Project/ORAssistant/tree/master,17,3
+/The-OpenROAD-Project/ORAssistant/blob/master/backend/build_docs.py,8,7
+/The-OpenROAD-Project/ORAssistant/tree/master/common,6,3
+/The-OpenROAD-Project/ORAssistant/tree/master/backend/src,4,3
+/The-OpenROAD-Project/ORAssistant/tree/master/frontend,4,2
+/The-OpenROAD-Project/ORAssistant/blob/1441a9f81370c3db6f5fb9b36cf86583896c9751/common/mongoClient.py,4,1
+/The-OpenROAD-Project/ORAssistant/blob/master/backend/chatbot.py,3,2
+/The-OpenROAD-Project/ORAssistant/tree/master/backend/src/vectorstores,3,2
