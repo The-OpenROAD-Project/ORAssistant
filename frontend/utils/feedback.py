@@ -7,10 +7,7 @@ import os
 from typing import Optional, Any
 
 
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from common.mongoClient import submit_feedback  # type: ignore
+from utils.mongo_client import submit_feedback
 
 load_dotenv()
 
@@ -225,13 +222,6 @@ def show_feedback_form(
             selected_index = questions[selected_question]
             gen_ans = interactions[selected_index + 1]["content"]
 
-            submit_feedback_to_google_sheet(
-                question=selected_question,
-                answer=gen_ans,
-                context_sources=context_sources,
-                issue=feedback,
-                version=os.getenv("RAG_VERSION", get_git_commit_hash()),
-            )
             submit_feedback_to_mongodb(
                 question=selected_question,
                 answer=gen_ans,

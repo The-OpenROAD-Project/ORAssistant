@@ -7,8 +7,8 @@ import os
 from PIL import Image
 from utils.feedback import (
     show_feedback_form,
-    submit_feedback_to_google_sheet,
     get_git_commit_hash,
+    submit_feedback_to_mongodb,
 )
 from dotenv import load_dotenv
 from typing import Callable, Any
@@ -234,14 +234,12 @@ def main() -> None:
 
                 reaction = "upvote" if thumbs_up else "downvote"
 
-                # Submit feedback with coupled context-source pairs
-                submit_feedback_to_google_sheet(
+                submit_feedback_to_mongodb(
                     question=selected_question,
                     answer=gen_ans,
                     context_sources=context_sources,
-                    issue="",  # Leave the issue blank
+                    issue=reaction,
                     version=os.getenv("RAG_VERSION", get_git_commit_hash()),
-                    reaction=reaction,
                 )
                 st.success("Thank you for your feedback!")
             except Exception as e:
