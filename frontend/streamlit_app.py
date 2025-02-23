@@ -239,7 +239,7 @@ def main() -> None:
                     answer=gen_ans,
                     context_sources=context_sources,
                     issue=reaction,
-                    version=os.getenv("RAG_VERSION", get_git_commit_hash()),
+                    version=get_git_commit_hash(),
                 )
                 st.success("Thank you for your feedback!")
             except Exception as e:

@@ -227,7 +227,7 @@ def show_feedback_form(
                 answer=gen_ans,
                 context_sources=context_sources,
                 issue=feedback,
-                version=os.getenv("RAG_VERSION", get_git_commit_hash()),
+                version=get_git_commit_hash(),
             )
 
             st.session_state.submitted = True
