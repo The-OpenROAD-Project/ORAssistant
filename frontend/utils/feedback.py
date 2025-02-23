@@ -66,7 +66,7 @@ def submit_feedback_to_mongodb(
     context_sources: list[dict[str, str]],
     issue: str,
     version: str,
-) -> None:
+):
     """
     Submit feedback to a specific MongoDB database.
 
@@ -101,7 +101,7 @@ def submit_feedback_to_google_sheet(
     issue: str,
     version: str,
     reaction: Optional[str] = None,  # Added optional reaction parameter
-) -> None:
+):
     """
     Submit feedback to a specific Google Sheet.
 
@@ -192,7 +192,7 @@ def show_feedback_form(
     questions: dict[str, int],
     metadata: dict[str, dict[str, list]],
     interactions: list[dict[str, str]],
-) -> None:
+):
     """
     Display feedback form in the sidebar.
 

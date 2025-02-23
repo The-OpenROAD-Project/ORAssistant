@@ -97,7 +97,7 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
         return None, None
 
 
-def main() -> None:
+def main():
     load_dotenv()
     img = Image.open("assets/or_logo.png")
     st.set_page_config(page_title="OR Assistant", page_icon=img)
@@ -205,7 +205,7 @@ def main() -> None:
         if "feedback_button" not in st.session_state:
             st.session_state.feedback_button = False
 
-        def update_state() -> None:
+        def update_state():
             """
             Update the state of the feedback button.
             """
