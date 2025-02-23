@@ -23,7 +23,7 @@ def get_mongo_db_client() -> Database:
     """
 
     uri = os.getenv("MONGO_DB_URI")
-    client = MongoClient(uri)
+    client: MongoClient = MongoClient(uri)
     # this is the database that is returned by the client
     return client["feedback_db"]
 
@@ -131,10 +131,8 @@ def submit_feedback(
         )
 
         print("Feedback submitted successfully")
-        return True
     except Exception as e:
         print(f"Failed to submit feedback: {e}")
-        return None
 
 
 def check_collection_exists(collection_name: str, client_database: Database) -> bool:
@@ -146,14 +144,14 @@ def check_collection_exists(collection_name: str, client_database: Database) -> 
     - client_database (Database): The database to check.
 
     Returns:
-    - None
+    - bool: True if the collection exists, False otherwise.
     """
     return collection_name in client_database.list_collection_names()
 
 
 def create_collection(
     collection_name: str, client_database: Database, validator: object
-) -> None:
+):
     """
     Create a collection in the database.
 
@@ -169,7 +167,6 @@ def create_collection(
         print("Collection created successfully")
     except Exception as e:
         print(f"Failed to create collection: {e}")
-        return None
 
 
 if __name__ == "__main__":
