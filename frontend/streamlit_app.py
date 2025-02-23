@@ -25,8 +25,10 @@ def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, 
     return wrapper
 
 
-def translate_chat_history_to_api(chat_history, max_pairs=4):
-    api_format = []
+def translate_chat_history_to_api(
+    chat_history: list[dict[str, str]], max_pairs: int = 4
+):
+    api_format: list[dict[str, str]] = []
     relevant_history = [
         msg for msg in chat_history[1:] if msg["role"] in ["user", "ai"]
     ]
