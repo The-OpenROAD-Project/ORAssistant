@@ -9,3 +9,4 @@ gspread==6.1.2
 python-dotenv==1.0.1
 flask==3.0.3
 pymongo==4.6.3
+Flask-Cors==5.0.0
