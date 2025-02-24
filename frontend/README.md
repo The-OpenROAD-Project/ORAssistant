@@ -12,7 +12,7 @@ CHAT_ENDPOINT=<your-chat-endpoint> Defaults to http://localhost:8000/chatApp
 
 ## For Feedback Evaluation (Optional)
 
-TODO!
+For this section, please refer to the [mongodb](./mongoDB.md) documentation for more details. 
 
 ## Running the Application
 
