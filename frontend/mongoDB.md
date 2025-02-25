@@ -6,18 +6,23 @@ The MongoDB integration provides functionality to store and manage user feedback
 
 ### Configuration
 
-Add to your `.env` file: 
+Add to your `.env` file:
 (Also refer to `.env.example` for more details)
+
 ```sh
 MONGO_DB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net
 ```
 
 The given above format only works if you are using MongoDB Atlas in the Cloud,
+To find more detailed instructions on setting up MongoDB Atlas use this [Link](https://www.mongodb.com/docs/atlas/getting-started/)
+
 If you're hosting it locally , add the following to the `.env` file
 
 ```sh
 MONGO_DB_URI=mongodb://localhost:27017
 ```
+
+To find more instruction on hosting a MongoDB instance locally use this [Link](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-community-with-docker/)
 
 considering the docker instance is running on `PORT 27017`
 
@@ -41,7 +46,7 @@ The `feedback` collection uses JSON Schema validation with the following structu
 }
 ```
 
-Right now the Schema is a single one, but later on the sources field would be encapsulated in another schema for better decoupling 
+Right now the Schema is a single one, but later on the sources field would be encapsulated in another schema for better decoupling
 
 ## Usage Example
 
