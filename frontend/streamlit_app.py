@@ -4,12 +4,11 @@ import time
 import datetime
 import pytz
 import os
-import ast
 from PIL import Image
 from utils.feedback import (
     show_feedback_form,
-    submit_feedback_to_google_sheet,
     get_git_commit_hash,
+    submit_feedback_to_mongodb,
 )
 from dotenv import load_dotenv
 from typing import Callable, Any
@@ -26,8 +25,10 @@ def measure_response_time(func: Callable[..., Any]) -> Callable[..., tuple[Any, 
     return wrapper
 
 
-def translate_chat_history_to_api(chat_history, max_pairs=4):
-    api_format = []
+def translate_chat_history_to_api(
+    chat_history: list[dict[str, str]], max_pairs: int = 4
+):
+    api_format: list[dict[str, str]] = []
     relevant_history = [
         msg for msg in chat_history[1:] if msg["role"] in ["user", "ai"]
     ]
@@ -42,6 +43,23 @@ def translate_chat_history_to_api(chat_history, max_pairs=4):
         else:
             i -= 1
     return api_format
+
+
+def display_sources_context(context_sources: list[dict[str, str]]):
+    with st.expander("Sources and Context"):
+        try:
+            if context_sources:
+                for idx, cs in enumerate(context_sources, 1):
+                    st.markdown(f"**Source {idx}**:")
+                    if cs.get("source"):
+                        st.markdown(f"[{cs['source']}]({cs['source']})")
+                    if cs.get("context"):
+                        st.markdown(f"**Related Context:**\n> {cs['context']}")
+                    st.markdown("---")  # Separator between source-context pairs
+            else:
+                st.markdown("No Sources or Context Available.")
+        except (ValueError, SyntaxError) as e:
+            st.markdown(f"Failed to parse sources: {e}")
 
 
 @measure_response_time
@@ -71,18 +89,17 @@ def response_generator(user_input: str) -> tuple[str, str] | tuple[None, None]:
         if not isinstance(data, dict):
             st.error("Invalid response format")
             return None, None
-        sources = data.get("sources", "")
+        context_sources = data.get("context_sources", [])
         st.session_state.metadata[user_input] = {
-            "sources": sources,
-            "context": data.get("context", ""),
+            "context_sources": context_sources,
         }
-        return data.get("response", ""), sources
+        return data.get("response", ""), context_sources
     except requests.exceptions.RequestException as e:
         st.error(f"Request failed: {e}")
         return None, None
 
 
-def main() -> None:
+def main():
     load_dotenv()
     img = Image.open("assets/or_logo.png")
     st.set_page_config(page_title="OR Assistant", page_icon=img)
@@ -110,8 +127,6 @@ def main() -> None:
         st.session_state.chat_history = []
     if "metadata" not in st.session_state:
         st.session_state.metadata = {}
-    if "sources" not in st.session_state:
-        st.session_state.sources = {}
 
     if not st.session_state.chat_history:
         st.session_state.chat_history.append(
@@ -129,33 +144,10 @@ def main() -> None:
             user_message = st.session_state.chat_history[idx - 1]
             if user_message["role"] == "user":
                 user_input = user_message["content"]
-                sources = st.session_state.sources.get(user_input)
-                with st.expander("Sources:"):
-                    try:
-                        if sources:
-                            if isinstance(sources, str):
-                                cleaned_sources = sources.replace("{", "[").replace(
-                                    "}", "]"
-                                )
-                                parsed_sources = ast.literal_eval(cleaned_sources)
-                            else:
-                                parsed_sources = sources
-                            if (
-                                isinstance(parsed_sources, (list, set))
-                                and parsed_sources
-                            ):
-                                sources_list = "\n".join(
-                                    f"- [{link}]({link})"
-                                    for link in parsed_sources
-                                    if link.strip()
-                                )
-                                st.markdown(sources_list)
-                            else:
-                                st.markdown("No Sources Attached.")
-                        else:
-                            st.markdown("No Sources Attached.")
-                    except (ValueError, SyntaxError) as e:
-                        st.markdown(f"Failed to parse sources: {e}")
+                context_sources = st.session_state.metadata.get(user_input, {}).get(
+                    "context_sources", []
+                )
+                display_sources_context(context_sources)
 
     user_input = st.chat_input("Enter your queries ...")
 
@@ -173,7 +165,7 @@ def main() -> None:
             and isinstance(response_tuple, tuple)
             and len(response_tuple) == 2
         ):
-            response, sources = response_tuple
+            response, context_sources = response_tuple
             if response is not None:
                 response_buffer = response
 
@@ -199,35 +191,8 @@ def main() -> None:
                         "role": "ai",
                     }
                 )
+                display_sources_context(context_sources)
 
-                st.session_state.sources[user_input] = sources
-
-                with st.expander("Sources:"):
-                    try:
-                        if sources:
-                            if isinstance(sources, str):
-                                cleaned_sources = sources.replace("{", "[").replace(
-                                    "}", "]"
-                                )
-                                parsed_sources = ast.literal_eval(cleaned_sources)
-                            else:
-                                parsed_sources = sources
-                            if (
-                                isinstance(parsed_sources, (list, set))
-                                and parsed_sources
-                            ):
-                                sources_list = "\n".join(
-                                    f"- [{link}]({link})"
-                                    for link in parsed_sources
-                                    if link.strip()
-                                )
-                                st.markdown(sources_list)
-                            else:
-                                st.markdown("No Sources Attached.")
-                        else:
-                            st.markdown("No Sources Attached.")
-                    except (ValueError, SyntaxError) as e:
-                        st.markdown(f"Failed to parse sources: {e}")
             else:
                 st.error("Invalid response from the API")
 
@@ -242,7 +207,7 @@ def main() -> None:
         if "feedback_button" not in st.session_state:
             st.session_state.feedback_button = False
 
-        def update_state() -> None:
+        def update_state():
             """
             Update the state of the feedback button.
             """
@@ -266,22 +231,17 @@ def main() -> None:
                 gen_ans = st.session_state.chat_history[-1][
                     "content"
                 ]  # Last AI response
-                sources = st.session_state.metadata.get(selected_question, {}).get(
-                    "sources", ["N/A"]
-                )
-                context = st.session_state.metadata.get(selected_question, {}).get(
-                    "context", ["N/A"]
-                )
+                metadata = st.session_state.metadata.get(selected_question, {})
+                context_sources = metadata.get("context_sources", [])
+
                 reaction = "upvote" if thumbs_up else "downvote"
 
-                submit_feedback_to_google_sheet(
+                submit_feedback_to_mongodb(
                     question=selected_question,
                     answer=gen_ans,
-                    sources=sources if isinstance(sources, list) else [sources],
-                    context=context if isinstance(context, list) else [context],
-                    issue="",  # Leave issue blank
-                    version=os.getenv("RAG_VERSION", get_git_commit_hash()),
-                    reaction=reaction,  # Pass the reaction
+                    context_sources=context_sources,
+                    issue=reaction,
+                    version=get_git_commit_hash(),
                 )
                 st.success("Thank you for your feedback!")
             except Exception as e:

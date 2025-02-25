@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 import os
 from typing import Optional, Any
 
+
+from utils.mongo_client import submit_feedback
+
 load_dotenv()
 
 
@@ -57,23 +60,55 @@ def format_context(context: list[str]) -> str:
     return "\n".join(context)
 
 
+def submit_feedback_to_mongodb(
+    question: str,
+    answer: str,
+    context_sources: list[dict[str, str]],
+    issue: str,
+    version: str,
+):
+    """
+    Submit feedback to a specific MongoDB database.
+
+    Args:
+    - question (str): The question for which feedback is being submitted.
+    - answer (str): The generated answer to the question.
+    - context_sources (list[dict[str, str]]): List of source-context pairs.
+    - issue (str): Details about the issue.
+    - version (str): Version information.
+
+    Returns:
+    - None
+    """
+    try:
+        result = submit_feedback(
+            question=question,
+            answer=answer,
+            context_sources=context_sources,
+            issue=issue,
+            version=version,
+        )
+        if not result:
+            st.sidebar.error("Failed to submit feedback to MongoDB")
+    except Exception as e:
+        st.sidebar.error(f"Error submitting feedback to MongoDB: {e}")
+
+
 def submit_feedback_to_google_sheet(
     question: str,
     answer: str,
-    sources: list[str],
-    context: list[str],
+    context_sources: list[dict[str, str]],
     issue: str,
     version: str,
     reaction: Optional[str] = None,  # Added optional reaction parameter
-) -> None:
+):
     """
     Submit feedback to a specific Google Sheet.
 
     Args:
     - question (str): The question for which feedback is being submitted.
     - answer (str): The generated answer to the question.
-    - sources (list[str]): Source data used for the answer.
-    - context (list[str]): Additional context from the RAG.
+    - context_sources (list[dict[str, str]]): List of source-context pairs.
     - issue (str): Details about the issue.
     - version (str): Version information.
     - reaction (Optional[str]): User's reaction ('upvote' or 'downvote').
@@ -111,26 +146,32 @@ def submit_feedback_to_google_sheet(
     if sheet_title:
         sheet = spreadsheet.worksheet(sheet_title)
         timestamp = datetime.now(timezone.utc).isoformat()
-        formatted_sources = format_sources(sources)
-        formatted_context = format_context(context)
+
+        # Format sources and context as combined pairs
+        formatted_pairs = []
+        for cs in context_sources:
+            source = cs.get("source", "")
+            context = cs.get("context", "")
+            if source or context:
+                formatted_pairs.append(f"Source: {source}\nContext: {context}")
+
+        formatted_content = "\n\n".join(formatted_pairs)
+
         data_to_append = [
             question,
             answer,
-            formatted_sources,
-            formatted_context,
+            formatted_content,  # Combined source-context pairs
             issue,
             timestamp,
             version,
-            reaction or "",  # Add reaction to data
+            reaction or "",
         ]
 
-        # Check if headers exist and include 'Reaction' if necessary
         headers = sheet.row_values(1)
         required_headers = [
             "Question",
             "Answer",
-            "Sources",
-            "Context",
+            "Source-Context Pairs",  # Updated header
             "Issue",
             "Timestamp",
             "Version",
@@ -138,9 +179,9 @@ def submit_feedback_to_google_sheet(
         ]
 
         if headers != required_headers:
-            sheet.clear()  # Clear existing data if headers don't match
+            sheet.clear()
             sheet.append_row(required_headers)
-            sheet.format("A1:H1", {"textFormat": {"bold": True}})
+            sheet.format("A1:G1", {"textFormat": {"bold": True}})
 
         sheet.append_row(data_to_append)
     else:
@@ -149,15 +190,15 @@ def submit_feedback_to_google_sheet(
 
 def show_feedback_form(
     questions: dict[str, int],
-    metadata: dict[str, dict[str, str]],
+    metadata: dict[str, dict[str, list]],
     interactions: list[dict[str, str]],
-) -> None:
+):
     """
     Display feedback form in the sidebar.
 
     Args:
     - questions (dict[str, int]): Dictionary of questions and indices.
-    - metadata (dict[str, dict[str, str]]): Metadata contains sources and context for each question.
+    - metadata (dict[str, dict[str, list]]): Metadata contains sources and context for each question.
     - interactions (list[dict[str, str]]): List of chat interactions from st.session_state.chat_history
 
     Returns:
@@ -175,25 +216,18 @@ def show_feedback_form(
     feedback = st.sidebar.text_area("Please provide your feedback or report an issue:")
 
     if selected_question:
-        sources = metadata[selected_question].get("sources", ["N/A"])
-        if isinstance(sources, str):
-            sources = [sources]
-
-        context = metadata[selected_question].get("context", ["N/A"])
-        if isinstance(context, str):
-            context = [context]
+        context_sources = metadata[selected_question].get("context_sources", [])
 
         if st.sidebar.button("Submit"):
             selected_index = questions[selected_question]
             gen_ans = interactions[selected_index + 1]["content"]
 
-            submit_feedback_to_google_sheet(
+            submit_feedback_to_mongodb(
                 question=selected_question,
                 answer=gen_ans,
-                sources=sources,  # Now passing as list
-                context=context,  # Now passing as list
+                context_sources=context_sources,
                 issue=feedback,
-                version=os.getenv("RAG_VERSION", get_git_commit_hash()),
+                version=get_git_commit_hash(),
             )
 
             st.session_state.submitted = True

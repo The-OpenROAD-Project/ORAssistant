@@ -8,10 +8,14 @@ class UserInput(BaseModel):
     list_context: bool = False
 
 
+class ContextSource(BaseModel):
+    source: str = ""
+    context: str = ""
+
+
 class ChatResponse(BaseModel):
     response: str
-    sources: list[str] = []
-    context: list[str] = []
+    context_sources: list[ContextSource] = []
     tools: list[str] = []
 
 

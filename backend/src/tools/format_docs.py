@@ -2,8 +2,10 @@ from langchain.docstore.document import Document
 
 from ..prompts.prompt_templates import gh_discussion_prompt_template
 
+CHUNK_SEPARATOR = "\n\n -------------------------- \n\n"
 
-def format_docs(docs: list[Document]) -> tuple[str, list[str], list[str]]:
+
+def format_docs(docs: list[Document]) -> tuple[str, list[str], list[str], list[str]]:
     doc_text = ""
     doc_texts = []
     doc_urls = []
@@ -24,6 +26,6 @@ def format_docs(docs: list[Document]) -> tuple[str, list[str], list[str]]:
         if "url" in doc.metadata:
             doc_urls.append(doc.metadata["url"])
 
-    doc_output = "\n\n -------------------------- \n\n".join(doc_texts)
+    doc_output = CHUNK_SEPARATOR.join(doc_texts)
 
-    return doc_output, doc_srcs, doc_urls
+    return doc_output, doc_srcs, doc_urls, doc_texts
