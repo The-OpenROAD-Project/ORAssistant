@@ -36,7 +36,7 @@ interface Thread {
   id: string;
   title: string;
   messages: Message[];
-  suggestedQuestions: string[];
+  // suggestedQuestions: string[];
 }
 
 interface ApiResponse {
@@ -144,13 +144,13 @@ export default function Home() {
           ? {
               ...currentThread,
               messages: [...currentThread.messages, newMessage],
-              suggestedQuestions: currentThread.suggestedQuestions,
+              // suggestedQuestions: currentThread.suggestedQuestions,
             }
           : {
               id: Date.now().toString(),
               title: input,
               messages: [newMessage],
-              suggestedQuestions: [],
+              // suggestedQuestions: [],
             };
 
         setCurrentThread(updatedThread);
@@ -326,7 +326,7 @@ export default function Home() {
               />
             </div>
           )}
-          <SuggestedQuestions
+          {/* <SuggestedQuestions
             onSelectQuestion={handleSuggestedQuestion}
             latestQuestion={
               currentThread?.messages[currentThread.messages.length - 1]
@@ -336,7 +336,7 @@ export default function Home() {
               currentThread?.messages[currentThread.messages.length - 1]
                 ?.answer || ''
             }
-          />
+          /> */}
         </div>
         <form
           onSubmit={handleSubmit}
