@@ -58,6 +58,8 @@ python3 apiproxy.py
 
 ```
 BACKEND_URL=backend_api_url
+GEMINI_API_KEY=api_key // used for suggested question feature
+NEXT_PUBLIC_PROXY_ENDPOINT=http://localhost:3001/api/chat 
 ```
 
 **Note**: the backend url will depend on the type of backend you are using. For example, if you are using the mock backend, the url will be `http://localhost:8000/chains/mock`.
@@ -72,17 +74,7 @@ This project uses a Flask-based API proxy server (`apiproxy.py`) as an intermedi
 2. **Environment Flexibility**: Allows easy switching between different backend environments (development, production, or mock testing) by changing a single environment variable.
 3. **Request/Response Logging**: Provides helpful logging for debugging API communication issues.
 
-### Suggested Questions Feature
 
-For the suggested questions feature that uses Gemini 1.5:
-
-1. Navigate to `orassistant-chat/.env`
-2. Add the following environment variables:
-
-```
-GEMINI_API_KEY=api_key
-NEXT_PUBLIC_PROXY_ENDPOINT=http://localhost:3001/api/chat
-```
 
 Note:
 
