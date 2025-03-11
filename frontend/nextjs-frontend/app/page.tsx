@@ -74,7 +74,7 @@ export default function Home() {
 
   useEffect(() => {
     setTheme('dark');
-  }, [setTheme]); // Add setTheme to the dependency array
+  }, []); // Add setTheme to the dependency array
 
   const handleCloseSidebar = () => {
     setIsSidebarOpen(false);
