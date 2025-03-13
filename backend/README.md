@@ -59,7 +59,7 @@ ORAssistant supports running locally hosted Ollama models for inference. Follow 
   LLM_MODEL="ollama"
   OLLAMA_MODEL="<model_name>"
 
-Ensure Ollama is running locally before starting ORAssistant.
+Ensure Ollama is running locally before starting ORAssistant. Make sure the model weights are available by downloading them first with `ollama pull <model_name>`.
 
 ### Setting Up LangChain Variables
 
