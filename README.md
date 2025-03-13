@@ -1,4 +1,4 @@
-# OR-Assistant
+# ORAssistant
 
 [![ORAssistant CI](https://github.com/The-OpenROAD-Project/ORAssistant/actions/workflows/ci.yaml/badge.svg)](https://github.com/The-OpenROAD-Project/ORAssistant/actions/workflows/ci.yaml)
 
