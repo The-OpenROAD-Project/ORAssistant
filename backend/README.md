@@ -46,6 +46,21 @@ This key is used to access the various google cloud functions.
 
 **NOTE**: The user might need billing to be set up on google cloud account and make sure to name the file as `credentials.json`  as this would be ignored by `.git` and wouldn't be exposed on Github
 
+### Running ORAssistant with a Local Ollama Model
+
+ORAssistant supports running locally hosted Ollama models for inference. Follow these steps to set it up:
+
+#### 1. Install Ollama  
+- Visit [Ollama's installation page](https://ollama.com/download) and follow the installation instructions for your system.
+
+#### 2. Configure ORAssistant to Use Ollama  
+- In your `.env` file, set:  
+  ```bash
+  LLM_MODEL="ollama"
+  OLLAMA_MODEL="<model_name>"
+
+Ensure Ollama is running locally before starting ORAssistant.
+
 ### Setting Up LangChain Variables
 
 There are 4 variables that needs to be set up
