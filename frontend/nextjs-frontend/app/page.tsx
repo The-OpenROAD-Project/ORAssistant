@@ -29,9 +29,14 @@ const CHAT_ENDPOINT = process.env.NEXT_PUBLIC_PROXY_ENDPOINT;
 interface Message {
   question: string;
   answer: string;
-  sources: string[];
+  context_sources: ContextSource[];
   timestamp: number;
 }
+interface ContextSource {
+  context: string;
+  source: string;
+}
+
 interface Thread {
   id: string;
   title: string;
@@ -41,8 +46,7 @@ interface Thread {
 
 interface ApiResponse {
   response: string;
-  sources: string[];
-  context: string[];
+  context_sources: ContextSource[];
 }
 
 export default function Home() {
@@ -127,6 +131,7 @@ export default function Home() {
         }
 
         const data: ApiResponse = await response.json();
+        console.log(data);
         const endTime = Date.now();
         setResponseTime(endTime - startTime);
 
@@ -137,7 +142,7 @@ export default function Home() {
         const newMessage = {
           question: input,
           answer: data.response,
-          sources: data.sources || [],
+          context_sources: data.context_sources || [],
           timestamp: Date.now(),
         };
         const updatedThread = currentThread
@@ -321,7 +326,7 @@ export default function Home() {
               <SourceList
                 sources={
                   currentThread.messages[currentThread.messages.length - 1]
-                    .sources || []
+                    .context_sources.map(cs => cs.source).filter(Boolean) || []
                 }
               />
             </div>

@@ -14,8 +14,7 @@ def list_all_chains() -> Response:
     """
     return jsonify(["/chains/mock"])
 
-
-@app.route("/graphs/agent-retriever", methods=["POST"])
+@app.route("/chains/mock", methods=["POST"])
 def chat_app() -> Response:
     """
     Endpoint to handle chat requests.
@@ -25,29 +24,20 @@ def chat_app() -> Response:
     """
     data: dict[str, Any] = request.get_json()
     user_query: str = data.get("query", "")
-    list_sources: bool = data.get("list_sources", True)
-    list_context: bool = data.get("list_context", True)
+    list_sources: bool = data.get("list_sources", False)
+    list_context: bool = data.get("list_context", False)
 
-    dummy_context_sources = [
-        {"source": "https://mocksource1.com", "context": "This is Mock Context 1"},
-        {"source": "https://mocksource2.com", "context": "This is Mock Context 2"},
-    ]
-    if not list_sources:
-        # drop the source keys
-        dummy_context_sources = [
-            {"source": "", "context": cs["context"]} for cs in dummy_context_sources
-        ]
-    if not list_context:
-        # drop the context keys
-        dummy_context_sources = [
-            {"source": cs["source"], "context": ""} for cs in dummy_context_sources
-        ]
     response = {
+        "context_sources": [
+            {"source": "https://mocksource1.com", "context": "This is Mock Context 1"},
+            {"source": "https://mocksource2.com", "context": "This is Mock Context 2"},
+        ],
         "response": f"This is a mock response to your query: '{user_query}'",
-        "context_sources": dummy_context_sources,
     }
 
     return jsonify(response)
+
+
 
 
 if __name__ == "__main__":

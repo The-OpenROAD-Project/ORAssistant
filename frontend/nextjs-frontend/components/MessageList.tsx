@@ -4,8 +4,13 @@ import useWindowSize from '../hooks/useWindowSize';
 interface Message {
   question: string;
   answer: string;
-  sources: string[];
+  sources: ContextSource[];
   timestamp: number;
+}
+
+interface ContextSource {
+  context: string;
+  source: string;
 }
 
 interface MessageListProps {
