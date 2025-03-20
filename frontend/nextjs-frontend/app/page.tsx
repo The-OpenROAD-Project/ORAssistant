@@ -326,7 +326,7 @@ export default function Home() {
               />
             </div>
           )}
-          {/* <SuggestedQuestions
+          <SuggestedQuestions
             onSelectQuestion={handleSuggestedQuestion}
             latestQuestion={
               currentThread?.messages[currentThread.messages.length - 1]
@@ -336,7 +336,7 @@ export default function Home() {
               currentThread?.messages[currentThread.messages.length - 1]
                 ?.answer || ''
             }
-          /> */}
+          />
         </div>
         <form
           onSubmit={handleSubmit}
