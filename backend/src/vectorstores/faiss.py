@@ -190,16 +190,14 @@ class FAISSVectorDatabase:
 
         return None
 
-    def save_db(self) -> None:
+    def save_db(self, name) -> None:
         if self._faiss_db is None:
             raise ValueError("No documents in FAISS database")
+        else:
+            self._faiss_db.save_local(f"faiss_db/{name}")
 
-        self._faiss_db.save_local(os.getenv("FAISS_DB_PATH", "faiss_db"))
-
-    def load_db(self) -> None:
-        self._faiss_db = FAISS.load_local(
-            os.getenv("FAISS_DB_PATH", "faiss db"), self.embedding_model
-        )
+    def load_db(self, name) -> None:
+        self._faiss_db = FAISS.load_local(f"faiss_db/{name}", self.embedding_model, allow_dangerous_deserialization=True)
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
         logging.info("Processing json files...")

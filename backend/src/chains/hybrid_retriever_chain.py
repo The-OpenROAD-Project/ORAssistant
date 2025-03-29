@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Union, Any
 
 from langchain.retrievers import EnsembleRetriever
@@ -75,9 +76,19 @@ class HybridRetrieverChain(BaseChain):
             use_cuda=self.use_cuda,
         )
         if self.vector_db is None:
-            similarity_retriever_chain.embed_docs(return_docs=True)
+            path = "./faiss_db"
+            load_flag = os.path.isdir(path)  # Checks if database already exists
+            if load_flag:
+                database_name = similarity_retriever_chain.name
+                if database_name in os.listdir(path):
+                    similarity_retriever_chain.create_vector_db()
+                    similarity_retriever_chain.vector_db.load_db(database_name)
+                    self.vector_db = similarity_retriever_chain.vector_db
+                    self.vector_db.processed_docs = similarity_retriever_chain.vector_db._faiss_db.docstore._dict.values()
+            else:
+                similarity_retriever_chain.embed_docs(return_docs=True)
+                self.vector_db = similarity_retriever_chain.vector_db
 
-        self.vector_db = similarity_retriever_chain.vector_db
         similarity_retriever_chain.create_similarity_retriever(search_k=self.search_k)
         similarity_retriever = similarity_retriever_chain.retriever
 
