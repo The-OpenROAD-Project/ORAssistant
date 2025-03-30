@@ -84,7 +84,7 @@ class HybridRetrieverChain(BaseChain):
                     similarity_retriever_chain.create_vector_db()
                     similarity_retriever_chain.vector_db.load_db(database_name)
                     self.vector_db = similarity_retriever_chain.vector_db
-                    self.vector_db.processed_docs = similarity_retriever_chain.vector_db._faiss_db.docstore._dict.values()
+                    self.vector_db.processed_docs = similarity_retriever_chain.vector_db.get_documents()
             else:
                 similarity_retriever_chain.embed_docs(return_docs=True)
                 self.vector_db = similarity_retriever_chain.vector_db
