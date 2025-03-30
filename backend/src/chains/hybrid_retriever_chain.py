@@ -76,7 +76,7 @@ class HybridRetrieverChain(BaseChain):
             use_cuda=self.use_cuda,
         )
         if self.vector_db is None:
-            path = "./faiss_db"
+            path = os.path.abspath("faiss_db")
             load_flag = os.path.isdir(path)  # Checks if database already exists
             if load_flag:
                 database_name = similarity_retriever_chain.name
