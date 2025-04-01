@@ -190,14 +190,22 @@ class FAISSVectorDatabase:
 
         return None
 
+    def get_db_path(self) -> str:
+        cur_path = os.path.abspath(__file__)
+        path = os.path.join(cur_path, "../../../", "faiss_db")
+        path = os.path.abspath(path)  # Ensure proper parent directory
+        return path
+
     def save_db(self, name) -> None:
         if self._faiss_db is None:
             raise ValueError("No documents in FAISS database")
         else:
-            self._faiss_db.save_local(f"faiss_db/{name}")
+            save_path = f"{self.get_db_path()}/{name}"
+            self._faiss_db.save_local(save_path)
 
     def load_db(self, name) -> None:
-        self._faiss_db = FAISS.load_local(f"faiss_db/{name}", self.embedding_model, allow_dangerous_deserialization=True)
+        load_path = f"{self.get_db_path()}/{name}"
+        self._faiss_db = FAISS.load_local(load_path, self.embedding_model, allow_dangerous_deserialization=True)
 
     def get_documents(self) -> list[Document]:
         return self._faiss_db.docstore._dict.values()
