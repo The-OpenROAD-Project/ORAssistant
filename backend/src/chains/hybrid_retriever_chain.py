@@ -79,9 +79,9 @@ class HybridRetrieverChain(BaseChain):
             cur_path = os.path.abspath(__file__)
             path = os.path.join(cur_path, "../../../", "faiss_db")
             path = os.path.abspath(path)  # Ensure proper parent directory
-            load_flag = os.path.isdir(path)  # Checks if database already exists
-            if load_flag:
-                database_name = similarity_retriever_chain.name
+            path_flag = os.path.isdir(path)  # Checks if database already exists
+            database_name = similarity_retriever_chain.name
+            if path_flag and database_name in os.listdir(path):
                 if database_name in os.listdir(path):
                     similarity_retriever_chain.create_vector_db()
                     similarity_retriever_chain.vector_db.load_db(database_name)
