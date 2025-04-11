@@ -3,9 +3,9 @@ from typing import Any
 from fastapi import APIRouter,HTTPException
 from dotenv import load_dotenv
 from typing import Union
-from ..models.response_model import SuggestedQuestions, SuggestedQuestionInput
+from ..models.response_model import SuggestedQuestionInput
 import requests
-from ..prompts.prompt_templates import suggested_questions_prompt_template
+from ...prompts.prompt_templates import suggested_questions_prompt_template 
 
 load_dotenv()
 
@@ -18,10 +18,10 @@ GEMINI_ROUTE = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-
 router = APIRouter(prefix="/helpers", tags=["helpers"])
 
 # Main Router
-@router.post("/suggestedQuestions",response_model=SuggestedQuestions)
+@router.post("/suggestedQuestions")
 async def get_suggested_questions(
     suggested_question_input: SuggestedQuestionInput
-) -> SuggestedQuestions:
+) -> Any:
     
     full_prompt = f"{suggested_questions_prompt_template}\n\nUser Question: {suggested_question_input.latest_question}\n\nAssistant Answer: {suggested_question_input.assistant_answer}"
     body = {
