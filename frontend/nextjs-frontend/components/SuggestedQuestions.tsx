@@ -20,16 +20,19 @@ export default function SuggestedQuestions({
   const fetchSuggestedQuestions = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/suggestedQuestions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },  
-        body: JSON.stringify({
-          latestQuestion,
-          assistantAnswer,
-        }),
-      });
+      const response = await fetch(
+        'http://localhost:3001/api/suggestedQuestions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            latestQuestion,
+            assistantAnswer,
+          }),
+        }
+      );
 
       const data = await response.json();
       const suggestedQuestionsText = data.candidates[0].content.parts[0].text;
