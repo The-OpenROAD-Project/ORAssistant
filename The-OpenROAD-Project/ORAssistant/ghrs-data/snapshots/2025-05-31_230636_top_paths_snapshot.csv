@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/The-OpenROAD-Project/ORAssistant,48,40
+/The-OpenROAD-Project/ORAssistant/tree/master/backend,5,4
+/The-OpenROAD-Project/ORAssistant/blob/master/backend/main.py,4,3
+/The-OpenROAD-Project/ORAssistant/blob/master/backend/chatbot.py,4,2
+/The-OpenROAD-Project/ORAssistant/pull/107,3,3
+/The-OpenROAD-Project/ORAssistant/tree/master/frontend,3,3
+/The-OpenROAD-Project/ORAssistant/issues/32,3,2
+/The-OpenROAD-Project/ORAssistant/blob/master/backend/build_docs.py,2,2
+/The-OpenROAD-Project/ORAssistant/tree/master/.github/workflows,2,2
+/The-OpenROAD-Project/ORAssistant/blob/master/backend/src/chains/bm25_retriever_chain.py,2,1
