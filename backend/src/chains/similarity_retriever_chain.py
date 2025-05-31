@@ -12,6 +12,7 @@ from .base_chain import BaseChain
 
 
 class SimilarityRetrieverChain(BaseChain):
+    count = 0
     def __init__(
         self,
         llm_model: Optional[
@@ -32,6 +33,9 @@ class SimilarityRetrieverChain(BaseChain):
             prompt_template_str=prompt_template_str,
             vector_db=vector_db,
         )
+
+        SimilarityRetrieverChain.count += 1
+        self.name = f"similarity_INST{SimilarityRetrieverChain.count}"
 
         self.embeddings_config: Optional[dict[str, str]] = embeddings_config
         self.use_cuda: bool = use_cuda
@@ -96,6 +100,8 @@ class SimilarityRetrieverChain(BaseChain):
                 folder_paths=self.html_docs_path,
                 return_docs=return_docs,
             )
+        if self.vector_db is not None:
+            self.vector_db.save_db(self.name)
 
         return (
             self.processed_docs,
