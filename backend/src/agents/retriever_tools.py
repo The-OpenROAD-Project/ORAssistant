@@ -44,7 +44,7 @@ class RetrieverTools:
         embeddings_config: dict[str, str],
         reranking_model_name: str,
         use_cuda: bool = False,
-        fast_mode: bool = True,  # set fast_mode True for fast prototyping.
+        fast_mode: bool = False,
     ) -> None:
         markdown_docs_map = {
             "general": [

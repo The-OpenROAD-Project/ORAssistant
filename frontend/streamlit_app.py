@@ -203,7 +203,8 @@ def main():
         if interaction["role"] == "user"
     }
 
-    if question_dict and os.getenv("FEEDBACK_SHEET_ID"):
+    # Show feedback buttons if there is at least one question/answer pair
+    if question_dict:
         if "feedback_button" not in st.session_state:
             st.session_state.feedback_button = False
 
