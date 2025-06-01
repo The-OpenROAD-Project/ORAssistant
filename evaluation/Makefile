@@ -30,4 +30,5 @@ clean:
 llm-tests: clean
 	@. .venv/bin/activate && \
 		cd auto_evaluation && \
-		./llm_tests.sh 2>&1 | tee llm_tests_output.txt
+		./llm_tests.sh 2>&1 | tee llm_tests_output.txt; \
+		exit $${PIPESTATUS[0]}

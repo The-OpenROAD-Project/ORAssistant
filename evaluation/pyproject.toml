@@ -34,16 +34,12 @@ explicit_package_bases = true
 exclude = "src/post_install.py"
 
 [[tool.mypy.overrides]]
-module = "huggingface_hub.*"
+module = ["deepeval.*", "huggingface_hub.*", "vertexai.*", "pandas.*", "plotly.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "transformers.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "deepeval.*"
-ignore_missing_imports = true
+module = ["human_evaluation.*"]
+ignore_errors = true
 
 [tool.ruff]
 exclude = [

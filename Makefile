@@ -14,7 +14,9 @@ format:
 
 .PHONY: check
 check:
-	@for folder in $(FOLDERS); do (cd $$folder && make check && cd ../); done
+	@for folder in $(FOLDERS); do \
+ 	   (cd $$folder && make check && cd ../) || exit 1; \
+		done
 	@. ./backend/.venv/bin/activate && \
 		pre-commit run --all-files
 

@@ -5,8 +5,8 @@ Custom DeepEvalLLM wrapper.
 
 import instructor
 
-from typing import Any
-from vertexai.generative_models import GenerativeModel, HarmBlockThreshold, HarmCategory  # type: ignore
+from typing import Any, Type
+from vertexai.generative_models import GenerativeModel, HarmBlockThreshold, HarmCategory
 from deepeval.models.base_model import DeepEvalBaseLLM
 from pydantic import BaseModel
 
@@ -31,18 +31,20 @@ class GoogleVertexAILangChain(DeepEvalBaseLLM):
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
         }
+        if not self.model_name:
+            raise ValueError("Model name must be specified for Google Vertex AI.")
 
         return GenerativeModel(
             model_name=self.model_name,
             safety_settings=safety_settings,
         )
 
-    def generate(self, prompt: str, schema: BaseModel) -> Any:
+    def generate(self, prompt: str, schema: Type[BaseModel]) -> Any:
         instructor_client = instructor.from_vertexai(
             client=self.load_model(),
             mode=instructor.Mode.VERTEXAI_TOOLS,
         )
-        resp = instructor_client.messages.create(  # type: ignore
+        resp = instructor_client.messages.create(
             messages=[
                 {
                     "role": "user",
@@ -53,13 +55,12 @@ class GoogleVertexAILangChain(DeepEvalBaseLLM):
         )
         return resp
 
-    async def a_generate(self, prompt: str, schema: BaseModel) -> Any:
+    async def a_generate(self, prompt: str, schema: Any) -> Any:
         instructor_client = instructor.from_vertexai(
             client=self.load_model(),
             mode=instructor.Mode.VERTEXAI_TOOLS,
-            _async=True,
         )
-        resp = await instructor_client.messages.create(  # type: ignore
+        resp = await instructor_client.completions.create(
             messages=[
                 {
                     "role": "user",
@@ -71,7 +72,7 @@ class GoogleVertexAILangChain(DeepEvalBaseLLM):
         return resp
 
     def get_model_name(self):
-        return self.model_name
+        return self.model_name or "model-not-specified"
 
 
 def main():
@@ -86,7 +87,7 @@ async def main_async():
     model = GoogleVertexAILangChain(model_name="gemini-1.5-pro-002")
     prompt = "Write me a joke"
     print(f"Prompt: {prompt}")
-    response = await model.a_generate(prompt, Response)
+    response = await model.a_generate(prompt, schema=Response)
     print(f"Response: {response}")
 
 

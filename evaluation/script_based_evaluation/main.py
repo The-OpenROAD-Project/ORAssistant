@@ -11,7 +11,7 @@ from script_based_evaluation.config.config import load_environment
 from openai import OpenAI
 from tqdm import tqdm
 from typing import Any
-import vertexai  # type: ignore
+import vertexai
 
 
 def get_accuracy_value(response_text: str, ground_truth: str, query_text: str) -> str:
