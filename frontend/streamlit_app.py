@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import time
 import datetime
-import pytz
 import os
 import ast
 from PIL import Image
@@ -87,7 +86,7 @@ def main() -> None:
     img = Image.open("assets/or_logo.png")
     st.set_page_config(page_title="OR Assistant", page_icon=img)
 
-    deployment_time = datetime.datetime.now(pytz.timezone("UTC"))
+    deployment_time = datetime.datetime.now(datetime.timezone.utc)
     st.info(f'Deployment time: {deployment_time.strftime("%m/%d/%Y %H:%M")} UTC')
 
     st.title("OR Assistant")

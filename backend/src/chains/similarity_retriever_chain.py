@@ -13,6 +13,7 @@ from .base_chain import BaseChain
 
 class SimilarityRetrieverChain(BaseChain):
     count = 0
+
     def __init__(
         self,
         llm_model: Optional[
@@ -64,38 +65,44 @@ class SimilarityRetrieverChain(BaseChain):
         Optional[list[Document]],
         Optional[list[Document]],
     ]:
+        # Create the vector database if it does not exist
         if self.vector_db is None and extend_existing is False:
             self.create_vector_db()
 
-        if self.markdown_docs_path is not None and self.vector_db is not None:
+        assert (
+            self.vector_db is not None
+        ), "Vector DB must be created before embedding documents."
+        if self.markdown_docs_path is not None:
             self.processed_docs = self.vector_db.add_md_docs(
                 folder_paths=self.markdown_docs_path,
                 chunk_size=self.chunk_size,
                 return_docs=return_docs,
             )
 
-        if self.manpages_path is not None and self.vector_db is not None:
+        if self.manpages_path is not None:
             self.processed_manpages = self.vector_db.add_md_manpages(
                 folder_paths=self.manpages_path, return_docs=return_docs
             )
 
-        if self.other_docs_path is not None and self.vector_db is not None:
-            for folder_name in self.other_docs_path:
-                for root, _, files in os.walk(folder_name):
-                    for file in files:
-                        other_docs_path = os.path.join(root, file)
-                        if other_docs_path.endswith(".pdf"):
-                            self.processed_pdfs = self.vector_db.add_documents(
-                                file_paths=[other_docs_path],
-                                file_type="pdf",
-                                return_docs=return_docs,
-                            )
-                        else:
-                            raise ValueError(
-                                "File type not supported. Only PDFs are supported."
-                            )
+        if self.other_docs_path is not None:
+            pdf_files = [
+                os.path.join(root, file)
+                for folder_name in self.other_docs_path
+                for root, _, files in os.walk(folder_name)
+                for file in files
+                if file.endswith(".pdf")
+            ]
 
-        if self.html_docs_path is not None and self.vector_db is not None:
+            if not pdf_files:
+                raise ValueError("File type not supported. Only PDFs are supported.")
+
+            self.processed_pdfs = self.vector_db.add_documents(
+                file_paths=pdf_files,
+                file_type="pdf",
+                return_docs=return_docs,
+            )
+
+        if self.html_docs_path is not None:
             self.processed_html = self.vector_db.add_html(
                 folder_paths=self.html_docs_path,
                 return_docs=return_docs,

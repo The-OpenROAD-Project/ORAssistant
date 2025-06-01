@@ -1,7 +1,7 @@
 import streamlit as st
-import pandas as pd  # type: ignore
-import plotly.express as px  # type: ignore
-import plotly.graph_objects as go  # type: ignore
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
 

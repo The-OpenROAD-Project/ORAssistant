@@ -205,10 +205,12 @@ class FAISSVectorDatabase:
 
     def load_db(self, name) -> None:
         load_path = f"{self.get_db_path()}/{name}"
-        self._faiss_db = FAISS.load_local(load_path, self.embedding_model, allow_dangerous_deserialization=True)
+        self._faiss_db = FAISS.load_local(
+            load_path, self.embedding_model, allow_dangerous_deserialization=True
+        )
 
     def get_documents(self) -> list[Document]:
-        return self._faiss_db.docstore._dict.values()
+        return self._faiss_db.docstore._dict.values()  # type: ignore
 
     def process_json(self, folder_paths: list[str]) -> FAISS:
         logging.info("Processing json files...")

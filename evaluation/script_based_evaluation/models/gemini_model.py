@@ -1,8 +1,8 @@
 import time
 import sys
 import traceback
-import vertexai.preview.generative_models as genai  # type: ignore
-from vertexai.generative_models import (  # type: ignore
+import vertexai.preview.generative_models as genai
+from vertexai.generative_models import (
     HarmCategory,
     HarmBlockThreshold,
     SafetySetting,

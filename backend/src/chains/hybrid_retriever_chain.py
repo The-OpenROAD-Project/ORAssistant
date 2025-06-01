@@ -84,9 +84,11 @@ class HybridRetrieverChain(BaseChain):
             if path_flag and database_name in os.listdir(path):
                 if database_name in os.listdir(path):
                     similarity_retriever_chain.create_vector_db()
-                    similarity_retriever_chain.vector_db.load_db(database_name)
+                    similarity_retriever_chain.vector_db.load_db(database_name)  # type: ignore
                     self.vector_db = similarity_retriever_chain.vector_db
-                    self.vector_db.processed_docs = similarity_retriever_chain.vector_db.get_documents()
+                    self.vector_db.processed_docs = (  # type: ignore
+                        similarity_retriever_chain.vector_db.get_documents()  # type: ignore
+                    )
             else:
                 similarity_retriever_chain.embed_docs(return_docs=True)
                 self.vector_db = similarity_retriever_chain.vector_db

@@ -106,10 +106,10 @@ def write_responses(responses: list[str], row_numbers: list[int]) -> int:
         result = (
             service.spreadsheets()
             .values()
-            .batchUpdate(spreadsheetId=SHEET_ID, body=body)  # type: ignore
+            .batchUpdate(spreadsheetId=SHEET_ID, body=body)
             .execute()
         )
-        return result.get("totalUpdatedCells")  # type: ignore
+        return result.get("totalUpdatedCells")
     except HttpError as error:
         st.error("Failed to write responses to the Google Sheet.")
         st.error(f"An error occurred: {error}")

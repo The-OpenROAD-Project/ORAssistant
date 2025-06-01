@@ -1,3 +1,4 @@
+# type: ignore
 import os
 import argparse
 from google.oauth2.service_account import Credentials
@@ -47,7 +48,7 @@ def create_google_form(form_title: str, user_email: str) -> str:
     - str: Google Form ID.
     """
     form_metadata = {"info": {"title": form_title}}
-    form = forms_service.forms().create(body=form_metadata).execute()  # type: ignore
+    form = forms_service.forms().create(body=form_metadata).execute()
     form_id = form["formId"]
     print(f"Created Form with ID: {form_id}")
 
@@ -68,13 +69,13 @@ def create_google_sheet(sheet_title: str, user_email: str) -> str:
     - str: Google Sheet ID.
     """
     sheet_metadata = {"properties": {"title": sheet_title}}
-    sheet = sheets_service.spreadsheets().create(body=sheet_metadata).execute()  # type: ignore
+    sheet = sheets_service.spreadsheets().create(body=sheet_metadata).execute()
     sheet_id = sheet["spreadsheetId"]
     print(f"Created Sheet with ID: {sheet_id}")
 
     gc = gspread.authorize(creds)
-    sheet = gc.open_by_key(sheet_id).get_worksheet(0)  # type: ignore
-    sheet.append_row(["Questions", "Generated Answers"])  # type: ignore
+    sheet = gc.open_by_key(sheet_id).get_worksheet(0)
+    sheet.append_row(["Questions", "Generated Answers"])
 
     share_file(sheet_id, user_email)
 
