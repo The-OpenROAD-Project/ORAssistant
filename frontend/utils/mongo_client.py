@@ -118,7 +118,7 @@ def submit_feedback(
                 },
             )
 
-        feedback_db_client[feedback_collection_name].insert_one(
+        result = feedback_db_client[feedback_collection_name].insert_one(
             {
                 "question": question,
                 "answer": answer,
@@ -130,7 +130,12 @@ def submit_feedback(
             }
         )
 
-        print("Feedback submitted successfully")
+        if result.inserted_id:
+            print("Feedback submitted successfully")
+            return True
+        else:
+            print("Failed to submit feedback: No document inserted")
+            return False
     except Exception as e:
         print(f"Failed to submit feedback: {e}")
 
@@ -167,7 +172,3 @@ def create_collection(
         print("Collection created successfully")
     except Exception as e:
         print(f"Failed to create collection: {e}")
-
-
-if __name__ == "__main__":
-    submit_feedback()
