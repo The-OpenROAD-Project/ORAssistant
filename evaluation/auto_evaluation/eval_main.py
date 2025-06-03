@@ -47,7 +47,6 @@ class EvaluationHarness:
             project=os.getenv("GOOGLE_PROJECT_ID", ""),
             location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
         )
-        assert os.getenv("GOOGLE_API_KEY", ""), "Google API key is not set"
         self.log_dir = "logs"
         os.makedirs(self.log_dir, exist_ok=True)
         self.sanity_check()
