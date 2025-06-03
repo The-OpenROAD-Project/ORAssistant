@@ -77,9 +77,6 @@ class EvaluationHarness:
 
         # retrieval test cases
         for i, qa_pair in enumerate(tqdm(self.qns, desc="Evaluating")):
-            if i >= 1:
-                print("Skipping further evaluations for testing purposes.")
-                break
             question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
             response, response_time = self.query(retriever, question)
             response_text = response["response"]
