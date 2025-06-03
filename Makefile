@@ -1,4 +1,5 @@
 FOLDERS=backend frontend evaluation
+GOOGLE_SECRET_JSON:=$(HOME)/secret.json
 
 .PHONY: init
 init:
@@ -27,6 +28,12 @@ docker-up:
 .PHONY: docker-down
 docker-down:
 	@docker compose down --remove-orphans
+
+# --- Development Commands ---
+.PHONY: seed-credentials
+seed-credentials:
+	@cp $(GOOGLE_SECRET_JSON) backend/src
+	@cp $(GOOGLE_SECRET_JSON) evaluation/auto_evaluation/src
 
 .PHONY: changelog
 changelog:
