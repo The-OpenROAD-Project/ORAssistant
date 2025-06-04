@@ -80,7 +80,7 @@ Return your response as a json blob with 'rephrased_question'.\
 
 """
 
-suggested_questions_prompt_template = """If the assistant answer has sufficient knowledge, use it to predict the next 3 suggested questions. Otherwise, strictly restrict to these topics: 
+suggested_questions_prompt_template = """If the assistant answer has sufficient knowledge, use it to predict the next 3 suggested questions. Otherwise, strictly restrict to these topics:
     Getting Started with OpenROAD
     Building OpenROAD
     Getting Started with the OpenROAD Flow - OpenROAD-flow-scripts

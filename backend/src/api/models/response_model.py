@@ -20,6 +20,7 @@ class SuggestedQuestionInput(BaseModel):
     latest_question: str
     assistant_answer: str
 
+
 class ChatResponse(BaseModel):
     response: str
     context_sources: list[ContextSource] = []
