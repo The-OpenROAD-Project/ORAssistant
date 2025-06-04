@@ -25,6 +25,7 @@ creds.json
 .venv
 
 # evaluations
+**/.deepeval_telemetry.txt
 **/.deepeval_telemtry.txt
 *.csv
 **/.deepeval-cache.json
