@@ -60,7 +60,7 @@ class GoogleVertexAILangChain(DeepEvalBaseLLM):
             client=self.load_model(),
             mode=instructor.Mode.VERTEXAI_TOOLS,
         )
-        resp = await instructor_client.completions.create(
+        resp = await instructor_client.messages.create(
             messages=[
                 {
                     "role": "user",

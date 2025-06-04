@@ -46,7 +46,7 @@ def make_faithfulness_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
     )
 
 
-def make_hallucination_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
+def make_hallucination_metric(model: DeepEvalBaseLLM) -> HallucinationMetric:
     return HallucinationMetric(
         threshold=HALLUCINATION_THRESHOLD,
         model=model,
