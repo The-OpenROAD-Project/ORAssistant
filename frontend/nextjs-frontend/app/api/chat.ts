@@ -7,7 +7,7 @@ export default async function handler(
   if (req.method === 'POST') {
     try {
       const response = await fetch(
-        'https://select-griffon-suddenly.ngrok-free.app/api/chat',
+        process.env.NEXT_PUBLIC_LLM_API_ENDPOINT as string,
         {
           method: 'POST',
           headers: {
