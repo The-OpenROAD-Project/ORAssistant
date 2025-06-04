@@ -11,8 +11,8 @@ import os
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
 from deepeval import evaluate
+from deepeval.models import GeminiModel
 
-from auto_evaluation.src.models.vertex_ai import GoogleVertexAILangChain
 from auto_evaluation.src.metrics.retrieval import (
     make_contextual_precision_metric,
     make_contextual_recall_metric,
@@ -42,7 +42,11 @@ class EvaluationHarness:
         self.dataset = dataset
         self.reranker_base_url = reranker_base_url
         self.qns = preprocess.read_data(self.dataset)
-        self.eval_model = GoogleVertexAILangChain(model_name="gemini-1.5-pro-002")
+        self.eval_model = GeminiModel(
+            model_name="gemini-1.5-pro-002",
+            project=os.getenv("GOOGLE_PROJECT_ID", ""),
+            location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
+        )
         self.log_dir = "logs"
         os.makedirs(self.log_dir, exist_ok=True)
         self.sanity_check()
@@ -91,8 +95,8 @@ class EvaluationHarness:
 
         # parallel evaluate
         evaluate(
-            retrieval_tcs,
-            [precision, recall, hallucination],
+            test_cases=retrieval_tcs,
+            metrics=[precision, recall, hallucination],
             print_results=False,
         )
 

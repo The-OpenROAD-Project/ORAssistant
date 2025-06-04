@@ -176,7 +176,7 @@ def update_gform(questions_descriptions: list[dict[str, str]]) -> None:
         form_body = {"requests": requests}
         forms_service.forms().batchUpdate(
             formId=GOOGLE_FORM_ID,
-            body=form_body,  # type: ignore
+            body=form_body,
         ).execute()
 
         st.success("Google Form updated successfully.")

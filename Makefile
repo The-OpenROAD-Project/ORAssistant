@@ -1,4 +1,5 @@
 FOLDERS=backend frontend evaluation
+GOOGLE_SECRET_JSON:=$(HOME)/secret.json
 
 .PHONY: init
 init:
@@ -14,7 +15,9 @@ format:
 
 .PHONY: check
 check:
-	@for folder in $(FOLDERS); do (cd $$folder && make check && cd ../); done
+	@for folder in $(FOLDERS); do \
+ 	   (cd $$folder && make check && cd ../) || exit 1; \
+		done
 	@. ./backend/.venv/bin/activate && \
 		pre-commit run --all-files
 
@@ -25,6 +28,12 @@ docker-up:
 .PHONY: docker-down
 docker-down:
 	@docker compose down --remove-orphans
+
+# --- Development Commands ---
+.PHONY: seed-credentials
+seed-credentials:
+	@cp $(GOOGLE_SECRET_JSON) backend/src
+	@cp $(GOOGLE_SECRET_JSON) evaluation/auto_evaluation/src
 
 .PHONY: changelog
 changelog:

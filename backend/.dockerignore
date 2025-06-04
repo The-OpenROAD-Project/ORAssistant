@@ -1,0 +1,7 @@
+.venv
+*.egg-info
+.mypy-cache
+__pycache__
+faiss_db
+data
+tests

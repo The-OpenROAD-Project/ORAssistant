@@ -129,7 +129,7 @@ class RetrieverGraph:
             return {"tools": []}
 
         if self.inbuilt_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice="any")
+            model = self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
 
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
