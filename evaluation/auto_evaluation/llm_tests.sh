@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 retrievers=(
-    "agent-retriever" \
+    "agent-retriever"
 )
 
 echo "==================================="
