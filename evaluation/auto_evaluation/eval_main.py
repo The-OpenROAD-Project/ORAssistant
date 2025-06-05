@@ -79,8 +79,7 @@ class EvaluationHarness:
             question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
             response, response_time = self.query(retriever, question)
             response_text = response["response"]
-            context = response["context"]
-            context_list = context[0].split("--------------------------")
+            context_list = [r["context"] for r in response["context_sources"]]
 
             # works for: precision, recall, hallucination
             retrieval_tc = LLMTestCase(
