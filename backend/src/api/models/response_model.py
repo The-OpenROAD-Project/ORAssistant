@@ -15,7 +15,8 @@ class ContextSource(BaseModel):
 
 class SuggestedQuestions(BaseModel):
     suggested_questions: list[str]
-    
+
+
 class SuggestedQuestionInput(BaseModel):
     latest_question: str
     assistant_answer: str

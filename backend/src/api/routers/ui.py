@@ -4,7 +4,7 @@ import os
 
 router = APIRouter(prefix="/ui", tags=["ui"])
 
-BACKEND_ENDPOINT = os.getenv('BACKEND_ENDPOINT')
+BACKEND_ENDPOINT = os.getenv('BACKEND_ENDPOINT', 'http://localhost:8000')
 client = httpx.AsyncClient(base_url=BACKEND_ENDPOINT)
 
 
