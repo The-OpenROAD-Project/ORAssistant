@@ -28,12 +28,6 @@ The following steps should be done in the `nextjs-frontend` directory.
 yarn install
 ```
 
-3. Install Python dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
 **Note**: This is better done in a virtual environment. For more information see the [Python Installation Guide](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
 
 ### Development
@@ -43,13 +37,6 @@ To run the development server:
 ```bash
 yarn dev
 ```
-
-To run the proxy api server:
-
-```bash
-python3 apiproxy.py
-```
-
 
 ## Configuration
 
