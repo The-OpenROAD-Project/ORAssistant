@@ -21,7 +21,7 @@ export default function SuggestedQuestions({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'http://localhost:3001/api/suggestedQuestions',
+        'http://localhost:8000/ui/suggestedQuestions',
         {
           method: 'POST',
           headers: {
