@@ -5,14 +5,14 @@ import os
 router = APIRouter(prefix="/ui", tags=["ui"])
 
 BACKEND_ENDPOINT = os.getenv('BACKEND_ENDPOINT')
-BACKEND_ENDPOINT_HELPERS = os.getenv('BACKEND_ENDPOINT_HELPERS')
+client = httpx.AsyncClient(base_url=BACKEND_ENDPOINT)
 
 
 @router.post("/chat")
 async def proxy_chat(request: Request):
     data = await request.json()
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(BACKEND_ENDPOINT, json=data)
+    # TODO: set this route dynamically
+    resp = await client.post("/graphs/agent-retriever", json=data)
     return Response(
         content=resp.content,
         status_code=resp.status_code,
@@ -28,8 +28,7 @@ async def suggested_questions(request: Request):
         "latest_question": data.get("latestQuestion", ""),
         "assistant_answer": data.get("assistantAnswer", "")
     }
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(BACKEND_ENDPOINT_HELPERS, json=transformed_data)
+    resp = await client.post("/helpers/suggestedQuestions", json=transformed_data)
     return Response(
         content=resp.content,
         status_code=resp.status_code,
