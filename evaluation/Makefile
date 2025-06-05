@@ -28,7 +28,8 @@ clean:
 
 .PHONY: llm-tests
 llm-tests: clean
-	@. .venv/bin/activate && \
+	@bash -c '\
+		. .venv/bin/activate && \
 		cd auto_evaluation && \
 		./llm_tests.sh 2>&1 | tee llm_tests_output.txt; \
-		exit $${PIPESTATUS[0]}
+		exit $${PIPESTATUS[0]}'
