@@ -56,19 +56,47 @@ class EvaluationHarness:
     def sanity_check(self):
         cur_time = time.time()
         while time.time() - cur_time < RETRY_TIMEOUT:
-            if not requests.get(f"{self.base_url}/healthcheck").status_code == 200:
-                raise ValueError("Endpoint is not running")
+            try:
+                # Check main endpoint
+                response = requests.get(f"{self.base_url}/healthcheck", timeout=10)
+                if response.status_code != 200:
+                    print(
+                        f"Main endpoint health check failed with status {response.status_code}"
+                    )
+                    time.sleep(RETRY_INTERVAL)
+                    continue
+            except requests.exceptions.RequestException as e:
+                print(f"Failed to connect to main endpoint: {e}")
+                time.sleep(RETRY_INTERVAL)
+                continue
+
+            # Check dataset exists
             if not os.path.exists(self.dataset):
-                raise ValueError("Dataset path does not exist")
-            if (
-                self.reranker_base_url
-                and not requests.get(
-                    f"{self.reranker_base_url}/healthcheck"
-                ).status_code
-                == 200
-            ):
-                raise ValueError("Reranker endpoint is not running")
-            time.sleep(RETRY_INTERVAL)
+                raise ValueError(f"Dataset path does not exist: {self.dataset}")
+
+            # Check reranker endpoint if provided
+            if self.reranker_base_url:
+                try:
+                    response = requests.get(
+                        f"{self.reranker_base_url}/healthcheck", timeout=10
+                    )
+                    if response.status_code != 200:
+                        print(
+                            f"Reranker endpoint health check failed with status {response.status_code}"
+                        )
+                        time.sleep(RETRY_INTERVAL)
+                        continue
+                except requests.exceptions.RequestException as e:
+                    print(f"Failed to connect to reranker endpoint: {e}")
+                    time.sleep(RETRY_INTERVAL)
+                    continue
+
+            # All checks passed
+            print("All sanity checks passed")
+            return
+
+        # Timeout reached
+        raise TimeoutError(f"Sanity checks failed after {RETRY_TIMEOUT} seconds")
 
     def evaluate(self, retriever: str):
         retrieval_tcs = []
