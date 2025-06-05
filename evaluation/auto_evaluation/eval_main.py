@@ -32,6 +32,8 @@ ALL_RETRIEVERS = {
     "sim": "/graphs/sim",
     "ensemble": "/graphs/ensemble",
 }
+RETRY_INTERVAL = 5
+RETRY_TIMEOUT = 600
 
 
 class EvaluationHarness:
@@ -52,16 +54,21 @@ class EvaluationHarness:
         self.sanity_check()
 
     def sanity_check(self):
-        if not requests.get(f"{self.base_url}/healthcheck").status_code == 200:
-            raise ValueError("Endpoint is not running")
-        if not os.path.exists(self.dataset):
-            raise ValueError("Dataset path does not exist")
-        if (
-            self.reranker_base_url
-            and not requests.get(f"{self.reranker_base_url}/healthcheck").status_code
-            == 200
-        ):
-            raise ValueError("Reranker endpoint is not running")
+        cur_time = time.time()
+        while time.time() - cur_time < RETRY_TIMEOUT:
+            if not requests.get(f"{self.base_url}/healthcheck").status_code == 200:
+                raise ValueError("Endpoint is not running")
+            if not os.path.exists(self.dataset):
+                raise ValueError("Dataset path does not exist")
+            if (
+                self.reranker_base_url
+                and not requests.get(
+                    f"{self.reranker_base_url}/healthcheck"
+                ).status_code
+                == 200
+            ):
+                raise ValueError("Reranker endpoint is not running")
+            time.sleep(RETRY_INTERVAL)
 
     def evaluate(self, retriever: str):
         retrieval_tcs = []
@@ -79,8 +86,7 @@ class EvaluationHarness:
             question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
             response, response_time = self.query(retriever, question)
             response_text = response["response"]
-            context = response["context"]
-            context_list = context[0].split("--------------------------")
+            context_list = [r["context"] for r in response["context_sources"]]
 
             # works for: precision, recall, hallucination
             retrieval_tc = LLMTestCase(
