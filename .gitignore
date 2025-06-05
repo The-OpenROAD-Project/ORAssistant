@@ -32,3 +32,6 @@ creds.json
 temp_test_run_data.json
 **/llm_tests_output.txt
 **/error_log.txt
+
+# backend
+faiss_db

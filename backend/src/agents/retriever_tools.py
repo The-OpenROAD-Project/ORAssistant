@@ -44,13 +44,10 @@ class RetrieverTools:
         embeddings_config: dict[str, str],
         reranking_model_name: str,
         use_cuda: bool = False,
+        fast_mode: bool = False,
     ) -> None:
-        general_retriever_chain = HybridRetrieverChain(
-            embeddings_config=embeddings_config,
-            reranking_model_name=reranking_model_name,
-            use_cuda=use_cuda,
-            html_docs_path=["./data/html/or_website/"],
-            markdown_docs_path=[
+        markdown_docs_map = {
+            "general": [
                 "./data/markdown/OR_docs",
                 "./data/markdown/ORFS_docs",
                 "./data/markdown/gh_discussions",
@@ -58,7 +55,47 @@ class RetrieverTools:
                 "./data/markdown/manpages/man2",
                 "./data/markdown/OpenSTA_docs",
             ],
-            other_docs_path=["./data/pdf"],
+            "install": [
+                "./data/markdown/ORFS_docs/installation",
+                "./data/markdown/OR_docs/installation",
+                "./data/markdown/gh_discussions/Build",
+                "./data/markdown/gh_discussions/Installation",
+                "./data/markdown/OpenSTA_docs",
+            ],
+            "commands": [
+                "./data/markdown/OR_docs/tools",
+                "./data/markdown/ORFS_docs/general",
+                "./data/markdown/gh_discussions/Query",
+                "./data/markdown/gh_discussions/Runtime",
+                "./data/markdown/gh_discussions/Documentation",
+                "./data/markdown/manpages/man1",
+                "./data/markdown/manpages/man2",
+                "./data/markdown/OpenSTA_docs",
+            ],
+            "errinfo": [
+                "./data/markdown/manpages/man3",
+                "./data/markdown/gh_discussions/Bug",
+            ],
+        }
+        fastmode_docs_map = {
+            "general": [markdown_docs_map["general"][0]],
+            "install": [markdown_docs_map["install"][0]],
+            "commands": [markdown_docs_map["commands"][0]],
+            "errinfo": [markdown_docs_map["errinfo"][1]],
+            "yosys": [
+                "./data/html/yosys_docs/yosyshq.readthedocs.io/projects/yosys/en/latest/getting_started"
+            ],
+            "klayout": ["./data/html/klayout_docs/www.klayout.de/examples"],
+        }
+        general_retriever_chain = HybridRetrieverChain(
+            embeddings_config=embeddings_config,
+            reranking_model_name=reranking_model_name,
+            use_cuda=use_cuda,
+            html_docs_path=[] if fast_mode else ["./data/html/or_website/"],
+            markdown_docs_path=fastmode_docs_map["general"]
+            if fast_mode
+            else markdown_docs_map["general"],
+            other_docs_path=[] if fast_mode else ["./data/pdf"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -71,13 +108,9 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            markdown_docs_path=[
-                "./data/markdown/ORFS_docs/installation",
-                "./data/markdown/OR_docs/installation",
-                "./data/markdown/gh_discussions/Build",
-                "./data/markdown/gh_discussions/Installation",
-                "./data/markdown/OpenSTA_docs/",
-            ],
+            markdown_docs_path=fastmode_docs_map["install"]
+            if fast_mode
+            else markdown_docs_map["install"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -90,17 +123,10 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            markdown_docs_path=[
-                "./data/markdown/OR_docs/tools",
-                "./data/markdown/ORFS_docs/general",
-                "./data/markdown/gh_discussions/Query",
-                "./data/markdown/gh_discussions/Runtime",
-                "./data/markdown/gh_discussions/Documentation",
-                "./data/markdown/manpages/man1",
-                "./data/markdown/manpages/man2",
-                "./data/markdown/OpenSTA_docs",
-            ],
-            other_docs_path=["./data/pdf"],
+            markdown_docs_path=fastmode_docs_map["commands"]
+            if fast_mode
+            else markdown_docs_map["commands"],
+            other_docs_path=[] if fast_mode else ["./data/pdf"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -113,7 +139,9 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=["./data/html/yosys_docs"],
+            html_docs_path=fastmode_docs_map["yosys"]
+            if fast_mode
+            else ["./data/html/yosys_docs"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -126,7 +154,9 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            html_docs_path=["./data/html/klayout_docs"],
+            html_docs_path=fastmode_docs_map["klayout"]
+            if fast_mode
+            else ["./data/html/klayout_docs"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -139,10 +169,9 @@ class RetrieverTools:
             embeddings_config=embeddings_config,
             reranking_model_name=reranking_model_name,
             use_cuda=use_cuda,
-            markdown_docs_path=[
-                "./data/markdown/manpages/man3",
-                "./data/markdown/gh_discussions/Bug",
-            ],
+            markdown_docs_path=fastmode_docs_map["errinfo"]
+            if fast_mode
+            else markdown_docs_map["errinfo"],
             weights=[0.6, 0.2, 0.2],
             contextual_rerank=True,
             search_k=search_k,
@@ -153,7 +182,7 @@ class RetrieverTools:
 
     @staticmethod
     @tool
-    def retrieve_general(query: str) -> Tuple[str, list[str], list[str]]:
+    def retrieve_general(query: str) -> Tuple[str, list[str], list[str], list[str]]:
         """
         Retrieve comprehensive and detailed information pertaining to the OpenROAD project, OpenROAD-Flow-Scripts and OpenSTA.\
         This includes, but is not limited to, general information, specific functionalities, usage guidelines,\
@@ -168,7 +197,7 @@ class RetrieverTools:
 
     @staticmethod
     @tool
-    def retrieve_cmds(query: str) -> Tuple[str, list[str], list[str]]:
+    def retrieve_cmds(query: str) -> Tuple[str, list[str], list[str], list[str]]:
         """
         Retrieve information on the commands available in OpenROAD, OpenROAD-Flow-Scripts and OpenSTA.\
         This includes usage guidelines, command syntax, examples, and best practices about commands that cover various \
@@ -197,7 +226,7 @@ class RetrieverTools:
 
     @staticmethod
     @tool
-    def retrieve_install(query: str) -> Tuple[str, list[str], list[str]]:
+    def retrieve_install(query: str) -> Tuple[str, list[str], list[str], list[str]]:
         """
         Retrieve comprehensive and detailed information pertaining to the installaion of OpenROAD, OpenROAD-Flow-Scripts and OpenSTA.\
         This includes, but is not limited to, various dependencies, system requirements, installation methods such as,\
@@ -213,7 +242,7 @@ class RetrieverTools:
 
     @staticmethod
     @tool
-    def retrieve_errinfo(query: str) -> Tuple[str, list[str], list[str]]:
+    def retrieve_errinfo(query: str) -> Tuple[str, list[str], list[str], list[str]]:
         """
         Retrieve descriptions and details regarding the various warning/error messages encountered while using the OpenROAD.\
         An error code usually is identified by the tool, followed by a number.\
@@ -228,7 +257,9 @@ class RetrieverTools:
 
     @staticmethod
     @tool
-    def retrieve_yosys_rtdocs(query: str) -> Tuple[str, list[str], list[str]]:
+    def retrieve_yosys_rtdocs(
+        query: str,
+    ) -> Tuple[str, list[str], list[str], list[str]]:
         """
         Retrieve detailed information regarding the Yosys application.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of Yosys.\
@@ -248,7 +279,9 @@ class RetrieverTools:
 
     @staticmethod
     @tool
-    def retrieve_klayout_docs(query: str) -> Tuple[str, list[str], list[str]]:
+    def retrieve_klayout_docs(
+        query: str,
+    ) -> Tuple[str, list[str], list[str], list[str]]:
         """
         Retrieve detailed information regarding the KLayout application.\
         This tool provides information pertaining to the installation, usage, and troubleshooting of KLayout.\

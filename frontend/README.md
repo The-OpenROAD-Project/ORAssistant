@@ -12,38 +12,8 @@ CHAT_ENDPOINT=<your-chat-endpoint> Defaults to http://localhost:8000/chatApp
 
 ## For Feedback Evaluation (Optional)
 
-To collect feedback, you need to set up a Google Sheet and configure the necessary environment variables:
+For this section, please refer to the [mongodb](./mongoDB.md) documentation for more details. 
 
-1. **Create a Google Sheet**:
-   - Give edit access to the sheet to the service account email.
-   - Add the sheet ID in the environment variable.
-
-    ```plaintext
-    FEEDBACK_SHEET_ID=your-google-sheet-id
-    ```
-
-2. **Using Another Worksheet Inside the Google Sheet**:
-   - If you are using another worksheet inside the Google Sheet, enter the GID as well.
-
-    ```plaintext
-    FEEDBACK_SHEET_GID=your-gid
-    ```
-
-3. **Set Up Google Cloud Console**:
-   - Open Google Cloud Console, enable the Sheets API, and create a service account.
-   - Give access to this service account email.
-   - Export credentials as JSON and add its path in the environment variable.
-
-    ```plaintext
-    GOOGLE_CREDENTIALS_JSON=<path-to-your-google-credentials-json>
-    ```
-4. **Set the Current Version for Feedback Evaluation:**
-   - Add the current version of the feedback evaluation to the environment variables.
-   - If unset, this defaults to the commit hash of `master`.
-    
-    ```plaintext
-    RAG_VERSION=<current-version>
-    ```
 ## Running the Application
 
 ### Install Required Packages
