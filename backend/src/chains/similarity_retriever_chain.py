@@ -95,7 +95,7 @@ class SimilarityRetrieverChain(BaseChain):
 
             if pdf_files:
                 self.processed_pdfs = self.vector_db.add_documents(
-                    file_paths=pdf_files,
+                    folder_paths=pdf_files,
                     file_type="pdf",
                     return_docs=return_docs,
                 )
