@@ -187,10 +187,6 @@ make format
 make check
 ```
 
-## Hosted Version
-
-ORAssistant is currently hosted at this [link](https://orassistant.netlify.app/). Feel free to use the application and provide feedback!
-
 ## Acknowledgements
 
 This work is completed as part of the Google Summer of Code 2024 project under the 
