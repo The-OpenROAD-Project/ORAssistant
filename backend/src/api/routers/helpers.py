@@ -20,22 +20,17 @@ router = APIRouter(prefix="/helpers", tags=["helpers"])
 # Main Router
 @router.post("/suggestedQuestions")
 async def get_suggested_questions(
-    suggested_question_input: SuggestedQuestionInput
+    suggested_question_input: SuggestedQuestionInput,
 ) -> Any:
-
     full_prompt = f"{suggested_questions_prompt_template}\n\nUser Question: {suggested_question_input.latest_question}\n\nAssistant Answer: {suggested_question_input.assistant_answer}"
-    body = {
-    "contents": [
-        {
-            "parts": [
-                {"text": full_prompt}
-            ]
-        }
-        ]
-    }
+    body = {"contents": [{"parts": [{"text": full_prompt}]}]}
 
     try:
-        response = requests.post(GEMINI_ROUTE, json=body, headers={"Content-Type": "application/json"})
+        response = requests.post(
+            GEMINI_ROUTE, json=body, headers={"Content-Type": "application/json"}
+        )
         return response.json()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to get suggested questions: " + str(e))
+        raise HTTPException(
+            status_code=500, detail="Failed to get suggested questions: " + str(e)
+        )

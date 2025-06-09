@@ -143,7 +143,10 @@ export default function Home() {
           question: input,
           answer: data.response,
           // logic here is get the context and sources, get sources from them, fitler out the blank sources from them
-          sources: data.context_sources?.map((cs) => cs.source).filter((source) => source && source.trim() !== '') || [],
+          sources:
+            data.context_sources
+              ?.map((cs) => cs.source)
+              .filter((source) => source && source.trim() !== '') || [],
           timestamp: Date.now(),
         };
         const updatedThread = currentThread

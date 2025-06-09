@@ -4,7 +4,7 @@ import os
 
 router = APIRouter(prefix="/ui", tags=["ui"])
 
-BACKEND_ENDPOINT = os.getenv('BACKEND_ENDPOINT', 'http://localhost:8000')
+BACKEND_ENDPOINT = os.getenv("BACKEND_ENDPOINT", "http://localhost:8000")
 client = httpx.AsyncClient(base_url=BACKEND_ENDPOINT)
 
 
@@ -16,7 +16,7 @@ async def proxy_chat(request: Request):
     return Response(
         content=resp.content,
         status_code=resp.status_code,
-        media_type=resp.headers.get('content-type')
+        media_type=resp.headers.get("content-type"),
     )
 
 
@@ -26,11 +26,11 @@ async def suggested_questions(request: Request):
     # Transform camelCase to snake_case for the backend
     transformed_data = {
         "latest_question": data.get("latestQuestion", ""),
-        "assistant_answer": data.get("assistantAnswer", "")
+        "assistant_answer": data.get("assistantAnswer", ""),
     }
     resp = await client.post("/helpers/suggestedQuestions", json=transformed_data)
     return Response(
         content=resp.content,
         status_code=resp.status_code,
-        media_type=resp.headers.get('content-type')
+        media_type=resp.headers.get("content-type"),
     )
