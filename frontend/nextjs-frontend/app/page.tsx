@@ -39,10 +39,15 @@ interface Thread {
   // suggestedQuestions: string[];
 }
 
+interface ContextSource {
+  source: string;
+  context: string;
+}
+
 interface ApiResponse {
   response: string;
-  sources: string[];
-  context: string[];
+  context_sources: ContextSource[];
+  tools?: string[];
 }
 
 export default function Home() {
@@ -137,7 +142,8 @@ export default function Home() {
         const newMessage = {
           question: input,
           answer: data.response,
-          sources: data.sources || [],
+          // logic here is get the context and sources, get sources from them, fitler out the blank sources from them
+          sources: data.context_sources?.map((cs) => cs.source).filter((source) => source && source.trim() !== '') || [],
           timestamp: Date.now(),
         };
         const updatedThread = currentThread
