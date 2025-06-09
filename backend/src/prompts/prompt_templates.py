@@ -120,12 +120,16 @@ suggested_questions_prompt_template = """If the assistant answer has sufficient 
   Code of Conduct
   FAQs
 
-  Your response must be in this exact JSON format:
-  {
-    "questions": [
-      "",
-      "",
-      ""
-    ]
-  }
-    The first character should be '{' and the last character should be '}'. Do not include any additional text or formatting."""
+User Question: {latest_question}
+
+Assistant Answer: {assistant_answer}
+
+Your response must be in this exact JSON format:
+{{
+  "questions": [
+    "",
+    "",
+    ""
+  ]
+}}
+The first character should be '{{' and the last character should be '}}'. Do not include any additional text or formatting."""

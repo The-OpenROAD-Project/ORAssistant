@@ -22,7 +22,11 @@ router = APIRouter(prefix="/helpers", tags=["helpers"])
 async def get_suggested_questions(
     suggested_question_input: SuggestedQuestionInput,
 ) -> Any:
-    full_prompt = f"{suggested_questions_prompt_template}\n\nUser Question: {suggested_question_input.latest_question}\n\nAssistant Answer: {suggested_question_input.assistant_answer}"
+    full_prompt = suggested_questions_prompt_template.format(
+        latest_question=suggested_question_input.latest_question,
+        assistant_answer=suggested_question_input.assistant_answer,
+    )
+
     body = {"contents": [{"parts": [{"text": full_prompt}]}]}
 
     try:
