@@ -14,7 +14,6 @@ Installation has been tested with these:
 
 - Node.js >= `v22.13.0`
 - Yarn package manager >= `v1.22.22`
-- Python >= `3.10`
 
 ### Installation
 
@@ -44,24 +43,9 @@ yarn dev
 2. Add your hosted backend link:
 
 ```
-BACKEND_URL=backend_api_url
-GEMINI_API_KEY=api_key // used for suggested question feature
-NEXT_PUBLIC_PROXY_ENDPOINT=http://localhost:3001/api/chat
+NEXT_PUBLIC_PROXY_ENDPOINT=http://localhost:8000/ui/chat
 ```
-
-**Note**: the backend url will depend on the type of backend you are using. For example, if you are using the mock backend, the url will be `http://localhost:8000/chains/mock`.
-
-## API Proxy Server
-
-This project uses a Flask-based API proxy server (`apiproxy.py`) as an intermediary between the Next.js frontend and the backend API.
-
-### Why We Use a Proxy Server
-
-1. **CORS Mitigation**: Avoids cross-origin resource sharing issues that might occur when making direct requests from the browser to the backend.
-2. **Environment Flexibility**: Allows easy switching between different backend environments (development, production, or mock testing) by changing a single environment variable.
-3. **Request/Response Logging**: Provides helpful logging for debugging API communication issues.
-
 Note:
 
 - You can generate a Gemini API key from [Google AI Studio](https://aistudio.google.com/)
-- The proxy endpoint is set to `http://localhost:3001/api/chat` for development purposes.
+- The proxy endpoint is set to `http://localhost:8000/ui/chat` for development purposes.
