@@ -55,20 +55,31 @@ class EvaluationHarness:
 
     def sanity_check(self):
         cur_time = time.time()
+        if not os.path.exists(self.dataset):
+            raise ValueError("Dataset path does not exist")
         while time.time() - cur_time < RETRY_TIMEOUT:
-            if not requests.get(f"{self.base_url}/healthcheck").status_code == 200:
-                raise ValueError("Endpoint is not running")
-            if not os.path.exists(self.dataset):
-                raise ValueError("Dataset path does not exist")
-            if (
-                self.reranker_base_url
-                and not requests.get(
-                    f"{self.reranker_base_url}/healthcheck"
-                ).status_code
-                == 200
-            ):
-                raise ValueError("Reranker endpoint is not running")
-            time.sleep(RETRY_INTERVAL)
+            try:
+                if not requests.get(f"{self.base_url}/healthcheck").status_code == 200:
+                    print("Endpoint not ready, retrying...")
+                    time.sleep(RETRY_INTERVAL)
+                    continue
+                if (
+                    self.reranker_base_url
+                    and not requests.get(
+                        f"{self.reranker_base_url}/healthcheck"
+                    ).status_code
+                    == 200
+                ):
+                    print("Reranker endpoint not ready, retrying...")
+                    time.sleep(RETRY_INTERVAL)
+                    continue
+                # All checks passed
+                return
+            except requests.exceptions.RequestException:
+                print("Connection failed, retrying...")
+                time.sleep(RETRY_INTERVAL)
+                continue
+        raise ValueError("Sanity check failed after timeout")
 
     def evaluate(self, retriever: str):
         retrieval_tcs = []
