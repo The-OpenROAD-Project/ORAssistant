@@ -1,5 +1,5 @@
 streamlit==1.40.2
-requests==2.32.3
+requests==2.32.4
 requests-oauthlib==2.0.0
 Pillow==11.0.0
 google-auth==2.30.0
