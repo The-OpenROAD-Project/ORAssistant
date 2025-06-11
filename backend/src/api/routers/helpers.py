@@ -12,7 +12,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY is not set")
 
-GEMINI_ROUTE = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
+GEMINI_ROUTE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
 
 router = APIRouter(prefix="/helpers", tags=["helpers"])
 
@@ -31,7 +31,12 @@ async def get_suggested_questions(
 
     try:
         response = requests.post(
-            GEMINI_ROUTE, json=body, headers={"Content-Type": "application/json"}
+            GEMINI_ROUTE,
+            json=body,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {GEMINI_API_KEY}",
+            },
         )
         return response.json()
     except Exception as e:
