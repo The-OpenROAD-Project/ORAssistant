@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: ./backend
-    container_name: "orassistant-backend"
+    container_name: "backend"
     ports:
       - "8000:8000"
     networks:
@@ -16,11 +16,10 @@ services:
   
   frontend:
     build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
-    container_name: "orassistant-frontend"
+      context: ./frontend/nextjs-frontend
+    container_name: "frontend"
     ports:
-      - "8501:8501"
+      - "3000:3000"
     networks:
       - orassistant-network
 

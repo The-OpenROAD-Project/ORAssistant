@@ -30,7 +30,7 @@ disable_error_code = ["call-arg"]
 exclude = "src/post_install.py"
 
 [[tool.mypy.overrides]]
-module = ["flask.*"]
+module = ["flask.*", "pymongo.*", "gspread.*"]
 ignore_missing_imports = true
 
 [tool.ruff]
