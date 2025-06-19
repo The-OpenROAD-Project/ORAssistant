@@ -186,7 +186,6 @@ class RetrieverGraph:
     def generate(self, state: AgentState) -> dict[str, Any]:
         query = state["messages"][-1].content
         context = state["context"][-1].content
-        print("state keys", state.keys())
 
         ans = self.llm_chain.invoke({"context": context, "question": query})
 
