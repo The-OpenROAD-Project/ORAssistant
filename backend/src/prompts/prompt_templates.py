@@ -75,8 +75,7 @@ This is the user's follow-up question:\
 Given the chat history, rephrase the follow-up question to be a standalone question.\
 The rephrased question should include only relevant information inferred from the chat history.\
 If the question is already standalone, return the same question.\
+Choose the most appropriate tools from the list of tools to answer the rephrased question.\
 Return your response as a json blob with 'rephrased_question'.\
-
-Return your response as a JSON blob with 'rephrased_question'.
 
 """

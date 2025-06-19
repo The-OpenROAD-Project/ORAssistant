@@ -129,11 +129,9 @@ class RetrieverGraph:
             return {"tools": []}
 
         if self.inbuilt_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
-
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
-                | self.llm
+                | self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
                 | JsonOutputParser()
             )
             response = tool_choice_chain.invoke(
@@ -143,7 +141,6 @@ class RetrieverGraph:
                 }
             )
 
-            response = model.invoke(followup_question)
 
             if response is None or response.tool_calls is None:
                 return {"tools": []}
