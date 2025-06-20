@@ -124,14 +124,16 @@ class RetrieverGraph:
 
     def agent(self, state: AgentState) -> dict[str, list[str]]:
         followup_question = state["messages"][-1].content
-
+        
         if self.llm is None:
             return {"tools": []}
 
         if self.inbuilt_tool_calling:
+            model = self.llm.bind_tools(self.tools, tool_choice="any") # type: ignore
+            
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
-                | self.llm.bind_tools(self.tools, tool_choice="any")
+                | model
                 | JsonOutputParser()
             )
             response = tool_choice_chain.invoke(
