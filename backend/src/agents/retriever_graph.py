@@ -124,13 +124,13 @@ class RetrieverGraph:
 
     def agent(self, state: AgentState) -> dict[str, list[str]]:
         followup_question = state["messages"][-1].content
-        
+
         if self.llm is None:
             return {"tools": []}
 
         if self.inbuilt_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice="any") # type: ignore
-            
+            model = self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
+
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
                 | model
@@ -142,7 +142,6 @@ class RetrieverGraph:
                     "chat_history": state["chat_history"],
                 }
             )
-
 
             if response is None or response.tool_calls is None:
                 return {"tools": []}
