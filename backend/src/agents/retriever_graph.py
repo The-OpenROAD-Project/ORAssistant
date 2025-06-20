@@ -133,7 +133,7 @@ class RetrieverGraph:
 
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
-                | self.llm
+                | model
                 | JsonOutputParser()
             )
             response = tool_choice_chain.invoke(
@@ -142,8 +142,6 @@ class RetrieverGraph:
                     "chat_history": state["chat_history"],
                 }
             )
-
-            response = model.invoke(followup_question)
 
             if response is None or response.tool_calls is None:
                 return {"tools": []}
@@ -189,7 +187,6 @@ class RetrieverGraph:
     def generate(self, state: AgentState) -> dict[str, Any]:
         query = state["messages"][-1].content
         context = state["context"][-1].content
-        print("state keys", state.keys())
 
         ans = self.llm_chain.invoke({"context": context, "question": query})
 
