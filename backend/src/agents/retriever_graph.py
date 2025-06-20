@@ -131,7 +131,7 @@ class RetrieverGraph:
         if self.inbuilt_tool_calling:
             tool_choice_chain = (
                 ChatPromptTemplate.from_template(rephrase_prompt_template)
-                | self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
+                | self.llm.bind_tools(self.tools, tool_choice="any")
                 | JsonOutputParser()
             )
             response = tool_choice_chain.invoke(
