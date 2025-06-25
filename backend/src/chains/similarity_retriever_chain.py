@@ -69,9 +69,9 @@ class SimilarityRetrieverChain(BaseChain):
         if self.vector_db is None and extend_existing is False:
             self.create_vector_db()
 
-        assert (
-            self.vector_db is not None
-        ), "Vector DB must be created before embedding documents."
+        assert self.vector_db is not None, (
+            "Vector DB must be created before embedding documents."
+        )
         if self.markdown_docs_path is not None:
             self.processed_docs = self.vector_db.add_md_docs(
                 folder_paths=self.markdown_docs_path,
