@@ -21,4 +21,4 @@ pypdf==4.2.0
 unstructured==0.15.1
 nltk==3.9.1
 huggingface_hub[cli]==0.24.6
-langchain-mcp-adapters
+langchain-mcp-adapters==0.1.4
