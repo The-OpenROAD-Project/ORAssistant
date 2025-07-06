@@ -1,3 +1,4 @@
+fastapi==0.115.14
 streamlit==1.40.2
 requests==2.32.4
 requests-oauthlib==2.0.0
@@ -7,6 +8,4 @@ google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.0
 gspread==6.1.2
 python-dotenv==1.0.1
-flask==3.0.3
 pymongo==4.6.3
-Flask-Cors==5.0.0
