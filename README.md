@@ -38,15 +38,21 @@ git clone https://github.com/The-OpenROAD-Project/ORAssistant.git
 
 **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
 
+Modify the Docker `HEALTHCHECK_` variables based on the hardware requirements.
+If you have a resource-constrained PC, try increasing `HEALTHCHECK_START_PERIOD` to a value large
+enough before healthcheck begins. 
+For more information, please refer to this [link](https://docs.docker.com/reference/compose-file/services/#healthcheck)
+
 ```bash
 cd backend
 cp .env.example .env
 ```
 
-**Step 3**: Start the docker container by running the following command:
+**Step 3**: Start and stop the docker containers by running the following command:
 
 ```bash
-docker compose up
+make docker-up
+make docker-down
 ```
 
 #### Option 2 - Local Install

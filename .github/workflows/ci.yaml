@@ -33,7 +33,6 @@ jobs:
     - name: Build Docker image
       run: |
         make docker-up
-        sleep 1500 # TODO: Remove this after docker-compose healthcheck timeout restored fixed.
     - name: Teardown
       if: always()
       run: |
