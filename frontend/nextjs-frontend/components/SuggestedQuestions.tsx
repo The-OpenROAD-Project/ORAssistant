@@ -7,6 +7,8 @@ interface SuggestedQuestionsProps {
   assistantAnswer: string;
 }
 
+const CHAT_ENDPOINT = process.env.NEXT_PUBLIC_PROXY_ENDPOINT;
+
 export default function SuggestedQuestions({
   onSelectQuestion,
   latestQuestion,
@@ -20,19 +22,16 @@ export default function SuggestedQuestions({
   const fetchSuggestedQuestions = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        'http://localhost:8000/ui/suggestedQuestions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            latestQuestion,
-            assistantAnswer,
-          }),
-        }
-      );
+      const response = await fetch(`${CHAT_ENDPOINT}/ui/suggestedQuestions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          latestQuestion,
+          assistantAnswer,
+        }),
+      });
 
       const data = await response.json();
       const suggestedQuestionsText = data.candidates[0].content.parts[0].text;

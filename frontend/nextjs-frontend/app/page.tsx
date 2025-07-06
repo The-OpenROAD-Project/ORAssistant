@@ -108,7 +108,7 @@ export default function Home() {
           throw new Error('CHAT_ENDPOINT is not defined');
         }
 
-        const response = await fetch(CHAT_ENDPOINT, {
+        const response = await fetch(`${CHAT_ENDPOINT}/ui/chat`, {
           method: 'POST',
           headers: {
             accept: 'application/json',

@@ -4,30 +4,22 @@
 
 This is the frontend application for ORAssistant built using Next.js.
 
-There is also a Flask backend that is used to proxy the requests to the Backend API.
-
 ## Setup
 
 ### Prerequisites
 
-Installation has been tested with these:
+Installation has been tested with:
 
 - Node.js >= `v22.13.0`
 - Yarn package manager >= `v1.22.22`
 
 ### Installation
 
-1. Clone the repository
-
-The following steps should be done in the `nextjs-frontend` directory.
-
-2. Install dependencies:
+Install dependencies:
 
 ```bash
 yarn install
 ```
-
-**Note**: This is better done in a virtual environment. For more information see the [Python Installation Guide](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
 
 ### Development
 
@@ -35,6 +27,10 @@ To run the development server:
 
 ```bash
 yarn dev
+
+# Format and lint
+yarn format
+yarn lint
 ```
 
 ## Configuration
@@ -43,9 +39,9 @@ yarn dev
 2. Add your hosted backend link:
 
 ```
-NEXT_PUBLIC_PROXY_ENDPOINT=http://localhost:8000/ui/chat
+NEXT_PUBLIC_PROXY_ENDPOINT=http://localhost:8000
 ```
+
 Note:
 
 - You can generate a Gemini API key from [Google AI Studio](https://aistudio.google.com/)
-- The proxy endpoint is set to `http://localhost:8000/ui/chat` for development purposes.
