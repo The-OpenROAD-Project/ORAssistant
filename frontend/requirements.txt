@@ -1,4 +1,4 @@
-fastapi==0.115.14
+fastapi[standard]==0.115.14
 streamlit==1.40.2
 requests==2.32.4
 requests-oauthlib==2.0.0
