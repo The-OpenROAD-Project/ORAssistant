@@ -12,7 +12,7 @@ services:
       interval: ${HEALTHCHECK_INTERVAL:-30s}
       timeout: ${HEALTHCHECK_TIMEOUT:-10s}
       retries: ${HEALTHCHECK_RETRIES:-5}
-      start_period: ${HEALTHCHECK_START_PERIOD:-900s}
+      start_period: ${HEALTHCHECK_START_PERIOD:-1200s}
   
   frontend:
     build:
