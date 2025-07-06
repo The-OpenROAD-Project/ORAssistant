@@ -33,14 +33,12 @@ export default function SuggestedQuestions({
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      const suggestedQuestionsText = data.candidates[0].content.parts[0].text;
-      const trimmedText = suggestedQuestionsText.substring(
-        suggestedQuestionsText.indexOf('{'),
-        suggestedQuestionsText.lastIndexOf('}') + 1
-      );
-      const suggestedQuestions = JSON.parse(trimmedText);
-      setQuestions(suggestedQuestions.questions);
+      setQuestions(data.suggested_questions || []);
     } catch (error) {
       console.error('Error fetching suggested questions:', error);
       setQuestions([]);

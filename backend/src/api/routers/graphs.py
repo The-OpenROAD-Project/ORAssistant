@@ -52,6 +52,10 @@ if embeddings_type == "HF":
     embeddings_model_name = str(os.getenv("HF_EMBEDDINGS"))
 elif embeddings_type == "GOOGLE_GENAI" or embeddings_type == "GOOGLE_VERTEXAI":
     embeddings_model_name = str(os.getenv("GOOGLE_EMBEDDINGS"))
+else:
+    raise ValueError(
+        "EMBEDDINGS_TYPE environment variable must be set to 'HF', 'GOOGLE_GENAI', or 'GOOGLE_VERTEXAI'."
+    )
 
 embeddings_config = {"type": embeddings_type, "name": embeddings_model_name}
 

@@ -9,7 +9,7 @@ client = httpx.AsyncClient(base_url=BACKEND_ENDPOINT)
 
 
 @router.post("/chat")
-async def proxy_chat(request: Request):
+async def proxy_chat(request: Request) -> Response:
     data = await request.json()
     # TODO: set this route dynamically
     resp = await client.post("/graphs/agent-retriever", json=data)
@@ -21,7 +21,7 @@ async def proxy_chat(request: Request):
 
 
 @router.post("/suggestedQuestions")
-async def suggested_questions(request: Request):
+async def suggested_questions(request: Request) -> Response:
     data = await request.json()
     # Transform camelCase to snake_case for the backend
     transformed_data = {
