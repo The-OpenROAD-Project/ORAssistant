@@ -20,3 +20,8 @@ check:
 	@. .venv/bin/activate && \
 		mypy . && \
 		ruff check
+
+.PHONY: test
+test:
+	@. .venv/bin/activate && \
+		pytest

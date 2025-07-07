@@ -6,3 +6,8 @@ types-tqdm==4.66.0.20240417
 types-beautifulsoup4==4.12.0.20240511
 ruff==0.5.1
 pre-commit==3.7.1
+pytest==8.3.2
+pytest-cov==5.0.0
+pytest-html==4.1.1
+pytest-xdist==3.6.0
+pytest-asyncio==0.23.8
