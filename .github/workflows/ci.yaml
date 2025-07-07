@@ -30,6 +30,9 @@ jobs:
     - name: Run formatting checks
       run: |
         make check
+    - name: Run unit tests
+      run: |
+        make test
     - name: Build Docker image
       run: |
         make docker-up
