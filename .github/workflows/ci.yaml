@@ -31,6 +31,7 @@ jobs:
       run: |
         make check
     - name: Run unit tests
+      working-directory: backend
       run: |
         make test
     - name: Build Docker images
