@@ -33,11 +33,6 @@ jobs:
     - name: Run unit tests
       run: |
         make test
-    - name: Build Docker image
+    - name: Build Docker images
       run: |
-        make docker-up
-        sleep 1500 # TODO: Remove this after docker-compose healthcheck timeout restored fixed.
-    - name: Teardown
-      if: always()
-      run: |
-        make docker-down
+        docker compose build
