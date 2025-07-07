@@ -23,14 +23,14 @@ class TestHealthCheckAPI:
     def test_healthcheck_endpoint_success(self, client):
         """Test healthcheck endpoint returns success response."""
         response = client.get("/healthcheck")
-        
+
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
 
     def test_healthcheck_response_model(self):
         """Test HealthCheckResponse model."""
         response = HealthCheckResponse(status="ok")
-        
+
         assert response.status == "ok"
         assert response.model_dump() == {"status": "ok"}
 
@@ -39,7 +39,7 @@ class TestHealthCheckAPI:
         # Test with valid status
         response = HealthCheckResponse(status="healthy")
         assert response.status == "healthy"
-        
+
         # Test with empty status
         response = HealthCheckResponse(status="")
         assert response.status == ""
@@ -48,7 +48,7 @@ class TestHealthCheckAPI:
     def test_healthcheck_endpoint_headers(self, client):
         """Test healthcheck endpoint response headers."""
         response = client.get("/healthcheck")
-        
+
         assert response.status_code == 200
         assert "application/json" in response.headers.get("content-type", "")
 
@@ -64,8 +64,8 @@ class TestHealthCheckAPI:
     async def test_healthcheck_function_direct_call(self):
         """Test healthcheck function can be called directly."""
         from src.api.routers.healthcheck import healthcheck
-        
+
         result = await healthcheck()
-        
+
         assert isinstance(result, HealthCheckResponse)
         assert result.status == "ok"

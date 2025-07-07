@@ -13,7 +13,8 @@ init-dev: init
 .PHONY: format
 format:
 	@. .venv/bin/activate && \
-		ruff format
+		ruff format && \
+		ruff check --fix
 
 .PHONY: check
 check:

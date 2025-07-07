@@ -52,18 +52,12 @@ def sample_documents():
     return [
         {
             "content": "This is a sample document about OpenROAD installation.",
-            "metadata": {
-                "source": "installation.md",
-                "category": "installation"
-            }
+            "metadata": {"source": "installation.md", "category": "installation"},
         },
         {
             "content": "This document explains OpenROAD flow configuration.",
-            "metadata": {
-                "source": "flow.md",
-                "category": "configuration"
-            }
-        }
+            "metadata": {"source": "flow.md", "category": "configuration"},
+        },
     ]
 
 
@@ -73,9 +67,9 @@ def mock_env_vars():
     env_vars = {
         "OPENAI_API_KEY": "test-key",
         "GOOGLE_API_KEY": "test-google-key",
-        "HUGGINGFACE_API_KEY": "test-hf-key"
+        "HUGGINGFACE_API_KEY": "test-hf-key",
     }
-    
+
     with patch.dict(os.environ, env_vars):
         yield env_vars
 
@@ -87,9 +81,9 @@ def setup_test_environment():
     src_path = Path(__file__).parent.parent / "src"
     if str(src_path) not in sys.path:
         sys.path.insert(0, str(src_path))
-    
+
     yield
-    
+
     # Cleanup after test
     if str(src_path) in sys.path:
         sys.path.remove(str(src_path))
