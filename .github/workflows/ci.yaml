@@ -30,10 +30,6 @@ jobs:
     - name: Run formatting checks
       run: |
         make check
-    - name: Build Docker image
+    - name: Build Docker images
       run: |
-        make docker-up
-    - name: Teardown
-      if: always()
-      run: |
-        make docker-down
+        docker compose build
