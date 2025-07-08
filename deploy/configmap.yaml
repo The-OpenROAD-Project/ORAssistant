@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orassistant-config
+  namespace: orassistant
+  labels:
+    app: orassistant
+    component: config
+data:
+  # Backend configuration
+  BACKEND_URL: "0.0.0.0"
+  BACKEND_WORKERS: "2"
+  HEALTHCHECK_INTERVAL: "30s"
+  HEALTHCHECK_TIMEOUT: "10s"  
+  HEALTHCHECK_RETRIES: "5"
+  HEALTHCHECK_START_PERIOD: "180s"
+  
+  # Frontend configuration
+  NODE_ENV: "production"
+  NEXT_PUBLIC_BACKEND_URL: "http://backend-internal-lb:8000"
+  
+  # Application configuration
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "production"
+  
+  # RAG configuration
+  RAG_DATA_PATH: "/ORAssistant-backend/data"
+  VECTOR_STORE_PATH: "/ORAssistant-backend/data/vectorstore"
+  
+  # Performance tuning
+  MAX_CONCURRENT_REQUESTS: "100"
+  REQUEST_TIMEOUT: "30s"
+  VECTOR_SEARCH_TIMEOUT: "10s"

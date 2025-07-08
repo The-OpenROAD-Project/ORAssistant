@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: rag-dataset-pv
+  namespace: orassistant
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ssd-regional
+  gcePersistentDisk:
+    pdName: rag-dataset-disk
+    fsType: ext4
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rag-dataset-pvc
+  namespace: orassistant
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ssd-regional
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ssd-regional
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+  replication-type: regional-pd
+  zones: us-central1-a,us-central1-b,us-central1-c
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer

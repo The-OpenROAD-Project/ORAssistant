@@ -1,0 +1,103 @@
+# Google-managed SSL Certificate (Primary Method)
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: orassistant-ssl-cert
+  namespace: orassistant
+  labels:
+    app: orassistant
+    cert-type: managed
+spec:
+  domains:
+  - orassistant.your-domain.com
+  - www.orassistant.your-domain.com
+---
+# Backup/Alternative: cert-manager with Let's Encrypt
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@your-domain.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: gce
+---
+# Let's Encrypt Certificate (Alternative)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: orassistant-letsencrypt-cert
+  namespace: orassistant
+spec:
+  secretName: orassistant-tls-secret
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - orassistant.your-domain.com
+  - www.orassistant.your-domain.com
+---
+# Certificate monitoring and alerting
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cert-monitor-config
+  namespace: orassistant
+data:
+  cert-check.sh: |
+    #!/bin/bash
+    # Certificate monitoring script
+    
+    DOMAIN="orassistant.your-domain.com"
+    
+    # Check certificate expiration
+    CERT_INFO=$(echo | openssl s_client -servername $DOMAIN -connect $DOMAIN:443 2>/dev/null | openssl x509 -noout -dates)
+    EXPIRY_DATE=$(echo "$CERT_INFO" | grep notAfter | cut -d'=' -f2)
+    EXPIRY_TIMESTAMP=$(date -d "$EXPIRY_DATE" +%s)
+    CURRENT_TIMESTAMP=$(date +%s)
+    DAYS_UNTIL_EXPIRY=$(( (EXPIRY_TIMESTAMP - CURRENT_TIMESTAMP) / 86400 ))
+    
+    echo "Certificate expires in $DAYS_UNTIL_EXPIRY days"
+    
+    # Alert if certificate expires in less than 30 days
+    if [ $DAYS_UNTIL_EXPIRY -lt 30 ]; then
+        echo "WARNING: Certificate expires in $DAYS_UNTIL_EXPIRY days!"
+        # Add your alerting logic here (email, Slack, etc.)
+    fi
+---
+# CronJob for certificate monitoring
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cert-monitor
+  namespace: orassistant
+spec:
+  schedule: "0 9 * * *"  # Daily at 9 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cert-checker
+            image: alpine:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache openssl curl
+              /scripts/cert-check.sh
+            volumeMounts:
+            - name: cert-scripts
+              mountPath: /scripts
+          volumes:
+          - name: cert-scripts
+            configMap:
+              name: cert-monitor-config
+              defaultMode: 0755
+          restartPolicy: OnFailure

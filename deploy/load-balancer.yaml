@@ -1,0 +1,89 @@
+# External Load Balancer for public traffic
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-external-lb
+  namespace: orassistant
+  annotations:
+    cloud.google.com/load-balancer-type: "External"
+    cloud.google.com/backend-config: '{"default": "frontend-backend-config"}'
+  labels:
+    app: frontend
+    component: ui
+spec:
+  selector:
+    app: frontend
+    component: ui
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 3000
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 3000
+  type: LoadBalancer
+---
+# Internal Load Balancer for backend services (private communication)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-internal-lb
+  namespace: orassistant
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+    networking.gke.io/internal-load-balancer-allow-global-access: "true"
+  labels:
+    app: backend
+    component: api
+spec:
+  selector:
+    app: backend
+    component: api
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: LoadBalancer
+---
+# Backend configuration for external load balancer
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: frontend-backend-config
+  namespace: orassistant
+spec:
+  healthCheck:
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /
+    port: 3000
+  connectionDraining:
+    drainingTimeoutSec: 60
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+  timeoutSec: 30
+---
+# Backend configuration for internal load balancer
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: backend-backend-config
+  namespace: orassistant
+spec:
+  healthCheck:
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /healthcheck
+    port: 8000
+  connectionDraining:
+    drainingTimeoutSec: 60
+  timeoutSec: 30

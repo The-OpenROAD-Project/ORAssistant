@@ -1,0 +1,63 @@
+# Environment files containing secrets
+.env
+.env.local
+.env.secrets
+.env.secrets-*
+.env.production
+.env.staging
+.env.development
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Log files
+*.log
+logs/
+
+# Kubernetes temporary files
+*.yaml.tmp
+*.yml.tmp
+
+# Certificate files
+*.crt
+*.key
+*.pem
+*.p12
+*.jks
+
+# Service account files
+*-service-account.json
+service-account-*.json
+credentials.json
+
+# Terraform state (if used)
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Local test configurations
+test-*.yaml
+local-*.yaml
