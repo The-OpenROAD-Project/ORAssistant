@@ -22,6 +22,11 @@ check:
 		mypy . && \
 		ruff check
 
+.PHONY: build-docs
+build-docs:
+	@. .venv/bin/activate && \
+		python build_docs.py
+
 .PHONY: test
 test:
 	@. .venv/bin/activate && \
