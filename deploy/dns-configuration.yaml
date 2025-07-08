@@ -1,0 +1,61 @@
+# Static IP reservation for the load balancer
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dns-setup-instructions
+  namespace: orassistant
+data:
+  setup-instructions.md: |
+    # DNS Configuration for ORAssistant
+    
+    ## 1. Reserve Static IP
+    ```bash
+    # Reserve a global static IP
+    gcloud compute addresses create orassistant-ip --global
+    
+    # Get the IP address
+    gcloud compute addresses describe orassistant-ip --global --format="value(address)"
+    ```
+    
+    ## 2. Configure DNS Records
+    In your domain registrar or DNS provider (e.g., Cloudflare, Route53, etc.):
+    
+    ### A Record:
+    - **Name**: orassistant (or your subdomain)
+    - **Type**: A
+    - **Value**: [IP from step 1]
+    - **TTL**: 300 seconds
+    
+    ### CNAME Record (optional, for www):
+    - **Name**: www.orassistant
+    - **Type**: CNAME  
+    - **Value**: orassistant.your-domain.com
+    - **TTL**: 300 seconds
+    
+    ## 3. Update Kubernetes Manifests
+    Replace 'your-domain.com' in the following files:
+    - `ingress.yaml` (line 15, 36)
+    - `managed-certificate.yaml` (line 10)
+    
+    ## 4. SSL Certificate
+    The managed certificate will automatically provision once DNS is configured.
+    
+    ## 5. Verification
+    ```bash
+    # Check certificate status
+    kubectl get managedcertificate orassistant-ssl-cert -n orassistant
+    
+    # Check ingress status
+    kubectl get ingress orassistant-ingress -n orassistant
+    ```
+---
+# DNS configuration for development/staging
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dns-dev-config
+  namespace: orassistant
+data:
+  dev-domain: "dev.orassistant.your-domain.com"
+  staging-domain: "staging.orassistant.your-domain.com"
+  prod-domain: "orassistant.your-domain.com"

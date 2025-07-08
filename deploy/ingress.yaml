@@ -1,0 +1,70 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: orassistant-ingress
+  namespace: orassistant
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: orassistant-ip
+    networking.gke.io/managed-certificates: orassistant-ssl-cert
+    kubernetes.io/ingress.allow-http: "false"
+    networking.gke.io/v1beta1.FrontendConfig: orassistant-frontend-config
+    cloud.google.com/backend-config: '{"default": "frontend-backend-config"}'
+spec:
+  rules:
+  - host: orassistant.your-domain.com
+    http:
+      paths:
+      - path: /api/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: backend-internal-lb
+            port:
+              number: 8000
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: frontend-external-lb
+            port:
+              number: 80
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: orassistant-ssl-cert
+  namespace: orassistant
+spec:
+  domains:
+  - orassistant.your-domain.com
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: orassistant-frontend-config
+  namespace: orassistant
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
+  sslPolicy: orassistant-ssl-policy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service-nodeport
+  namespace: orassistant
+  labels:
+    app: frontend
+    component: ui
+spec:
+  selector:
+    app: frontend
+    component: ui
+  ports:
+  - name: http
+    protocol: TCP
+    port: 3000
+    targetPort: 3000
+  type: NodePort

@@ -1,0 +1,225 @@
+# Default deny all ingress traffic policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: orassistant
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+# Allow ingress to frontend from load balancer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-ingress
+  namespace: orassistant
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+      component: ui
+  policyTypes:
+  - Ingress
+  ingress:
+  - from: []  # Allow from any source (load balancer)
+    ports:
+    - protocol: TCP
+      port: 3000
+---
+# Allow backend communication from frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-from-frontend
+  namespace: orassistant
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+      component: api
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from frontend pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+          component: ui
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow from load balancer for health checks
+  - from: []
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+# Allow DNS resolution for all pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: orassistant
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS queries
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+---
+# Allow egress for backend services (API calls, model downloads)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-egress
+  namespace: orassistant
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+      component: api
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow HTTPS for API calls and model downloads
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow HTTP for specific services
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 80
+  # Allow MongoDB connection (if external)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 27017
+---
+# Allow egress for frontend (API calls to backend)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-egress
+  namespace: orassistant
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+      component: ui
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow communication to backend
+  - to:
+    - podSelector:
+        matchLabels:
+          app: backend
+          component: api
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow HTTPS for external services (if needed)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+---
+# Allow communication within the same namespace for debugging
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: orassistant
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: orassistant
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: orassistant
+---
+# Allow monitoring and metrics collection
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: orassistant
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow monitoring from kube-system namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+  # Allow monitoring from monitoring namespace (if exists)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+---
+# Security policy for init containers (dataset download)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-init-container-egress
+  namespace: orassistant
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS for init containers
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow HTTPS for HuggingFace downloads
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow HTTP for package downloads
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 80

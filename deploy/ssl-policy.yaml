@@ -1,0 +1,41 @@
+# SSL Policy for enhanced security
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSSLPolicy
+metadata:
+  name: orassistant-ssl-policy
+  namespace: orassistant
+spec:
+  # Use modern TLS profile for better security
+  profile: "MODERN"
+  # Or specify custom configuration:
+  # profile: "CUSTOM"
+  # minTlsVersion: "TLS_1_2"
+  # customFeatures:
+  #   - "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+  #   - "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+  #   - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+  #   - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+---
+# Enhanced Frontend configuration with SSL and security headers
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: orassistant-frontend-config
+  namespace: orassistant
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
+  sslPolicy: orassistant-ssl-policy
+  # Add security headers
+  customRequestHeaders:
+    headers:
+    - "X-Client-Region:{client_region}"
+    - "X-Client-City:{client_city}"
+  # Connection draining for rolling updates
+  connectionDraining:
+    drainingTimeoutSec: 60
+  # Session affinity for better performance
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+    affinityCookieTtlSec: 3600
