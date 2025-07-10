@@ -27,14 +27,13 @@ jobs:
     - name: Setup prereqs
       run: |
         make init-dev
-        sudo apt-get install -y pandoc
     - name: Run formatting checks
       run: |
         make check
     - name: Run unit tests
       working-directory: backend
       run: |
-        make build-docs
+        huggingface-cli download --repo-type dataset The-OpenROAD-Project/ORAssistant_RAG_Dataset --include source_list.json --local-dir data/
         export GOOGLE_API_KEY="dummy-unit-test-key"
         make test
     - name: Build Docker images
