@@ -1,5 +1,4 @@
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
 
 interface Thread {
   id: string;
@@ -10,8 +9,8 @@ interface Thread {
 interface ChatHistoryProps {
   threads: Thread[];
   onNewChat: () => void;
-  onSelectThread: (threadId: string) => void;
-  onDeleteThread: (threadId: string) => void;
+  onSelectThread: (_threadId: string) => void;
+  onDeleteThread: (_threadId: string) => void;
   isMobile: boolean;
   onClose: () => void;
 }

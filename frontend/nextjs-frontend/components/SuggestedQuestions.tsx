@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import useWindowSize from '../hooks/useWindowSize';
 
 interface SuggestedQuestionsProps {
-  onSelectQuestion: (question: string) => void;
+  onSelectQuestion: (_question: string) => void;
   latestQuestion: string;
   assistantAnswer: string;
 }
@@ -39,8 +39,8 @@ export default function SuggestedQuestions({
 
       const data = await response.json();
       setQuestions(data.suggested_questions || []);
-    } catch (error) {
-      console.error('Error fetching suggested questions:', error);
+    } catch {
+      // Handle error fetching suggested questions
       setQuestions([]);
     } finally {
       setIsLoading(false);
@@ -66,9 +66,9 @@ export default function SuggestedQuestions({
         </div>
       ) : (
         <ul className="space-y-2">
-          {questions.map((question, index) => (
+          {questions.map((question, _index) => (
             <li
-              key={index}
+              key={`question-${question.substring(0, 50)}`} // Substring to limit key length
               onClick={() => onSelectQuestion(question)}
               className="bg-gray-100 dark:bg-gray-700 p-2 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white transition-colors duration-200 break-words"
             >
