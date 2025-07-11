@@ -7,7 +7,7 @@ import argparse
 import time
 import requests
 import os
-import random
+import backoff
 from typing import List
 
 from dotenv import load_dotenv
@@ -101,30 +101,19 @@ class EvaluationHarness:
                 continue
         raise ValueError("Sanity check failed after timeout")
 
-    def retry_with_exponential_backoff(self, func, *args, **kwargs):
-        """Retry function with exponential backoff for handling rate limits."""
-        for attempt in range(self.max_retries + 1):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                error_message = str(e)
-                if "429" in error_message:
-                    if attempt < self.max_retries:
-                        delay = self.base_delay**attempt + random.uniform(0, 1)
-                        print(
-                            f"Rate limit hit, retrying in {delay:.1f}s (attempt {attempt + 1})"
-                        )
-                        time.sleep(delay)
-                        continue
-                    print(f"Max retries reached: {error_message}")
-                raise
-        return None
 
     def evaluate_batch(
         self, test_cases: List[LLMTestCase], metrics: List[BaseMetric]
     ) -> None:
         """Evaluate a batch of test cases with retry logic."""
-
+        @backoff.on_exception(
+            backoff.expo,
+            Exception,
+            giveup=lambda e: "429" not in str(e) and "RESOURCE_EXHAUSTED" not in str(e),
+            max_tries=self.max_retries + 1,
+            jitter=backoff.random_jitter,
+            base= self.base_delay,
+        )
         def _evaluate_batch():
             evaluate(
                 test_cases=test_cases,
@@ -132,8 +121,8 @@ class EvaluationHarness:
                 print_results=False,
                 disable_tqdm=True,
             )
-
-        self.retry_with_exponential_backoff(_evaluate_batch)
+        
+        _evaluate_batch()
 
     def evaluate_with_rate_limiting(
         self, test_cases: List[LLMTestCase], metrics: List[BaseMetric]
