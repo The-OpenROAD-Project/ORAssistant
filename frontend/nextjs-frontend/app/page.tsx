@@ -5,20 +5,17 @@ import {
   SunIcon,
   MoonIcon,
   BoltIcon,
-  PlusIcon,
-  TrashIcon,
   Bars3Icon,
-  ArrowLeftIcon,
 } from '@heroicons/react/24/solid';
-import ChatHistory from '../components/ChatHistory';
-import MessageList from '../components/MessageList';
-import SourceList from '../components/SourceList';
-import SuggestedQuestions from '../components/SuggestedQuestions';
 import { useTheme } from 'next-themes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import ChatHistory from '../components/ChatHistory';
+import MessageList from '../components/MessageList';
+import SourceList from '../components/SourceList';
+import SuggestedQuestions from '../components/SuggestedQuestions';
 import useWindowSize from '../hooks/useWindowSize';
 import './globals.css';
 import '../styles/markdown-table.css';
@@ -291,13 +288,7 @@ export default function Home() {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      code({
-                        node,
-                        inline,
-                        className,
-                        children,
-                        ...props
-                      }: any) {
+                      code({ inline, className, children, ...props }: any) {
                         const match = /language-(\w+)/.exec(className || '');
                         return !inline && match ? (
                           <div className="relative group">

@@ -19,8 +19,48 @@ const config = [
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     rules: {
+      // React hooks
       'react-hooks/exhaustive-deps': 'warn',
+
+      // Import/export
       'import/no-anonymous-default-export': 'off',
+      'import/order': [
+        'error',
+        {
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+          ],
+          'newlines-between': 'never',
+        },
+      ],
+
+      // Code style and readability
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'prefer-const': 'error',
+
+      // React specific
+      'react/prop-types': 'off',
+      'react/jsx-key': 'error',
+      'react/no-array-index-key': 'warn',
+      'react/jsx-no-useless-fragment': 'warn',
+      'react/jsx-curly-brace-presence': [
+        'error',
+        { props: 'never', children: 'never' },
+      ],
+
+      // Formatting (handled by prettier but good to enforce)
+      'max-len': ['warn', { code: 100, ignoreUrls: true }],
+      'object-curly-spacing': ['error', 'always'],
+      'array-bracket-spacing': ['error', 'never'],
+      'comma-dangle': ['error', 'always-multiline'],
+      'quote-props': ['error', 'as-needed'],
+      quotes: ['error', 'single', { avoidEscape: true }],
+      semi: ['error', 'always'],
     },
   },
   ...compat.extends('next/core-web-vitals', 'plugin:prettier/recommended'),

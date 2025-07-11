@@ -12,7 +12,7 @@ interface MessageListProps {
   messages: Message[];
   responseTime: number | null;
   isLoading: boolean;
-  renderMarkdown: (content: string) => React.ReactNode;
+  renderMarkdown: (_content: string) => React.ReactNode;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -26,8 +26,8 @@ const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div className="space-y-4">
-      {messages.map((message, index) => (
-        <div key={index} className="space-y-2">
+      {messages.map((message) => (
+        <div key={`message-${message.timestamp}`} className="space-y-2">
           <div className="flex justify-end">
             <div
               className={`bg-blue-100 dark:bg-blue-900 p-3 rounded-3xl ${
@@ -45,11 +45,12 @@ const MessageList: React.FC<MessageListProps> = ({
             <div className="mb-2 break-words overflow-x-auto">
               {renderMarkdown(message.answer)}
             </div>
-            {index === messages.length - 1 && responseTime && (
-              <div className="text-sm text-gray-500">
-                Response time: {responseTime}ms
-              </div>
-            )}
+            {messages.indexOf(message) === messages.length - 1 &&
+              responseTime && (
+                <div className="text-sm text-gray-500">
+                  Response time: {responseTime}ms
+                </div>
+              )}
           </div>
         </div>
       ))}
