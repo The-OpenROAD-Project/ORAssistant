@@ -17,7 +17,7 @@ import SuggestedQuestions from '../components/SuggestedQuestions';
 import { useTheme } from 'next-themes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Highlight, themes } from 'prism-react-renderer';
+import { Highlight, themes, Token } from 'prism-react-renderer';
 import useWindowSize from '../hooks/useWindowSize';
 import './globals.css';
 import '../styles/markdown-table.css';
@@ -296,7 +296,13 @@ export default function Home() {
                         className,
                         children,
                         ...props
-                      }: any) {
+                      }: {
+                        node?: any;
+                        inline?: boolean;
+                        className?: string;
+                        children?: React.ReactNode;
+                        [key: string]: any;
+                      }) {
                         const match = /language-(\w+)/.exec(className || '');
                         return !inline && match ? (
                           <div className="relative group">
@@ -315,11 +321,21 @@ export default function Home() {
                                 tokens,
                                 getLineProps,
                                 getTokenProps,
-                              }: any) => (
+                              }: {
+                                className: string;
+                                style: React.CSSProperties;
+                                tokens: Token[][];
+                                getLineProps: (input: {
+                                  line: Token[];
+                                }) => React.HTMLProps<HTMLDivElement>;
+                                getTokenProps: (input: {
+                                  token: Token;
+                                }) => React.HTMLProps<HTMLSpanElement>;
+                              }) => (
                                 <pre className={className} style={style}>
-                                  {tokens.map((line: any, i: number) => (
+                                  {tokens.map((line: Token[], i: number) => (
                                     <div key={i} {...getLineProps({ line })}>
-                                      {line.map((token: any, key: number) => (
+                                      {line.map((token: Token, key: number) => (
                                         <span
                                           key={key}
                                           {...getTokenProps({ token })}
