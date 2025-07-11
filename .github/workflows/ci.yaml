@@ -33,6 +33,7 @@ jobs:
     - name: Run unit tests
       working-directory: backend
       run: |
+        pip install huggingface_hub[cli]
         huggingface-cli download --repo-type dataset The-OpenROAD-Project/ORAssistant_RAG_Dataset --include source_list.json --local-dir data/
         export GOOGLE_API_KEY="dummy-unit-test-key"
         make test
