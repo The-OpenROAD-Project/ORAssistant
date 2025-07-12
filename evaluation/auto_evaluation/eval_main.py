@@ -8,6 +8,7 @@ import time
 import requests
 import os
 import backoff
+import asyncio
 from typing import List
 
 from dotenv import load_dotenv
@@ -101,18 +102,18 @@ class EvaluationHarness:
                 continue
         raise ValueError("Sanity check failed after timeout")
 
-
     def evaluate_batch(
         self, test_cases: List[LLMTestCase], metrics: List[BaseMetric]
     ) -> None:
         """Evaluate a batch of test cases with retry logic."""
+
         @backoff.on_exception(
             backoff.expo,
             Exception,
             giveup=lambda e: "429" not in str(e) and "RESOURCE_EXHAUSTED" not in str(e),
             max_tries=self.max_retries + 1,
             jitter=backoff.random_jitter,
-            base= self.base_delay,
+            base=self.base_delay,
         )
         def _evaluate_batch():
             evaluate(
@@ -121,29 +122,33 @@ class EvaluationHarness:
                 print_results=False,
                 disable_tqdm=True,
             )
-        
+
         _evaluate_batch()
 
-    def evaluate_with_rate_limiting(
+    async def evaluate_with_rate_limiting(
         self, test_cases: List[LLMTestCase], metrics: List[BaseMetric]
     ) -> None:
         """Evaluate test cases in batches with rate limiting."""
         total_batches = (len(test_cases) + self.batch_size - 1) // self.batch_size
         print(f"Evaluating {len(test_cases)} test cases in {total_batches} batches")
 
+        async def process_batch(batch_num: int, batch: List[LLMTestCase]) -> None:
+            """Process a single batch with rate limiting."""
+            print(f"Batch {batch_num}/{total_batches}")
+            self.evaluate_batch(batch, metrics)
+
+        # Process batches sequentially with async delays for rate limiting
         for batch_start in range(0, len(test_cases), self.batch_size):
             batch_num = batch_start // self.batch_size + 1
             batch = test_cases[batch_start : batch_start + self.batch_size]
 
-            print(f"Batch {batch_num}/{total_batches}")
-
-            self.evaluate_batch(batch, metrics)
+            await process_batch(batch_num, batch)
 
             # Add delay between batches (except for the last batch)
             if batch_start + self.batch_size < len(test_cases):
-                time.sleep(self.delay_between_batches)
+                await asyncio.sleep(self.delay_between_batches)
 
-    def evaluate(self, retriever: str):
+    async def evaluate(self, retriever: str):
         retrieval_tcs = []
         response_times = []
 
@@ -155,7 +160,7 @@ class EvaluationHarness:
         )
 
         # retrieval test cases
-        for i, qa_pair in enumerate(tqdm(self.qns, desc="Evaluating")):
+        for _i, qa_pair in enumerate(tqdm(self.qns, desc="Evaluating")):
             question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
             response, response_time = self.query(retriever, question)
             response_text = response["response"]
@@ -173,7 +178,7 @@ class EvaluationHarness:
             response_times.append(response_time)
 
         # batched evaluate with rate limiting
-        self.evaluate_with_rate_limiting(
+        await self.evaluate_with_rate_limiting(
             test_cases=retrieval_tcs,
             metrics=[precision, recall, hallucination],
         )
@@ -206,7 +211,7 @@ class EvaluationHarness:
             }, -999999
 
 
-if __name__ == "__main__":
+async def main():
     parser = argparse.ArgumentParser(description="Evaluation script")
     parser.add_argument(
         "--base_url", type=str, help="Base URL of the model to evaluate"
@@ -223,4 +228,8 @@ if __name__ == "__main__":
 
     # Evaluate the model on the dataset
     harness = EvaluationHarness(args.base_url, args.dataset, args.reranker_base_url)
-    harness.evaluate(args.retriever)
+    await harness.evaluate(args.retriever)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
