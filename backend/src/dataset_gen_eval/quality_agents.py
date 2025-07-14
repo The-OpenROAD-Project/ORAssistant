@@ -1,14 +1,9 @@
-import sys
-from pathlib import Path
+from typing import Any
 from dotenv import load_dotenv
 
-
-src_path = Path(__file__).parent.parent
-sys.path.insert(0, str(src_path))
-
 from langchain_google_genai import ChatGoogleGenerativeAI
-from deepeval.metrics import BaseMetric
-from deepeval.test_case import LLMTestCase
+from deepeval.metrics.base_metric import BaseMetric
+from deepeval.test_case.llm_test_case import LLMTestCase
 
 load_dotenv()
 
@@ -87,49 +82,50 @@ class GroundednessMetric(BaseMetric):
         self.threshold = threshold
         self.evaluation_model = "gemini-2.5-pro"
         self.include_reason = True
-        
-        
+
         self.llm = ChatGoogleGenerativeAI(
             model=self.evaluation_model,
             temperature=0.3,
         )
 
-    def measure(self, tc: LLMTestCase) -> float:
+    def measure(self, test_case: LLMTestCase, *args: Any, **kwargs: Any) -> float:
         """Synchronous version of the metric evaluation."""
         prompt = question_groundedness_critique_prompt.format(
-            question=tc.input, 
-            context="\n".join(tc.context or [])
+            question=test_case.input, context="\n".join(test_case.context or [])
         )
-        
+
         try:
-           
             response = self.llm.invoke(prompt)
-            response_text = response.content.strip()
-            
+            response_content = response.content
+            response_text = response_content.strip() if isinstance(response_content, str) else str(response_content).strip()
+
             #
             if "Total rating:" in response_text:
                 rating_line = response_text.split("Total rating:")[-1].strip()
-                
+
                 score_1_5 = int(rating_line.split()[0])
             else:
-                
-                lines = response_text.split('\n')
-                score_1_5 = 3 
+                lines = response_text.split("\n")
+                score_1_5 = 3
                 for line in lines:
-                    if any(keyword in line.lower() for keyword in ['rating:', 'score:']):
+                    if any(
+                        keyword in line.lower() for keyword in ["rating:", "score:"]
+                    ):
                         try:
-                            score_1_5 = int([char for char in line if char.isdigit()][0])
+                            score_1_5 = int(
+                                [char for char in line if char.isdigit()][0]
+                            )
                             break
                         except (IndexError, ValueError):
                             continue
-            
+
             # Convert to 0-1 scale as expected by DeepEval
             self.score = score_1_5 / 5.0
             self.reason = response_text
             self.success = self.score >= self.threshold
-            
+
             return self.score
-            
+
         except Exception as e:
             self.score = 0.0
             self.reason = f"Error during evaluation: {str(e)}"
@@ -137,66 +133,65 @@ class GroundednessMetric(BaseMetric):
             self.error = str(e)
             return self.score
 
-    async def a_measure(self, tc: LLMTestCase):
+    async def a_measure(self, test_case: LLMTestCase, *args: Any, **kwargs: Any) -> float:
         """Async version - fallback to synchronous since we don't have async client setup."""
-        return self.measure(tc)
+        return self.measure(test_case, *args, **kwargs)
 
     def is_successful(self) -> bool:
         """Check if the metric evaluation was successful."""
-        return False if getattr(self, "error", None) else self.success
+        return False if getattr(self, "error", None) else bool(getattr(self, "success", False))
 
-    @property
-    def __name__(self):
+    def get_metric_name(self) -> str:
         return "Question Groundedness"
 
 
 class QuestionRelevanceMetric(BaseMetric):
     """DeepEval metric for evaluating question relevance to ML developers building NLP applications."""
-    
+
     def __init__(self, threshold: float = 0.6):
         self.threshold = threshold
         self.evaluation_model = "gemini-2.5-pro"
         self.include_reason = True
-        
-        
+
         self.llm = ChatGoogleGenerativeAI(
             model=self.evaluation_model,
             temperature=0.3,
         )
 
-    def measure(self, tc: LLMTestCase) -> float:
+    def measure(self, test_case: LLMTestCase, *args: Any, **kwargs: Any) -> float:
         """Synchronous version of the metric evaluation."""
-        prompt = question_relevance_critique_prompt.format(
-            question=tc.input
-        )
-        
+        prompt = question_relevance_critique_prompt.format(question=test_case.input)
+
         try:
-            
             response = self.llm.invoke(prompt)
-            response_text = response.content.strip()
-            
-            
+            response_content = response.content
+            response_text = response_content.strip() if isinstance(response_content, str) else str(response_content).strip()
+
             if "Total rating:" in response_text:
                 rating_line = response_text.split("Total rating:")[-1].strip()
                 score_1_5 = int(rating_line.split()[0])
             else:
-                lines = response_text.split('\n')
+                lines = response_text.split("\n")
                 score_1_5 = 3  # Default score
                 for line in lines:
-                    if any(keyword in line.lower() for keyword in ['rating:', 'score:']):
+                    if any(
+                        keyword in line.lower() for keyword in ["rating:", "score:"]
+                    ):
                         try:
-                            score_1_5 = int([char for char in line if char.isdigit()][0])
+                            score_1_5 = int(
+                                [char for char in line if char.isdigit()][0]
+                            )
                             break
                         except (IndexError, ValueError):
                             continue
-            
+
             # Convert to 0-1 scale as expected by DeepEval
             self.score = score_1_5 / 5.0
             self.reason = response_text
             self.success = self.score >= self.threshold
-            
+
             return self.score
-            
+
         except Exception as e:
             self.score = 0.0
             self.reason = f"Error during evaluation: {str(e)}"
@@ -204,68 +199,65 @@ class QuestionRelevanceMetric(BaseMetric):
             self.error = str(e)
             return self.score
 
-    async def a_measure(self, tc: LLMTestCase):
+    async def a_measure(self, test_case: LLMTestCase, *args: Any, **kwargs: Any) -> float:
         """Async version - fallback to synchronous since we don't have async client setup."""
-        return self.measure(tc)
+        return self.measure(test_case, *args, **kwargs)
 
     def is_successful(self) -> bool:
         """Check if the metric evaluation was successful."""
-        return False if getattr(self, "error", None) else self.success
+        return False if getattr(self, "error", None) else bool(getattr(self, "success", False))
 
-    @property
-    def __name__(self):
+    def get_metric_name(self) -> str:
         return "Question Relevance"
 
 
 class QuestionStandaloneMetric(BaseMetric):
     """DeepEval metric for evaluating question context-independence."""
-    
+
     def __init__(self, threshold: float = 0.6):
         self.threshold = threshold
         self.evaluation_model = "gemini-2.5-pro"
         self.include_reason = True
-        
-        
+
         self.llm = ChatGoogleGenerativeAI(
             model=self.evaluation_model,
             temperature=0.3,
         )
 
-    def measure(self, tc: LLMTestCase) -> float:
+    def measure(self, test_case: LLMTestCase, *args: Any, **kwargs: Any) -> float:
         """Synchronous version of the metric evaluation."""
-        prompt = question_standalone_critique_prompt.format(
-            question=tc.input
-        )
-        
+        prompt = question_standalone_critique_prompt.format(question=test_case.input)
+
         try:
-            
             response = self.llm.invoke(prompt)
-            response_text = response.content.strip()
-            
-            
+            response_content = response.content
+            response_text = response_content.strip() if isinstance(response_content, str) else str(response_content).strip()
+
             if "Total rating:" in response_text:
                 rating_line = response_text.split("Total rating:")[-1].strip()
-                
+
                 score_1_5 = int(rating_line.split()[0])
             else:
-               
-                lines = response_text.split('\n')
+                lines = response_text.split("\n")
                 score_1_5 = 3  # Default score
                 for line in lines:
-                    if any(keyword in line.lower() for keyword in ['rating:', 'score:']):
+                    if any(
+                        keyword in line.lower() for keyword in ["rating:", "score:"]
+                    ):
                         try:
-                            score_1_5 = int([char for char in line if char.isdigit()][0])
+                            score_1_5 = int(
+                                [char for char in line if char.isdigit()][0]
+                            )
                             break
                         except (IndexError, ValueError):
                             continue
-            
-     
+
             self.score = score_1_5 / 5.0
             self.reason = response_text
             self.success = self.score >= self.threshold
-            
+
             return self.score
-            
+
         except Exception as e:
             self.score = 0.0
             self.reason = f"Error during evaluation: {str(e)}"
@@ -273,14 +265,13 @@ class QuestionStandaloneMetric(BaseMetric):
             self.error = str(e)
             return self.score
 
-    async def a_measure(self, tc: LLMTestCase):
+    async def a_measure(self, test_case: LLMTestCase, *args: Any, **kwargs: Any) -> float:
         """Async version - fallback to synchronous since we don't have async client setup."""
-        return self.measure(tc)
+        return self.measure(test_case, *args, **kwargs)
 
     def is_successful(self) -> bool:
         """Check if the metric evaluation was successful."""
-        return False if getattr(self, "error", None) else self.success
+        return False if getattr(self, "error", None) else bool(getattr(self, "success", False))
 
-    @property
-    def __name__(self):
+    def get_metric_name(self) -> str:
         return "Question Standalone"

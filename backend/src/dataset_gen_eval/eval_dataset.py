@@ -1,9 +1,9 @@
 import json
-from deepeval.test_case import LLMTestCase
+from deepeval.test_case.llm_test_case import LLMTestCase
 from .quality_agents import (
     GroundednessMetric,
     QuestionRelevanceMetric,
-    QuestionStandaloneMetric
+    QuestionStandaloneMetric,
 )
 
 
@@ -23,13 +23,15 @@ for entry in qa_pairs:
     question = entry["question"]
     answer = entry["answer"]
     context = entry["context"]
-    
-    test_case_question = LLMTestCase(input=question,actual_output="", context=[context])
-    
+
+    test_case_question = LLMTestCase(
+        input=question, actual_output="", context=[context]
+    )
+
     groundedness_score = groundedness_metric.measure(test_case_question)
     relevance_score = relevance_metric.measure(test_case_question)
     standalone_score = standalone_metric.measure(test_case_question)
-    
+
     print(f"Question: {question}")
     print(f"  Groundedness: {groundedness_score:.2f} ({groundedness_metric.reason})")
     print(f"  Relevance: {relevance_score:.2f} ({relevance_metric.reason})")
