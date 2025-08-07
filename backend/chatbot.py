@@ -1,5 +1,4 @@
 import os
-
 import logging
 from src.api.routers import graphs
 
@@ -59,8 +58,13 @@ if __name__ == "__main__":
             and "messages" in output[-1]["mcp_tools"]
         ):
             logging.info(output)
-            if len(output[-1]["mcp_tools"]["messages"]) > 0:
-                print(output[-1]["mcp_tools"]["messages"])
+            llm_response = output[-1]["mcp_tools"]["messages"][0]
+            chat_history.append({"User": user_question, "AI": llm_response})
+            result = output[-1]["mcp_tools"]["messages"]
+            print()
+            if len(result) > 0:
+                for _ in result:
+                    print(_)
             else:
                 print("No Message!")
         else:

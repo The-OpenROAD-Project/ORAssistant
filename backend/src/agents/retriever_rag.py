@@ -24,6 +24,7 @@ class ToolNode:
         if query is None:
             raise ValueError("Query is None")
 
+        # TODO: need to ensure that there is only three unpacked values
         response, sources, urls = self.tool_fn.invoke(query)  # type: ignore
 
         if response != []:
@@ -47,9 +48,9 @@ class ToolNode:
         return {"context": response, "sources": sources, "urls": urls}
 
 class RAG:
-    def rag_initialize(self, debug=False):
+    def rag_initialize(self):
         self.retriever_tools: RetrieverTools = RetrieverTools()
-        if not debug:
+        if not self.debug:
             self.retriever_tools.initialize(
                 embeddings_config=self.embeddings_config,
                 reranking_model_name=self.reranking_model_name,
@@ -78,71 +79,73 @@ class RAG:
             text_desc = render_text_description([tool])
             text_desc.replace("(query: str) -> Tuple[str, list[str], list[str]]", " ")
             self.tool_descriptions += text_desc + "\n\n"
+
     def rag_agent(self, state: AgentState) -> dict[str, list[str]]:
         followup_question = state["messages"][-1].content
 
         if self.llm is None:
             return {"tools": []}
 
-       # TODO: delete this branch since inbuilt always false
-       #if self.inbuilt_tool_calling:
-       #    model = self.llm.bind_tools(self.tools, tool_choice="any")
+        if self.inbuilt_tool_calling:
+            model = self.llm.bind_tools(self.tools, tool_choice="any")
 
-       #    tool_choice_chain = (
-       #        ChatPromptTemplate.from_template(rephrase_prompt_template)
-       #        | self.llm
-       #        | JsonOutputParser()
-       #    )
-       #    response = tool_choice_chain.invoke(
-       #        {
-       #            "question": followup_question,
-       #            "chat_history": state["chat_history"],
-       #        }
-       #    )
-
-       #    response = model.invoke(followup_question)
-
-       #    if response is None or response.tool_calls is None:
-       #        return {"tools": []}
-
-       #    return {"tools": response.tool_calls}
-
-       #else:
-        tool_rephrase_chain = (
-            ChatPromptTemplate.from_template(tool_rephrase_prompt_template)
-            | self.llm
-            | JsonOutputParser()
-        )
-        response = tool_rephrase_chain.invoke(
-            {
-                "question": followup_question,
-                "tool_descriptions": self.tool_descriptions,
-                "chat_history": state["chat_history"],
-            }
-        )
-
-        if response is None:
-            logging.warning(
-                "Tool selection response not found. Returning empty tool list."
+            tool_choice_chain = (
+                ChatPromptTemplate.from_template(rephrase_prompt_template)
+                | model
+                #| JsonOutputParser()
             )
-            return {"tools": []}
+            response = tool_choice_chain.invoke(
+                {
+                    "question": followup_question,
+                    "chat_history": state["chat_history"],
+                }
+            )
 
-        if "tool_names" in str(response):
-            tool_calls = response.get("tool_names", [])
-            for tool in tool_calls:
-                if tool not in self.tool_names:
-                    logging.warning(f"Tool {tool} not found in tool list.")
-                    tool_calls.remove(tool)
+            #response = model.invoke(followup_question)
+
+            if response is None or response.tool_calls is None:
+                return {"tools": []}
+
+            logging.info(response.tool_calls)
+
+            return {"tools": response.tool_calls}
+
         else:
-            logging.warning(str(response))
-            logging.warning("Tool selection failed. Returning empty tool list.")
+            tool_rephrase_chain = (
+                ChatPromptTemplate.from_template(tool_rephrase_prompt_template)
+                | self.llm
+                | JsonOutputParser()
+            )
+            response = tool_rephrase_chain.invoke(
+                {
+                    "question": followup_question,
+                    "tool_descriptions": self.tool_descriptions,
+                    "chat_history": state["chat_history"],
+                }
+            )
 
-        if "rephrased_question" in str(response):
-            state["messages"][-1].content = response.get("rephrased_question")
-        else:
-            logging.warning("Rephrased question not found in response.")
+            if response is None:
+                logging.warning(
+                    "Tool selection response not found. Returning empty tool list."
+                )
+                return {"tools": []}
 
-        return {"tools": tool_calls}
+            if "tool_names" in str(response):
+                tool_calls = response.get("tool_names", [])
+                for tool in tool_calls:
+                    if tool not in self.tool_names:
+                        logging.warning(f"Tool {tool} not found in tool list.")
+                        tool_calls.remove(tool)
+            else:
+                logging.warning(str(response))
+                logging.warning("Tool selection failed. Returning empty tool list.")
+
+            if "rephrased_question" in str(response):
+                state["messages"][-1].content = response.get("rephrased_question")
+            else:
+                logging.warning("Rephrased question not found in response.")
+
+            return {"tools": tool_calls}
     ### end of agent
     def rag_route(self, state: AgentState) -> list[str]:
         tools = state["tools"]
@@ -151,11 +154,11 @@ class RAG:
             return ["retrieve_general"]
 
        # TODO: delete
-       #if self.inbuilt_tool_calling:
-       #    tool_names = [tool["name"] for tool in tools if "name" in tool]  # type: ignore
-       #    return tool_names
-       #else:
-        return tools
+        if self.inbuilt_tool_calling:
+            tool_names = [tool["name"] for tool in tools if "name" in tool]  # type: ignore
+            return tool_names
+        else:
+            return tools
     ### end of route
     def rag_generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
         query = state["messages"][-1].content

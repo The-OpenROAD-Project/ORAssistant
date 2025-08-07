@@ -3,6 +3,9 @@ import logging
 from dotenv import load_dotenv
 from typing import Union
 
+load_dotenv()
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
+
 from fastapi import APIRouter
 
 from langchain_google_vertexai import ChatVertexAI
@@ -15,8 +18,6 @@ from starlette.responses import StreamingResponse
 from ...agents.retriever_graph import RetrieverGraph
 from ..models.response_model import ChatResponse, ContextSource, UserInput
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
-load_dotenv()
 
 required_env_vars = [
     "USE_CUDA",
@@ -35,12 +36,16 @@ if missing_vars:
 use_cuda: bool = False
 llm_temp: float = 0.0
 fast_mode: bool = False
+debug: bool = False
 
 if str(os.getenv("USE_CUDA")).lower() in ("true"):
     use_cuda = True
 
 if str(os.getenv("FAST_MODE")).lower() in ("true"):
     fast_mode = True
+
+if str(os.getenv("DEBUG")).lower() in ("true"):
+    debug = True
 
 llm_temp_str = os.getenv("LLM_TEMP")
 if llm_temp_str is not None:
@@ -83,8 +88,9 @@ rg = RetrieverGraph(
     embeddings_config=embeddings_config,
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
-    inbuilt_tool_calling=False,
+    inbuilt_tool_calling=True,
     fast_mode=fast_mode,
+    debug=debug
 )
 rg.initialize()
 

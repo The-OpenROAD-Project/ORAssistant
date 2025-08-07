@@ -127,9 +127,6 @@ class ORFS(ORFS_Tools):
         return f"finished {command}"
 
     def run_command(cmd):
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-
         logging.info("start command")
 
         process = subprocess.Popen(
@@ -142,11 +139,11 @@ class ORFS(ORFS_Tools):
         )
 
         for line in process.stdout:
-            logger.info(line.rstrip())
+            logging.info(line.rstrip())
 
         process.wait()
         if process.returncode != 0:
-            logger.error(f"Command exited with return code {process.returncode}")
+            logging.error(f"Command exited with return code {process.returncode}")
             raise subprocess.CalledProcessError(process.returncode, cmd)
 
     # TODO: scrape all makefile keywords and make into mcp tool

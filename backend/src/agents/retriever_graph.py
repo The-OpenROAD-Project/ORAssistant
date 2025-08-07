@@ -13,6 +13,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
+from langchain_core.tools import tool
 
 from .retriever_typing import AgentState
 from .retriever_tools import RetrieverTools
@@ -40,12 +41,14 @@ class RetrieverGraph(RAG, MCP, Arch):
         inbuilt_tool_calling: bool,
         use_cuda: bool = False,
         fast_mode: bool = False,
+        debug: bool = False,
     ):
         self.llm = llm_model
         self.embeddings_config = embeddings_config
         self.reranking_model_name = reranking_model_name
         self.inbuilt_tool_calling = inbuilt_tool_calling
         self.use_cuda = use_cuda
+        self.debug = debug
 
         self.rag_initialize()
 
@@ -57,27 +60,79 @@ class RetrieverGraph(RAG, MCP, Arch):
 
         self.workflow = None
 
+    @staticmethod
+    @tool
+    def arch_info(query: str) -> str:
+        """
+        3. **arch_info** — The user wants you to generate files for them related to the OpenROAD infrastructure like giving them environment variables.
+        """
+        return "mcp_agent"
+
+    @staticmethod
+    @tool
+    def mcp_info(query: str) -> str:
+        """
+        2. **mcp_info** — The user wants to run a command or perform a shell/system action, typically involving terminal, scripting, or environment changes.
+        """
+        return "mcp_agent"
+
+    @staticmethod
+    @tool
+    def rag_info(query: str) -> str:
+        """
+        1. **rag_info** — The user is trying to find specific information from a document or context, such as a PDF, website, or database. The user is asking information about the tool infrastructure. This is usually phrased as a question rather than command. This is general information to onboard new users.
+
+        """
+        return "rag_agent"
+
     def classify(self, state: AgentState) -> None:
         """Determine if architecture/config, execute, or RAG. Handle misc."""
-        logging.info("classify task")
+        if self.inbuilt_tool_calling:
+            question = state["messages"][-1].content
+            model = self.llm.bind_tools([self.rag_info, self.mcp_info, self.arch_info], tool_choice="any")
 
-        classify_chain = (
-            ChatPromptTemplate.from_template(classify_prompt_template)
-            | self.llm
-        )
-        question = state["messages"][-1].content
-        logging.info(question)
-        response = classify_chain.invoke(
-            {
-                "question": question,
+            classify_chain = (
+                ChatPromptTemplate.from_template(classify_prompt_template)
+                | model
+            )
+            response = classify_chain.invoke(
+                {
+                    "question": question,
+                }
+            )
+
+            fork_lookup = {
+                "rag_info": self.rag_info,
+                "mcp_info": self.mcp_info,
+                "arch_info": self.arch_info
             }
-        )
+            for tool_call in response.tool_calls:
+                tool = fork_lookup[tool_call["name"]]
+                result = tool.invoke(tool_call["args"])
 
-        logging.info(response.content)
-        return {"agent_type": response.content}
+            logging.info(result)
+            return {"agent_type": [result]}
+        else:
+            logging.info("classify task")
+
+            classify_chain = (
+                ChatPromptTemplate.from_template(classify_prompt_template)
+                | self.llm
+            )
+            question = state["messages"][-1].content
+            logging.info(question)
+            response = classify_chain.invoke(
+                {
+                    "question": question,
+                }
+            )
+
+            logging.info(response.content)
+            return {"agent_type": [response.content]}
 
     def fork_route(self, state: AgentState) -> list[str]:
-        tmp = state["agent_type"]
+        # TODO: if more than one agent add handler
+        tmp = state["agent_type"][0]
         return tmp
 
     def initialize(self) -> None:
