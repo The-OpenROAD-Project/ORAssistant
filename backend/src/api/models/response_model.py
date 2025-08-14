@@ -13,6 +13,15 @@ class ContextSource(BaseModel):
     context: str = ""
 
 
+class SuggestedQuestions(BaseModel):
+    suggested_questions: list[str]
+
+
+class SuggestedQuestionInput(BaseModel):
+    latest_question: str
+    assistant_answer: str
+
+
 class ChatResponse(BaseModel):
     response: str
     context_sources: list[ContextSource] = []

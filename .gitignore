@@ -35,3 +35,12 @@ temp_test_run_data.json
 
 # backend
 faiss_db
+
+# frontend
+node_modules
+.next
+
+# coverage
+coverage.xml
+report.html
+.coverage
