@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 from langgraph.graph import START, END, StateGraph
 from .retriever_typing import AgentState

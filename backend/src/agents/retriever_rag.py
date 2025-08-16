@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 from langchain_core.messages import AnyMessage
 from langgraph.graph import START, END, StateGraph

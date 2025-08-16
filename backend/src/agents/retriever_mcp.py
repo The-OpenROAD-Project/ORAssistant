@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 import asyncio
 from ..openroad_mcp.client.client import tools as custom_tools

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class CTS:
 
     def __init__(self):

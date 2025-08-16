@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from .synthesis import Synthesis
 from .floorplan import Floorplan
 from .placement import Placement

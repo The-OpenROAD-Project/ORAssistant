@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class Placement:
 
     def __init__(self):

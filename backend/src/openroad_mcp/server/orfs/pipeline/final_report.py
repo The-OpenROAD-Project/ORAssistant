@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class Final_Report:
 
     def __init__(self):
