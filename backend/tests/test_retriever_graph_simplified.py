@@ -1,10 +1,8 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from src.agents.retriever_graph import (
-    ToolNode,
-    RetrieverGraph,
-)
+from src.agents.retriever_graph import RetrieverGraph
+from src.agents.retriever_rag import ToolNode
 
 
 class TestToolNode:
@@ -77,7 +75,7 @@ class TestToolNode:
 class TestRetrieverGraph:
     """Test suite for RetrieverGraph class."""
 
-    @patch("src.agents.retriever_graph.RetrieverTools")
+    @patch("src.agents.retriever_rag.RetrieverTools")
     @patch("src.agents.retriever_graph.BaseChain")
     def test_init(self, mock_base_chain, mock_retriever_tools):
         """Test RetrieverGraph initialization."""
@@ -120,7 +118,7 @@ class TestRetrieverGraph:
         assert "retrieve_install" in graph.tool_names
         assert "retrieve_general" in graph.tool_names
 
-    @patch("src.agents.retriever_graph.RetrieverTools")
+    @patch("src.agents.retriever_rag.RetrieverTools")
     @patch("src.agents.retriever_graph.BaseChain")
     def test_agent_with_none_llm(self, mock_base_chain, mock_retriever_tools):
         """Test agent method with None LLM."""
@@ -162,11 +160,11 @@ class TestRetrieverGraph:
             "chat_history": "previous chat",
         }
 
-        result = graph.agent(state)
+        result = graph.rag_agent(state)
 
         assert result["tools"] == []
 
-    @patch("src.agents.retriever_graph.RetrieverTools")
+    @patch("src.agents.retriever_rag.RetrieverTools")
     @patch("src.agents.retriever_graph.BaseChain")
     def test_route_with_empty_tools(self, mock_base_chain, mock_retriever_tools):
         """Test route method with empty tools."""
@@ -207,6 +205,6 @@ class TestRetrieverGraph:
             "chat_history": "",
         }
 
-        result = graph.route(state)
+        result = graph.rag_route(state)
 
-        assert result == ["retrieve_general"]
+        assert result == "retrieve_general"

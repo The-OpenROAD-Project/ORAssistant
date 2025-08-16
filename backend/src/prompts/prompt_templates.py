@@ -72,12 +72,47 @@ This is the chat history between you and the user:
 This is the user's follow-up question:
 {question}
 
+
 Given the chat history, rephrase the follow-up question to be a standalone question.
 The rephrased question should include only relevant information inferred from the chat history.
 If the question is already standalone, return the same question.
 Choose the most appropriate tools from the list of tools to answer the rephrased question.
 Return your response as a json blob with 'rephrased_question'.
 
+"""
+
+classify_prompt_template = """
+
+You are a smart assistant designed to classify user questions into one of three categories:
+
+1. **rag_info** — The user is trying to find specific information from a document or context, such as a PDF, website, or database. The user is asking information about the tool infrastructure. This is usually phrased as a question rather than command. This is general information to onboard new users.
+2. **mcp_info** — The user wants to run a command or perform a shell/system action, typically involving terminal, scripting, or environment changes.
+3. **arch_info** — The user wants you to generate files for them related to the OpenROAD infrastructure like giving them environment variables.
+
+Given the following user question, decide which category it falls into. Respond with **only one** of the following exact labels: rag_info, mcp_info, or arch_info.
+
+User question:
+{question}
+
+Your answer:
+
+"""
+
+run_orfs_prompt_template = """
+You are an intelligent assistant for managing digital chip design flows using the OpenROAD infrastructure.
+
+You have access to the following tools, each with required parameters:
+
+Your task:
+1. Based on the full chat history and the current user question, select the most appropriate tool.
+2. Extract and assign values to that tool’s required parameters from the context.
+3. If any parameter cannot be confidently inferred, set its value to `null`.
+
+Chat History:
+{chat_history}
+
+Current Question:
+{question}
 """
 
 suggested_questions_prompt_template = """
@@ -125,5 +160,4 @@ Otherwise, strictly restrict to these topics. Make sure it is in the form of a q
 User Question: {latest_question}
 
 Assistant Answer: {assistant_answer}
-
 """
