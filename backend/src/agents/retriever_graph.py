@@ -64,7 +64,19 @@ class RetrieverGraph(RAG, MCP, Arch):
     @tool
     def mcp_info(query: str) -> str:
         """
-        2. **mcp_info** — The user wants to run a command or perform a shell/system action, typically involving terminal, scripting, or environment changes.
+        Execute OpenROAD Flow Scripts (ORFS) commands and system operations.
+
+        Use this tool when the user requests to:
+        - Run, execute, or invoke specific ORFS commands (synthesis, floorplan, placement, routing)
+        - Perform build operations (make commands, compilation)
+        - Execute shell/terminal commands related to OpenROAD workflow
+        - Start, launch, or trigger design flow steps
+        - Check system status, environment variables, or tool versions
+        - Manipulate files or directories in the design environment
+        - Configure or initialize OpenROAD projects
+
+        Trigger keywords: run, execute, perform, start, launch, build, compile, make, configure, initialize, check, set
+        Action verbs indicating command execution rather than information queries.
         """
         return "mcp_agent"
 

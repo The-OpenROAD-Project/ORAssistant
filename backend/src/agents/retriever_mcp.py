@@ -75,8 +75,11 @@ class MCP:
             logging.info(tool_call["args"])
             try:
                 observation = asyncio.run(tool.ainvoke(tool_call["args"]))
-            except ToolException:
-                logging.info("command not found...")
+            except ToolException as e:
+                logging.error(f"ToolException during {tool_call['name']}: {e}")
+                observation = None
+            except Exception as e:
+                logging.error(f"Unexpected error during {tool_call['name']}: {e}")
                 observation = None
 
             if observation:
