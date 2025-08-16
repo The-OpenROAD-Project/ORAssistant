@@ -7,9 +7,8 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
-from langchain_core.tools import tool
-
 from .retriever_typing import AgentState
+from .routing_tools import arch_info, mcp_info, rag_info
 from ..chains.base_chain import BaseChain
 from ..prompts.prompt_templates import (
     summarise_prompt_template,
@@ -52,49 +51,12 @@ class RetrieverGraph(RAG, MCP, Arch):
 
         self.workflow = None
 
-    @staticmethod
-    @tool
-    def arch_info(query: str) -> str:
-        """
-        3. **arch_info** — The user wants you to generate files for them related to the OpenROAD infrastructure like giving them environment variables.
-        """
-        return "mcp_agent"
-
-    @staticmethod
-    @tool
-    def mcp_info(query: str) -> str:
-        """
-        Execute OpenROAD Flow Scripts (ORFS) commands and system operations.
-
-        Use this tool when the user requests to:
-        - Run, execute, or invoke specific ORFS commands (synthesis, floorplan, placement, routing)
-        - Perform build operations (make commands, compilation)
-        - Execute shell/terminal commands related to OpenROAD workflow
-        - Start, launch, or trigger design flow steps
-        - Check system status, environment variables, or tool versions
-        - Manipulate files or directories in the design environment
-        - Configure or initialize OpenROAD projects
-
-        Trigger keywords: run, execute, perform, start, launch, build, compile, make, configure, initialize, check, set
-        Action verbs indicating command execution rather than information queries.
-        """
-        return "mcp_agent"
-
-    @staticmethod
-    @tool
-    def rag_info(query: str) -> str:
-        """
-        1. **rag_info** — The user is trying to find specific information from a document or context, such as a PDF, website, or database. The user is asking information about the tool infrastructure. This is usually phrased as a question rather than command. This is general information to onboard new users.
-
-        """
-        return "rag_agent"
-
     def classify(self, state: AgentState) -> dict[str, list[str]]:
         """Determine if architecture/config, execute, or RAG. Handle misc."""
         if self.inbuilt_tool_calling:
             question = state["messages"][-1].content
             model = self.llm.bind_tools(
-                [self.rag_info, self.mcp_info, self.arch_info],  # type: ignore[list-item]
+                [rag_info, mcp_info, arch_info],  # type: ignore
                 tool_choice="any",
             )
 
@@ -108,9 +70,9 @@ class RetrieverGraph(RAG, MCP, Arch):
             )
 
             fork_lookup = {
-                "rag_info": self.rag_info,
-                "mcp_info": self.mcp_info,
-                "arch_info": self.arch_info,
+                "rag_info": rag_info,
+                "mcp_info": mcp_info,
+                "arch_info": arch_info,
             }
             result = "rag_agent"
             for tool_call in response.tool_calls:  # type: ignore
