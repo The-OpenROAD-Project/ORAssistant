@@ -39,6 +39,7 @@ class RetrieverGraph(RAG, MCP, Arch):
         self.reranking_model_name = reranking_model_name
         self.inbuilt_tool_calling = inbuilt_tool_calling
         self.use_cuda = use_cuda
+        self.fast_mode = fast_mode
         self.debug = debug
 
         self.rag_initialize()

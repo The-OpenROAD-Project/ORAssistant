@@ -2,7 +2,9 @@ import os
 import subprocess
 import logging
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from .orfs_tools import ORFSTools
 
 load_dotenv()
@@ -14,8 +16,14 @@ flow_dir = os.path.join(orfs_dir, "flow")
 mcp = FastMCP("ORFS")
 
 
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request) -> JSONResponse:
+    """Health check endpoint for the MCP server"""
+    return JSONResponse({"status": "healthy", "service": "ORFS MCP Server"})
+
+
 class ORFS(ORFSTools):
-    @mcp.tool()
+    @mcp.tool
     def get_platforms(self) -> str:
         """call get platforms to display possible platforms to run through flow"""
         # TODO: scrape platforms instead of serving only default sky130
@@ -25,7 +33,7 @@ class ORFS(ORFSTools):
             ORFS.platform = "sky130hd"
             return ORFS.platform
 
-    @mcp.tool()
+    @mcp.tool
     def get_designs(self) -> str:
         """call get designs to display possible designs to run through flow"""
         # TODO: scrape designs instead of default riscv
@@ -35,17 +43,17 @@ class ORFS(ORFSTools):
             ORFS.design = "riscv32i"
             return ORFS.design
 
-    @mcp.tool()
+    @mcp.tool
     def make(self, cmd: str) -> str:
         """call make command if query contains make keyword and a single argument"""
         working = os.getcwd()
         os.chdir(flow_dir)
 
         if not ORFS.platform:
-            logging.info(self.get_platforms())
+            logging.info(self.get_platforms())  # type: ignore
 
         if not ORFS.design:
-            logging.info(self.get_designs())
+            logging.info(self.get_designs())  # type: ignore
 
         make = f"make DESIGN_CONFIG={flow_dir}/designs/{ORFS.platform}/{ORFS.design}/config.mk"
         build_command = make + " " + cmd
@@ -54,7 +62,7 @@ class ORFS(ORFSTools):
         os.chdir(working)
         return f"finished {cmd}"
 
-    @mcp.tool()
+    @mcp.tool
     def get_stage_names(self) -> str:
         """get stage names for possible states this mcp server can be in the chip design pipeline"""
         stage_names = [_.info() for _ in ORFS.stages.values()]
@@ -65,17 +73,17 @@ class ORFS(ORFSTools):
             result += f"{_}\n"
         return result
 
-    @mcp.tool()
+    @mcp.tool
     def jump(self, stage: str) -> str:
         """call jump command if contains jump keyword and stage argument"""
         working = os.getcwd()
         os.chdir(flow_dir)
 
         if not ORFS.platform:
-            logging.info(self.get_platforms())
+            logging.info(self.get_platforms())  # type: ignore
 
         if not ORFS.design:
-            logging.info(self.get_designs())
+            logging.info(self.get_designs())  # type: ignore
 
         make = f"make DESIGN_CONFIG={flow_dir}/designs/{ORFS.platform}/{ORFS.design}/config.mk"
         stage_names = [_.info() for _ in ORFS.stages.values()]
@@ -95,7 +103,7 @@ class ORFS(ORFSTools):
             logging.info("jump unsuccessful...")
             return f"aborted {stage}"
 
-    @mcp.tool()
+    @mcp.tool
     def step(self) -> str:
         """call step command if contains step keyword to progress through pipeline"""
 
@@ -111,10 +119,10 @@ class ORFS(ORFSTools):
         os.chdir(flow_dir)
 
         if not ORFS.platform:
-            logging.info(self.get_platforms())
+            logging.info(self.get_platforms())  # type: ignore
 
         if not ORFS.design:
-            logging.info(self.get_designs())
+            logging.info(self.get_designs())  # type: ignore
 
         make = f"make DESIGN_CONFIG={flow_dir}/designs/{ORFS.platform}/{ORFS.design}/config.mk"
         command = make_keyword()
@@ -156,4 +164,4 @@ class ORFS(ORFSTools):
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="http", host="127.0.0.1", port=3001)

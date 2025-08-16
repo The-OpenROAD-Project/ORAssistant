@@ -31,3 +31,14 @@ build-docs:
 test:
 	@. .venv/bin/activate && \
 		pytest
+
+# For MCP Development
+.PHONY: mcp
+mcp:
+	@. .venv/bin/activate && \
+		python -m src.openroad_mcp.server.orfs.orfs_server
+
+.PHONY: chat
+chat:
+	@. .venv/bin/activate && \
+		python -m chatbot

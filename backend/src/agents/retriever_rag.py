@@ -62,6 +62,7 @@ class RAG:
     embeddings_config: dict[str, str]
     reranking_model_name: str
     use_cuda: bool
+    fast_mode: bool
     debug: bool
     inbuilt_tool_calling: bool
     llm_chain: Runnable[dict[str, Any], AnyMessage]
@@ -78,6 +79,7 @@ class RAG:
                 embeddings_config=self.embeddings_config,
                 reranking_model_name=self.reranking_model_name,
                 use_cuda=self.use_cuda,
+                fast_mode=self.fast_mode,
             )
 
         self.tools = [

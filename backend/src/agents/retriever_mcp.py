@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from typing import Any
-from ..openroad_mcp.client.client import tools as custom_tools
+from ..openroad_mcp.client.client import get_tools
 from langgraph.graph import END
 from .retriever_typing import AgentState
 from langchain.prompts import ChatPromptTemplate
@@ -20,6 +20,7 @@ class MCP:
     def mcp_agent(self, state: AgentState) -> dict[str, list[Any]]:
         query = state["messages"][-1].content
         logging.info(query)
+        custom_tools = get_tools()
         model = self.llm.bind_tools(custom_tools)
 
         run_orfs_chain = (
@@ -64,6 +65,7 @@ class MCP:
 
     # end of mcp_tools_condition
     def mcp_tool_node(self, state: AgentState) -> dict[str, list[Any]]:
+        custom_tools = get_tools()
         tools_by_name = {tool.name: tool for tool in custom_tools}
         tool_calls = getattr(state["messages"][-1], "tool_calls", [])
         logging.info(tool_calls)
@@ -83,7 +85,6 @@ class MCP:
                 result.append("no return")
         logging.info("DONE")
         logging.info(result)
-        # return {"messages": result}
         return {"messages": result}
 
     # end of mcp_tools_condition
