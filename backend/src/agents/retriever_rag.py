@@ -28,8 +28,7 @@ class ToolNode:
         if query is None:
             raise ValueError("Query is None")
 
-        # TODO: need to ensure that there is only three unpacked values
-        response, sources, urls = self.tool_fn.invoke(query)  # type: ignore
+        response, sources, urls, doc_texts = self.tool_fn.invoke(query)  # type: ignore
 
         if response != []:
             response = (
@@ -48,6 +47,12 @@ class ToolNode:
                 [item for sublist in urls for item in sublist]
                 if isinstance(urls[0], list)
                 else urls
+            )
+        if doc_texts != []:
+            doc_texts = (
+                [item for sublist in doc_texts for item in sublist]
+                if isinstance(doc_texts[0], list)
+                else doc_texts
             )
         return {"context": response, "sources": sources, "urls": urls}
 
