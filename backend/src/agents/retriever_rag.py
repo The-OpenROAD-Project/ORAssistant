@@ -54,7 +54,12 @@ class ToolNode:
                 if isinstance(doc_texts[0], list)
                 else doc_texts
             )
-        return {"context": response, "sources": sources, "urls": urls}
+        return {
+            "context": response,
+            "sources": sources,
+            "urls": urls,
+            "context_list": doc_texts,
+        }
 
 
 class RAG:
@@ -132,6 +137,9 @@ class RAG:
             return {"tools": response.tool_calls}  # type: ignore
 
         else:
+            if self.llm is None:
+                return {"tools": []}
+
             tool_rephrase_chain = (
                 ChatPromptTemplate.from_template(tool_rephrase_prompt_template)
                 | self.llm
