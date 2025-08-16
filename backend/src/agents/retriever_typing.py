@@ -1,6 +1,7 @@
-from typing import TypedDict, Annotated, Union, Optional
-from langchain_core.messages import AnyMessage, ToolMessage
+from typing import TypedDict, Annotated
+from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
+
 
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
@@ -10,3 +11,4 @@ class AgentState(TypedDict):
     urls: Annotated[list[str], add_messages]
     chat_history: str
     agent_type: list[str]
+    mcp_response: Annotated[list[AnyMessage], add_messages]

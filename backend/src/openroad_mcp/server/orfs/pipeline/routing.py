@@ -1,5 +1,4 @@
 class Routing:
-
     def __init__(self):
         self.name = "routing_stage"
 

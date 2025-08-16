@@ -1,14 +1,8 @@
 import os
 import logging
-from typing import Any, TypedDict, Annotated, Union, Optional
 
-from langchain_core.messages import AnyMessage
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.tools import BaseTool
-from langgraph.graph import START, END, StateGraph
+from langgraph.graph import START, StateGraph
 from langgraph.graph.graph import CompiledGraph
-from langgraph.graph.message import add_messages
-from langchain.tools.render import render_text_description
 from langchain.prompts import ChatPromptTemplate
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -16,13 +10,10 @@ from langchain_ollama import ChatOllama
 from langchain_core.tools import tool
 
 from .retriever_typing import AgentState
-from .retriever_tools import RetrieverTools
 from ..chains.base_chain import BaseChain
 from ..prompts.prompt_templates import (
     summarise_prompt_template,
-    tool_rephrase_prompt_template,
-    rephrase_prompt_template,
-    classify_prompt_template
+    classify_prompt_template,
 )
 
 from .retriever_rag import RAG
@@ -35,7 +26,7 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 class RetrieverGraph(RAG, MCP, Arch):
     def __init__(
         self,
-        llm_model: Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama],
+        llm_model: ChatGoogleGenerativeAI | ChatVertexAI | ChatOllama,
         embeddings_config: dict[str, str],
         reranking_model_name: str,
         inbuilt_tool_calling: bool,
@@ -52,7 +43,7 @@ class RetrieverGraph(RAG, MCP, Arch):
 
         self.rag_initialize()
 
-        self.graph: Optional[CompiledGraph] = None
+        self.graph: CompiledGraph | None = None
         self.llm_chain = BaseChain(
             llm_model=self.llm,
             prompt_template_str=summarise_prompt_template,
@@ -85,15 +76,17 @@ class RetrieverGraph(RAG, MCP, Arch):
         """
         return "rag_agent"
 
-    def classify(self, state: AgentState) -> None:
+    def classify(self, state: AgentState) -> dict[str, list[str]]:
         """Determine if architecture/config, execute, or RAG. Handle misc."""
         if self.inbuilt_tool_calling:
             question = state["messages"][-1].content
-            model = self.llm.bind_tools([self.rag_info, self.mcp_info, self.arch_info], tool_choice="any")
+            model = self.llm.bind_tools(
+                [self.rag_info, self.mcp_info, self.arch_info],  # type: ignore[list-item]
+                tool_choice="any",
+            )
 
             classify_chain = (
-                ChatPromptTemplate.from_template(classify_prompt_template)
-                | model
+                ChatPromptTemplate.from_template(classify_prompt_template) | model
             )
             response = classify_chain.invoke(
                 {
@@ -104,9 +97,10 @@ class RetrieverGraph(RAG, MCP, Arch):
             fork_lookup = {
                 "rag_info": self.rag_info,
                 "mcp_info": self.mcp_info,
-                "arch_info": self.arch_info
+                "arch_info": self.arch_info,
             }
-            for tool_call in response.tool_calls:
+            result = "rag_agent"
+            for tool_call in response.tool_calls:  # type: ignore
                 tool = fork_lookup[tool_call["name"]]
                 result = tool.invoke(tool_call["args"])
 
@@ -116,8 +110,7 @@ class RetrieverGraph(RAG, MCP, Arch):
             logging.info("classify task")
 
             classify_chain = (
-                ChatPromptTemplate.from_template(classify_prompt_template)
-                | self.llm
+                ChatPromptTemplate.from_template(classify_prompt_template) | self.llm
             )
             question = state["messages"][-1].content
             logging.info(question)
@@ -128,9 +121,9 @@ class RetrieverGraph(RAG, MCP, Arch):
             )
 
             logging.info(response.content)
-            return {"agent_type": [response.content]}
+            return {"agent_type": [response.content]}  # type: ignore
 
-    def fork_route(self, state: AgentState) -> list[str]:
+    def fork_route(self, state: AgentState) -> str:
         # TODO: if more than one agent add handler
         tmp = state["agent_type"][0]
         return tmp
@@ -143,11 +136,11 @@ class RetrieverGraph(RAG, MCP, Arch):
         self.workflow.add_conditional_edges(
             "classify",
             self.fork_route,
-            [
-                "rag_agent",
-                "mcp_agent",
-                "arch_agent",
-            ],
+            {
+                "rag_agent": "rag_agent",
+                "mcp_agent": "mcp_agent",
+                "arch_agent": "arch_agent",
+            },
         )
 
         self.rag_agent_workflow()

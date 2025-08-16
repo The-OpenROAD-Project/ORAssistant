@@ -1,18 +1,23 @@
 import logging
+from typing import Any
 from langchain_core.messages import AnyMessage
-from langgraph.graph import START, END, StateGraph
+from langgraph.graph import END
 from langchain_core.tools import BaseTool
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.tools.render import render_text_description
+from langchain_google_vertexai import ChatVertexAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
+from langchain_core.runnables.base import Runnable
 
 from .retriever_typing import AgentState
 from .retriever_tools import RetrieverTools
 from ..prompts.prompt_templates import (
-    summarise_prompt_template,
     tool_rephrase_prompt_template,
     rephrase_prompt_template,
 )
+
 
 class ToolNode:
     def __init__(self, tool_fn: BaseTool) -> None:
@@ -46,8 +51,22 @@ class ToolNode:
             )
         return {"context": response, "sources": sources, "urls": urls}
 
+
 class RAG:
-    def rag_initialize(self):
+    llm: ChatVertexAI | ChatGoogleGenerativeAI | ChatOllama
+    embeddings_config: dict[str, str]
+    reranking_model_name: str
+    use_cuda: bool
+    debug: bool
+    inbuilt_tool_calling: bool
+    llm_chain: Runnable[dict[str, Any], AnyMessage]
+    workflow: Any
+    retriever_tools: RetrieverTools
+    tools: list[BaseTool]
+    tool_names: list[str]
+    tool_descriptions: str
+
+    def rag_initialize(self) -> None:
         self.retriever_tools: RetrieverTools = RetrieverTools()
         if not self.debug:
             self.retriever_tools.initialize(
@@ -79,19 +98,15 @@ class RAG:
             text_desc.replace("(query: str) -> Tuple[str, list[str], list[str]]", " ")
             self.tool_descriptions += text_desc + "\n\n"
 
-    def rag_agent(self, state: AgentState) -> dict[str, list[str]]:
+    def rag_agent(self, state: AgentState) -> dict[str, list[Any]]:
         followup_question = state["messages"][-1].content
 
-        if self.llm is None:
-            return {"tools": []}
-
         if self.inbuilt_tool_calling:
-            model = self.llm.bind_tools(self.tools, tool_choice="any")
+            model = self.llm.bind_tools(self.tools, tool_choice="any")  # type: ignore
 
             tool_choice_chain = (
-                ChatPromptTemplate.from_template(rephrase_prompt_template)
-                | model
-                #| JsonOutputParser()
+                ChatPromptTemplate.from_template(rephrase_prompt_template) | model
+                # | JsonOutputParser()
             )
             response = tool_choice_chain.invoke(
                 {
@@ -100,14 +115,14 @@ class RAG:
                 }
             )
 
-            #response = model.invoke(followup_question)
+            # response = model.invoke(followup_question)
 
-            if response is None or response.tool_calls is None:
+            if response is None or getattr(response, "tool_calls", None) is None:
                 return {"tools": []}
 
-            logging.info(response.tool_calls)
+            logging.info(response.tool_calls)  # type: ignore
 
-            return {"tools": response.tool_calls}
+            return {"tools": response.tool_calls}  # type: ignore
 
         else:
             tool_rephrase_chain = (
@@ -130,7 +145,7 @@ class RAG:
                 return {"tools": []}
 
             if "tool_names" in str(response):
-                tool_calls = response.get("tool_names", [])
+                tool_calls = response.get("tool_names", [])  # type: ignore
                 for tool in tool_calls:
                     if tool not in self.tool_names:
                         logging.warning(f"Tool {tool} not found in tool list.")
@@ -140,25 +155,27 @@ class RAG:
                 logging.warning("Tool selection failed. Returning empty tool list.")
 
             if "rephrased_question" in str(response):
-                state["messages"][-1].content = response.get("rephrased_question")
+                state["messages"][-1].content = response.get("rephrased_question")  # type: ignore
             else:
                 logging.warning("Rephrased question not found in response.")
 
             return {"tools": tool_calls}
-    ### end of agent
-    def rag_route(self, state: AgentState) -> list[str]:
+
+    # end of agent
+    def rag_route(self, state: AgentState) -> str:
         tools = state["tools"]
 
         if tools == []:
-            return ["retrieve_general"]
+            return "retrieve_general"
 
-       # TODO: delete
+        # TODO: delete
         if self.inbuilt_tool_calling:
             tool_names = [tool["name"] for tool in tools if "name" in tool]  # type: ignore
-            return tool_names
+            return tool_names[0] if tool_names else "retrieve_general"
         else:
-            return tools
-    ### end of route
+            return tools[0] if tools else "retrieve_general"
+
+    # end of route
     def rag_generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
         query = state["messages"][-1].content
         context = state["context"][-1].content
@@ -169,8 +186,9 @@ class RAG:
             return {"messages": [ans]}
 
         return {"messages": []}
-    ### end of generate
-    def rag_agent_workflow(self):
+
+    # end of generate
+    def rag_agent_workflow(self) -> None:
         # TODO: seperate tools into another class
         commands = ToolNode(self.retriever_tools.retrieve_cmds)
         install = ToolNode(self.retriever_tools.retrieve_install)
@@ -191,15 +209,15 @@ class RAG:
 
         self.workflow.add_conditional_edges(
             "rag_agent",
-            self.rag_route,  # type: ignore
-            [
-                "retrieve_cmds",
-                "retrieve_install",
-                "retrieve_general",
-                "retrieve_klayout_docs",
-                "retrieve_errinfo",
-                "retrieve_yosys_rtdocs",
-            ],
+            self.rag_route,
+            {
+                "retrieve_cmds": "retrieve_cmds",
+                "retrieve_install": "retrieve_install",
+                "retrieve_general": "retrieve_general",
+                "retrieve_klayout_docs": "retrieve_klayout_docs",
+                "retrieve_errinfo": "retrieve_errinfo",
+                "retrieve_yosys_rtdocs": "retrieve_yosys_rtdocs",
+            },
         )
 
         self.workflow.add_edge("retrieve_cmds", "rag_generate")
@@ -210,4 +228,5 @@ class RAG:
         self.workflow.add_edge("retrieve_yosys_rtdocs", "rag_generate")
 
         self.workflow.add_edge("rag_generate", END)
-    ### end of agent_workflow
+
+    # end of agent_workflow

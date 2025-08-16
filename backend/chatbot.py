@@ -33,7 +33,7 @@ if __name__ == "__main__":
             else:
                 raise ValueError("RetrieverGraph not initialized.")
         except RuntimeError:
-            print("Runtime Error!")
+            logging.error("Runtime Error!")
 
         if (
             isinstance(output, list)

@@ -1,10 +1,8 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from src.agents.retriever_graph import (
-    ToolNode,
-    RetrieverGraph,
-)
+from src.agents.retriever_graph import RetrieverGraph
+from src.agents.retriever_rag import ToolNode
 
 
 class TestToolNode:

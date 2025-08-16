@@ -3,6 +3,13 @@ from .floorplan import Floorplan
 from .placement import Placement
 from .cts import CTS
 from .routing import Routing
-from .final_report import Final_Report
+from .final_report import FinalReport
 
-# TODO: add retrieval tools to stages for more targeted help
+__all__ = [
+    "Synthesis",
+    "Floorplan",
+    "Placement",
+    "CTS",
+    "Routing",
+    "FinalReport",
+]
