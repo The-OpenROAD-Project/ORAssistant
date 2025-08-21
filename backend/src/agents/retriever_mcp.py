@@ -9,7 +9,6 @@ from ..prompts.prompt_templates import run_orfs_prompt_template
 from langchain_core.tools.base import ToolException
 
 class MCP:
-    # TODO: mcp breaks support for llms without toolchain i.e. json parsing
     def mcp_agent(self, state: AgentState):
         query = state["messages"][-1].content
         logging.info(query)

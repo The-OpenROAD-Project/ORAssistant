@@ -136,3 +136,5 @@ Make sure you are in the backend folder before running the above command.
 OpenROAD's MCP server is a wrapper around the OpenROAD-flow-scripts. It utilizes the Streamable HTTP transport so it must be launched as a separate process. Run with `python orfs_server.py`
 
 Currently tested with running `python chatbot.py` in another process.
+
+Note: mcp breaks support for llms without toolchain i.e. json parsing
