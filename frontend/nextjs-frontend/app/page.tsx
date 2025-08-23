@@ -17,8 +17,7 @@ import SuggestedQuestions from '../components/SuggestedQuestions';
 import { useTheme } from 'next-themes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { Highlight, themes, Token } from 'prism-react-renderer';
 import useWindowSize from '../hooks/useWindowSize';
 import './globals.css';
 import '../styles/markdown-table.css';
@@ -297,18 +296,56 @@ export default function Home() {
                         className,
                         children,
                         ...props
-                      }: any) {
+                      }: {
+                        node?: any;
+                        inline?: boolean;
+                        className?: string;
+                        children?: React.ReactNode;
+                        [key: string]: any;
+                      }) {
                         const match = /language-(\w+)/.exec(className || '');
                         return !inline && match ? (
                           <div className="relative group">
-                            <SyntaxHighlighter
-                              style={tomorrow}
+                            <Highlight
+                              code={String(children).replace(/\n$/, '')}
                               language={match[1]}
-                              PreTag="div"
-                              {...props}
+                              theme={
+                                theme === 'dark'
+                                  ? themes.vsDark
+                                  : themes.vsLight
+                              }
                             >
-                              {String(children).replace(/\n$/, '')}
-                            </SyntaxHighlighter>
+                              {({
+                                className,
+                                style,
+                                tokens,
+                                getLineProps,
+                                getTokenProps,
+                              }: {
+                                className: string;
+                                style: React.CSSProperties;
+                                tokens: Token[][];
+                                getLineProps: (input: {
+                                  line: Token[];
+                                }) => React.HTMLProps<HTMLDivElement>;
+                                getTokenProps: (input: {
+                                  token: Token;
+                                }) => React.HTMLProps<HTMLSpanElement>;
+                              }) => (
+                                <pre className={className} style={style}>
+                                  {tokens.map((line: Token[], i: number) => (
+                                    <div key={i} {...getLineProps({ line })}>
+                                      {line.map((token: Token, key: number) => (
+                                        <span
+                                          key={key}
+                                          {...getTokenProps({ token })}
+                                        />
+                                      ))}
+                                    </div>
+                                  ))}
+                                </pre>
+                              )}
+                            </Highlight>
                             <CopyButton text={String(children)} />
                           </div>
                         ) : (
