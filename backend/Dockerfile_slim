@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     git-lfs
 
 RUN git lfs install
+RUN pip install uv
 
 COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
 COPY . .

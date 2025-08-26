@@ -4,6 +4,8 @@ WORKDIR /ORAssistant-backend
 
 RUN apt-get update && apt-get install -y pandoc git wget curl git-lfs && git lfs install
 
+RUN pip install uv
+
 COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
 COPY . .
 
