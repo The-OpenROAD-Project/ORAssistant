@@ -1,33 +1,28 @@
 .PHONY: init
 init:
-	@python3 -m venv .venv && \
-		. .venv/bin/activate && \
-		pip install -r requirements.txt && \
-		pip install -e .
+	@uv venv .venv && \
+		uv sync
 
 .PHONY: init-dev
-init-dev: init
-	@. .venv/bin/activate && \
-		pip install -r requirements-test.txt
+init-dev:
+	@uv venv .venv && \
+		uv sync --dev
 
 .PHONY: format
 format:
-	@. .venv/bin/activate && \
-		ruff format && \
-		ruff check --fix
+	@uv run ruff format && \
+		uv run ruff check --fix
 
 .PHONY: check
 check:
-	@. .venv/bin/activate && \
-		mypy . && \
-		ruff check
+	@uv run mypy . && \
+		uv run ruff check
 
 .PHONY: build-docs
 build-docs:
-	@. .venv/bin/activate && \
-		python build_docs.py
+	@uv run python build_docs.py
 
 .PHONY: test
 test:
-	@. .venv/bin/activate && \
-		pytest
+	@uv run pytest
+
