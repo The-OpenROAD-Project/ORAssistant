@@ -6,7 +6,7 @@ from langchain_core.messages import AnyMessage
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.tools import BaseTool
 from langgraph.graph import START, END, StateGraph
-from langgraph.graph.graph import CompiledGraph
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
 from langchain.tools.render import render_text_description
 from langchain.prompts import ChatPromptTemplate
@@ -116,7 +116,7 @@ class RetrieverGraph:
             text_desc.replace("(query: str) -> Tuple[str, list[str], list[str]]", " ")
             self.tool_descriptions += text_desc + "\n\n"
 
-        self.graph: Optional[CompiledGraph] = None
+        self.graph: Optional[CompiledStateGraph] = None
         self.llm_chain = BaseChain(
             llm_model=self.llm,
             prompt_template_str=summarise_prompt_template,
