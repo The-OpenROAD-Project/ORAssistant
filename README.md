@@ -58,11 +58,11 @@ make docker-down
 
 #### Option 2 - Local Install
 
-Prerequisites:
+### Prerequisites
 
-- `Python 3.12`, recommended using a virtual environment like `conda`.
-- `wget`
-- `pandoc`
+- [`uv`](https://docs.astral.sh/uv/) (for managing Python, virtual environments, and dependencies)  
+- `wget`  
+- `pandoc`  
 - `git`
 
 **Step 1**: Install the required dependencies.
