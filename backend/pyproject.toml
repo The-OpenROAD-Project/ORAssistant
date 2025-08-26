@@ -47,3 +47,6 @@ dev = [
     "types-requests==2.32.0.20240622",
     "types-tqdm==4.66.0.20240417",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
