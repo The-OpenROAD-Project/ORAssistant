@@ -8,19 +8,18 @@ RUN apt-get update && apt-get install -y \
 
 RUN git lfs install
 
-COPY ./requirements.txt /ORAssistant-backend/requirements.txt
+COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
+COPY . .
 
-RUN pip install --upgrade -r /ORAssistant-backend/requirements.txt
+RUN uv venv .venv && \
+    uv sync --dev && \
+    python /ORAssistant-backend/src/post_install.py
 
 RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
     mkdir -p data && \
     mv ORAssistant_RAG_Dataset/* data/ && \
     rm -rf ORAssistant_RAG_Dataset
 
-COPY . .
-
-RUN python /ORAssistant-backend/src/post_install.py
-
 EXPOSE 8000
 
-CMD ["uvicorn", "src.api.dummy:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "src.api.dummy:app", "--host", "0.0.0.0", "--port", "8000"]
