@@ -1,27 +1,23 @@
-#!/usr/bin/env python3
-import os
-import logging
-from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
-from pipeline import Synthesis, Floorplan, Placement, CTS, Routing, Final_Report
+from .pipeline import Synthesis, Floorplan, Placement, CTS, Routing, FinalReport
+from typing import Any
+
 
 # Global variables and functions for ORFS class
-class ORFS_Tools():
+class ORFSTools:
+    design: str | None = None
+    platform: str | None = None
+    command: str | None = None
 
-    design = None
-    platform = None
-    command = None
+    design_list: list[str] = []
 
-    design_list = []
-
-    stages = {
+    stages: dict[int, Any] = {
         0: Synthesis(),
         1: Floorplan(),
         2: Placement(),
         3: CTS(),
         4: Routing(),
-        5: Final_Report(),
+        5: FinalReport(),
     }
-    stage_index = {v.info(): k for k, v in stages.items()}
+    stage_index: dict[str, int] = {v.info(): k for k, v in stages.items()}
 
-    cur_stage = -1
+    cur_stage: int = -1

@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
-class Final_Report:
-
+class FinalReport:
     def __init__(self):
         self.name = "final_report_stage"
 

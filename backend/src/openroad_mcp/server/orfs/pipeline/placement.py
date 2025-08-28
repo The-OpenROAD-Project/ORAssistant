@@ -1,10 +1,6 @@
-#!/usr/bin/env python3
-
 class Placement:
-
     def __init__(self):
         self.name = "placement_stage"
-
 
     def info(self) -> str:
         """

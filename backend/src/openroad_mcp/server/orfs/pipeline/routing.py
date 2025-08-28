@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
 class Routing:
-
     def __init__(self):
         self.name = "routing_stage"
 

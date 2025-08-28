@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class Synthesis:
     def __init__(self):
         self.name = "synthesis_stage"

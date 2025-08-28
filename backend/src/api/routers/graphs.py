@@ -1,22 +1,19 @@
 import os
 import logging
 from dotenv import load_dotenv
-from typing import Union
-
-load_dotenv()
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 from fastapi import APIRouter
-
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessageChunk
-
 from starlette.responses import StreamingResponse
 
 from ...agents.retriever_graph import RetrieverGraph
 from ..models.response_model import ChatResponse, ContextSource, UserInput
+
+load_dotenv()
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 
 required_env_vars = [
@@ -61,12 +58,16 @@ if embeddings_type == "HF":
     embeddings_model_name = str(os.getenv("HF_EMBEDDINGS"))
 elif embeddings_type == "GOOGLE_GENAI" or embeddings_type == "GOOGLE_VERTEXAI":
     embeddings_model_name = str(os.getenv("GOOGLE_EMBEDDINGS"))
+else:
+    raise ValueError(
+        "EMBEDDINGS_TYPE environment variable must be set to 'HF', 'GOOGLE_GENAI', or 'GOOGLE_VERTEXAI'."
+    )
 
 embeddings_config = {"type": embeddings_type, "name": embeddings_model_name}
 
 hf_reranker: str = str(os.getenv("HF_RERANKER"))
 
-llm: Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+llm: ChatGoogleGenerativeAI | ChatVertexAI | ChatOllama
 
 if os.getenv("LLM_MODEL") == "ollama":
     model_name = str(os.getenv("OLLAMA_MODEL"))
