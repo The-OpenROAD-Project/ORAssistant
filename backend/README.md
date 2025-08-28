@@ -113,7 +113,7 @@ Provide the value for `HF_TOKEN` with the token that is generated
 
 To use that chatbot in a text-based in your terminal, use the `chatbot.py` script:
 ```python
-python chatbot.py
+uv run chatbot.py
 ```
 
 ### Install Required Packages
