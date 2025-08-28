@@ -14,7 +14,7 @@ COPY . .
 
 RUN uv venv .venv && \
     uv sync --dev && \
-    python /ORAssistant-backend/src/post_install.py
+    uv run /ORAssistant-backend/src/post_install.py
 
 RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
     mkdir -p data && \

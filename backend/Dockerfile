@@ -9,7 +9,7 @@ RUN pip install uv
 COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
 COPY . .
 
-RUN uv venv .venv && uv sync --dev && python /ORAssistant-backend/src/post_install.py
+RUN uv venv .venv && uv sync --dev && uv run /ORAssistant-backend/src/post_install.py
 
 RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
     mkdir -p data && \
