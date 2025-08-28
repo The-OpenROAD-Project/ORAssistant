@@ -37,6 +37,7 @@ use_cuda: bool = False
 llm_temp: float = 0.0
 fast_mode: bool = False
 debug: bool = False
+enable_mcp: bool = False
 
 if str(os.getenv("USE_CUDA")).lower() in ("true"):
     use_cuda = True
@@ -46,6 +47,9 @@ if str(os.getenv("FAST_MODE")).lower() in ("true"):
 
 if str(os.getenv("DEBUG")).lower() in ("true"):
     debug = True
+
+if str(os.getenv("ENABLE_MCP")).lower() in ("true"):
+    enable_mcp = True
 
 llm_temp_str = os.getenv("LLM_TEMP")
 if llm_temp_str is not None:
@@ -90,7 +94,8 @@ rg = RetrieverGraph(
     use_cuda=use_cuda,
     inbuilt_tool_calling=True,
     fast_mode=fast_mode,
-    debug=debug
+    debug=debug,
+    enable_mcp=enable_mcp
 )
 rg.initialize()
 

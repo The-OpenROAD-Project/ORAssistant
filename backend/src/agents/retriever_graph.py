@@ -42,6 +42,7 @@ class RetrieverGraph(RAG, MCP, Arch):
         use_cuda: bool = False,
         fast_mode: bool = False,
         debug: bool = False,
+        enable_mcp: bool = False,
     ):
         self.llm = llm_model
         self.embeddings_config = embeddings_config
@@ -49,6 +50,7 @@ class RetrieverGraph(RAG, MCP, Arch):
         self.inbuilt_tool_calling = inbuilt_tool_calling
         self.use_cuda = use_cuda
         self.debug = debug
+        self.enable_mcp = enable_mcp
 
         self.rag_initialize()
 
@@ -132,7 +134,10 @@ class RetrieverGraph(RAG, MCP, Arch):
 
     def fork_route(self, state: AgentState) -> list[str]:
         # TODO: if more than one agent add handler
-        tmp = state["agent_type"][0]
+        if not self.enable_mcp:
+            tmp = "rag_agent"
+        else:
+            tmp = state["agent_type"][0]
         return tmp
 
     def initialize(self) -> None:
