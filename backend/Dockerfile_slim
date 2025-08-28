@@ -1,4 +1,4 @@
-FROM python:3.13.5-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /ORAssistant-backend
 
