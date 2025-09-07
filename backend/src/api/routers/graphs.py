@@ -96,7 +96,7 @@ rg = RetrieverGraph(
     inbuilt_tool_calling=True,
     fast_mode=fast_mode,
     debug=debug,
-    enable_mcp=enable_mcp
+    enable_mcp=enable_mcp,
 )
 rg.initialize()
 
