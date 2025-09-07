@@ -61,6 +61,8 @@ ORAssistant supports running locally hosted Ollama models for inference. Follow 
 
 Ensure Ollama is running locally before starting ORAssistant. Make sure the model weights are available by downloading them first with `ollama pull <model_name>`.
 
+To take advantage of GPU resources when running ORAssistant in a Docker container, use `ollama serve` on local machine.
+
 ### Setting Up LangChain Variables
 
 There are 4 variables that needs to be set up
@@ -129,3 +131,10 @@ docker build -t (image_name) .
 Make sure you are in the backend folder before running the above command.
 
 **NOTE**: The project does support a `docker-compose` file that would run all of the containers together
+
+### MCP Commands
+OpenROAD's MCP server is a wrapper around the OpenROAD-flow-scripts. It utilizes the Streamable HTTP transport so it must be launched as a separate process. Run with `python orfs_server.py`
+
+Currently tested with running `python chatbot.py` in another process.
+
+Note: mcp breaks support for llms without toolchain i.e. json parsing

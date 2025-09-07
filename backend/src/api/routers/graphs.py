@@ -1,22 +1,20 @@
 import os
 import logging
 from dotenv import load_dotenv
-from typing import Union
 
 from fastapi import APIRouter
-
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessageChunk
-
 from starlette.responses import StreamingResponse
 
 from ...agents.retriever_graph import RetrieverGraph
 from ..models.response_model import ChatResponse, ContextSource, UserInput
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 load_dotenv()
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
+
 
 required_env_vars = [
     "USE_CUDA",
@@ -35,12 +33,20 @@ if missing_vars:
 use_cuda: bool = False
 llm_temp: float = 0.0
 fast_mode: bool = False
+debug: bool = False
+enable_mcp: bool = False
 
 if str(os.getenv("USE_CUDA")).lower() in ("true"):
     use_cuda = True
 
 if str(os.getenv("FAST_MODE")).lower() in ("true"):
     fast_mode = True
+
+if str(os.getenv("DEBUG")).lower() in ("true"):
+    debug = True
+
+if str(os.getenv("ENABLE_MCP")).lower() in ("true"):
+    enable_mcp = True
 
 llm_temp_str = os.getenv("LLM_TEMP")
 if llm_temp_str is not None:
@@ -61,7 +67,7 @@ embeddings_config = {"type": embeddings_type, "name": embeddings_model_name}
 
 hf_reranker: str = str(os.getenv("HF_RERANKER"))
 
-llm: Union[ChatGoogleGenerativeAI, ChatVertexAI, ChatOllama]
+llm: ChatGoogleGenerativeAI | ChatVertexAI | ChatOllama
 
 if os.getenv("LLM_MODEL") == "ollama":
     model_name = str(os.getenv("OLLAMA_MODEL"))
@@ -87,8 +93,10 @@ rg = RetrieverGraph(
     embeddings_config=embeddings_config,
     reranking_model_name=hf_reranker,
     use_cuda=use_cuda,
-    inbuilt_tool_calling=False,
+    inbuilt_tool_calling=True,
     fast_mode=fast_mode,
+    debug=debug,
+    enable_mcp=enable_mcp
 )
 rg.initialize()
 

@@ -1,5 +1,5 @@
 import os
-
+import logging
 from src.api.routers import graphs
 
 
@@ -26,19 +26,23 @@ if __name__ == "__main__":
             "chat_history": get_history_str(chat_history=chat_history),
         }
 
-        if rg.graph is not None:
-            output = list(rg.graph.stream(inputs))
-        else:
-            raise ValueError("RetrieverGraph not initialized.")
+        try:
+            if rg.graph is not None:
+                output = list(rg.graph.stream(inputs))
+
+            else:
+                raise ValueError("RetrieverGraph not initialized.")
+        except RuntimeError:
+            logging.error("Runtime Error!")
 
         if (
             isinstance(output, list)
             and len(output) > 2
-            and "generate" in output[-1]
-            and "messages" in output[-1]["generate"]
-            and len(output[-1]["generate"]["messages"]) > 0
+            and "rag_generate" in output[-1]
+            and "messages" in output[-1]["rag_generate"]
+            and len(output[-1]["rag_generate"]["messages"]) > 0
         ):
-            llm_response = output[-1]["generate"]["messages"][0]
+            llm_response = output[-1]["rag_generate"]["messages"][0]
 
             tool = list(output[-2].keys())[0]
             srcs = set(output[-2][tool]["sources"])
@@ -47,5 +51,22 @@ if __name__ == "__main__":
 
             print(f"LLM: {llm_response} \nSources: {srcs} \nURLs: {urls}\n\n")
 
+        elif (
+            isinstance(output, list)
+            and len(output) > 2
+            and "mcp_tools" in output[-1]
+            and "messages" in output[-1]["mcp_tools"]
+        ):
+            logging.info(output)
+            llm_response = output[-1]["mcp_tools"]["messages"][0]
+            chat_history.append({"User": user_question, "AI": llm_response})
+            result = output[-1]["mcp_tools"]["messages"]
+            print()
+            if len(result) > 0:
+                for _ in result:
+                    print(_)
+            else:
+                print("No Message!")
         else:
+            logging.info(output)
             print("LLM response extraction failed")
