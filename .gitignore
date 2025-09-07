@@ -44,3 +44,7 @@ node_modules
 coverage.xml
 report.html
 .coverage
+
+# Claude
+CLAUDE.md
+.claude
