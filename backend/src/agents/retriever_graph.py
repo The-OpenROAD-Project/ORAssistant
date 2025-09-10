@@ -55,7 +55,7 @@ class RetrieverGraph(RAG, MCP, Arch):
 
     def classify(self, state: AgentState) -> dict[str, list[str]]:
         """Determine if architecture/config, execute, or RAG. Handle misc."""
-        if self.inbuilt_tool_calling:
+        if self.inbuilt_tool_calling and self.enable_mcp:
             question = state["messages"][-1].content
             model = self.llm.bind_tools(
                 [rag_info, mcp_info, arch_info],  # type: ignore
@@ -83,6 +83,10 @@ class RetrieverGraph(RAG, MCP, Arch):
 
             logging.info(result)
             return {"agent_type": [result]}
+        elif self.inbuilt_tool_calling and not self.enable_mcp:
+            # When MCP is disabled but inbuilt tool calling is enabled, just use RAG
+            logging.info("MCP disabled, defaulting to RAG agent")
+            return {"agent_type": ["rag_agent"]}
         else:
             logging.info("classify task")
 
