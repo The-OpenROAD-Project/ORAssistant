@@ -113,13 +113,19 @@ Provide the value for `HF_TOKEN` with the token that is generated
 
 ## Running the Application
 
+To use that chatbot in a text-based in your terminal, use the `chatbot.py` script:
+```python
+uv run chatbot.py
+```
+
 ### Install Required Packages
 
-Ensure you have the necessary dependencies installed by running:
+Install dependencies defined in `pyproject.toml` with:
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
+
 ### Docker Command
 
 If you want to run an isolated container for backend, you can use the following command 

@@ -3,11 +3,13 @@ import subprocess
 import logging
 from dotenv import load_dotenv
 from fastmcp import FastMCP
+from typing import Optional
+
 from .orfs_tools import ORFSTools
 
 load_dotenv()
 env = os.environ
-orfs_dir: str | None = os.getenv("ORFS_DIR")
+orfs_dir: Optional[str] = os.getenv("ORFS_DIR")
 if orfs_dir is None:
     raise ValueError("ORFS_DIR environment variable is not set")
 flow_dir = os.path.join(orfs_dir, "flow")

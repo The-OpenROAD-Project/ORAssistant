@@ -1,12 +1,14 @@
 import os
 import logging
+from typing import Optional
 
 from langgraph.graph import START, StateGraph
-from langgraph.graph.graph import CompiledGraph
+from langgraph.graph.state import CompiledStateGraph
 from langchain.prompts import ChatPromptTemplate
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
+
 from .retriever_typing import AgentState
 from .routing_tools import arch_info, mcp_info, rag_info
 from ..chains.base_chain import BaseChain
@@ -14,7 +16,6 @@ from ..prompts.prompt_templates import (
     summarise_prompt_template,
     classify_prompt_template,
 )
-
 from .retriever_rag import RAG
 from .retriever_mcp import MCP
 from .retriever_arch import Arch
@@ -45,7 +46,7 @@ class RetrieverGraph(RAG, MCP, Arch):
 
         self.rag_initialize()
 
-        self.graph: CompiledGraph | None = None
+        self.graph: Optional[CompiledStateGraph] = None
         self.llm_chain = BaseChain(
             llm_model=self.llm,
             prompt_template_str=summarise_prompt_template,

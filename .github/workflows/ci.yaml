@@ -22,21 +22,29 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6   
+
     - name: Checkout code
       uses: actions/checkout@v4
+
     - name: Setup prereqs
       run: |
         make init-dev
+
     - name: Run formatting checks
       run: |
         make check
+
     - name: Run unit tests
       working-directory: backend
       run: |
-        pip install huggingface_hub[cli]
+        uv pip install huggingface_hub[cli]
         huggingface-cli download --repo-type dataset The-OpenROAD-Project/ORAssistant_RAG_Dataset --include source_list.json --local-dir data/
         export GOOGLE_API_KEY="dummy-unit-test-key"
         make test
+
     - name: Build Docker images
       run: |
         docker compose build

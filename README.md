@@ -15,14 +15,15 @@ The current architecture uses certain retrieval techniques on OpenROAD documenta
 
 ## Components
 
-We have divided our app into three components, each of which can be hosted on a separate machine for scalability. 
+We have divided our app into three components, each of which can be hosted on a separate machine for scalability.
+
 - Backend: Generates the necessary chat endpoints for users to communicate with.
 - Frontend: We use Streamlit to communicate with a chat endpoint, providing a user-friendly chat interface.
 - Evaluation: Besides the vanilla chat interface, we also have a human evaluation interface for research and development.
 
 ## Setup
 
-This setup involves the setting of both the frontend and backend components. We shall begin with backend: 
+This setup involves the setting of both the frontend and backend components. We shall begin with backend:
 
 ### Backend Setup
 
@@ -40,7 +41,7 @@ git clone https://github.com/The-OpenROAD-Project/ORAssistant.git
 
 Modify the Docker `HEALTHCHECK_` variables based on the hardware requirements.
 If you have a resource-constrained PC, try increasing `HEALTHCHECK_START_PERIOD` to a value large
-enough before healthcheck begins. 
+enough before healthcheck begins.
 For more information, please refer to this [link](https://docs.docker.com/reference/compose-file/services/#healthcheck)
 
 ```bash
@@ -57,16 +58,17 @@ make docker-down
 
 #### Option 2 - Local Install
 
-Prerequisites: 
-- `Python 3.12`, recommended using a virtual environment like `conda`.
-- `wget`
-- `pandoc`
+### Prerequisites
+
+- [`uv`](https://docs.astral.sh/uv/) (for managing Python, virtual environments, and dependencies)  
+- `wget`  
+- `pandoc`  
 - `git`
 
 **Step 1**: Install the required dependencies.
 
- ```bash
-pip install -r backend/requirements.txt
+```bash
+uv sync
 ```
 
 **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
@@ -98,7 +100,7 @@ python main.py
 python chatbot.py
 ```
 
-The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000). 
+The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000).
 
 Open [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs) for the API docs.
 
@@ -127,7 +129,7 @@ streamlit run streamlit_app.py
 
 ## Architecture Overview
 
-OpenROAD documentation, OpenROAD-flow-scripts documentation, manpages and OpenSTA documentation is chunked and embedded into FAISS Vector Databases.  
+OpenROAD documentation, OpenROAD-flow-scripts documentation, manpages and OpenSTA documentation is chunked and embedded into FAISS Vector Databases.
 
 Documents are first retrieved from the vectorstore using a hybrid retriever, combining vector and semantic search methods. These retrieved documents undergo re-ranking using a cross-encoder re-ranker model.
 
@@ -145,9 +147,10 @@ flowchart LR
 
     id5([Reranking]) ---> id6(top-n docs)
  
-``` 
+```
 
 Depending on the input query, each query can be forwarded to any one of the following retrievers,
+
 1. General OR/ORFS information
 2. OR tools and commands
 3. OR/ORFS installation
@@ -195,7 +198,7 @@ make check
 
 ## Acknowledgements
 
-This work is completed as part of the Google Summer of Code 2024 project under the 
+This work is completed as part of the Google Summer of Code 2024 project under the
 [UCSC Open-Source Program Office](https://ucsc-ospo.github.io/osre24/).
 Please see their contributions at this [link](https://github.com/The-OpenROAD-Project/ORAssistant/wiki/Google-Summer-of-Code-2024).
 
