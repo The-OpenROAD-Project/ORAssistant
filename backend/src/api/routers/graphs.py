@@ -2,6 +2,7 @@ import os
 import logging
 from dotenv import load_dotenv
 
+from typing import Any
 from fastapi import APIRouter
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -88,6 +89,117 @@ else:
 
 router = APIRouter(prefix="/graphs", tags=["graphs"])
 
+
+def extract_rag_context_sources(output: list) -> list[ContextSource]:
+    """Extract context sources from RAG agent output."""
+    context_sources = []
+    for element in output[1:-1]:  # Skip first (classify) and last (generate) nodes
+        if isinstance(element, dict):
+            for key, value in element.items():
+                if key.startswith("retrieve_") and isinstance(value, dict):
+                    urls = value.get("urls", [])
+                    context = value.get("context", "")
+                    # Create context sources from urls and context
+                    for url in urls:
+                        context_sources.append(
+                            ContextSource(context=context, source=url)
+                        )
+    return context_sources
+
+
+def extract_mcp_context_sources(output: list) -> tuple[list[ContextSource], list[str]]:
+    """Extract context sources and tools from MCP/arch agent output."""
+    context_sources = []
+    tools = []
+
+    if "agent" in output[0] and "tools" in output[0]["agent"]:
+        tools = output[0]["agent"]["tools"]
+        for tool_index in range(len(tools)):
+            tool_output = list(output[tool_index + 1].values())[0]
+            urls = tool_output.get("urls", [])
+            context_list = tool_output.get("context_list", [])
+            for _url, _context in zip(urls, context_list):
+                context_sources.append(ContextSource(context=_context, source=_url))
+
+    return context_sources, tools
+
+
+def validate_output_structure(output: Any) -> bool:
+    """Validate that output has the expected structure."""
+    return isinstance(output, list) and len(output) > 2 and isinstance(output[-1], dict)
+
+
+def log_invalid_output(output: Any) -> None:
+    """Log details about invalid output structure."""
+    logging.error(
+        f"Invalid output structure: type={type(output)}, len={len(output) if isinstance(output, list) else 'N/A'}"
+    )
+    if isinstance(output, list) and len(output) > 0:
+        logging.error(
+            f"Last element keys: {output[-1].keys() if isinstance(output[-1], dict) else 'Not a dict'}"
+        )
+
+
+def get_agent_type(output: list) -> tuple[bool, str]:
+    """Determine agent type from output structure.
+    Returns: (is_rag_agent, generate_key)
+    """
+    is_rag_agent = "rag_generate" in output[-1]
+    generate_key = "rag_generate" if is_rag_agent else "generate"
+    return is_rag_agent, generate_key
+
+
+def extract_llm_response(output: list, generate_key: str) -> str | None:
+    """Extract LLM response from output if available."""
+    if generate_key not in output[-1]:
+        logging.error(f"Missing {generate_key} key")
+        return None
+
+    generate_data = output[-1][generate_key]
+
+    if "messages" not in generate_data:
+        logging.error(f"Missing messages in {generate_key}")
+        return None
+
+    messages = generate_data["messages"]
+    if not messages or len(messages) == 0:
+        logging.error("No messages in generate output")
+        return None
+
+    return str(messages[0])
+
+
+def parse_agent_output(output: list) -> tuple[str, list[ContextSource], list[str]]:
+    """
+    Parse agent output and extract response, context sources, and tools.
+    """
+    # Default return values
+    default_response = "LLM response extraction failed"
+    context_sources: list[ContextSource] = []
+    tools: list[str] = []
+
+    # Validate output structure
+    if not validate_output_structure(output):
+        log_invalid_output(output)
+        return default_response, context_sources, tools
+
+    # Determine agent type
+    is_rag_agent, generate_key = get_agent_type(output)
+
+    # Extract LLM response
+    llm_response = extract_llm_response(output, generate_key)
+    if llm_response is None:
+        return default_response, context_sources, tools
+
+    # Extract context sources based on agent type
+    if is_rag_agent:
+        context_sources = extract_rag_context_sources(output)
+    else:
+        context_sources, tools = extract_mcp_context_sources(output)
+
+    return llm_response, context_sources, tools
+
+
 rg = RetrieverGraph(
     llm_model=llm,
     embeddings_config=embeddings_config,
@@ -96,7 +208,7 @@ rg = RetrieverGraph(
     inbuilt_tool_calling=True,
     fast_mode=fast_mode,
     debug=debug,
-    enable_mcp=enable_mcp
+    enable_mcp=enable_mcp,
 )
 rg.initialize()
 
@@ -123,45 +235,16 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
         output = list(rg.graph.stream(inputs, stream_mode="updates"))
     else:
         raise ValueError("RetrieverGraph not initialized.")
-    urls: list[str] = []
-    context_list: list[str] = []
-    context_sources: list[ContextSource] = []
 
-    if (
-        isinstance(output, list)
-        and len(output) > 2
-        and "generate" in output[-1]
-        and "messages" in output[-1]["generate"]
-        and len(output[-1]["generate"]["messages"]) > 0
-    ):
-        llm_response = output[-1]["generate"]["messages"][0]
-        tools = output[0]["agent"]["tools"]
-        print(output)
+    # Use the extracted function to parse agent output
+    llm_response, context_sources, tools = parse_agent_output(output)
 
-        for tool_index, tool in enumerate(tools):
-            """
-            output schema:
-            [
-                "agent": {"tools": ["tool1", "tool2", ...]},
-                "tool1": {"urls": ["url1", "url2", ...], "context_list": ["context1", "context2", ...]},
-                "tool2": {"urls": ["url1", "url2", ...], "context_list": ["context1", "context2", ...]},
-                "generate": "messages": ["response1", "response2", ...]
-            ]
-            """
-            urls = list(output[tool_index + 1].values())[0]["urls"]
-            context_list = list(output[tool_index + 1].values())[0]["context_list"]
-
-            for _url, _context in zip(urls, context_list):
-                context_sources.append(ContextSource(context=_context, source=_url))
-    else:
-        llm_response = "LLM response extraction failed"
-        logging.error("LLM response extraction failed")
-
+    response: dict[str, Any]
     if user_input.list_sources and user_input.list_context:
         response = {
             "response": llm_response,
             "context_sources": context_sources,
-            "tool": tools,
+            "tools": tools,
         }
     elif user_input.list_sources:
         response = {
@@ -169,7 +252,7 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
             "context_sources": [
                 ContextSource(context="", source=cs.source) for cs in context_sources
             ],
-            "tool": tools,
+            "tools": tools,
         }
     elif user_input.list_context:
         response = {
@@ -177,13 +260,13 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
             "context_sources": [
                 ContextSource(context=cs.context, source="") for cs in context_sources
             ],
-            "tool": tools,
+            "tools": tools,
         }
     else:
         response = {
             "response": llm_response,
             "context_sources": [ContextSource(context="", source="")],
-            "tool": tools,
+            "tools": tools,
         }
 
     return ChatResponse(**response)
