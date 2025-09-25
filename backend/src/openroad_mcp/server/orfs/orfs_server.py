@@ -60,6 +60,13 @@ class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
             raise ValueError("ORFS_DIR environment variable is not set")
         self.flow_dir = os.path.join(self.orfs_dir, "flow")
 
+    def _setup_env(self):
+        load_dotenv()
+        self.env = os.environ
+        self.orfs_dir: str | None = os.getenv("ORFS_DIR")
+        if self.orfs_dir is None:
+            raise ValueError("ORFS_DIR environment variable is not set")
+        self.flow_dir = os.path.join(self.orfs_dir, "flow")
 
 if __name__ == "__main__":
     server = ORFSServer()
