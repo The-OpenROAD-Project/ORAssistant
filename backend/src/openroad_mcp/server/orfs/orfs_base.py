@@ -1,7 +1,7 @@
 import os
 import subprocess
 import logging
-from orfs_tools import ORFS
+from src.openroad_mcp.server.orfs.orfs_tools import ORFS
 
 class ORFSBase(ORFS):
     def _get_platforms_impl(self) -> str:

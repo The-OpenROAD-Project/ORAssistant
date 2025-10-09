@@ -9,11 +9,11 @@ logging.basicConfig(
 from typing import TypedDict, Tuple
 from dotenv import load_dotenv
 
-from pipeline import Synthesis, Floorplan, Placement, CTS, Routing, FinalReport
-from orfs_tools import ORFS
-from orfs_make import ORFSMake
-from orfs_base import ORFSBase
-from orfs_rag import ORFSRag
+from .pipeline import Synthesis, Floorplan, Placement, CTS, Routing, FinalReport
+from src.openroad_mcp.server.orfs.orfs_tools import ORFS
+from src.openroad_mcp.server.orfs.orfs_make import ORFSMake
+from src.openroad_mcp.server.orfs.orfs_base import ORFSBase
+from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
 
 
 class ORFSEnv(TypedDict):

@@ -1,8 +1,8 @@
 import logging
-from orfs_tools import ORFS
+from src.openroad_mcp.server.orfs.orfs_tools import ORFS
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from chains.prompts.prompt_templates import env_prompt_template
+from src.prompts.prompt_templates import env_prompt_template
 
 
 class ORFSMake(ORFS):

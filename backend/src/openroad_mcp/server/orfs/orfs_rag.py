@@ -1,11 +1,11 @@
 import os
 import logging
-from orfs_tools import ORFS
+from src.openroad_mcp.server.orfs.orfs_tools import ORFS
 
 from typing import Tuple
 from langchain_ollama import ChatOllama
-from chains.hybrid_retriever_chain import HybridRetrieverChain
-from chains.tools.format_docs import format_docs
+from src.chains.hybrid_retriever_chain import HybridRetrieverChain
+from src.tools.format_docs import format_docs
 
 class ORFSRag(ORFS):
     required_env_vars = [
