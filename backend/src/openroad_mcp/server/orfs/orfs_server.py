@@ -35,7 +35,7 @@ class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
         self.command: str | None = None
         self.makefile_pointer: str | None = None
 
-        self.orfs_env: dict = ORFSEnv()
+        self.orfs_env: TypedDict= ORFSEnv()
 
         self.design_list: list[str] = []
         self.stages: dict[int, Any] = {
