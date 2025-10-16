@@ -46,7 +46,7 @@ class ORFSBase(ORFS):
         logging.info("start command")
 
         process = subprocess.Popen(
-            cmd.split(),
+            shlex.split(cmd),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             bufsize=1,  # Line-buffered
