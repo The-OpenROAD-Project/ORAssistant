@@ -49,12 +49,11 @@ For more information, please refer to this [link](https://docs.docker.com/refere
 You can specify the Gemini model version using the environment variable `GOOGLE_GEMINI` in your `.env` file.
 The following models are supported:
 
-| Environment Value | Model Name          | Description |
-|------------------|------------------|-------------|
-| `1_pro`          | `gemini-pro`     | Legacy Gemini 1 Pro model (Vertex AI / Generative AI Studio). |
-| `1.5_flash`      | `gemini-1.5-flash` | Lightweight, faster model suitable for low-latency tasks. |
-| `1.5_pro`        | `gemini-1.5-pro` | More capable model for complex reasoning and higher-quality outputs. |
-| `2.5_flash`      | `gemini-2.5-flash` | Latest generation, faster and more accurate than 1.5_flash. |
+| Environment Value | Model Name | Description |
+| :--- | :--- | :--- |
+| `2.0_flash` | `gemini-2.0-flash` | Next-generation lightweight model with improved speed and efficiency. |
+| `2.5_flash` | `gemini-2.5-flash` | Latest generation, faster and more accurate than 1.5_flash. |
+| `2.5_pro` | `gemini-2.5-pro` | Latest generation, state-of-the-art model for the most demanding tasks. |
 
 Set the model by updating your `.env` file:
 ```bash
