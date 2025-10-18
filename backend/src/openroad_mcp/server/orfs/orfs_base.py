@@ -121,7 +121,18 @@ class ORFSBase(ORFS):
     @staticmethod
     @ORFS.mcp.tool
     def jump(stage: str) -> str:
-        """call jump command if contains jump keyword and stage argument"""
+        """Jump directly to a specific stage in the chip design pipeline.
+
+        Valid stage names (MUST use exact names):
+        - "synth" - Synthesis
+        - "floorplan" - Floorplan
+        - "place" - Placement
+        - "cts" - Clock Tree Synthesis
+        - "route" - Routing
+        - "final" - Final Report
+
+        Use get_stage_names() to see all available stages.
+        """
         assert ORFS.server is not None
         ORFS.server._check_configuration()
 
