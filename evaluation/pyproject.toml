@@ -1,12 +1,30 @@
 [build-system]
-requires = ['setuptools>=60', 'Cython==3.0.7', 'wheel==0.42.0']
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "ora-evaluation"
 version = "1.0.0"
-dynamic = ["dependencies", "optional-dependencies"]
 requires-python = ">=3.12"
+dependencies = [
+    "google-api-python-client==2.151.0",
+    "google-auth==2.30.0",
+    "google-auth-httplib2==0.2.0",
+    "google-auth-oauthlib==1.2.0",
+    "gspread==6.1.2",
+    "python-dotenv==1.0.1",
+    "requests==2.32.4",
+    "streamlit==1.37.0",
+    "deepeval==3.0.0",
+    "langchain-google-vertexai==2.0.15",
+    "asyncio==3.4.3",
+    "huggingface-hub==0.26.2",
+    "instructor[vertexai]==1.5.2",
+    "openai==1.58.1",
+    "pydantic==2.10.4",
+    "tqdm==4.67.1",
+    "plotly==5.24.1",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -16,12 +34,17 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
-optional-dependencies = { test = { file = ["requirements-test.txt"] } }
+[project.optional-dependencies]
+test = [
+    "mypy==1.10.1",
+    "ruff==0.5.1",
+    "types-requests==2.32.0.20250602",
+    "google-api-python-client-stubs==1.28.0",
+    "types-tqdm==4.67.0.20241221",
+]
 
-[tool.setuptools.packages.find]
-include = ["auto_evaluation", "human_evaluation", "script_based_evaluation"]
+[tool.hatch.build.targets.wheel]
+packages = ["auto_evaluation", "human_evaluation", "script_based_evaluation"]
 
 [tool.mypy]
 python_version = "3.12"
