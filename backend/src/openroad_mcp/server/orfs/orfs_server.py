@@ -68,6 +68,7 @@ class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
             raise ValueError("ORFS_DIR environment variable is not set")
         self.flow_dir = os.path.join(self.orfs_dir, "flow")
 
+
 if __name__ == "__main__":
     server = ORFSServer()
     server.mcp.run(transport="http", host="127.0.0.1", port=3001)
