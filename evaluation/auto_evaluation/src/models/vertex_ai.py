@@ -76,7 +76,7 @@ class GoogleVertexAILangChain(DeepEvalBaseLLM):
 
 
 def main():
-    model = GoogleVertexAILangChain(model_name="gemini-1.5-pro-002")
+    model = GoogleVertexAILangChain(model_name="gemini-2.5-pro")
     prompt = "Write me a joke"
     print(f"Prompt: {prompt}")
     response = model.generate(prompt, schema=Response)
@@ -84,7 +84,7 @@ def main():
 
 
 async def main_async():
-    model = GoogleVertexAILangChain(model_name="gemini-1.5-pro-002")
+    model = GoogleVertexAILangChain(model_name="gemini-2.5-pro")
     prompt = "Write me a joke"
     print(f"Prompt: {prompt}")
     response = await model.a_generate(prompt, schema=Response)

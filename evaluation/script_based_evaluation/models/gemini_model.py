@@ -31,7 +31,7 @@ def base_gemini_1_5_flash(query: str) -> tuple[str, float]:
     ]
     while True:
         try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             start_time = time.time()
             query = " " + query
             response = model.generate_content(query, safety_settings=safety_config)
@@ -73,7 +73,7 @@ def base_gemini_1_5_pro(query: str) -> tuple[str, float]:
     ]
     while True:
         try:
-            model = genai.GenerativeModel("gemini-1.5-pro")
+            model = genai.GenerativeModel("gemini-2.5-pro")
             start_time = time.time()
             query = " " + query
             response = model.generate_content(
