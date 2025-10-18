@@ -110,7 +110,6 @@ class RetrieverGraph(RAG, MCP, Arch):
         if not self.enable_mcp:
             tmp = "rag_agent"
         else:
-            #tmp = state["agent_type"][0]
             tmp = "mcp_agent"
         return tmp
 

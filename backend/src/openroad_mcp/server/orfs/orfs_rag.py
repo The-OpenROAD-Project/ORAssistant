@@ -7,6 +7,7 @@ from langchain_ollama import ChatOllama
 from src.chains.hybrid_retriever_chain import HybridRetrieverChain
 from src.tools.format_docs import format_docs
 
+
 class ORFSRag(ORFS):
     required_env_vars = [
         "USE_CUDA",
@@ -16,7 +17,7 @@ class ORFSRag(ORFS):
         "LLM_MODEL",
     ]
     hf_reranker: str = str(os.getenv("HF_RERANKER"))
-    reranking_model_name=hf_reranker
+    reranking_model_name = hf_reranker
     embeddings_type: str = str(os.getenv("EMBEDDINGS_TYPE"))
     use_cuda: bool = False
     if str(os.getenv("USE_CUDA")).lower() in ("true"):
@@ -66,7 +67,7 @@ class ORFSRag(ORFS):
     }
     search_k = int(os.getenv("SEARCH_K", 10))
     chunk_size = int(os.getenv("CHUNK_SIZE", 4000))
-    #llm: ChatGoogleGenerativeAI | ChatVertexAI | ChatOllama
+    # llm: ChatGoogleGenerativeAI | ChatVertexAI | ChatOllama
 
     llm_temp_str = os.getenv("LLM_TEMP")
     if llm_temp_str is not None:
@@ -77,7 +78,7 @@ class ORFSRag(ORFS):
         ORFS.llm = ChatOllama(model=model_name, temperature=llm_temp)
         logging.info(ORFS.llm)
     # TODO: try with gemini
-    #elif os.getenv("LLM_MODEL") == "gemini":
+    # elif os.getenv("LLM_MODEL") == "gemini":
     #    if os.getenv("GOOGLE_GEMINI") == "1_pro":
     #        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=llm_temp)
     #    elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
@@ -95,11 +96,11 @@ class ORFSRag(ORFS):
         embeddings_config=embeddings_config,
         reranking_model_name=reranking_model_name,
         use_cuda=use_cuda,
-        #html_docs_path=[] if fast_mode else ["./data/html/or_website/"],
-        #markdown_docs_path=fastmode_docs_map["general"]
-        #if fast_mode
-        #else markdown_docs_map["general"],
-        #other_docs_path=[] if fast_mode else ["./data/pdf"],
+        # html_docs_path=[] if fast_mode else ["./data/html/or_website/"],
+        # markdown_docs_path=fastmode_docs_map["general"]
+        # if fast_mode
+        # else markdown_docs_map["general"],
+        # other_docs_path=[] if fast_mode else ["./data/pdf"],
         html_docs_path=["./data/html/or_website/"],
         markdown_docs_path=markdown_docs_map["general"],
         other_docs_path=["./data/pdf"],
@@ -115,9 +116,9 @@ class ORFSRag(ORFS):
         embeddings_config=embeddings_config,
         reranking_model_name=reranking_model_name,
         use_cuda=use_cuda,
-        #markdown_docs_path=fastmode_docs_map["install"]
-        #if fast_mode
-        #else markdown_docs_map["install"],
+        # markdown_docs_path=fastmode_docs_map["install"]
+        # if fast_mode
+        # else markdown_docs_map["install"],
         markdown_docs_path=markdown_docs_map["install"],
         weights=[0.6, 0.2, 0.2],
         contextual_rerank=True,
@@ -131,10 +132,10 @@ class ORFSRag(ORFS):
         embeddings_config=embeddings_config,
         reranking_model_name=reranking_model_name,
         use_cuda=use_cuda,
-        #markdown_docs_path=fastmode_docs_map["commands"]
-        #if fast_mode
-        #else markdown_docs_map["commands"],
-        #other_docs_path=[] if fast_mode else ["./data/pdf"],
+        # markdown_docs_path=fastmode_docs_map["commands"]
+        # if fast_mode
+        # else markdown_docs_map["commands"],
+        # other_docs_path=[] if fast_mode else ["./data/pdf"],
         markdown_docs_path=markdown_docs_map["commands"],
         other_docs_path=["./data/pdf"],
         weights=[0.6, 0.2, 0.2],
@@ -149,9 +150,9 @@ class ORFSRag(ORFS):
         embeddings_config=embeddings_config,
         reranking_model_name=reranking_model_name,
         use_cuda=use_cuda,
-        #html_docs_path=fastmode_docs_map["yosys"]
-        #if fast_mode
-        #else ["./data/html/yosys_docs"],
+        # html_docs_path=fastmode_docs_map["yosys"]
+        # if fast_mode
+        # else ["./data/html/yosys_docs"],
         html_docs_path=["./data/html/yosys_docs"],
         weights=[0.6, 0.2, 0.2],
         contextual_rerank=True,
@@ -165,9 +166,9 @@ class ORFSRag(ORFS):
         embeddings_config=embeddings_config,
         reranking_model_name=reranking_model_name,
         use_cuda=use_cuda,
-        #html_docs_path=fastmode_docs_map["klayout"]
-        #if fast_mode
-        #else ["./data/html/klayout_docs"],
+        # html_docs_path=fastmode_docs_map["klayout"]
+        # if fast_mode
+        # else ["./data/html/klayout_docs"],
         html_docs_path=["./data/html/klayout_docs"],
         weights=[0.6, 0.2, 0.2],
         contextual_rerank=True,
@@ -181,9 +182,9 @@ class ORFSRag(ORFS):
         embeddings_config=embeddings_config,
         reranking_model_name=reranking_model_name,
         use_cuda=use_cuda,
-        #markdown_docs_path=fastmode_docs_map["errinfo"]
-        #if fast_mode
-        #else markdown_docs_map["errinfo"],
+        # markdown_docs_path=fastmode_docs_map["errinfo"]
+        # if fast_mode
+        # else markdown_docs_map["errinfo"],
         markdown_docs_path=markdown_docs_map["errinfo"],
         weights=[0.6, 0.2, 0.2],
         contextual_rerank=True,
@@ -196,7 +197,7 @@ class ORFSRag(ORFS):
     # TODO: make callable as mcp tool?
     @staticmethod
     @ORFS.mcp.tool
-    def retrieve_general(self, query: str) -> Tuple[str, list[str], list[str], list[str]]:
+    def retrieve_general(query: str) -> Tuple[str, list[str], list[str], list[str]]:
         """
         Retrieve comprehensive and detailed information pertaining to the OpenROAD project, OpenROAD-Flow-Scripts and OpenSTA.\
         This includes, but is not limited to, general information, specific functionalities, usage guidelines,\
@@ -288,7 +289,7 @@ class ORFSRag(ORFS):
         if ORFS.yosys_rtdocs_retriever is None:
             raise ValueError("Yosys RTDocs Retriever not initialized")
         else:
-            docs = retrievertools.yosys_rtdocs_retriever.invoke(input=query)
+            docs = ORFS.yosys_rtdocs_retriever.invoke(input=query)
             return format_docs(docs)
 
     @staticmethod

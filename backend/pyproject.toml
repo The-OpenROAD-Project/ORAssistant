@@ -52,3 +52,10 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.mypy]
+exclude = [
+    "^tests/",
+]
+python_version = "3.13"
+disallow_untyped_defs = true

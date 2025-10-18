@@ -1,12 +1,6 @@
 import os
 import logging
-
-logging.basicConfig(
-    level=os.environ.get("LOGLEVEL", "INFO").upper(),
-    format="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s\n"
-)
-
-from typing import TypedDict, Tuple
+from typing import TypedDict, Any
 from dotenv import load_dotenv
 
 from .pipeline import Synthesis, Floorplan, Placement, CTS, Routing, FinalReport
@@ -15,19 +9,24 @@ from src.openroad_mcp.server.orfs.orfs_make import ORFSMake
 from src.openroad_mcp.server.orfs.orfs_base import ORFSBase
 from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
 
+logging.basicConfig(
+    level=os.environ.get("LOGLEVEL", "INFO").upper(),
+    format="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s\n",
+)
+
 
 class ORFSEnv(TypedDict):
-    general: list[str|None]
+    general: list[str | None]
 
-    synthesis: list[str|None]
-    floorplan: list[str|None]
-    placement: list[str|None]
-    cts: list[str|None]
-    routing: list[str|None]
+    synthesis: list[str | None]
+    floorplan: list[str | None]
+    placement: list[str | None]
+    cts: list[str | None]
+    routing: list[str | None]
 
 
 class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
-    def __init__(self):
+    def __init__(self) -> None:
         ORFS.server = self
 
         self.design: str | None = None
@@ -35,7 +34,7 @@ class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
         self.command: str | None = None
         self.makefile_pointer: str | None = None
 
-        self.orfs_env: TypedDict= ORFSEnv()
+        self.orfs_env: dict[str, str] = {}
 
         self.design_list: list[str] = []
         self.stages: dict[int, Any] = {
@@ -53,13 +52,14 @@ class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
         self._setup_env()
         logging.warning("instantiated...")
 
-    def _setup_env(self):
+    def _setup_env(self) -> None:
         load_dotenv()
         self.env = os.environ
         self.orfs_dir: str | None = os.getenv("ORFS_DIR")
         if self.orfs_dir is None:
             raise ValueError("ORFS_DIR environment variable is not set")
         self.flow_dir = os.path.join(self.orfs_dir, "flow")
+
 
 if __name__ == "__main__":
     server = ORFSServer()

@@ -5,7 +5,7 @@ from src.openroad_mcp.server.orfs.orfs_server import ORFSServer
 
 logging.basicConfig(
     level=os.environ.get("LOGLEVEL", "INFO").upper(),
-    format="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s\n"
+    format="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s\n",
 )
 
 server = ORFSServer()

@@ -1,12 +1,15 @@
 import os
 import subprocess
 import logging
+import shlex
 from src.openroad_mcp.server.orfs.orfs_tools import ORFS
+
 
 class ORFSBase(ORFS):
     def _get_platforms_impl(self) -> str:
         """Internal implementation of get_platforms"""
         # TODO: scrape platforms instead of serving only default sky130
+        assert ORFS.server is not None
         if False:
             pass
         else:
@@ -16,22 +19,25 @@ class ORFSBase(ORFS):
     def _get_designs_impl(self) -> str:
         """Internal implementation of get_designs"""
         # TODO: scrape designs instead of default riscv
+        assert ORFS.server is not None
         if False:
             pass
         else:
             ORFS.server.design = "riscv32i"
             return ORFS.server.design
 
-    def _check_configuration(self) -> str:
+    def _check_configuration(self) -> None:
+        assert ORFS.server is not None
         if not ORFS.server.platform:
-            platform = ORFS.server._get_platforms_impl()
+            ORFS.server._get_platforms_impl()
             logging.info(ORFS.server.platform)
 
         if not ORFS.server.design:
-            design = ORFS.server._get_designs_impl()
+            ORFS.server._get_designs_impl()
             logging.info(ORFS.server.design)
 
-    def _command(self, cmd) -> str:
+    def _command(self, cmd: str) -> None:
+        assert ORFS.server is not None
         working = os.getcwd()
         os.chdir(ORFS.server.flow_dir)
 
@@ -43,6 +49,7 @@ class ORFSBase(ORFS):
         os.chdir(working)
 
     def _run_command(self, cmd: str) -> None:
+        assert ORFS.server is not None
         logging.info("start command")
 
         process = subprocess.Popen(
@@ -65,28 +72,35 @@ class ORFSBase(ORFS):
 
     ### mcp tool section ###
 
+    @staticmethod
     @ORFS.mcp.tool
     def get_platforms() -> str:
         """call get platforms to display possible platforms to run through flow"""
+        assert ORFS.server is not None
         return ORFS.server._get_platforms_impl()
 
+    @staticmethod
     @ORFS.mcp.tool
     def get_designs() -> str:
         """call get designs to display possible designs to run through flow"""
+        assert ORFS.server is not None
         return ORFS.server._get_designs_impl()
 
+    @staticmethod
     @ORFS.mcp.tool
     def make(cmd: str) -> str:
         """call make command if query contains make keyword and a single argument"""
-
+        assert ORFS.server is not None
         ORFS.server._check_configuration()
         ORFS.server._command(cmd)
 
         return f"finished {cmd}"
 
+    @staticmethod
     @ORFS.mcp.tool
     def get_stage_names() -> str:
         """get stage names for possible states this mcp server can be in the chip design pipeline"""
+        assert ORFS.server is not None
         stage_names = [_.info() for _ in ORFS.server.stages.values()]
         logging.info(stage_names)  # in server process
         # for chatbot output
@@ -95,9 +109,11 @@ class ORFSBase(ORFS):
             result += f"{_}\n"
         return result
 
+    @staticmethod
     @ORFS.mcp.tool
     def jump(stage: str) -> str:
         """call jump command if contains jump keyword and stage argument"""
+        assert ORFS.server is not None
         ORFS.server._check_configuration()
 
         stage_names = [_.info() for _ in ORFS.server.stages.values()]
@@ -114,11 +130,14 @@ class ORFSBase(ORFS):
             logging.info("jump unsuccessful..")
             return f"aborted {stage}"
 
+    @staticmethod
     @ORFS.mcp.tool
     def step(cmd: str) -> str:
         """call step command if contains step keyword to progress through pipeline"""
+        assert ORFS.server is not None
 
-        def make_keyword():
+        def make_keyword() -> str:
+            assert ORFS.server is not None
             logging.info(ORFS.server.cur_stage)
             if ORFS.server.cur_stage <= len(ORFS.server.stages) - 2:
                 ORFS.server.cur_stage += 1
@@ -133,7 +152,7 @@ class ORFSBase(ORFS):
         ORFS.server._command(f"gui_{command}")
         return f"finished {command}"
 
-
     # TODO: scrape all makefile keywords and make into mcp tool
+    @staticmethod
     def get_all_keywords() -> None:
         pass

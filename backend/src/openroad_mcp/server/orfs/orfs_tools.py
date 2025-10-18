@@ -1,14 +1,15 @@
+from typing import Any, Optional
 from fastmcp import FastMCP
 
 
-class ORFS():
+class ORFS:
     mcp = FastMCP("ORFS")
-    server = None
+    server: Optional[Any] = None
 
-    llm = None
-    general_retriever = None
-    install_retriever = None
-    commands_retriever = None
-    yosys_rtdocs_retriever = None
-    klayout_retriever = None
-    errinfo_retriever = None
+    llm: Optional[Any] = None
+    general_retriever: Optional[Any] = None
+    install_retriever: Optional[Any] = None
+    commands_retriever: Optional[Any] = None
+    yosys_rtdocs_retriever: Optional[Any] = None
+    klayout_retriever: Optional[Any] = None
+    errinfo_retriever: Optional[Any] = None
