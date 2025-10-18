@@ -44,6 +44,8 @@ If you have a resource-constrained PC, try increasing `HEALTHCHECK_START_PERIOD`
 enough before healthcheck begins.
 For more information, please refer to this [link](https://docs.docker.com/reference/compose-file/services/#healthcheck)
 
+
+Set the model by updating your `.env` file:
 ```bash
 cd backend
 cp .env.example .env
@@ -60,9 +62,9 @@ make docker-down
 
 ### Prerequisites
 
-- [`uv`](https://docs.astral.sh/uv/) (for managing Python, virtual environments, and dependencies)  
-- `wget`  
-- `pandoc`  
+- [`uv`](https://docs.astral.sh/uv/) (for managing Python, virtual environments, and dependencies)
+- `wget`
+- `pandoc`
 - `git`
 
 **Step 1**: Install the required dependencies.
@@ -141,12 +143,12 @@ flowchart LR
     id1([Vectorstore]) --- id3([MMR Retriever])
     id1([Vectorstore]) --- id4([BM25 Retriever])
 
-    id2([Semantic Retriever]) -- Retrieved Docs ---> id5([Reranking]) 
+    id2([Semantic Retriever]) -- Retrieved Docs ---> id5([Reranking])
     id3([MMR Retriever]) -- Retrieved Docs ---> id5([Reranking])
     id4([BM25 Retriever]) -- Retrieved Docs ---> id5([Reranking])
 
     id5([Reranking]) ---> id6(top-n docs)
- 
+
 ```
 
 Depending on the input query, each query can be forwarded to any one of the following retrievers,

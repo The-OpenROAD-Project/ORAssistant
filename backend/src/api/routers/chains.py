@@ -54,12 +54,18 @@ if os.getenv("LLM_MODEL") == "ollama":
     llm = ChatOllama(model=model_name, temperature=llm_temp)
 
 elif os.getenv("LLM_MODEL") == "gemini":
-    if os.getenv("GOOGLE_GEMINI") == "1_pro":
-        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=llm_temp)
-    elif os.getenv("GOOGLE_GEMINI") == "1.5_flash":
-        llm = ChatVertexAI(model_name="gemini-1.5-flash", temperature=llm_temp)
-    elif os.getenv("GOOGLE_GEMINI") == "1.5_pro":
-        llm = ChatVertexAI(model_name="gemini-1.5-pro", temperature=llm_temp)
+    gemini_model = os.getenv("GOOGLE_GEMINI")
+    if gemini_model in {"1_pro", "1.5_flash", "1.5_pro"}:
+        raise ValueError(
+            f"The selected Gemini model '{gemini_model}' (version 1.0–1.5) is disabled. "
+            "Please upgrade to version 2.0 or higher (e.g., 2.0_flash, 2.5_pro)."
+        )
+    elif gemini_model == "2.0_flash":
+        llm = ChatVertexAI(model_name="gemini-2.0-flash", temperature=llm_temp)
+    elif gemini_model == "2.5_flash":
+        llm = ChatVertexAI(model_name="gemini-2.5-flash", temperature=llm_temp)
+    elif gemini_model == "2.5_pro":
+        llm = ChatVertexAI(model_name="gemini-2.5-pro", temperature=llm_temp)
     else:
         raise ValueError("GOOGLE_GEMINI environment variable not set to a valid value.")
 
