@@ -27,6 +27,13 @@ def write_data(results_list: list[dict[str, Any]], results_path: str):
 
 
 def read_deepeval_cache():
+    import os
+
+    cache_file = ".deepeval/.deepeval-cache.json"
+    if not os.path.exists(cache_file):
+        print(f"Warning: {cache_file} not found. Skipping cache read.")
+        return
+
     metric_scores = {
         "Contextual Precision": [],
         "Contextual Recall": [],
@@ -37,7 +44,7 @@ def read_deepeval_cache():
         "Contextual Recall": [],
         "Hallucination": [],
     }
-    with open(".deepeval-cache.json") as f:
+    with open(cache_file) as f:
         results = json.load(f)
     for _, value in results["test_cases_lookup_map"].items():
         for metric in value["cached_metrics_data"]:
