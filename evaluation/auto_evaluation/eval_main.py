@@ -45,7 +45,7 @@ class EvaluationHarness:
         self.reranker_base_url = reranker_base_url
         self.qns = preprocess.read_data(self.dataset)
         self.eval_model = GeminiModel(
-            model_name="gemini-1.5-pro-002",
+            model_name="gemini-2.5-pro",
             project=os.getenv("GOOGLE_PROJECT_ID", ""),
             location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
         )
