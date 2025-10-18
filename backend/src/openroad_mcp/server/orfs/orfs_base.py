@@ -5,6 +5,11 @@ import shlex
 from src.openroad_mcp.server.orfs.orfs_tools import ORFS
 
 
+def _should_skip_gui() -> bool:
+    """Check if GUI commands should be skipped based on environment variable."""
+    return os.getenv("DISABLE_GUI", "false").lower() in ("true", "1", "yes")
+
+
 class ORFSBase(ORFS):
     def _get_platforms_impl(self) -> str:
         """Internal implementation of get_platforms"""
@@ -123,7 +128,15 @@ class ORFSBase(ORFS):
             ORFS.server.cur_stage = ORFS.server.stage_index[stage]
 
             ORFS.server._command(stage)
-            ORFS.server._command(f"gui_{stage}")
+
+            # Open GUI if not disabled
+            if not _should_skip_gui():
+                try:
+                    ORFS.server._command(f"gui_{stage}")
+                except subprocess.CalledProcessError as e:
+                    logging.warning(f"GUI command failed: {e}")
+            else:
+                logging.info("Skipping GUI command (DISABLE_GUI=true)")
 
             return f"finished {stage}"
         else:
@@ -132,8 +145,8 @@ class ORFSBase(ORFS):
 
     @staticmethod
     @ORFS.mcp.tool
-    def step(cmd: str) -> str:
-        """call step command if contains step keyword to progress through pipeline"""
+    def step() -> str:
+        """Progress to the next stage in the chip design pipeline (synthesis -> floorplan -> placement -> CTS -> routing -> final report)"""
         assert ORFS.server is not None
 
         def make_keyword() -> str:
@@ -149,7 +162,16 @@ class ORFSBase(ORFS):
 
         command = make_keyword()
         ORFS.server._command(command)
-        ORFS.server._command(f"gui_{command}")
+
+        # Open GUI if not disabled
+        if not _should_skip_gui():
+            try:
+                ORFS.server._command(f"gui_{command}")
+            except subprocess.CalledProcessError as e:
+                logging.warning(f"GUI command failed: {e}")
+        else:
+            logging.info("Skipping GUI command (DISABLE_GUI=true)")
+
         return f"finished {command}"
 
     # TODO: scrape all makefile keywords and make into mcp tool
