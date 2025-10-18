@@ -15,21 +15,15 @@ class ORFSBase(ORFS):
         """Internal implementation of get_platforms"""
         # TODO: scrape platforms instead of serving only default sky130
         assert ORFS.server is not None
-        if False:
-            pass
-        else:
-            ORFS.server.platform = "sky130hd"
-            return ORFS.server.platform
+        ORFS.server.platform = "sky130hd"
+        return ORFS.server.platform
 
     def _get_designs_impl(self) -> str:
         """Internal implementation of get_designs"""
         # TODO: scrape designs instead of default riscv
         assert ORFS.server is not None
-        if False:
-            pass
-        else:
-            ORFS.server.design = "riscv32i"
-            return ORFS.server.design
+        ORFS.server.design = "riscv32i"
+        return ORFS.server.design
 
     def _check_configuration(self) -> None:
         assert ORFS.server is not None
@@ -94,7 +88,17 @@ class ORFSBase(ORFS):
     @staticmethod
     @ORFS.mcp.tool
     def make(cmd: str) -> str:
-        """call make command if query contains make keyword and a single argument"""
+        """Execute a makefile target for OpenROAD-flow-scripts.
+
+        Common commands:
+        - "clean" - Remove all build artifacts and start fresh
+        - "synth" - Run synthesis
+        - "place" - Run placement
+        - "route" - Run routing
+        - "final" - Generate final reports
+
+        Use this for any makefile target not covered by step/jump commands.
+        """
         assert ORFS.server is not None
         ORFS.server._check_configuration()
         ORFS.server._command(cmd)
