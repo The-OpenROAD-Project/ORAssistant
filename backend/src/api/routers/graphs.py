@@ -79,7 +79,7 @@ elif os.getenv("LLM_MODEL") == "gemini":
     if gemini_model in {"1_pro", "1.5_flash", "1.5_pro"}:
         raise ValueError(
             f"The selected Gemini model '{gemini_model}' (version 1.0–1.5) is disabled. "
-            "Please upgrade     to version 2.0 or higher (e.g., 2.0_flash, 2.5_pro)."
+            "Please upgrade to version 2.0 or higher (e.g., 2.0_flash, 2.5_pro)."
         )
     elif gemini_model == "2.0_flash":
         llm = ChatVertexAI(model_name="gemini-2.0-flash", temperature=llm_temp)
