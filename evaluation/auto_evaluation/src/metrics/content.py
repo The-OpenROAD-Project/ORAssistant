@@ -1,5 +1,4 @@
 from deepeval.metrics import (
-    FaithfulnessMetric,
     AnswerRelevancyMetric,
     BiasMetric,
     ToxicityMetric,
@@ -12,7 +11,7 @@ BIAS_THRESHOLD = 0.7
 TOXICITY_THRESHOLD = 0.7
 
 
-def make_answer_relevancy_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
+def make_answer_relevancy_metric(model: DeepEvalBaseLLM) -> AnswerRelevancyMetric:
     return AnswerRelevancyMetric(
         threshold=ANSRELEVANCY_THRESHOLD,
         model=model,
@@ -20,7 +19,7 @@ def make_answer_relevancy_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
     )
 
 
-def make_bias_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
+def make_bias_metric(model: DeepEvalBaseLLM) -> BiasMetric:
     return BiasMetric(
         threshold=BIAS_THRESHOLD,
         model=model,
@@ -28,7 +27,7 @@ def make_bias_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
     )
 
 
-def make_toxicity_metric(model: DeepEvalBaseLLM) -> FaithfulnessMetric:
+def make_toxicity_metric(model: DeepEvalBaseLLM) -> ToxicityMetric:
     return ToxicityMetric(
         threshold=TOXICITY_THRESHOLD,
         model=model,
