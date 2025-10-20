@@ -1,5 +1,5 @@
 class Synthesis:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = "synthesis_stage"
 
     def info(self) -> str:

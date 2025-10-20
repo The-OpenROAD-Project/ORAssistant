@@ -161,3 +161,18 @@ User Question: {latest_question}
 
 Assistant Answer: {assistant_answer}
 """
+
+env_prompt_template = """
+You are an assistant that always answers in JSON format.
+Use the given context and the question to produce the answer.
+Each key in the JSON should correspond to a variable name, and each value should be a string that is not a sentence but a parameter, number, or boolean that can be exported in the format:
+export <key>=<value>
+
+Context:
+{context}
+
+Question:
+{question}
+
+Return ONLY valid JSON. No explanations, no text outside of the JSON.
+"""

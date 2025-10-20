@@ -1,0 +1,195 @@
+import os
+import subprocess
+import logging
+import shlex
+from src.openroad_mcp.server.orfs.orfs_tools import ORFS
+
+
+def _should_skip_gui() -> bool:
+    """Check if GUI commands should be skipped based on environment variable."""
+    return os.getenv("DISABLE_GUI", "false").lower() in ("true", "1", "yes")
+
+
+class ORFSBase(ORFS):
+    def _get_platforms_impl(self) -> str:
+        """Internal implementation of get_platforms"""
+        # TODO: scrape platforms instead of serving only default sky130
+        assert ORFS.server is not None
+        ORFS.server.platform = "sky130hd"
+        return ORFS.server.platform
+
+    def _get_designs_impl(self) -> str:
+        """Internal implementation of get_designs"""
+        # TODO: scrape designs instead of default riscv
+        assert ORFS.server is not None
+        ORFS.server.design = "riscv32i"
+        return ORFS.server.design
+
+    def _check_configuration(self) -> None:
+        assert ORFS.server is not None
+        if not ORFS.server.platform:
+            ORFS.server._get_platforms_impl()
+            logging.info(ORFS.server.platform)
+
+        if not ORFS.server.design:
+            ORFS.server._get_designs_impl()
+            logging.info(ORFS.server.design)
+
+    def _command(self, cmd: str) -> None:
+        assert ORFS.server is not None
+        working = os.getcwd()
+        os.chdir(ORFS.server.flow_dir)
+
+        make = f"make DESIGN_CONFIG={ORFS.server.flow_dir}/designs/{ORFS.server.platform}/{ORFS.server.design}/config.mk"
+        logging.info(cmd)
+        build_command = f"{make} {cmd}"
+        ORFS.server._run_command(build_command)
+
+        os.chdir(working)
+
+    def _run_command(self, cmd: str) -> None:
+        assert ORFS.server is not None
+        logging.info("start command")
+
+        process = subprocess.Popen(
+            shlex.split(cmd),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1,  # Line-buffered
+            universal_newlines=True,  # Text mode
+            env=ORFS.server.env,
+        )
+
+        if process.stdout:
+            for line in process.stdout:
+                logging.info(line.rstrip())
+
+        process.wait()
+        if process.returncode != 0:
+            logging.error(f"Command exited with return code {process.returncode}")
+            raise subprocess.CalledProcessError(process.returncode, cmd)
+
+    ### mcp tool section ###
+
+    @staticmethod
+    @ORFS.mcp.tool
+    def get_platforms() -> str:
+        """call get platforms to display possible platforms to run through flow"""
+        assert ORFS.server is not None
+        return ORFS.server._get_platforms_impl()
+
+    @staticmethod
+    @ORFS.mcp.tool
+    def get_designs() -> str:
+        """call get designs to display possible designs to run through flow"""
+        assert ORFS.server is not None
+        return ORFS.server._get_designs_impl()
+
+    @staticmethod
+    @ORFS.mcp.tool
+    def make(cmd: str) -> str:
+        """Execute a makefile target for OpenROAD-flow-scripts.
+
+        Common commands:
+        - "clean" - Remove all build artifacts and start fresh
+        - "synth" - Run synthesis
+        - "place" - Run placement
+        - "route" - Run routing
+        - "final" - Generate final reports
+
+        Use this for any makefile target not covered by step/jump commands.
+        """
+        assert ORFS.server is not None
+        ORFS.server._check_configuration()
+        ORFS.server._command(cmd)
+
+        return f"finished {cmd}"
+
+    @staticmethod
+    @ORFS.mcp.tool
+    def get_stage_names() -> str:
+        """get stage names for possible states this mcp server can be in the chip design pipeline"""
+        assert ORFS.server is not None
+        stage_names = [_.info() for _ in ORFS.server.stages.values()]
+        logging.info(stage_names)  # in server process
+        # for chatbot output
+        result = ""
+        for _ in stage_names:
+            result += f"{_}\n"
+        return result
+
+    @staticmethod
+    @ORFS.mcp.tool
+    def jump(stage: str) -> str:
+        """Jump directly to a specific stage in the chip design pipeline.
+
+        Valid stage names (MUST use exact names):
+        - "synth" - Synthesis
+        - "floorplan" - Floorplan
+        - "place" - Placement
+        - "cts" - Clock Tree Synthesis
+        - "route" - Routing
+        - "final" - Final Report
+
+        Use get_stage_names() to see all available stages.
+        """
+        assert ORFS.server is not None
+        ORFS.server._check_configuration()
+
+        stage_names = [_.info() for _ in ORFS.server.stages.values()]
+        logging.info(stage_names)
+        if stage in stage_names:
+            logging.info(stage)
+            ORFS.server.cur_stage = ORFS.server.stage_index[stage]
+
+            ORFS.server._command(stage)
+
+            # Open GUI if not disabled
+            if not _should_skip_gui():
+                try:
+                    ORFS.server._command(f"gui_{stage}")
+                except subprocess.CalledProcessError as e:
+                    logging.warning(f"GUI command failed: {e}")
+            else:
+                logging.info("Skipping GUI command (DISABLE_GUI=true)")
+
+            return f"finished {stage}"
+        else:
+            logging.info("jump unsuccessful..")
+            return f"aborted {stage}"
+
+    @staticmethod
+    @ORFS.mcp.tool
+    def step() -> str:
+        """Progress to the next stage in the chip design pipeline (synthesis -> floorplan -> placement -> CTS -> routing -> final report)"""
+        assert ORFS.server is not None
+
+        def make_keyword() -> str:
+            assert ORFS.server is not None
+            logging.info(ORFS.server.cur_stage)
+            if ORFS.server.cur_stage <= len(ORFS.server.stages) - 2:
+                ORFS.server.cur_stage += 1
+            else:
+                logging.info("end of pipeline..")
+            return ORFS.server.stages[ORFS.server.cur_stage].info()
+
+        ORFS.server._check_configuration()
+
+        command = make_keyword()
+        ORFS.server._command(command)
+
+        # Open GUI if not disabled
+        if not _should_skip_gui():
+            try:
+                ORFS.server._command(f"gui_{command}")
+            except subprocess.CalledProcessError as e:
+                logging.warning(f"GUI command failed: {e}")
+        else:
+            logging.info("Skipping GUI command (DISABLE_GUI=true)")
+
+        return f"finished {command}"
+
+    # TODO: scrape all makefile keywords and make into mcp tool
+    @staticmethod
+    def get_all_keywords() -> None:
+        pass

@@ -1,23 +1,15 @@
-from .pipeline import Synthesis, Floorplan, Placement, CTS, Routing, FinalReport
-from typing import Any
+from typing import Any, Optional
+from fastmcp import FastMCP
 
 
-# Global variables and functions for ORFS class
-class ORFSTools:
-    design: str | None = None
-    platform: str | None = None
-    command: str | None = None
+class ORFS:
+    mcp = FastMCP("ORFS")
+    server: Optional[Any] = None
 
-    design_list: list[str] = []
-
-    stages: dict[int, Any] = {
-        0: Synthesis(),
-        1: Floorplan(),
-        2: Placement(),
-        3: CTS(),
-        4: Routing(),
-        5: FinalReport(),
-    }
-    stage_index: dict[str, int] = {v.info(): k for k, v in stages.items()}
-
-    cur_stage: int = -1
+    llm: Optional[Any] = None
+    general_retriever: Optional[Any] = None
+    install_retriever: Optional[Any] = None
+    commands_retriever: Optional[Any] = None
+    yosys_rtdocs_retriever: Optional[Any] = None
+    klayout_retriever: Optional[Any] = None
+    errinfo_retriever: Optional[Any] = None

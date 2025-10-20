@@ -278,7 +278,7 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
     return ChatResponse(**response)
 
 
-async def get_response_stream(user_input: UserInput):
+async def get_response_stream(user_input: UserInput):  # type: ignore[no-untyped-def]
     user_question = user_input.query
 
     inputs = {
@@ -316,7 +316,7 @@ async def get_response_stream(user_input: UserInput):
 
 
 @router.post("/agent-retriever/stream", response_class=StreamingResponse)
-async def get_agent_response_streaming(user_input: UserInput):
+async def get_agent_response_streaming(user_input: UserInput):  # type: ignore[no-untyped-def]
     return StreamingResponse(
         get_response_stream(user_input), media_type="text/event-stream"
     )

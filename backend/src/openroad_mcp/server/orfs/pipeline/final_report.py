@@ -1,5 +1,5 @@
 class FinalReport:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = "final_report_stage"
 
     def info(self) -> str:

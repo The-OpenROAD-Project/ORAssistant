@@ -1,5 +1,5 @@
 class CTS:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = "cts_stage"
 
     def info(self) -> str:

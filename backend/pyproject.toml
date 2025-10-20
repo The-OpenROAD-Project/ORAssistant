@@ -52,3 +52,15 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+markers = [
+    "unit: marks tests as unit tests (fast, isolated)",
+    "integration: marks tests as integration tests (slower, may require external resources)",
+]
+asyncio_mode = "auto"
+
+[tool.mypy]
+exclude = [
+    "^tests/",
+]
+python_version = "3.13"
+disallow_untyped_defs = true
