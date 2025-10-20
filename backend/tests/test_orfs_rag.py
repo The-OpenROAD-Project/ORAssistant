@@ -1,6 +1,20 @@
 import pytest
-from unittest.mock import Mock, patch
-from src.openroad_mcp.server.orfs.orfs_tools import ORFS
+from unittest.mock import Mock, patch, MagicMock
+import sys
+
+# Mock HybridRetrieverChain before importing orfs_rag to prevent model downloads during import
+with patch("src.chains.hybrid_retriever_chain.HybridRetrieverChain") as mock_chain_class:
+    mock_instance = MagicMock()
+    mock_instance.create_hybrid_retriever = MagicMock()
+    mock_instance.retriever = MagicMock()
+    mock_chain_class.return_value = mock_instance
+
+    # Now it's safe to import these modules
+    from src.openroad_mcp.server.orfs.orfs_tools import ORFS
+    # Import orfs_rag with mocked HybridRetrieverChain
+    if "src.openroad_mcp.server.orfs.orfs_rag" in sys.modules:
+        del sys.modules["src.openroad_mcp.server.orfs.orfs_rag"]
+    from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
 
 
 class TestORFSRag:
@@ -30,9 +44,6 @@ class TestORFSRag:
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_general_success(self, mock_format_docs):
         """Test retrieve_general returns formatted docs."""
-        # Import after ORFS is set up
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         # Mock retriever
         mock_retriever = Mock()
         mock_docs = [Mock(), Mock()]
@@ -60,8 +71,6 @@ class TestORFSRag:
 
     def test_retrieve_general_not_initialized(self):
         """Test retrieve_general raises error when retriever not initialized."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         ORFS.general_retriever = None
 
         with pytest.raises(ValueError, match="General Retriever not initialized"):
@@ -70,8 +79,6 @@ class TestORFSRag:
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_cmds_success(self, mock_format_docs):
         """Test retrieve_cmds returns formatted docs."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         # Mock retriever
         mock_retriever = Mock()
         mock_docs = [Mock(), Mock()]
@@ -96,8 +103,6 @@ class TestORFSRag:
 
     def test_retrieve_cmds_not_initialized(self):
         """Test retrieve_cmds raises error when retriever not initialized."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         ORFS.commands_retriever = None
 
         with pytest.raises(ValueError, match="Commands Retriever not initialized"):
@@ -106,8 +111,6 @@ class TestORFSRag:
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_install_success(self, mock_format_docs):
         """Test retrieve_install returns formatted docs."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         # Mock retriever
         mock_retriever = Mock()
         mock_docs = [Mock()]
@@ -132,8 +135,6 @@ class TestORFSRag:
 
     def test_retrieve_install_not_initialized(self):
         """Test retrieve_install raises error when retriever not initialized."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         ORFS.install_retriever = None
 
         with pytest.raises(ValueError, match="Install Retriever not initialized"):
@@ -142,8 +143,6 @@ class TestORFSRag:
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_errinfo_success(self, mock_format_docs):
         """Test retrieve_errinfo returns formatted docs."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         # Mock retriever
         mock_retriever = Mock()
         mock_docs = [Mock()]
@@ -168,8 +167,6 @@ class TestORFSRag:
 
     def test_retrieve_errinfo_not_initialized(self):
         """Test retrieve_errinfo raises error when retriever not initialized."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         ORFS.errinfo_retriever = None
 
         with pytest.raises(ValueError, match="Error Info Retriever not initialized"):
@@ -178,8 +175,6 @@ class TestORFSRag:
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_yosys_rtdocs_success(self, mock_format_docs):
         """Test retrieve_yosys_rtdocs returns formatted docs."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         # Mock retriever
         mock_retriever = Mock()
         mock_docs = [Mock()]
@@ -204,8 +199,6 @@ class TestORFSRag:
 
     def test_retrieve_yosys_rtdocs_not_initialized(self):
         """Test retrieve_yosys_rtdocs raises error when retriever not initialized."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         ORFS.yosys_rtdocs_retriever = None
 
         with pytest.raises(ValueError, match="Yosys RTDocs Retriever not initialized"):
@@ -214,8 +207,6 @@ class TestORFSRag:
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_klayout_docs_success(self, mock_format_docs):
         """Test retrieve_klayout_docs returns formatted docs."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         # Mock retriever
         mock_retriever = Mock()
         mock_docs = [Mock()]
@@ -240,8 +231,6 @@ class TestORFSRag:
 
     def test_retrieve_klayout_docs_not_initialized(self):
         """Test retrieve_klayout_docs raises error when retriever not initialized."""
-        from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
-
         ORFS.klayout_retriever = None
 
         with pytest.raises(ValueError, match="KLayout Retriever not initialized"):
