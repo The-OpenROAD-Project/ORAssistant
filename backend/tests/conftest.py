@@ -87,3 +87,10 @@ def setup_test_environment():
     # Cleanup after test
     if str(src_path) in sys.path:
         sys.path.remove(str(src_path))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_orfs_rag_initialization():
+    """Mock ORFS RAG initialization to prevent database operations during import."""
+    with patch("src.chains.hybrid_retriever_chain.HybridRetrieverChain.create_hybrid_retriever"):
+        yield
