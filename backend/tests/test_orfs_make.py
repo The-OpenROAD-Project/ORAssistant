@@ -72,7 +72,7 @@ class TestORFSMake:
         mock_orfs_server.orfs_env = {}
 
         # Access the underlying function from the FunctionTool
-        result = ORFSMake.create_dynamic_makefile("test")
+        result = ORFSMake.create_dynamic_makefile.fn("test")
 
         assert result == "no env vars"
 
@@ -85,7 +85,7 @@ class TestORFSMake:
             "CORE_UTILIZATION": "50",
         }
 
-        result = ORFSMake.create_dynamic_makefile("test")
+        result = ORFSMake.create_dynamic_makefile.fn("test")
 
         # Check dynamic_makefile flag is set
         assert mock_orfs_server.dynamic_makefile is True
@@ -133,7 +133,7 @@ class TestORFSMake:
         mock_orfs_server._get_platforms_impl.side_effect = set_platform
         mock_orfs_server._get_designs_impl.side_effect = set_design
 
-        _result = ORFSMake.create_dynamic_makefile("test")
+        _result = ORFSMake.create_dynamic_makefile.fn("test")
 
         # Verify initialization was called
         mock_orfs_server._get_designs_impl.assert_called_once()
@@ -169,7 +169,7 @@ class TestORFSMake:
             return_value=Mock(__or__=Mock(return_value=mock_chain))
         )
 
-        result = ORFSMake.get_env_vars("get clock and utilization variables")
+        result = ORFSMake.get_env_vars.fn("get clock and utilization variables")
 
         # Check return value
         assert result == "done env"
@@ -185,7 +185,7 @@ class TestORFSMake:
         ORFS.server = None
 
         with pytest.raises(AssertionError):
-            ORFSMake.get_env_vars("test")
+            ORFSMake.get_env_vars.fn("test")
 
     def test_get_env_vars_requires_llm(self, mock_orfs_server):
         """Test get_env_vars fails without LLM initialization."""
@@ -193,7 +193,7 @@ class TestORFSMake:
         ORFS.llm = None
 
         with pytest.raises(AssertionError):
-            ORFSMake.get_env_vars("test")
+            ORFSMake.get_env_vars.fn("test")
 
     def test_create_dynamic_makefile_with_makefile_syntax(
         self, mock_orfs_server, tmp_path
@@ -206,7 +206,7 @@ class TestORFSMake:
             "DIE_AREA": "$(PLATFORM_DIR)/$(DESIGN_NAME)",  # Variable reference
         }
 
-        _result = ORFSMake.create_dynamic_makefile("test")
+        _result = ORFSMake.create_dynamic_makefile.fn("test")
 
         # Check file was created
         expected_path = f"{mock_orfs_server.flow_dir}/designs/{mock_orfs_server.platform}/{mock_orfs_server.design}/dynamic_config.mk"

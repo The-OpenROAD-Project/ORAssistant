@@ -107,7 +107,7 @@ class TestRetrieverTools:
         formatted_result = ("formatted_text", ["source1"], ["url1"], ["context1"])
         mock_format_docs.return_value = formatted_result
 
-        result = RetrieverTools.retrieve_general("test query")
+        result = RetrieverTools.retrieve_general.invoke(input="test query")
 
         assert result == formatted_result
         mock_retriever.invoke.assert_called_once_with(input="test query")
@@ -118,7 +118,7 @@ class TestRetrieverTools:
         RetrieverTools.general_retriever = None
 
         with pytest.raises(ValueError, match="General Retriever not initialized"):
-            RetrieverTools.retrieve_general("test query")
+            RetrieverTools.retrieve_general.invoke(input="test query")
 
     @patch("src.agents.retriever_tools.format_docs")
     def test_retrieve_cmds_success(self, mock_format_docs):
@@ -133,7 +133,7 @@ class TestRetrieverTools:
         formatted_result = ("formatted_text", ["source1"], ["url1"], ["context1"])
         mock_format_docs.return_value = formatted_result
 
-        result = RetrieverTools.retrieve_cmds("test query")
+        result = RetrieverTools.retrieve_cmds.invoke(input="test query")
 
         assert result == formatted_result
         mock_retriever.invoke.assert_called_once_with(input="test query")
@@ -144,7 +144,7 @@ class TestRetrieverTools:
         RetrieverTools.commands_retriever = None
 
         with pytest.raises(ValueError, match="Commands Retriever not initialized"):
-            RetrieverTools.retrieve_cmds("test query")
+            RetrieverTools.retrieve_cmds.invoke(input="test query")
 
     @patch("src.agents.retriever_tools.format_docs")
     def test_retrieve_install_success(self, mock_format_docs):
@@ -159,7 +159,7 @@ class TestRetrieverTools:
         formatted_result = ("formatted_text", ["source1"], ["url1"], ["context1"])
         mock_format_docs.return_value = formatted_result
 
-        result = RetrieverTools.retrieve_install("test query")
+        result = RetrieverTools.retrieve_install.invoke(input="test query")
 
         assert result == formatted_result
         mock_retriever.invoke.assert_called_once_with(input="test query")
@@ -170,7 +170,7 @@ class TestRetrieverTools:
         RetrieverTools.install_retriever = None
 
         with pytest.raises(ValueError, match="Install Retriever not initialized"):
-            RetrieverTools.retrieve_install("test query")
+            RetrieverTools.retrieve_install.invoke(input="test query")
 
     @patch("src.agents.retriever_tools.format_docs")
     def test_retrieve_errinfo_success(self, mock_format_docs):
@@ -185,7 +185,7 @@ class TestRetrieverTools:
         formatted_result = ("formatted_text", ["source1"], ["url1"], ["context1"])
         mock_format_docs.return_value = formatted_result
 
-        result = RetrieverTools.retrieve_errinfo("test query")
+        result = RetrieverTools.retrieve_errinfo.invoke(input="test query")
 
         assert result == formatted_result
         mock_retriever.invoke.assert_called_once_with(input="test query")
@@ -196,7 +196,7 @@ class TestRetrieverTools:
         RetrieverTools.errinfo_retriever = None
 
         with pytest.raises(ValueError, match="Error Info Retriever not initialized"):
-            RetrieverTools.retrieve_errinfo("test query")
+            RetrieverTools.retrieve_errinfo.invoke(input="test query")
 
     @patch("src.agents.retriever_tools.format_docs")
     def test_retrieve_yosys_rtdocs_success(self, mock_format_docs):
@@ -211,7 +211,7 @@ class TestRetrieverTools:
         formatted_result = ("formatted_text", ["source1"], ["url1"], ["context1"])
         mock_format_docs.return_value = formatted_result
 
-        result = RetrieverTools.retrieve_yosys_rtdocs("test query")
+        result = RetrieverTools.retrieve_yosys_rtdocs.invoke(input="test query")
 
         assert result == formatted_result
         mock_retriever.invoke.assert_called_once_with(input="test query")
@@ -222,7 +222,7 @@ class TestRetrieverTools:
         RetrieverTools.yosys_rtdocs_retriever = None
 
         with pytest.raises(ValueError, match="Yosys RTDocs Retriever not initialized"):
-            RetrieverTools.retrieve_yosys_rtdocs("test query")
+            RetrieverTools.retrieve_yosys_rtdocs.invoke(input="test query")
 
     @patch("src.agents.retriever_tools.format_docs")
     def test_retrieve_klayout_docs_success(self, mock_format_docs):
@@ -237,7 +237,7 @@ class TestRetrieverTools:
         formatted_result = ("formatted_text", ["source1"], ["url1"], ["context1"])
         mock_format_docs.return_value = formatted_result
 
-        result = RetrieverTools.retrieve_klayout_docs("test query")
+        result = RetrieverTools.retrieve_klayout_docs.invoke(input="test query")
 
         assert result == formatted_result
         mock_retriever.invoke.assert_called_once_with(input="test query")
@@ -248,7 +248,7 @@ class TestRetrieverTools:
         RetrieverTools.klayout_retriever = None
 
         with pytest.raises(ValueError, match="KLayout Retriever not initialized"):
-            RetrieverTools.retrieve_klayout_docs("test query")
+            RetrieverTools.retrieve_klayout_docs.invoke(input="test query")
 
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_initialize_verifies_configuration_parameters(self, mock_hybrid_chain):
@@ -423,7 +423,7 @@ class TestRetrieverTools:
             mock_format.return_value = ("", [], [], [])
 
             # Should be able to call without creating instance
-            result = RetrieverTools.retrieve_general("test")
+            result = RetrieverTools.retrieve_general.invoke(input="test")
             assert result == ("", [], [], [])
 
     @patch("src.agents.retriever_tools.HybridRetrieverChain")

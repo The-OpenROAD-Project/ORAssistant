@@ -142,7 +142,7 @@ class TestORFSBase:
 
         # Verify subprocess was called
         mock_popen.assert_called_once()
-        assert "make synth" in str(mock_popen.call_args)
+        assert "['make', 'synth']" in str(mock_popen.call_args)
 
     @patch("subprocess.Popen")
     def test_run_command_failure(self, mock_popen, mock_orfs_server):
@@ -184,7 +184,13 @@ class TestORFSBase:
         """Test get_platforms MCP tool."""
         ORFS.server = mock_orfs_server
 
-        result = ORFSBase.get_platforms()
+        def set_platform():
+            mock_orfs_server.platform = "sky130hd"
+            return "sky130hd"
+
+        mock_orfs_server._get_platforms_impl = Mock(side_effect=set_platform)
+
+        result = ORFSBase.get_platforms.fn()
 
         assert result == "sky130hd"
         assert mock_orfs_server.platform == "sky130hd"
@@ -193,7 +199,13 @@ class TestORFSBase:
         """Test get_designs MCP tool."""
         ORFS.server = mock_orfs_server
 
-        result = ORFSBase.get_designs()
+        def set_design():
+            mock_orfs_server.design = "riscv32i"
+            return "riscv32i"
+
+        mock_orfs_server._get_designs_impl = Mock(side_effect=set_design)
+
+        result = ORFSBase.get_designs.fn()
 
         assert result == "riscv32i"
         assert mock_orfs_server.design == "riscv32i"
@@ -204,7 +216,7 @@ class TestORFSBase:
         mock_orfs_server._check_configuration = Mock()
         mock_orfs_server._command = Mock()
 
-        result = ORFSBase.make("clean")
+        result = ORFSBase.make.fn("clean")
 
         mock_orfs_server._check_configuration.assert_called_once()
         mock_orfs_server._command.assert_called_once_with("clean")
@@ -214,7 +226,7 @@ class TestORFSBase:
         """Test get_stage_names MCP tool."""
         ORFS.server = mock_orfs_server
 
-        result = ORFSBase.get_stage_names()
+        result = ORFSBase.get_stage_names.fn()
 
         assert "synth" in result
         assert "floorplan" in result
@@ -230,7 +242,7 @@ class TestORFSBase:
         mock_orfs_server._command = Mock()
 
         with patch.dict(os.environ, {"DISABLE_GUI": "true"}):
-            result = ORFSBase.jump("floorplan")
+            result = ORFSBase.jump.fn("floorplan")
 
         assert result == "finished floorplan"
         assert mock_orfs_server.cur_stage == 1
@@ -242,7 +254,7 @@ class TestORFSBase:
         mock_orfs_server._check_configuration = Mock()
         mock_orfs_server._command = Mock()
 
-        result = ORFSBase.jump("invalid_stage")
+        result = ORFSBase.jump.fn("invalid_stage")
 
         assert result == "aborted invalid_stage"
         mock_orfs_server._command.assert_not_called()
@@ -254,7 +266,7 @@ class TestORFSBase:
         mock_orfs_server._command = Mock()
 
         with patch.dict(os.environ, {"DISABLE_GUI": "false"}):
-            _result = ORFSBase.jump("synth")
+            _result = ORFSBase.jump.fn("synth")
 
         # Should call both synth and gui_synth
         assert mock_orfs_server._command.call_count == 2
@@ -274,7 +286,7 @@ class TestORFSBase:
         mock_orfs_server._command = Mock(side_effect=command_side_effect)
 
         with patch.dict(os.environ, {"DISABLE_GUI": "false"}):
-            result = ORFSBase.jump("synth")
+            result = ORFSBase.jump.fn("synth")
 
         # Should still return success even though GUI failed
         assert result == "finished synth"
@@ -287,7 +299,7 @@ class TestORFSBase:
         mock_orfs_server._command = Mock()
 
         with patch.dict(os.environ, {"DISABLE_GUI": "true"}):
-            result = ORFSBase.step()
+            result = ORFSBase.step.fn()
 
         assert mock_orfs_server.cur_stage == 1
         assert result == "finished floorplan"
@@ -301,7 +313,7 @@ class TestORFSBase:
         mock_orfs_server._command = Mock()
 
         with patch.dict(os.environ, {"DISABLE_GUI": "true"}):
-            result = ORFSBase.step()
+            result = ORFSBase.step.fn()
 
         # Should stay at stage 5
         assert mock_orfs_server.cur_stage == 5
@@ -315,7 +327,7 @@ class TestORFSBase:
         mock_orfs_server._command = Mock()
 
         with patch.dict(os.environ, {"DISABLE_GUI": "false"}):
-            _result = ORFSBase.step()
+            _result = ORFSBase.step.fn()
 
         # Should call both floorplan and gui_floorplan
         assert mock_orfs_server._command.call_count == 2
@@ -327,11 +339,11 @@ class TestORFSBase:
         ORFS.server = None
 
         with pytest.raises(AssertionError):
-            ORFSBase.get_platforms()
+            ORFSBase.get_platforms.fn()
 
     def test_make_requires_server(self):
         """Test make fails without server initialization."""
         ORFS.server = None
 
         with pytest.raises(AssertionError):
-            ORFSBase.make("synth")
+            ORFSBase.make.fn("synth")

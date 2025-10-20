@@ -47,7 +47,7 @@ class TestORFSRag:
             ["link1"],
         )
 
-        result = ORFSRag.retrieve_general("test query")
+        result = ORFSRag.retrieve_general.fn("test query")
 
         # Verify retriever was called
         mock_retriever.invoke.assert_called_once_with(input="test query")
@@ -65,7 +65,7 @@ class TestORFSRag:
         ORFS.general_retriever = None
 
         with pytest.raises(ValueError, match="General Retriever not initialized"):
-            ORFSRag.retrieve_general("test query")
+            ORFSRag.retrieve_general.fn("test query")
 
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_cmds_success(self, mock_format_docs):
@@ -86,7 +86,7 @@ class TestORFSRag:
             ["link1"],
         )
 
-        result = ORFSRag.retrieve_cmds("make command")
+        result = ORFSRag.retrieve_cmds.fn("make command")
 
         # Verify retriever was called
         mock_retriever.invoke.assert_called_once_with(input="make command")
@@ -101,7 +101,7 @@ class TestORFSRag:
         ORFS.commands_retriever = None
 
         with pytest.raises(ValueError, match="Commands Retriever not initialized"):
-            ORFSRag.retrieve_cmds("test query")
+            ORFSRag.retrieve_cmds.fn("test query")
 
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_install_success(self, mock_format_docs):
@@ -122,7 +122,7 @@ class TestORFSRag:
             ["link1"],
         )
 
-        result = ORFSRag.retrieve_install("installation steps")
+        result = ORFSRag.retrieve_install.fn("installation steps")
 
         # Verify retriever was called
         mock_retriever.invoke.assert_called_once_with(input="installation steps")
@@ -137,7 +137,7 @@ class TestORFSRag:
         ORFS.install_retriever = None
 
         with pytest.raises(ValueError, match="Install Retriever not initialized"):
-            ORFSRag.retrieve_install("test query")
+            ORFSRag.retrieve_install.fn("test query")
 
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_errinfo_success(self, mock_format_docs):
@@ -158,7 +158,7 @@ class TestORFSRag:
             ["link1"],
         )
 
-        result = ORFSRag.retrieve_errinfo("ANT-0001")
+        result = ORFSRag.retrieve_errinfo.fn("ANT-0001")
 
         # Verify retriever was called
         mock_retriever.invoke.assert_called_once_with(input="ANT-0001")
@@ -173,7 +173,7 @@ class TestORFSRag:
         ORFS.errinfo_retriever = None
 
         with pytest.raises(ValueError, match="Error Info Retriever not initialized"):
-            ORFSRag.retrieve_errinfo("test query")
+            ORFSRag.retrieve_errinfo.fn("test query")
 
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_yosys_rtdocs_success(self, mock_format_docs):
@@ -194,7 +194,7 @@ class TestORFSRag:
             ["link1"],
         )
 
-        result = ORFSRag.retrieve_yosys_rtdocs("yosys synthesis")
+        result = ORFSRag.retrieve_yosys_rtdocs.fn("yosys synthesis")
 
         # Verify retriever was called
         mock_retriever.invoke.assert_called_once_with(input="yosys synthesis")
@@ -209,7 +209,7 @@ class TestORFSRag:
         ORFS.yosys_rtdocs_retriever = None
 
         with pytest.raises(ValueError, match="Yosys RTDocs Retriever not initialized"):
-            ORFSRag.retrieve_yosys_rtdocs("test query")
+            ORFSRag.retrieve_yosys_rtdocs.fn("test query")
 
     @patch("src.openroad_mcp.server.orfs.orfs_rag.format_docs")
     def test_retrieve_klayout_docs_success(self, mock_format_docs):
@@ -230,7 +230,7 @@ class TestORFSRag:
             ["link1"],
         )
 
-        result = ORFSRag.retrieve_klayout_docs("klayout usage")
+        result = ORFSRag.retrieve_klayout_docs.fn("klayout usage")
 
         # Verify retriever was called
         mock_retriever.invoke.assert_called_once_with(input="klayout usage")
@@ -245,4 +245,4 @@ class TestORFSRag:
         ORFS.klayout_retriever = None
 
         with pytest.raises(ValueError, match="KLayout Retriever not initialized"):
-            ORFSRag.retrieve_klayout_docs("test query")
+            ORFSRag.retrieve_klayout_docs.fn("test query")
