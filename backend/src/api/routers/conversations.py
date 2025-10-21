@@ -1,21 +1,30 @@
 import os
 import logging
+import uuid
 from dotenv import load_dotenv
 
 from typing import Any
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessageChunk
 from starlette.responses import StreamingResponse
+from sqlalchemy.orm import Session
 
 from ...agents.retriever_graph import RetrieverGraph
-from ..models.response_model import ChatResponse, ContextSource, UserInput
+from ...database import get_db
+from ...database import crud
+from ..models.response_model import (
+    ChatResponse,
+    ContextSource,
+    UserInput,
+    ConversationResponse,
+    ConversationListResponse,
+)
 
 load_dotenv()
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
-
 
 required_env_vars = [
     "USE_CUDA",
@@ -82,7 +91,7 @@ elif os.getenv("LLM_MODEL") == "gemini":
             "Please upgrade to version 2.0 or higher (e.g., 2.0_flash, 2.5_pro)."
         )
     elif gemini_model == "2.0_flash":
-        llm = ChatVertexAI(model_name="gemini-2.0-flash", temperature=llm_temp)
+        llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=llm_temp)
     elif gemini_model == "2.5_flash":
         llm = ChatVertexAI(model_name="gemini-2.5-flash", temperature=llm_temp)
     elif gemini_model == "2.5_pro":
@@ -93,19 +102,17 @@ elif os.getenv("LLM_MODEL") == "gemini":
 else:
     raise ValueError("LLM_MODEL environment variable not set to a valid value.")
 
-router = APIRouter(prefix="/graphs", tags=["graphs"])
+router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 
 def extract_rag_context_sources(output: list) -> list[ContextSource]:
-    """Extract context sources from RAG agent output."""
     context_sources = []
-    for element in output[1:-1]:  # Skip first (classify) and last (generate) nodes
+    for element in output[1:-1]:
         if isinstance(element, dict):
             for key, value in element.items():
                 if key.startswith("retrieve_") and isinstance(value, dict):
                     urls = value.get("urls", [])
                     context = value.get("context", "")
-                    # Create context sources from urls and context
                     for url in urls:
                         context_sources.append(
                             ContextSource(context=context, source=url)
@@ -114,7 +121,6 @@ def extract_rag_context_sources(output: list) -> list[ContextSource]:
 
 
 def extract_mcp_context_sources(output: list) -> tuple[list[ContextSource], list[str]]:
-    """Extract context sources and tools from MCP/arch agent output."""
     context_sources = []
     tools = []
 
@@ -131,12 +137,10 @@ def extract_mcp_context_sources(output: list) -> tuple[list[ContextSource], list
 
 
 def validate_output_structure(output: Any) -> bool:
-    """Validate that output has the expected structure."""
     return isinstance(output, list) and len(output) > 2 and isinstance(output[-1], dict)
 
 
 def log_invalid_output(output: Any) -> None:
-    """Log details about invalid output structure."""
     logging.error(
         f"Invalid output structure: type={type(output)}, len={len(output) if isinstance(output, list) else 'N/A'}"
     )
@@ -147,16 +151,12 @@ def log_invalid_output(output: Any) -> None:
 
 
 def get_agent_type(output: list) -> tuple[bool, str]:
-    """Determine agent type from output structure.
-    Returns: (is_rag_agent, generate_key)
-    """
     is_rag_agent = "rag_generate" in output[-1]
     generate_key = "rag_generate" if is_rag_agent else "generate"
     return is_rag_agent, generate_key
 
 
 def extract_llm_response(output: list, generate_key: str) -> str | None:
-    """Extract LLM response from output if available."""
     if generate_key not in output[-1]:
         logging.error(f"Missing {generate_key} key")
         return None
@@ -176,28 +176,20 @@ def extract_llm_response(output: list, generate_key: str) -> str | None:
 
 
 def parse_agent_output(output: list) -> tuple[str, list[ContextSource], list[str]]:
-    """
-    Parse agent output and extract response, context sources, and tools.
-    """
-    # Default return values
     default_response = "LLM response extraction failed"
     context_sources: list[ContextSource] = []
     tools: list[str] = []
 
-    # Validate output structure
     if not validate_output_structure(output):
         log_invalid_output(output)
         return default_response, context_sources, tools
 
-    # Determine agent type
     is_rag_agent, generate_key = get_agent_type(output)
 
-    # Extract LLM response
     llm_response = extract_llm_response(output, generate_key)
     if llm_response is None:
         return default_response, context_sources, tools
 
-    # Extract context sources based on agent type
     if is_rag_agent:
         context_sources = extract_rag_context_sources(output)
     else:
@@ -219,22 +211,38 @@ rg = RetrieverGraph(
 rg.initialize()
 
 
-def get_history_str(chat_history: list[dict[str, str]]) -> str:
+def get_history_str(db: Session, conversation_id: int) -> str:
+    history = crud.get_conversation_history(db, conversation_id)
     history_str = ""
-    for i in chat_history:
+    for i in history:
         history_str += f"User : {i['User']}\nAI : {i['AI']}\n\n"
     return history_str
 
 
 @router.post("/agent-retriever", response_model=ChatResponse)
-async def get_agent_response(user_input: UserInput) -> ChatResponse:
+async def get_agent_response(
+    user_input: UserInput, db: Session = Depends(get_db)
+) -> ChatResponse:
     user_question = user_input.query
+
+    session_id = user_input.session_id or str(uuid.uuid4())
+
+    conversation = crud.get_or_create_conversation(
+        db, session_id=session_id, title=user_question[:100] if user_question else None
+    )
+
+    crud.create_message(
+        db=db,
+        conversation_id=conversation.id,
+        role="user",
+        content=user_question,
+    )
 
     inputs = {
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(user_input.chat_history),
+        "chat_history": get_history_str(db, conversation.id),
     }
 
     if rg.graph is not None:
@@ -242,8 +250,19 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
     else:
         raise ValueError("RetrieverGraph not initialized.")
 
-    # Use the extracted function to parse agent output
     llm_response, context_sources, tools = parse_agent_output(output)
+
+    context_sources_dict = [
+        {"source": cs.source, "context": cs.context} for cs in context_sources
+    ]
+    crud.create_message(
+        db=db,
+        conversation_id=conversation.id,
+        role="assistant",
+        content=llm_response,
+        context_sources=context_sources_dict,
+        tools=tools,
+    )
 
     response: dict[str, Any]
     if user_input.list_sources and user_input.list_context:
@@ -278,14 +297,20 @@ async def get_agent_response(user_input: UserInput) -> ChatResponse:
     return ChatResponse(**response)
 
 
-async def get_response_stream(user_input: UserInput):
+async def get_response_stream(user_input: UserInput, db: Session):
     user_question = user_input.query
+    
+    session_id = user_input.session_id or str(uuid.uuid4())
+    
+    conversation = crud.get_or_create_conversation(
+        db, session_id=session_id, title=user_question[:100] if user_question else None
+    )
 
     inputs = {
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(user_input.chat_history),
+        "chat_history": get_history_str(db, conversation.id),
     }
 
     urls: list[str] = []
@@ -316,7 +341,45 @@ async def get_response_stream(user_input: UserInput):
 
 
 @router.post("/agent-retriever/stream", response_class=StreamingResponse)
-async def get_agent_response_streaming(user_input: UserInput):
+async def get_agent_response_streaming(user_input: UserInput, db: Session = Depends(get_db)):
     return StreamingResponse(
-        get_response_stream(user_input), media_type="text/event-stream"
+        get_response_stream(user_input, db), media_type="text/event-stream"
     )
+
+
+@router.post("", response_model=ConversationResponse, status_code=201)
+async def create_conversation(db: Session = Depends(get_db)) -> ConversationResponse:
+    session_id = str(uuid.uuid4())
+    
+    new_conversation = crud.create_conversation(
+        db, session_id=session_id, title=None
+    )
+    return ConversationResponse.model_validate(new_conversation)
+
+
+@router.get("", response_model=list[ConversationListResponse])
+async def list_conversations(
+    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+) -> list[ConversationListResponse]:
+    conversations = crud.get_all_conversations(db, skip=skip, limit=limit)
+    return [ConversationListResponse.model_validate(conv) for conv in conversations]
+
+
+@router.get("/{session_id}", response_model=ConversationResponse)
+async def get_conversation(
+    session_id: str, db: Session = Depends(get_db)
+) -> ConversationResponse:
+    conversation = crud.get_conversation_by_session_id(db, session_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return ConversationResponse.model_validate(conversation)
+
+
+@router.delete("/{session_id}", status_code=204)
+async def delete_conversation(
+    session_id: str, db: Session = Depends(get_db)
+) -> None:
+    conversation = crud.get_conversation_by_session_id(db, session_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    crud.delete_conversation(db, conversation.id)
