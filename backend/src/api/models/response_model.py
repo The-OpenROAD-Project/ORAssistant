@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -6,7 +7,7 @@ class UserInput(BaseModel):
     chat_history: list[dict[str, str]] = []
     list_sources: bool = False
     list_context: bool = False
-
+    session_id: Optional[str] = None
 
 class ContextSource(BaseModel):
     source: str = ""
