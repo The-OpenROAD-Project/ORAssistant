@@ -2,7 +2,18 @@ FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /ORAssistant-backend
 
-RUN apt-get update && apt-get install -y pandoc git wget curl git-lfs && git lfs install
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    gcc \
+    git \
+    git-lfs \
+    libpq-dev \
+    pandoc \
+    postgresql-client \
+    wget && \
+    git lfs install && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip install uv
 
@@ -15,6 +26,12 @@ RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_R
     mkdir -p data && \
     mv ORAssistant_RAG_Dataset/* data/ && \
     rm -rf ORAssistant_RAG_Dataset
+
+ENV POSTGRES_HOST=postgres \
+    POSTGRES_PORT=5432 \
+    POSTGRES_USER=orassistant \
+    POSTGRES_PASSWORD=password \
+    POSTGRES_DB=orassistant_db
 
 EXPOSE 8000
 
