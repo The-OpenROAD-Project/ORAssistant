@@ -1,6 +1,6 @@
 import os
 import logging
-from src.api.routers import graphs
+from src.api.routers import conversations
 
 
 def get_history_str(chat_history: list[dict[str, str]]) -> str:
@@ -13,7 +13,7 @@ def get_history_str(chat_history: list[dict[str, str]]) -> str:
 chat_history: list[dict[str, str]] = []
 
 if __name__ == "__main__":
-    rg = graphs.rg
+    rc = conversations.rc
     os.system("clear")
 
     while True:
@@ -27,8 +27,8 @@ if __name__ == "__main__":
         }
 
         try:
-            if rg.graph is not None:
-                output = list(rg.graph.stream(inputs))
+            if rc.graph is not None:
+                output = list(rc.graph.stream(inputs))
 
             else:
                 raise ValueError("RetrieverGraph not initialized.")
