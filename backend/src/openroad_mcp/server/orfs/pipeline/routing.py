@@ -1,5 +1,5 @@
 class Routing:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = "routing_stage"
 
     def info(self) -> str:

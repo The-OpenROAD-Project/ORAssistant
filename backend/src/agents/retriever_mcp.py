@@ -75,17 +75,16 @@ class MCP:
             logging.info(tool_call["args"])
             try:
                 observation = asyncio.run(tool.ainvoke(tool_call["args"]))
-            except ToolException as e:
-                logging.error(f"ToolException during {tool_call['name']}: {e}")
-                observation = None
-            except Exception as e:
-                logging.error(f"Unexpected error during {tool_call['name']}: {e}")
-                observation = None
-
-            if observation:
                 result.append(observation)
-            else:
-                result.append("no return")
+            except ToolException as e:
+                error_msg = f"Tool '{tool_call['name']}' failed: {str(e)}"
+                logging.error(f"ToolException during {tool_call['name']}: {e}")
+                result.append(error_msg)
+            except Exception as e:
+                error_msg = f"Tool '{tool_call['name']}' encountered an error: {str(e)}"
+                logging.error(f"Unexpected error during {tool_call['name']}: {e}")
+                result.append(error_msg)
+
         logging.info("DONE")
         logging.info(result)
         return {"messages": result}

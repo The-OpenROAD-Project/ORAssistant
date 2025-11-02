@@ -1,5 +1,5 @@
 class Floorplan:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = "floorplan_stage"
 
     def info(self) -> str:
