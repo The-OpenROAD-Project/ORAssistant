@@ -117,10 +117,15 @@ def get_conversation_history(db: Session, conversation_id: str) -> list[dict[str
 
     for message in messages:
         if message.role == "user":
+            if current_pair:
+                history.append(current_pair)
             current_pair = {"User": message.content}
         elif message.role == "assistant" and current_pair:
             current_pair["AI"] = message.content
             history.append(current_pair)
             current_pair = {}
+
+    if current_pair:
+        history.append(current_pair)
 
     return history
