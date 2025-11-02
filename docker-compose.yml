@@ -13,7 +13,7 @@ services:
     networks:
       - orassistant-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-orassistant}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-orassistant} -d ${POSTGRES_DB:-orassistant_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
