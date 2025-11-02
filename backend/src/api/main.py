@@ -4,12 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from src.database.config import init_database
 import logging
+from typing import AsyncGenerator
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initialize database on startup."""
     logger.info("Initializing database connection...")
     init_database()
