@@ -9,6 +9,7 @@ if os.getenv("USE_CUDA", "false").lower() != "true":
 
 from src.api.main import app  # noqa: E402
 
+
 def main() -> None:
     uvicorn.run(
         app,

@@ -12,7 +12,9 @@ class Base(DeclarativeBase):
 class Conversation(Base):
     __tablename__ = "conversations"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     title: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
@@ -38,16 +40,10 @@ class Message(Base):
     conversation_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("conversations.id", ondelete="CASCADE"), index=True
     )
-    role: Mapped[str] = mapped_column(
-        String(50)
-    )
+    role: Mapped[str] = mapped_column(String(50))
     content: Mapped[str] = mapped_column(Text)
-    context_sources: Mapped[Optional[dict]] = mapped_column(
-        JSON, nullable=True
-    )
-    tools: Mapped[Optional[list]] = mapped_column(
-        JSON, nullable=True
-    )
+    context_sources: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    tools: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

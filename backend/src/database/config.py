@@ -27,10 +27,10 @@ def get_database_url() -> str:
 
 def is_database_available() -> bool:
     global engine
-    
+
     if engine is None:
         return False
-    
+
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -42,10 +42,10 @@ def is_database_available() -> bool:
 
 def init_database() -> bool:
     global engine, SessionLocal, _db_initialized
-    
+
     if _db_initialized and engine is not None and is_database_available():
         return True
-    
+
     try:
         if engine is None:
             engine = create_engine(
@@ -56,27 +56,27 @@ def init_database() -> bool:
                 echo=False,
                 connect_args={"connect_timeout": 5},
             )
-        
+
         if SessionLocal is None:
             SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        
+
         if not is_database_available():
             logger.warning("Database is not available. Will retry on next access.")
             return False
-        
+
         inspector = inspect(engine)
         existing_tables = inspector.get_table_names()
-        
+
         if not existing_tables or "conversations" not in existing_tables:
             logger.info("Initializing database tables...")
             Base.metadata.create_all(bind=engine)
             logger.info("Database tables created successfully")
         else:
             logger.debug("Database tables already exist")
-        
+
         _db_initialized = True
         return True
-        
+
     except OperationalError as e:
         logger.warning(f"Database connection failed: {e}")
         logger.warning("Chatbot will run without database persistence.")
@@ -89,13 +89,14 @@ def init_database() -> bool:
 def get_db() -> Generator[Session, None, None]:
     if not _db_initialized:
         init_database()
-    
+
     if SessionLocal is None:
-        raise RuntimeError("Database session factory not initialized. Is PostgreSQL running?")
-    
+        raise RuntimeError(
+            "Database session factory not initialized. Is PostgreSQL running?"
+        )
+
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-

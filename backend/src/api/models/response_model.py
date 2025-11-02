@@ -9,6 +9,7 @@ class UserInput(BaseModel):
     list_context: bool = False
     conversation_id: Optional[str] = None
 
+
 class ContextSource(BaseModel):
     source: str = ""
     context: str = ""

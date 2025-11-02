@@ -227,7 +227,9 @@ async def get_agent_response(
     conversation_id = user_input.conversation_id
 
     conversation = crud.get_or_create_conversation(
-        db, conversation_id=conversation_id, title=user_question[:100] if user_question else None
+        db,
+        conversation_id=conversation_id,
+        title=user_question[:100] if user_question else None,
     )
 
     crud.create_message(
@@ -252,7 +254,9 @@ async def get_agent_response(
     llm_response, context_sources, tools = parse_agent_output(output)
 
     context_sources_dict: dict[str, Any] = {
-        "sources": [{"source": cs.source, "context": cs.context} for cs in context_sources]
+        "sources": [
+            {"source": cs.source, "context": cs.context} for cs in context_sources
+        ]
     }
     crud.create_message(
         db=db,
@@ -298,11 +302,13 @@ async def get_agent_response(
 
 async def get_response_stream(user_input: UserInput, db: Session):
     user_question = user_input.query
-    
+
     conversation_id = user_input.conversation_id
-    
+
     conversation = crud.get_or_create_conversation(
-        db, conversation_id=conversation_id, title=user_question[:100] if user_question else None
+        db,
+        conversation_id=conversation_id,
+        title=user_question[:100] if user_question else None,
     )
 
     inputs = {
@@ -343,7 +349,9 @@ async def get_response_stream(user_input: UserInput, db: Session):
 
 
 @router.post("/agent-retriever/stream", response_class=StreamingResponse)
-async def get_agent_response_streaming(user_input: UserInput, db: Session = Depends(get_db)):
+async def get_agent_response_streaming(
+    user_input: UserInput, db: Session = Depends(get_db)
+):
     return StreamingResponse(
         get_response_stream(user_input, db), media_type="text/event-stream"
     )
@@ -374,9 +382,7 @@ async def get_conversation(
 
 
 @router.delete("/{id}", status_code=204)
-async def delete_conversation(
-    id: str, db: Session = Depends(get_db)
-) -> None:
+async def delete_conversation(id: str, db: Session = Depends(get_db)) -> None:
     conversation = crud.get_conversation(db, id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
