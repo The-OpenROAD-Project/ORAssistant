@@ -300,7 +300,7 @@ async def get_agent_response(
     return ChatResponse(**response)
 
 
-async def get_response_stream(user_input: UserInput, db: Session):
+async def get_response_stream(user_input: UserInput, db: Session) -> Any:
     user_question = user_input.query
 
     conversation_id = user_input.conversation_id
@@ -351,7 +351,7 @@ async def get_response_stream(user_input: UserInput, db: Session):
 @router.post("/agent-retriever/stream", response_class=StreamingResponse)
 async def get_agent_response_streaming(
     user_input: UserInput, db: Session = Depends(get_db)
-):
+) -> StreamingResponse:
     return StreamingResponse(
         get_response_stream(user_input, db), media_type="text/event-stream"
     )

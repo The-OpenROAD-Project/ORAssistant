@@ -3,7 +3,9 @@ from unittest.mock import Mock, patch, MagicMock
 import sys
 
 # Mock HybridRetrieverChain before importing orfs_rag to prevent model downloads during import
-with patch("src.chains.hybrid_retriever_chain.HybridRetrieverChain") as mock_chain_class:
+with patch(
+    "src.chains.hybrid_retriever_chain.HybridRetrieverChain"
+) as mock_chain_class:
     mock_instance = MagicMock()
     mock_instance.create_hybrid_retriever = MagicMock()
     mock_instance.retriever = MagicMock()
@@ -11,6 +13,7 @@ with patch("src.chains.hybrid_retriever_chain.HybridRetrieverChain") as mock_cha
 
     # Now it's safe to import these modules
     from src.openroad_mcp.server.orfs.orfs_tools import ORFS
+
     # Import orfs_rag with mocked HybridRetrieverChain
     if "src.openroad_mcp.server.orfs.orfs_rag" in sys.modules:
         del sys.modules["src.openroad_mcp.server.orfs.orfs_rag"]
