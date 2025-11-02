@@ -3,15 +3,15 @@
 import os
 import logging
 from typing import Generator, Optional
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, inspect, text, Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import OperationalError
 from .models import Base
 
 logger = logging.getLogger(__name__)
 
-engine: Optional[object] = None
-SessionLocal: Optional[sessionmaker] = None
+engine: Optional[Engine] = None
+SessionLocal: Optional[sessionmaker[Session]] = None
 _db_initialized: bool = False
 
 

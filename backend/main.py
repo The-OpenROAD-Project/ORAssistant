@@ -7,8 +7,7 @@ load_dotenv()
 if os.getenv("USE_CUDA", "false").lower() != "true":
     os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
-from src.api.main import app
-
+from src.api.main import app  # noqa: E402
 
 def main() -> None:
     uvicorn.run(

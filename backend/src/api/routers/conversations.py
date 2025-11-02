@@ -1,6 +1,5 @@
 import os
 import logging
-import uuid
 from dotenv import load_dotenv
 
 from typing import Any
@@ -252,9 +251,9 @@ async def get_agent_response(
 
     llm_response, context_sources, tools = parse_agent_output(output)
 
-    context_sources_dict = [
-        {"source": cs.source, "context": cs.context} for cs in context_sources
-    ]
+    context_sources_dict: dict[str, Any] = {
+        "sources": [{"source": cs.source, "context": cs.context} for cs in context_sources]
+    }
     crud.create_message(
         db=db,
         conversation_id=conversation.id,
@@ -324,11 +323,14 @@ async def get_response_stream(user_input: UserInput, db: Session):
                 current_llm_call_count += 1
 
             if chunk == "on_retriever_start" or chunk == "on_retriever_end":
-                for document in event.get("data", {}).get("output", {}):
+                event_data: Any = event.get("data", {})
+                output_docs: list[Any] = event_data.get("output", [])
+                for document in output_docs:
                     urls.append(document.metadata["url"])
 
             if chunk == "on_chat_model_stream" and current_llm_call_count == 2:
-                message_content = event.get("data", {}).get("chunk", {})
+                event_data_chunk: Any = event.get("data", {})
+                message_content: Any = event_data_chunk.get("chunk", {})
                 if isinstance(message_content, AIMessageChunk):
                     msg = message_content.content
                 else:
