@@ -1,11 +1,3 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-if os.getenv("USE_CUDA", "false").lower() != "true":
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
 from fastapi import FastAPI
 from .routers import healthcheck, helpers, ui, conversations
 from fastapi.middleware.cors import CORSMiddleware
