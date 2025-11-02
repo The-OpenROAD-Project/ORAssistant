@@ -29,12 +29,6 @@ RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_R
     mv ORAssistant_RAG_Dataset/* data/ && \
     rm -rf ORAssistant_RAG_Dataset
 
-ENV POSTGRES_HOST=postgres \
-    POSTGRES_PORT=5432 \
-    POSTGRES_USER=orassistant \
-    POSTGRES_PASSWORD=password \
-    POSTGRES_DB=orassistant_db
-
 EXPOSE 8000
 
 CMD ["uv", "run", "uvicorn", "src.api.dummy:app", "--host", "0.0.0.0", "--port", "8000"]
