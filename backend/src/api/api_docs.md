@@ -20,8 +20,7 @@ List all conversations.
 ```json
 [
   {
-    "id": 1,
-    "session_id": "550e8400-e29b-41d4-a716-446655440000",
+    "id": "550e8400-e29b-41d4-a716-446655440000",
     "title": "string",
     "created_at": "datetime",
     "updated_at": "datetime"
@@ -34,26 +33,26 @@ List all conversations.
 - 200: Successful response
 - 422: Validation error
 
-#### GET /conversations/{session_id}
+#### GET /conversations/{id}
 
 Get a specific conversation with all messages.
 
 **Path Parameters:**
 
-- `session_id`: The unique session identifier (string/UUID) of the conversation
+- `id`: The unique identifier (UUID) of the conversation
 
 **Response:**
 
 ```json
 {
-  "id": 1,
-  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "title": "string",
   "created_at": "datetime",
   "updated_at": "datetime",
   "messages": [
     {
       "id": 1,
+      "conversation_id": "550e8400-e29b-41d4-a716-446655440000",
       "role": "user",
       "content": "string",
       "context_sources": null,
@@ -62,6 +61,7 @@ Get a specific conversation with all messages.
     },
     {
       "id": 2,
+      "conversation_id": "550e8400-e29b-41d4-a716-446655440000",
       "role": "assistant",
       "content": "string",
       "context_sources": {"source": "...", "context": "..."},
@@ -78,13 +78,13 @@ Get a specific conversation with all messages.
 - 404: Conversation not found
 - 422: Validation error
 
-#### DELETE /conversations/{session_id}
+#### DELETE /conversations/{id}
 
 Delete a conversation and all its messages.
 
 **Path Parameters:**
 
-- `session_id`: The unique session identifier (string/UUID) of the conversation to delete
+- `id`: The unique identifier (UUID) of the conversation to delete
 
 **Response:**
 
@@ -107,7 +107,7 @@ Get a response from the agent with conversation context and retrieval.
 ```json
 {
   "query": "string",
-  "session_id": "string (optional)",
+  "conversation_id": "string (optional)",
   "list_sources": "boolean (optional)",
   "list_context": "boolean (optional)"
 }
@@ -137,7 +137,7 @@ Get a response from the agent with conversation context and retrieval.
 **Parameters:**
 
 - `query`: The user's question or input text
-- `session_id`: Optional identifier to maintain conversation continuity (auto-generated UUID if not provided)
+- `conversation_id`: Optional UUID identifier to maintain conversation continuity (auto-generated if not provided)
 - `list_sources`: Include source URLs in the response
 - `list_context`: Include retrieved context text in the response
 
@@ -150,7 +150,7 @@ Get a streaming response from the agent.
 ```json
 {
   "query": "string",
-  "session_id": "string (optional)"
+  "conversation_id": "string (optional)"
 }
 ```
 
@@ -167,6 +167,4 @@ Returns a streaming response with `text/event-stream` media type. The stream inc
 - 422: Validation error
 - 500: Internal server error
 
-**Description:**
-
-This endpoint provides real-time streaming of AI responses. Chat history is automatically retrieved from the database using the session_id. If no session_id is provided, a new conversation is automatically created. 
+ 

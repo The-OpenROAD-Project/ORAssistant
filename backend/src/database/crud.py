@@ -2,35 +2,33 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from .models import Conversation, Message
+import uuid
 
 
 def create_conversation(
-    db: Session, session_id: str, title: Optional[str] = None
+    db: Session, conversation_id: Optional[str] = None, title: Optional[str] = None
 ) -> Conversation:
-    conversation = Conversation(session_id=session_id, title=title)
+    if conversation_id is None:
+        conversation_id = str(uuid.uuid4())
+    conversation = Conversation(id=conversation_id, title=title)
     db.add(conversation)
     db.commit()
     db.refresh(conversation)
     return conversation
 
 
-def get_conversation(db: Session, conversation_id: int) -> Optional[Conversation]:
+def get_conversation(db: Session, conversation_id: str) -> Optional[Conversation]:
     return db.query(Conversation).filter(Conversation.id == conversation_id).first()
 
 
-def get_conversation_by_session_id(
-    db: Session, session_id: str
-) -> Optional[Conversation]:
-    return db.query(Conversation).filter(Conversation.session_id == session_id).first()
-
-
 def get_or_create_conversation(
-    db: Session, session_id: str, title: Optional[str] = None
+    db: Session, conversation_id: Optional[str] = None, title: Optional[str] = None
 ) -> Conversation:
-    conversation = get_conversation_by_session_id(db, session_id)
-    if conversation is None:
-        conversation = create_conversation(db, session_id, title)
-    return conversation
+    if conversation_id:
+        conversation = get_conversation(db, conversation_id)
+        if conversation:
+            return conversation
+    return create_conversation(db, conversation_id, title)
 
 
 def get_all_conversations(
@@ -46,7 +44,7 @@ def get_all_conversations(
 
 
 def update_conversation_title(
-    db: Session, conversation_id: int, title: str
+    db: Session, conversation_id: str, title: str
 ) -> Optional[Conversation]:
     conversation = get_conversation(db, conversation_id)
     if conversation:
@@ -56,7 +54,7 @@ def update_conversation_title(
     return conversation
 
 
-def delete_conversation(db: Session, conversation_id: int) -> bool:
+def delete_conversation(db: Session, conversation_id: str) -> bool:
     conversation = get_conversation(db, conversation_id)
     if conversation:
         db.delete(conversation)
@@ -67,7 +65,7 @@ def delete_conversation(db: Session, conversation_id: int) -> bool:
 
 def create_message(
     db: Session,
-    conversation_id: int,
+    conversation_id: str,
     role: str,
     content: str,
     context_sources: Optional[dict] = None,
@@ -91,7 +89,7 @@ def get_message(db: Session, message_id: int) -> Optional[Message]:
 
 
 def get_conversation_messages(
-    db: Session, conversation_id: int, skip: int = 0, limit: int = 100
+    db: Session, conversation_id: str, skip: int = 0, limit: int = 100
 ) -> list[Message]:
     return (
         db.query(Message)
@@ -112,7 +110,7 @@ def delete_message(db: Session, message_id: int) -> bool:
     return False
 
 
-def get_conversation_history(db: Session, conversation_id: int) -> list[dict[str, str]]:
+def get_conversation_history(db: Session, conversation_id: str) -> list[dict[str, str]]:
     messages = get_conversation_messages(db, conversation_id)
     history = []
     current_pair: dict[str, str] = {}

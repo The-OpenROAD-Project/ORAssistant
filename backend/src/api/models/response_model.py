@@ -7,7 +7,7 @@ class UserInput(BaseModel):
     query: str
     list_sources: bool = False
     list_context: bool = False
-    session_id: Optional[str] = None
+    conversation_id: Optional[str] = None
 
 class ContextSource(BaseModel):
     source: str = ""
@@ -38,6 +38,7 @@ class ChatToolResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     id: int
+    conversation_id: str
     role: str
     content: str
     context_sources: Optional[dict] = None
@@ -49,8 +50,7 @@ class MessageResponse(BaseModel):
 
 
 class ConversationResponse(BaseModel):
-    id: int
-    session_id: str
+    id: str
     title: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -61,8 +61,7 @@ class ConversationResponse(BaseModel):
 
 
 class ConversationListResponse(BaseModel):
-    id: int
-    session_id: str
+    id: str
     title: Optional[str] = None
     created_at: datetime
     updated_at: datetime

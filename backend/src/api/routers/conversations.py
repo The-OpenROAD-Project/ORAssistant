@@ -211,7 +211,7 @@ rg = RetrieverGraph(
 rg.initialize()
 
 
-def get_history_str(db: Session, conversation_id: int) -> str:
+def get_history_str(db: Session, conversation_id: str) -> str:
     history = crud.get_conversation_history(db, conversation_id)
     history_str = ""
     for i in history:
@@ -225,10 +225,10 @@ async def get_agent_response(
 ) -> ChatResponse:
     user_question = user_input.query
 
-    session_id = user_input.session_id or str(uuid.uuid4())
+    conversation_id = user_input.conversation_id
 
     conversation = crud.get_or_create_conversation(
-        db, session_id=session_id, title=user_question[:100] if user_question else None
+        db, conversation_id=conversation_id, title=user_question[:100] if user_question else None
     )
 
     crud.create_message(
@@ -300,10 +300,10 @@ async def get_agent_response(
 async def get_response_stream(user_input: UserInput, db: Session):
     user_question = user_input.query
     
-    session_id = user_input.session_id or str(uuid.uuid4())
+    conversation_id = user_input.conversation_id
     
     conversation = crud.get_or_create_conversation(
-        db, session_id=session_id, title=user_question[:100] if user_question else None
+        db, conversation_id=conversation_id, title=user_question[:100] if user_question else None
     )
 
     inputs = {
@@ -349,11 +349,7 @@ async def get_agent_response_streaming(user_input: UserInput, db: Session = Depe
 
 @router.post("", response_model=ConversationResponse, status_code=201)
 async def create_conversation(db: Session = Depends(get_db)) -> ConversationResponse:
-    session_id = str(uuid.uuid4())
-    
-    new_conversation = crud.create_conversation(
-        db, session_id=session_id, title=None
-    )
+    new_conversation = crud.create_conversation(db, conversation_id=None, title=None)
     return ConversationResponse.model_validate(new_conversation)
 
 
@@ -365,21 +361,21 @@ async def list_conversations(
     return [ConversationListResponse.model_validate(conv) for conv in conversations]
 
 
-@router.get("/{session_id}", response_model=ConversationResponse)
+@router.get("/{id}", response_model=ConversationResponse)
 async def get_conversation(
-    session_id: str, db: Session = Depends(get_db)
+    id: str, db: Session = Depends(get_db)
 ) -> ConversationResponse:
-    conversation = crud.get_conversation_by_session_id(db, session_id)
+    conversation = crud.get_conversation(db, id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return ConversationResponse.model_validate(conversation)
 
 
-@router.delete("/{session_id}", status_code=204)
+@router.delete("/{id}", status_code=204)
 async def delete_conversation(
-    session_id: str, db: Session = Depends(get_db)
+    id: str, db: Session = Depends(get_db)
 ) -> None:
-    conversation = crud.get_conversation_by_session_id(db, session_id)
+    conversation = crud.get_conversation(db, id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    crud.delete_conversation(db, conversation.id)
+    crud.delete_conversation(db, id)
