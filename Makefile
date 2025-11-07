@@ -23,11 +23,15 @@ check:
 
 .PHONY: docker-up
 docker-up:
-	@docker compose up --build --wait
+	@docker compose -f docker-compose.yml up --build --wait
 
 .PHONY: docker-down
 docker-down:
-	@docker compose down --remove-orphans
+	@docker compose -f docker-compose.yml down --remove-orphans
+
+.PHONY: docker-dev
+docker-dev:
+	@docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build --wait
 
 # --- Development Commands ---
 .PHONY: seed-credentials
