@@ -2,33 +2,35 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from .models import Conversation, Message
-import uuid
+from uuid import UUID
 
 
 def create_conversation(
-    db: Session, conversation_id: Optional[str] = None, title: Optional[str] = None
+    db: Session, conversation_uuid: Optional[UUID] = None, title: Optional[str] = None
 ) -> Conversation:
-    if conversation_id is None:
-        conversation_id = str(uuid.uuid4())
-    conversation = Conversation(id=conversation_id, title=title)
+    conversation = (
+        Conversation(uuid=conversation_uuid, title=title)
+        if conversation_uuid
+        else Conversation(title=title)
+    )
     db.add(conversation)
     db.commit()
     db.refresh(conversation)
     return conversation
 
 
-def get_conversation(db: Session, conversation_id: str) -> Optional[Conversation]:
-    return db.query(Conversation).filter(Conversation.id == conversation_id).first()
+def get_conversation(db: Session, conversation_uuid: UUID) -> Optional[Conversation]:
+    return db.query(Conversation).filter(Conversation.uuid == conversation_uuid).first()
 
 
 def get_or_create_conversation(
-    db: Session, conversation_id: Optional[str] = None, title: Optional[str] = None
+    db: Session, conversation_uuid: Optional[UUID] = None, title: Optional[str] = None
 ) -> Conversation:
-    if conversation_id:
-        conversation = get_conversation(db, conversation_id)
+    if conversation_uuid:
+        conversation = get_conversation(db, conversation_uuid)
         if conversation:
             return conversation
-    return create_conversation(db, conversation_id, title)
+    return create_conversation(db, conversation_uuid, title)
 
 
 def get_all_conversations(
@@ -44,9 +46,9 @@ def get_all_conversations(
 
 
 def update_conversation_title(
-    db: Session, conversation_id: str, title: str
+    db: Session, conversation_uuid: UUID, title: str
 ) -> Optional[Conversation]:
-    conversation = get_conversation(db, conversation_id)
+    conversation = get_conversation(db, conversation_uuid)
     if conversation:
         conversation.title = title
         db.commit()
@@ -54,8 +56,8 @@ def update_conversation_title(
     return conversation
 
 
-def delete_conversation(db: Session, conversation_id: str) -> bool:
-    conversation = get_conversation(db, conversation_id)
+def delete_conversation(db: Session, conversation_uuid: UUID) -> bool:
+    conversation = get_conversation(db, conversation_uuid)
     if conversation:
         db.delete(conversation)
         db.commit()
@@ -65,14 +67,14 @@ def delete_conversation(db: Session, conversation_id: str) -> bool:
 
 def create_message(
     db: Session,
-    conversation_id: str,
+    conversation_uuid: UUID,
     role: str,
     content: str,
     context_sources: Optional[dict] = None,
     tools: Optional[list] = None,
 ) -> Message:
     message = Message(
-        conversation_id=conversation_id,
+        conversation_uuid=conversation_uuid,
         role=role,
         content=content,
         context_sources=context_sources,
@@ -84,16 +86,16 @@ def create_message(
     return message
 
 
-def get_message(db: Session, message_id: int) -> Optional[Message]:
-    return db.query(Message).filter(Message.id == message_id).first()
+def get_message(db: Session, message_id: UUID) -> Optional[Message]:
+    return db.query(Message).filter(Message.uuid == message_id).first()
 
 
 def get_conversation_messages(
-    db: Session, conversation_id: str, skip: int = 0, limit: int = 100
+    db: Session, conversation_uuid: UUID, skip: int = 0, limit: int = 100
 ) -> list[Message]:
     return (
         db.query(Message)
-        .filter(Message.conversation_id == conversation_id)
+        .filter(Message.conversation_uuid == conversation_uuid)
         .order_by(Message.created_at)
         .offset(skip)
         .limit(limit)
@@ -101,7 +103,7 @@ def get_conversation_messages(
     )
 
 
-def delete_message(db: Session, message_id: int) -> bool:
+def delete_message(db: Session, message_id: UUID) -> bool:
     message = get_message(db, message_id)
     if message:
         db.delete(message)
@@ -110,8 +112,10 @@ def delete_message(db: Session, message_id: int) -> bool:
     return False
 
 
-def get_conversation_history(db: Session, conversation_id: str) -> list[dict[str, str]]:
-    messages = get_conversation_messages(db, conversation_id)
+def get_conversation_history(
+    db: Session, conversation_uuid: UUID
+) -> list[dict[str, str]]:
+    messages = get_conversation_messages(db, conversation_uuid)
     history = []
     current_pair: dict[str, str] = {}
 

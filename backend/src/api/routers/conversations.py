@@ -3,6 +3,7 @@ import logging
 from dotenv import load_dotenv
 
 from typing import Any
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -210,8 +211,8 @@ rg = RetrieverGraph(
 rg.initialize()
 
 
-def get_history_str(db: Session, conversation_id: str) -> str:
-    history = crud.get_conversation_history(db, conversation_id)
+def get_history_str(db: Session, conversation_uuid: UUID) -> str:
+    history = crud.get_conversation_history(db, conversation_uuid)
     history_str = ""
     for i in history:
         history_str += f"User : {i['User']}\nAI : {i['AI']}\n\n"
@@ -229,7 +230,7 @@ async def get_agent_response(
     Args:
         user_input: User input containing:
             - query: The user's question or input text
-            - conversation_id: Optional UUID identifier to maintain conversation continuity (auto-generated if not provided)
+            - conversation_uuid: Optional UUID identifier to maintain conversation continuity (auto-generated if not provided)
             - list_sources: Include source URLs in the response (default: True)
             - list_context: Include retrieved context text in the response (default: True)
         db: Database session dependency
@@ -248,7 +249,7 @@ async def get_agent_response(
         ```json
         {
             "query": "How do I configure OpenROAD?",
-            "conversation_id": "550e8400-e29b-41d4-a716-446655440000",
+            "conversation_uuid": "550e8400-e29b-41d4-a716-446655440000",
             "list_sources": true,
             "list_context": true
         }
@@ -256,17 +257,17 @@ async def get_agent_response(
     """
     user_question = user_input.query
 
-    conversation_id = user_input.conversation_id
+    conversation_uuid = user_input.conversation_uuid
 
     conversation = crud.get_or_create_conversation(
         db,
-        conversation_id=conversation_id,
+        conversation_uuid=conversation_uuid,
         title=user_question[:100] if user_question else None,
     )
 
     crud.create_message(
         db=db,
-        conversation_id=conversation.id,
+        conversation_uuid=conversation.uuid,
         role="user",
         content=user_question,
     )
@@ -275,7 +276,7 @@ async def get_agent_response(
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation.id),
+        "chat_history": get_history_str(db, conversation.uuid),
     }
 
     if rg.graph is not None:
@@ -292,7 +293,7 @@ async def get_agent_response(
     }
     crud.create_message(
         db=db,
-        conversation_id=conversation.id,
+        conversation_uuid=conversation.uuid,
         role="assistant",
         content=llm_response,
         context_sources=context_sources_dict,
@@ -335,11 +336,11 @@ async def get_agent_response(
 async def get_response_stream(user_input: UserInput, db: Session) -> Any:
     user_question = user_input.query
 
-    conversation_id = user_input.conversation_id
+    conversation_uuid = user_input.conversation_uuid
 
     conversation = crud.get_or_create_conversation(
         db,
-        conversation_id=conversation_id,
+        conversation_uuid=conversation_uuid,
         title=user_question[:100] if user_question else None,
     )
 
@@ -347,7 +348,7 @@ async def get_response_stream(user_input: UserInput, db: Session) -> Any:
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation.id),
+        "chat_history": get_history_str(db, conversation.uuid),
     }
 
     urls: list[str] = []
@@ -391,7 +392,7 @@ async def get_agent_response_streaming(
     Args:
         user_input: User input containing:
             - query: The user's question or input text
-            - conversation_id: Optional UUID identifier to maintain conversation continuity
+            - conversation_uuid: Optional UUID identifier to maintain conversation continuity
         db: Database session dependency
 
     Returns:
@@ -403,7 +404,7 @@ async def get_agent_response_streaming(
         ```json
         {
             "query": "What are the key features of OpenROAD?",
-            "conversation_id": "550e8400-e29b-41d4-a716-446655440000"
+            "conversation_uuid": "550e8400-e29b-41d4-a716-446655440000"
         }
         ```
     """
@@ -422,7 +423,7 @@ async def create_conversation(db: Session = Depends(get_db)) -> ConversationResp
 
     Returns:
         ConversationResponse containing the newly created conversation details:
-            - id: UUID of the conversation
+            - uuid: UUID of the conversation
             - title: Conversation title (null for new conversations)
             - created_at: Creation timestamp
             - updated_at: Last update timestamp
@@ -431,7 +432,7 @@ async def create_conversation(db: Session = Depends(get_db)) -> ConversationResp
     Status Code:
         201: Conversation created successfully
     """
-    new_conversation = crud.create_conversation(db, conversation_id=None, title=None)
+    new_conversation = crud.create_conversation(db, conversation_uuid=None, title=None)
     return ConversationResponse.model_validate(new_conversation)
 
 
@@ -449,7 +450,7 @@ async def list_conversations(
 
     Returns:
         List of ConversationListResponse objects, each containing:
-            - id: UUID of the conversation
+            - uuid: UUID of the conversation
             - title: Conversation title
             - created_at: Creation timestamp
             - updated_at: Last update timestamp
@@ -458,7 +459,7 @@ async def list_conversations(
         ```json
         [
             {
-                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "uuid": "550e8400-e29b-41d4-a716-446655440000",
                 "title": "How do I configure OpenROAD?",
                 "created_at": "2025-11-06T10:30:00",
                 "updated_at": "2025-11-06T10:35:00"
@@ -472,7 +473,7 @@ async def list_conversations(
 
 @router.get("/{id}", response_model=ConversationResponse)
 async def get_conversation(
-    id: str, db: Session = Depends(get_db)
+    id: UUID, db: Session = Depends(get_db)
 ) -> ConversationResponse:
     """
     Retrieves a complete conversation including all associated messages.
@@ -483,13 +484,13 @@ async def get_conversation(
 
     Returns:
         ConversationResponse containing:
-            - id: UUID of the conversation
+            - uuid: UUID of the conversation
             - title: Conversation title
             - created_at: Creation timestamp
             - updated_at: Last update timestamp
             - messages: List of all messages in the conversation, each with:
-                - id: Message ID
-                - conversation_id: UUID of the parent conversation
+                - uuid: Message UUID
+                - conversation_uuid: UUID of the parent conversation
                 - role: Message role ("user" or "assistant")
                 - content: Message text content
                 - context_sources: Context sources used (for assistant messages)
@@ -502,20 +503,21 @@ async def get_conversation(
     Example Response:
         ```json
         {
-            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "uuid": "550e8400-e29b-41d4-a716-446655440000",
             "title": "How do I configure OpenROAD?",
             "created_at": "2025-11-06T10:30:00",
             "updated_at": "2025-11-06T10:35:00",
             "messages": [
                 {
-                    "id": 1,
-                    "conversation_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "uuid": "660e8400-e29b-41d4-a716-446655440001",
+                    "conversation_uuid": "550e8400-e29b-41d4-a716-446655440000",
                     "role": "user",
                     "content": "How do I configure OpenROAD?",
                     "created_at": "2025-11-06T10:30:00"
                 },
                 {
-                    "id": 2,
+                    "uuid": "660e8400-e29b-41d4-a716-446655440002",
+                    "conversation_uuid": "550e8400-e29b-41d4-a716-446655440000",
                     "role": "assistant",
                     "content": "To configure OpenROAD...",
                     "context_sources": {"sources": [...]},
@@ -533,7 +535,7 @@ async def get_conversation(
 
 
 @router.delete("/{id}", status_code=204)
-async def delete_conversation(id: str, db: Session = Depends(get_db)) -> None:
+async def delete_conversation(id: UUID, db: Session = Depends(get_db)) -> None:
     """
     Permanently removes a conversation and all associated messages from the database.
 

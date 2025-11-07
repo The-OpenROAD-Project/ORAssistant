@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, JSON
+from sqlalchemy import DateTime, ForeignKey, String, Text, JSON, Uuid
 from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
-import uuid
+from uuid import uuid4, UUID
 
 
 class Base(DeclarativeBase):
@@ -12,9 +12,7 @@ class Base(DeclarativeBase):
 class Conversation(Base):
     __tablename__ = "conversations"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    uuid: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     title: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
@@ -30,15 +28,15 @@ class Conversation(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Conversation(id={self.id}, title={self.title})>"
+        return f"<Conversation(uuid={self.uuid}, title={self.title})>"
 
 
 class Message(Base):
     __tablename__ = "messages"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    conversation_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("conversations.id", ondelete="CASCADE"), index=True
+    uuid: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    conversation_uuid: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("conversations.uuid", ondelete="CASCADE"), index=True
     )
     role: Mapped[str] = mapped_column(String(50))
     content: Mapped[str] = mapped_column(Text)
@@ -53,4 +51,4 @@ class Message(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Message(id={self.id}, conversation_id={self.conversation_id}, role={self.role})>"
+        return f"<Message(uuid={self.uuid}, conversation_uuid={self.conversation_uuid}, role={self.role})>"
