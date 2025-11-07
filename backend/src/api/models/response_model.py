@@ -30,13 +30,6 @@ class ChatResponse(BaseModel):
     tools: list[str] = []
 
 
-class ChatToolResponse(BaseModel):
-    response: str
-    sources: list[str] = []
-    context: list[str] = []
-    tools: list[str] = []
-
-
 class MessageResponse(BaseModel):
     id: int
     conversation_id: str
