@@ -27,6 +27,31 @@ This setup involves the setting of both the frontend and backend components. We 
 
 ### Backend Setup
 
+#### Database Schema
+
+The database automatically creates the following tables:
+- `conversations` - Stores conversation metadata (id, user_id, title, timestamps)
+- `messages` - Stores individual messages within conversations
+
+#### Setting Up PostgreSQL Database Variables
+
+The backend uses PostgreSQL for conversation persistence. Configure these database variables in your `.env` file:
+
+- `POSTGRES_USER` - Database username (default: `orassistant`)
+- `POSTGRES_PASSWORD` - Database password (default: `password`)
+- `POSTGRES_DB` - Database name (default: `orassistant_db`)
+- `POSTGRES_HOST` - Database host (default: `postgres` for Docker, `localhost` for local)
+- `POSTGRES_PORT` - Database port (default: `5432`)
+
+**For local development without Docker:**
+1. Install PostgreSQL on your system
+2. Create a database: `createdb orassistant_db`
+3. Set `POSTGRES_HOST=localhost` in your `.env` file
+
+**For Docker deployment:**
+- The database is automatically configured via docker-compose
+- Data persists in a Docker volume named `postgres_data`
+
 #### Option 1 - Docker
 
 Ensure you have `docker` and `docker-compose` installed in your system.
