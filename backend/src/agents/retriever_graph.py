@@ -106,12 +106,21 @@ class RetrieverGraph(RAG, MCP, Arch):
             return {"agent_type": [response.content]}  # type: ignore
 
     def fork_route(self, state: AgentState) -> str:
-        # TODO: if more than one agent add handler
-        if not self.enable_mcp:
-            tmp = "rag_agent"
-        else:
-            tmp = "mcp_agent"
-        return tmp
+        """Route to the appropriate agent based on classification"""
+        agent_type = state.get("agent_type", [])
+
+        if not agent_type:
+            # Default to RAG agent if no classification
+            return "rag_agent"
+
+        # Return the classified agent type
+        classified = agent_type[0]
+
+        # If MCP is disabled but classifier chose MCP, fall back to RAG
+        if classified == "mcp_agent" and not self.enable_mcp:
+            return "rag_agent"
+
+        return classified
 
     def initialize(self) -> None:
         self.workflow = StateGraph(AgentState)

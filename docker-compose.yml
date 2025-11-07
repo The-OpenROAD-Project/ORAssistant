@@ -28,6 +28,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-orassistant}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-orassistant_db}
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:3001/mcp/}
     ports:
       - "8000:8000"
     depends_on:

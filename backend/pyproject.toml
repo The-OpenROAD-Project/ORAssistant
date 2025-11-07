@@ -22,6 +22,7 @@ dependencies = [
     "langgraph==0.6.6",
     "markdown==3.8.2",
     "myst-parser==4.0.1",
+    "nest-asyncio>=1.6.0",
     "nltk==3.9.1",
     "openai==1.100.2",
     "psycopg2-binary>=2.9.11",
@@ -64,6 +65,10 @@ markers = [
     "integration: marks tests as integration tests (slower, may require external resources)",
 ]
 asyncio_mode = "auto"
+
+[[tool.mypy.overrides]]
+module = "nest_asyncio"
+ignore_missing_imports = true
 
 [tool.mypy]
 exclude = [

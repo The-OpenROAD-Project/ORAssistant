@@ -215,8 +215,8 @@ def get_history_str(db: Session, conversation_uuid: UUID) -> str:
     history = crud.get_conversation_history(db, conversation_uuid)
     history_str = ""
     for i in history:
-        user_msg = i.get('User', '')
-        ai_msg = i.get('AI', '')
+        user_msg = i.get("User", "")
+        ai_msg = i.get("AI", "")
         if user_msg and ai_msg:
             history_str += f"User : {user_msg}\nAI : {ai_msg}\n\n"
     return history_str
