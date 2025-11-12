@@ -316,6 +316,13 @@ async def get_response_stream(user_input: UserInput, db: Session) -> Any:
         title=user_question[:100] if user_question else None,
     )
 
+    crud.create_message(
+        db=db,
+        conversation_uuid=conversation.uuid,
+        role="user",
+        content=user_question,
+    )
+
     inputs = {
         "messages": [
             ("user", user_question),
@@ -325,6 +332,7 @@ async def get_response_stream(user_input: UserInput, db: Session) -> Any:
 
     urls: list[str] = []
     current_llm_call_count = 1
+    chunks: list[str] = []
 
     if rg.graph is not None:
         async for event in rg.graph.astream_events(inputs, version="v2"):
@@ -347,10 +355,25 @@ async def get_response_stream(user_input: UserInput, db: Session) -> Any:
                 else:
                     msg = None
 
+                if msg:
+                    chunks.append(str(msg))
                 yield str(msg) + "\n\n"
 
     urls = list(set(urls))
     yield f"Sources: {', '.join(urls)}\n\n"
+
+    full_response = "".join(chunks)
+    context_sources_dict: dict[str, Any] = {
+        "sources": [{"source": url, "context": ""} for url in urls]
+    }
+    crud.create_message(
+        db=db,
+        conversation_uuid=conversation.uuid,
+        role="assistant",
+        content=full_response,
+        context_sources=context_sources_dict,
+        tools=[],
+    )
 
 
 @router.post("/agent-retriever/stream", response_class=StreamingResponse)
