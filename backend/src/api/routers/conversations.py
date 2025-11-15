@@ -347,7 +347,7 @@ async def get_response_stream(user_input: UserInput, db: Session) -> Any:
                 for document in output_docs:
                     urls.append(document.metadata["url"])
 
-            if chunk == "on_chat_model_stream" and current_llm_call_count == 2:
+            if chunk == "on_chat_model_stream" and current_llm_call_count >= 2:
                 event_data_chunk: Any = event.get("data", {})
                 message_content: Any = event_data_chunk.get("chunk", {})
                 if isinstance(message_content, AIMessageChunk):
@@ -357,7 +357,7 @@ async def get_response_stream(user_input: UserInput, db: Session) -> Any:
 
                 if msg:
                     chunks.append(str(msg))
-                yield str(msg) + "\n\n"
+                    yield str(msg) + "\n\n"
 
     urls = list(set(urls))
     yield f"Sources: {', '.join(urls)}\n\n"
