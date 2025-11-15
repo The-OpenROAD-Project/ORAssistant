@@ -1,16 +1,31 @@
 from fastapi import FastAPI
-from .routers import graphs, healthcheck, helpers, ui
+from .routers import healthcheck, helpers, ui, conversations
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from src.database.config import init_database
+import logging
+from typing import AsyncGenerator
 
-app = FastAPI()
+logger = logging.getLogger(__name__)
 
-# Add CORS middleware
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Initialize database on startup."""
+    logger.info("Initializing database connection...")
+    init_database()
+    yield
+    logger.info("Shutting down...")
+
+
+app = FastAPI(lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:8001",  # mock endpoint
+        "http://localhost:8001",
         "http://127.0.0.1:8001",
     ],
     allow_credentials=True,
@@ -18,6 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(healthcheck.router)
-app.include_router(graphs.router)
 app.include_router(helpers.router)
 app.include_router(ui.router)
+app.include_router(conversations.router)

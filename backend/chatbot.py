@@ -1,6 +1,6 @@
 import os
 import logging
-from src.api.routers import graphs
+from src.api.routers import conversations
 
 
 def get_history_str(chat_history: list[dict[str, str]]) -> str:
@@ -13,7 +13,7 @@ def get_history_str(chat_history: list[dict[str, str]]) -> str:
 chat_history: list[dict[str, str]] = []
 
 if __name__ == "__main__":
-    rg = graphs.rg
+    rg = conversations.rg
     os.system("clear")
 
     while True:

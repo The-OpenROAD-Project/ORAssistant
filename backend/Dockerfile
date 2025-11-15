@@ -2,7 +2,18 @@ FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /ORAssistant-backend
 
-RUN apt-get update && apt-get install -y pandoc git wget curl git-lfs && git lfs install
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    gcc \
+    git \
+    git-lfs \
+    libpq-dev \
+    pandoc \
+    postgresql-client \
+    wget && \
+    git lfs install && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip install uv
 

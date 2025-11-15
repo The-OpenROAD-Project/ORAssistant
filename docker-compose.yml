@@ -1,10 +1,39 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: "postgres"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-orassistant}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-orassistant_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - orassistant-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-orassistant} -d ${POSTGRES_DB:-orassistant_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
     container_name: "backend"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-orassistant}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-orassistant_db}
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:3001/mcp/}
     ports:
       - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - orassistant-network
     healthcheck:
@@ -29,3 +58,7 @@ services:
 networks:
   orassistant-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

@@ -19,6 +19,10 @@ For casual greetings respond politely with a simple, relevant answer.
 Introduce yourself when asked.
 
 ------------------------------------------------------------------------------------
+Chat History:
+{chat_history}
+
+------------------------------------------------------------------------------------
 Use the following context:
 
 <context>

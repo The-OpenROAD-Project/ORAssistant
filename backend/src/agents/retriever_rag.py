@@ -194,8 +194,11 @@ class RAG:
     def rag_generate(self, state: AgentState) -> dict[str, list[AnyMessage]]:
         query = state["messages"][-1].content
         context = state["context"][-1].content
+        chat_history = state.get("chat_history", "")
 
-        ans = self.llm_chain.invoke({"context": context, "question": query})
+        ans = self.llm_chain.invoke(
+            {"context": context, "question": query, "chat_history": chat_history}
+        )
 
         if ans is not None:
             return {"messages": [ans]}

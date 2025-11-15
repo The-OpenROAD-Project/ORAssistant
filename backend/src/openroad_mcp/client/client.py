@@ -1,10 +1,12 @@
+import os
 import asyncio
+import nest_asyncio
 import logging
 from typing import Any
 from datetime import timedelta
 from langchain_mcp_adapters.client import MultiServerMCPClient  # type: ignore
 
-MCP_SERVER_URL = "http://localhost:3001/mcp/"
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:3001/mcp/")
 
 _tools_cache: Any = None
 
@@ -38,7 +40,14 @@ async def get_tools_async() -> Any:
 def get_tools() -> Any:
     """Get MCP tools synchronously"""
     try:
-        return asyncio.run(get_tools_async())
+        # Try to get existing event loop
+        try:
+            _loop = asyncio.get_running_loop()
+            nest_asyncio.apply()
+            return asyncio.run(get_tools_async())
+        except RuntimeError:
+            # No running loop, use asyncio.run()
+            return asyncio.run(get_tools_async())
     except Exception as e:
         logging.warning(f"Failed to connect to MCP server: {e}")
         return []
