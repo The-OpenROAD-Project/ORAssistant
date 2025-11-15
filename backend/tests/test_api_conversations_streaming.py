@@ -1,8 +1,8 @@
 """Unit tests for streaming conversation endpoint."""
 
 import pytest
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from uuid import uuid4, UUID
+from unittest.mock import Mock, patch, MagicMock
+from uuid import uuid4
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from langchain_core.messages import AIMessageChunk
@@ -147,7 +147,7 @@ class TestStreamingEndpoint:
 
         # Create existing conversation with messages
         conv_uuid = uuid4()
-        conv = crud.create_conversation(
+        _conv = crud.create_conversation(
             db_session, conversation_uuid=conv_uuid, title="Test"
         )
         crud.create_message(
@@ -163,9 +163,7 @@ class TestStreamingEndpoint:
             content="Previous answer",
         )
 
-        user_input = UserInput(
-            query="Follow-up question", conversation_uuid=conv_uuid
-        )
+        user_input = UserInput(query="Follow-up question", conversation_uuid=conv_uuid)
 
         captured_inputs = []
 
