@@ -26,11 +26,8 @@ load_dotenv(dotenv_path=os.path.join(eval_root_path, ".env"))
 
 # List of all available retrievers
 ALL_RETRIEVERS = {
-    "agent-retriever": "/graphs/agent-retriever",
-    "agent-retriever-reranker": "/graphs/agent-retriever",
-    "hybrid": "/graphs/hybrid",
-    "sim": "/graphs/sim",
-    "ensemble": "/graphs/ensemble",
+    "agent-retriever": "/conversations/agent-retriever",
+    "agent-retriever-reranker": "/conversations/agent-retriever",
 }
 RETRY_INTERVAL = 5
 RETRY_TIMEOUT = 600

@@ -109,7 +109,7 @@ def main():
     st.title("OR Assistant")
 
     base_url = os.getenv("CHAT_ENDPOINT", "http://localhost:8000")
-    selected_endpoint = "/graphs/agent-retriever"
+    selected_endpoint = "/conversations/agent-retriever"
 
     if "selected_endpoint" not in st.session_state:
         st.session_state.selected_endpoint = selected_endpoint
