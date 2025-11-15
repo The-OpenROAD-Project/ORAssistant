@@ -33,7 +33,7 @@ def list_all_chains() -> List[str]:
     return ["/chains/mock"]
 
 
-@app.post("/graphs/agent-retriever", response_model=ChatResponse)
+@app.post("/conversations/agent-retriever", response_model=ChatResponse)
 def chat_app(request: ChatRequest) -> ChatResponse:
     """
     Endpoint to handle chat requests.
