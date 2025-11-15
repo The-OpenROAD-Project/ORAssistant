@@ -11,6 +11,15 @@ from src.database.models import Base
 from src.database import crud
 from src.api.models.response_model import UserInput
 
+# Patch RetrieverGraph globally before any other imports
+mock_rg_instance = MagicMock()
+mock_graph_global = MagicMock()
+mock_rg_instance.graph = mock_graph_global
+
+with patch("src.agents.retriever_graph.RetrieverGraph", return_value=mock_rg_instance):
+    # Import after patching
+    from src.api.routers import conversations  # noqa: F401
+
 
 @pytest.fixture
 def db_session():
@@ -26,10 +35,9 @@ def db_session():
 @pytest.fixture
 def mock_retriever_graph():
     """Mock RetrieverGraph for streaming tests."""
-    with patch("src.api.routers.conversations.rg") as mock_rg:
-        mock_graph = MagicMock()
-        mock_rg.graph = mock_graph
-        yield mock_graph
+    # Reset the mock for each test
+    mock_graph_global.reset_mock()
+    yield mock_graph_global
 
 
 @pytest.fixture
@@ -97,9 +105,9 @@ class TestStreamingEndpoint:
         assert any("example.com/doc1" in chunk for chunk in chunks)
 
         # Verify conversation and messages were created
-        conversations = crud.get_all_conversations(db_session)
-        assert len(conversations) == 1
-        conversation = conversations[0]
+        all_conversations = crud.get_all_conversations(db_session)
+        assert len(all_conversations) == 1
+        conversation = all_conversations[0]
         assert conversation.uuid == sample_user_input.conversation_uuid
 
         messages = conversation.messages
@@ -135,8 +143,8 @@ class TestStreamingEndpoint:
             chunks.append(chunk)
 
         # Verify conversation was created
-        conversations = crud.get_all_conversations(db_session)
-        assert len(conversations) == 1
+        all_conversations = crud.get_all_conversations(db_session)
+        assert len(all_conversations) == 1
 
     @pytest.mark.asyncio
     async def test_get_response_stream_with_chat_history(
@@ -357,8 +365,8 @@ class TestStreamingEndpoint:
             chunks.append(chunk)
 
         # Verify context sources in database
-        conversations = crud.get_all_conversations(db_session)
-        conversation = conversations[0]
+        all_conversations = crud.get_all_conversations(db_session)
+        conversation = all_conversations[0]
         assistant_message = [m for m in conversation.messages if m.role == "assistant"][
             0
         ]
@@ -393,8 +401,8 @@ class TestStreamingEndpoint:
         async for chunk in get_response_stream(user_input, db_session):
             chunks.append(chunk)
 
-        conversations = crud.get_all_conversations(db_session)
-        conversation = conversations[0]
+        all_conversations = crud.get_all_conversations(db_session)
+        conversation = all_conversations[0]
         assert len(conversation.title) == 100
 
     @pytest.mark.asyncio
