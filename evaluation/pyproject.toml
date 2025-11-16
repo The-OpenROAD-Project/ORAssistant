@@ -54,7 +54,12 @@ warn_unused_ignores = true
 strict_optional = true
 disable_error_code = ["call-arg"]
 explicit_package_bases = true
-exclude = "src/post_install.py"
+exclude = [
+    "src/post_install.py",
+    ".venv",
+    ".mypy_cache",
+    ".ruff_cache",
+]
 
 [[tool.mypy.overrides]]
 module = ["deepeval.*", "huggingface_hub.*", "vertexai.*", "pandas.*", "plotly.*"]
