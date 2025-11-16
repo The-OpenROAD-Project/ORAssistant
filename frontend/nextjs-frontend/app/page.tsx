@@ -139,6 +139,7 @@ export default function Home() {
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const { width } = useWindowSize();
   const isMobile = width !== undefined && width <= 768;
 
@@ -353,12 +354,12 @@ export default function Home() {
   );
 
   useEffect(() => {
-    setIsSidebarOpen(!isMobile);
-  }, [isMobile]);
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    setTheme('dark');
-  }, [setTheme]);
+    setIsSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   useEffect(() => {
     fetchConversations();
@@ -497,7 +498,9 @@ export default function Home() {
               }}
               className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
             >
-              {theme === 'dark' ? (
+              {!mounted ? (
+                <div className="h-6 w-6" />
+              ) : theme === 'dark' ? (
                 <SunIcon className="h-6 w-6 text-yellow-500" />
               ) : (
                 <MoonIcon className="h-6 w-6 text-gray-500" />
