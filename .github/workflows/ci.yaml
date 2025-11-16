@@ -58,24 +58,28 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Set lowercase repository name
+      run: |
+        echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Build backend Docker image with cache
       uses: docker/build-push-action@v5
       with:
         context: ./backend
         push: false
-        tags: ghcr.io/${{ github.repository }}/backend:pr-${{ github.event.pull_request.number }}
+        tags: ghcr.io/${{ env.REPO_LOWER }}/backend:pr-${{ github.event.pull_request.number }}
         cache-from: |
-          type=registry,ref=ghcr.io/${{ github.repository }}/backend:cache
-          type=registry,ref=ghcr.io/${{ github.repository }}/backend:latest
-        cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/backend:cache,mode=max
+          type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/backend:cache
+          type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/backend:latest
+        cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/backend:cache,mode=max
 
     - name: Build frontend Docker image with cache
       uses: docker/build-push-action@v5
       with:
         context: ./frontend/nextjs-frontend
         push: false
-        tags: ghcr.io/${{ github.repository }}/frontend:pr-${{ github.event.pull_request.number }}
+        tags: ghcr.io/${{ env.REPO_LOWER }}/frontend:pr-${{ github.event.pull_request.number }}
         cache-from: |
-          type=registry,ref=ghcr.io/${{ github.repository }}/frontend:cache
-          type=registry,ref=ghcr.io/${{ github.repository }}/frontend:latest
-        cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/frontend:cache,mode=max
+          type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/frontend:cache
+          type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/frontend:latest
+        cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/frontend:cache,mode=max
