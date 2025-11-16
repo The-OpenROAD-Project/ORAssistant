@@ -287,8 +287,7 @@ export default function Home() {
           },
           body: JSON.stringify({
             query: trimmedPrompt,
-            session_id: sessionId,
-            conversation_id: sessionId,
+            conversation_uuid: sessionId,
             list_context: true,
             list_sources: true,
           }),
