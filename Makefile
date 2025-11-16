@@ -23,7 +23,7 @@ check:
 
 .PHONY: docker-up
 docker-up:
-	@docker compose -f docker-compose.yml up --build --wait
+	@DOCKER_BUILDKIT=1 docker compose -f docker-compose.yml up --build --wait
 
 .PHONY: docker-down
 docker-down:
@@ -31,7 +31,7 @@ docker-down:
 
 .PHONY: docker-dev
 docker-dev:
-	@docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build --wait
+	@DOCKER_BUILDKIT=1 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build --wait
 
 # --- Development Commands ---
 .PHONY: seed-credentials
