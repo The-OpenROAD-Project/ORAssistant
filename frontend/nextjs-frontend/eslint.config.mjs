@@ -23,7 +23,7 @@ const config = [
       'import/no-anonymous-default-export': 'off',
     },
   },
-  ...compat.extends('next/core-web-vitals', 'plugin:prettier/recommended'),
+  ...compat.extends('next/core-web-vitals'),
 ];
 
 export default config;

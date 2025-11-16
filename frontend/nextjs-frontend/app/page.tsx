@@ -103,11 +103,13 @@ const normalizeContextSources = (raw: unknown): ContextSource[] => {
         typeof record.context === 'string'
           ? record.context
           : typeof record.snippet === 'string'
-          ? record.snippet
-          : '';
+            ? record.snippet
+            : '';
 
       if (!sourceCandidate && !contextCandidate) {
-        return Object.values(record).flatMap((nested) => normalizeEntry(nested));
+        return Object.values(record).flatMap((nested) =>
+          normalizeEntry(nested)
+        );
       }
 
       return [
@@ -127,7 +129,9 @@ const normalizeContextSources = (raw: unknown): ContextSource[] => {
 export default function Home() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [currentTitle, setCurrentTitle] = useState<string>('Untitled conversation');
+  const [currentTitle, setCurrentTitle] = useState<string>(
+    'Untitled conversation'
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const { theme, setTheme } = useTheme();
@@ -182,9 +186,7 @@ export default function Home() {
           if (response.status === 404) {
             throw new Error('Conversation not found.');
           }
-          throw new Error(
-            `Failed to load conversation (${response.status}).`
-          );
+          throw new Error(`Failed to load conversation (${response.status}).`);
         }
 
         const data: ConversationDetailResponse = await response.json();
@@ -234,7 +236,9 @@ export default function Home() {
 
     setConversations((prev) => [
       summary,
-      ...prev.filter((conversation) => conversation.sessionId !== summary.sessionId),
+      ...prev.filter(
+        (conversation) => conversation.sessionId !== summary.sessionId
+      ),
     ]);
     setCurrentSessionId(summary.sessionId);
     setCurrentTitle(summary.title ?? 'Untitled conversation');
@@ -280,18 +284,21 @@ export default function Home() {
 
         const baseUrl = ensureApiBase();
         const startTime = Date.now();
-        const response = await fetch(`${baseUrl}/conversations/agent-retriever`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: trimmedPrompt,
-            conversation_uuid: sessionId,
-            list_context: true,
-            list_sources: true,
-          }),
-        });
+        const response = await fetch(
+          `${baseUrl}/conversations/agent-retriever`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              query: trimmedPrompt,
+              conversation_uuid: sessionId,
+              list_context: true,
+              list_sources: true,
+            }),
+          }
+        );
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -318,7 +325,10 @@ export default function Home() {
             prev.filter((message) => message.id !== optimisticMessage?.id)
           );
         }
-        if (sendError instanceof TypeError && sendError.message === 'Failed to fetch') {
+        if (
+          sendError instanceof TypeError &&
+          sendError.message === 'Failed to fetch'
+        ) {
           setError(
             'Failed to reach the backend. Verify NEXT_PUBLIC_PROXY_ENDPOINT and CORS settings.'
           );
@@ -333,7 +343,13 @@ export default function Home() {
         setIsLoading(false);
       }
     },
-    [currentSessionId, createConversation, ensureApiBase, fetchConversations, loadConversation]
+    [
+      currentSessionId,
+      createConversation,
+      ensureApiBase,
+      fetchConversations,
+      loadConversation,
+    ]
   );
 
   useEffect(() => {
@@ -362,7 +378,10 @@ export default function Home() {
       await createConversation();
       await fetchConversations();
     } catch (newConversationError) {
-      console.error('Unable to create a new conversation:', newConversationError);
+      console.error(
+        'Unable to create a new conversation:',
+        newConversationError
+      );
       setError(
         newConversationError instanceof Error
           ? newConversationError.message
@@ -389,9 +408,7 @@ export default function Home() {
         if (response.status === 404) {
           throw new Error('Conversation not found.');
         }
-        throw new Error(
-          `Failed to delete conversation (${response.status}).`
-        );
+        throw new Error(`Failed to delete conversation (${response.status}).`);
       }
 
       setConversations((prev) =>
