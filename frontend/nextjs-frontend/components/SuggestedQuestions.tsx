@@ -20,16 +20,27 @@ export default function SuggestedQuestions({
   const isMobile = width !== undefined && width <= 768;
 
   const fetchSuggestedQuestions = useCallback(async () => {
+    // Show default questions if there's no conversation yet
+    if (!latestQuestion || !assistantAnswer) {
+      setQuestions([
+        'How do I get started with OpenROAD?',
+        'What are the main features of OpenROAD?',
+        'How do I install OpenROAD-flow-scripts?',
+        'What is the OpenROAD flow?',
+      ]);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const response = await fetch(`${CHAT_ENDPOINT}/ui/suggestedQuestions`, {
+      const response = await fetch(`${CHAT_ENDPOINT}/helpers/suggestedQuestions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          latestQuestion,
-          assistantAnswer,
+          latest_question: latestQuestion,
+          assistant_answer: assistantAnswer,
         }),
       });
 
