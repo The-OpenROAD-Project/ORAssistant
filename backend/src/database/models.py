@@ -24,7 +24,10 @@ class Conversation(Base):
     )
 
     messages: Mapped[list["Message"]] = relationship(
-        "Message", back_populates="conversation", cascade="all, delete-orphan"
+        "Message",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        order_by="Message.created_at",
     )
 
     def __repr__(self) -> str:

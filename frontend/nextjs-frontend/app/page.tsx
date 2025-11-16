@@ -30,8 +30,7 @@ interface ContextSource {
 }
 
 interface ConversationListItem {
-  id: string | number;
-  session_id?: string | null;
+  uuid: string;
   title: string | null;
   created_at: string;
   updated_at: string;
@@ -48,7 +47,6 @@ interface ConversationMessageResponse {
 }
 
 interface ConversationDetailResponse extends ConversationListItem {
-  session_id?: string | null;
   messages: ConversationMessageResponse[];
 }
 
@@ -67,7 +65,7 @@ interface ConversationSummary {
 const mapConversationSummary = (
   item: ConversationListItem
 ): ConversationSummary => ({
-  sessionId: String(item.session_id ?? item.id),
+  sessionId: item.uuid,
   title: item.title ?? 'Untitled conversation',
   updatedAt: item.updated_at,
 });
@@ -191,9 +189,8 @@ export default function Home() {
         }
 
         const data: ConversationDetailResponse = await response.json();
-        const resolvedSessionId = String(data.session_id ?? data.id);
 
-        setCurrentSessionId(resolvedSessionId);
+        setCurrentSessionId(data.uuid);
         setCurrentTitle(data.title ?? 'Untitled conversation');
         setMessages(
           data.messages.map((message) => ({
