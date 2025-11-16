@@ -396,6 +396,13 @@ export default function Home() {
   };
 
   const handleDeleteConversation = async (sessionId: string) => {
+    const conversation = conversations.find((c) => c.sessionId === sessionId);
+    const confirmed = window.confirm(
+      `Delete "${conversation?.title || 'Untitled conversation'}"? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
     try {
       const baseUrl = ensureApiBase();
       const response = await fetch(`${baseUrl}/conversations/${sessionId}`, {
