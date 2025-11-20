@@ -162,7 +162,7 @@ def agent_retriever():
         raise ValidationError("conversation_uuid must be a string.")
 
     # 1. Handle Conversation Creation if ID is missing
-    if not conv_id:
+    if not conv_id or conv_id not in conversations_db:
         conv_id = str(uuid.uuid4())
         title = user_query[:100]
         conversations_db[conv_id] = {
