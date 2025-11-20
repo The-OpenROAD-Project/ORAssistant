@@ -37,8 +37,8 @@ interface ConversationListItem {
 }
 
 interface ConversationMessageResponse {
-  id: number;
-  conversation_id: number;
+  uuid: string;
+  conversation_uuid: string;
   role: 'user' | 'assistant';
   content: string;
   context_sources?: unknown;
@@ -194,7 +194,7 @@ export default function Home() {
         setCurrentTitle(data.title ?? 'Untitled conversation');
         setMessages(
           data.messages.map((message) => ({
-            id: String(message.id),
+            id: message.uuid,
             role: message.role,
             content: message.content,
             contextSources: normalizeContextSources(message.context_sources),

@@ -1,0 +1,17 @@
+[project]
+name = "mock-flask-api"
+version = "0.1.0"
+description = "Lightweight Flask service that mocks the OpenROAD backend for local frontend testing."
+readme = "readme.md"
+requires-python = ">=3.10"
+dependencies = [
+    "Flask>=3.1.2",
+    "Flask-Cors>=6.0.1"
+]
+
+[tool.flask]
+app = "app:app"
+
+[build-system]
+requires = ["setuptools>=80.9.0", "wheel>=0.45.1"]
+build-backend = "setuptools.build_meta"
