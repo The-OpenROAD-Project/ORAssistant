@@ -107,6 +107,16 @@ class ORFSBase(ORFS):
 
     @staticmethod
     @ORFS.mcp.tool
+    def metrics(cmd: str) -> str:
+        """Get metrics metadata for PPA analysis."""
+        assert ORFS.server is not None
+        ORFS.server._check_configuration()
+        ORFS.server._command("metadata")
+
+        return f"finished metadata"
+
+    @staticmethod
+    @ORFS.mcp.tool
     def get_stage_names() -> str:
         """get stage names for possible states this mcp server can be in the chip design pipeline"""
         assert ORFS.server is not None

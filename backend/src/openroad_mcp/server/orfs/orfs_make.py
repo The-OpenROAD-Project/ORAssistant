@@ -37,7 +37,7 @@ class ORFSMake(ORFS):
                 "VERILOG_FILES": "$(sort $(wildcard ./designs/src/$(DESIGN_NICKNAME)/*.v))",
                 "SDC_FILE": "./designs/$(PLATFORM)/$(DESIGN_NICKNAME)/constraint.sdc",
                 "CORE_UTILIZATION": "50",
-                "PLACE_DENSITY": "50",
+                "PLACE_DENSITY": "0.75",
             }
         )
 
