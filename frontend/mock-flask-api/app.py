@@ -233,7 +233,7 @@ def agent_retriever_stream():
     # Handle logic to find/create conversation (same as above)
     if not conv_id or conv_id not in conversations_db:
         conv_id = str(uuid.uuid4())
-        title = user_query[:100] if user_query else "New Conversation"
+        title = user_query[:100]
         conversations_db[conv_id] = {
             "uuid": conv_id,
             "title": title,
