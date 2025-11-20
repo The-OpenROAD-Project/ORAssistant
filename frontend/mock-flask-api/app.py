@@ -164,7 +164,7 @@ def agent_retriever():
     # 1. Handle Conversation Creation if ID is missing
     if not conv_id:
         conv_id = str(uuid.uuid4())
-        title = user_query[:100] if user_query else "New Conversation"
+        title = user_query[:100]
         conversations_db[conv_id] = {
             "uuid": conv_id,
             "title": title,
