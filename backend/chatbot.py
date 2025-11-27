@@ -7,8 +7,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.prompt import Prompt
-from rich.spinner import Spinner
-from rich.live import Live
 from rich.table import Table
 from sqlalchemy.orm import Session
 
@@ -26,7 +24,7 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 console = Console()
 
 
-def setup_llm():
+def setup_llm() -> ChatVertexAI | ChatGoogleGenerativeAI | ChatOllama:
     temp = float(os.getenv("LLM_TEMP", "0.0"))
     
     if os.getenv("LLM_MODEL") == "ollama":
@@ -50,7 +48,7 @@ def setup_llm():
         raise ValueError(f"Invalid LLM_MODEL: {os.getenv('LLM_MODEL')}")
 
 
-def setup_embeddings():
+def setup_embeddings() -> dict[str, str]:
     embed_type = str(os.getenv("EMBEDDINGS_TYPE"))
     
     if embed_type == "HF":
@@ -126,7 +124,7 @@ def parse_output(output: list) -> tuple[str, list[str], list[str]]:
     return response, list(set(sources)), tools
 
 
-def show_response(text: str, sources: list[str], tools: list[str]):
+def show_response(text: str, sources: list[str], tools: list[str]) -> None:
     console.print(Panel(Markdown(text), title="[bold cyan]Assistant", border_style="cyan"))
     
     if tools:
@@ -142,7 +140,7 @@ def show_response(text: str, sources: list[str], tools: list[str]):
     console.print()
 
 
-def main():
+def main() -> None:
     console.clear()
     console.print(Panel("[bold green]ORAssistant Chatbot[/bold green]", border_style="green"))
     
@@ -175,7 +173,7 @@ def main():
     
     db = None
     conv_id = None
-    local_history = []
+    local_history: list[dict[str, str]] = []
     
     if use_db:
         if init_database():
