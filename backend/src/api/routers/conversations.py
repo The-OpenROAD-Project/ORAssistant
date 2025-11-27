@@ -45,6 +45,7 @@ llm_temp: float = 0.0
 fast_mode: bool = False
 debug: bool = False
 enable_mcp: bool = False
+use_db: bool = True
 
 if str(os.getenv("USE_CUDA")).lower() in ("true"):
     use_cuda = True
@@ -57,6 +58,9 @@ if str(os.getenv("DEBUG")).lower() in ("true"):
 
 if str(os.getenv("ENABLE_MCP")).lower() in ("true"):
     enable_mcp = True
+
+if str(os.getenv("USE_DB", "true")).lower() == "false":
+    use_db = False
 
 llm_temp_str = os.getenv("LLM_TEMP")
 if llm_temp_str is not None:
@@ -103,6 +107,8 @@ else:
     raise ValueError("LLM_MODEL environment variable not set to a valid value.")
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
+
+DB_DISABLED_MSG = "Database is disabled. Conversation management unavailable."
 
 
 def extract_rag_context_sources(output: list) -> list[ContextSource]:
@@ -211,44 +217,69 @@ rg = RetrieverGraph(
 rg.initialize()
 
 
-def get_history_str(db: Session, conversation_uuid: UUID) -> str:
-    history = crud.get_conversation_history(db, conversation_uuid)
-    history_str = ""
-    for i in history:
-        user_msg = i.get("User", "")
-        ai_msg = i.get("AI", "")
-        if user_msg and ai_msg:
-            history_str += f"User : {user_msg}\nAI : {ai_msg}\n\n"
-    return history_str
+chat_history: dict[UUID, list[dict[str, str]]] = {}
+
+
+def get_history_str(db: Session | None, conversation_uuid: UUID | None) -> str:
+    if use_db and db and conversation_uuid:
+        history = crud.get_conversation_history(db, conversation_uuid)
+        history_str = ""
+        for i in history:
+            user_msg = i.get("User", "")
+            ai_msg = i.get("AI", "")
+            if user_msg and ai_msg:
+                history_str += f"User : {user_msg}\nAI : {ai_msg}\n\n"
+        return history_str
+    elif conversation_uuid and conversation_uuid in chat_history:
+        history_str = ""
+        for msg in chat_history[conversation_uuid]:
+            user_msg = msg.get("User", "")
+            ai_msg = msg.get("AI", "")
+            if user_msg and ai_msg:
+                history_str += f"User : {user_msg}\nAI : {ai_msg}\n\n"
+        return history_str
+    return ""
+
+
+def get_optional_db(db: Session = Depends(get_db)) -> Session | None:
+    return db if use_db else None
 
 
 @router.post("/agent-retriever", response_model=ChatResponse)
 async def get_agent_response(
-    user_input: UserInput, db: Session = Depends(get_db)
+    user_input: UserInput, db: Session | None = Depends(get_optional_db)
 ) -> ChatResponse:
     """Processes a user query using the retriever agent, maintains conversation context, and returns the generated response along with relevant context sources and tools used."""
     user_question = user_input.query
 
     conversation_uuid = user_input.conversation_uuid
+    
+    if use_db and db:
+        conversation = crud.get_or_create_conversation(
+            db,
+            conversation_uuid=conversation_uuid,
+            title=user_question[:100] if user_question else None,
+        )
+        conversation_uuid = conversation.uuid
 
-    conversation = crud.get_or_create_conversation(
-        db,
-        conversation_uuid=conversation_uuid,
-        title=user_question[:100] if user_question else None,
-    )
-
-    crud.create_message(
-        db=db,
-        conversation_uuid=conversation.uuid,
-        role="user",
-        content=user_question,
-    )
+        crud.create_message(
+            db=db,
+            conversation_uuid=conversation.uuid,
+            role="user",
+            content=user_question,
+        )
+    else:
+        if conversation_uuid is None:
+            from uuid import uuid4
+            conversation_uuid = uuid4()
+        if conversation_uuid not in chat_history:
+            chat_history[conversation_uuid] = []
 
     inputs = {
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation.uuid),
+        "chat_history": get_history_str(db, conversation_uuid),
     }
 
     if rg.graph is not None:
@@ -263,14 +294,22 @@ async def get_agent_response(
             {"source": cs.source, "context": cs.context} for cs in context_sources
         ]
     }
-    crud.create_message(
-        db=db,
-        conversation_uuid=conversation.uuid,
-        role="assistant",
-        content=llm_response,
-        context_sources=context_sources_dict,
-        tools=tools,
-    )
+    
+    if use_db and db and conversation_uuid:
+        crud.create_message(
+            db=db,
+            conversation_uuid=conversation_uuid,
+            role="assistant",
+            content=llm_response,
+            context_sources=context_sources_dict,
+            tools=tools,
+        )
+    else:
+        if conversation_uuid:
+            chat_history[conversation_uuid].append({
+                "User": user_question,
+                "AI": llm_response
+            })
 
     response: dict[str, Any]
     if user_input.list_sources and user_input.list_context:
@@ -305,29 +344,37 @@ async def get_agent_response(
     return ChatResponse(**response)
 
 
-async def get_response_stream(user_input: UserInput, db: Session) -> Any:
+async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
     user_question = user_input.query
 
     conversation_uuid = user_input.conversation_uuid
 
-    conversation = crud.get_or_create_conversation(
-        db,
-        conversation_uuid=conversation_uuid,
-        title=user_question[:100] if user_question else None,
-    )
+    if use_db and db:
+        conversation = crud.get_or_create_conversation(
+            db,
+            conversation_uuid=conversation_uuid,
+            title=user_question[:100] if user_question else None,
+        )
+        conversation_uuid = conversation.uuid
 
-    crud.create_message(
-        db=db,
-        conversation_uuid=conversation.uuid,
-        role="user",
-        content=user_question,
-    )
+        crud.create_message(
+            db=db,
+            conversation_uuid=conversation.uuid,
+            role="user",
+            content=user_question,
+        )
+    else:
+        if conversation_uuid is None:
+            from uuid import uuid4
+            conversation_uuid = uuid4()
+        if conversation_uuid not in chat_history:
+            chat_history[conversation_uuid] = []
 
     inputs = {
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation.uuid),
+        "chat_history": get_history_str(db, conversation_uuid),
     }
 
     urls: list[str] = []
@@ -363,22 +410,30 @@ async def get_response_stream(user_input: UserInput, db: Session) -> Any:
     yield f"Sources: {', '.join(urls)}\n\n"
 
     full_response = "".join(chunks)
-    context_sources_dict: dict[str, Any] = {
-        "sources": [{"source": url, "context": ""} for url in urls]
-    }
-    crud.create_message(
-        db=db,
-        conversation_uuid=conversation.uuid,
-        role="assistant",
-        content=full_response,
-        context_sources=context_sources_dict,
-        tools=[],
-    )
+    
+    if use_db and db and conversation_uuid:
+        context_sources_dict: dict[str, Any] = {
+            "sources": [{"source": url, "context": ""} for url in urls]
+        }
+        crud.create_message(
+            db=db,
+            conversation_uuid=conversation_uuid,
+            role="assistant",
+            content=full_response,
+            context_sources=context_sources_dict,
+            tools=[],
+        )
+    else:
+        if conversation_uuid:
+            chat_history[conversation_uuid].append({
+                "User": user_question,
+                "AI": full_response
+            })
 
 
 @router.post("/agent-retriever/stream", response_class=StreamingResponse)
 async def get_agent_response_streaming(
-    user_input: UserInput, db: Session = Depends(get_db)
+    user_input: UserInput, db: Session | None = Depends(get_optional_db)
 ) -> StreamingResponse:
     """Provides real-time streaming of the agent's response as it's being generated."""
     return StreamingResponse(
@@ -389,6 +444,8 @@ async def get_agent_response_streaming(
 @router.post("", response_model=ConversationResponse, status_code=201)
 async def create_conversation(db: Session = Depends(get_db)) -> ConversationResponse:
     """Creates a new conversation with an auto-generated UUID identifier."""
+    if not use_db:
+        raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
     new_conversation = crud.create_conversation(db, conversation_uuid=None, title=None)
     return ConversationResponse.model_validate(new_conversation)
 
@@ -398,6 +455,8 @@ async def list_conversations(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> list[ConversationListResponse]:
     """Retrieves a paginated list of all conversations without their messages."""
+    if not use_db:
+        raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
     conversations = crud.get_all_conversations(db, skip=skip, limit=limit)
     return [ConversationListResponse.model_validate(conv) for conv in conversations]
 
@@ -407,6 +466,8 @@ async def get_conversation(
     id: UUID, db: Session = Depends(get_db)
 ) -> ConversationResponse:
     """Retrieves a complete conversation including all associated messages."""
+    if not use_db:
+        raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
     conversation = crud.get_conversation(db, id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -416,6 +477,8 @@ async def get_conversation(
 @router.delete("/{id}", status_code=204)
 async def delete_conversation(id: UUID, db: Session = Depends(get_db)) -> None:
     """Permanently removes a conversation and all associated messages from the database."""
+    if not use_db:
+        raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
     conversation = crud.get_conversation(db, id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
