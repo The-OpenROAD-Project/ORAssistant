@@ -17,7 +17,7 @@ def send_request(
     try:
         print("Sending request to endpoint:", endpoint)
         if endpoint in agent_retriever_urls:
-            url = f"{agent_retriever_urls[endpoint]}/graphs/agent-retriever"
+            url = f"{agent_retriever_urls[endpoint]}/conversations/agent-retriever"
         elif endpoint == "base-gemini-1.5-flash":
             response_text, response_time = base_gemini_1_5_flash(query)
             print("Response:", response_text)
