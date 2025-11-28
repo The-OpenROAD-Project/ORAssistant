@@ -27,7 +27,7 @@ dependencies = [
     "openai==1.100.2",
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.11.7",
-    "pypdf==6.0.0",
+    "pypdf==6.4.0",
     "rank-bm25==0.2.2",
     "rich>=13.7.0",
     "sentence-transformers>=5.1.0",
