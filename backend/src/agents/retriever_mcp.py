@@ -5,13 +5,13 @@ from ..openroad_mcp.client.client import get_tools
 from langgraph.graph import END
 from .retriever_typing import AgentState
 from langchain.prompts import ChatPromptTemplate
-from ..prompts.prompt_templates import run_orfs_prompt_template
 from langchain_core.tools.base import ToolException
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
 from ..prompts.tool_examples import mcp_system_prompt, few_shot_examples
+
 
 class MCP:
     llm: ChatVertexAI | ChatGoogleGenerativeAI | ChatOllama
@@ -24,16 +24,16 @@ class MCP:
         custom_tools = get_tools()
         model = self.llm.bind_tools(custom_tools)
 
-        orfs_tmp = ChatPromptTemplate.from_messages([
-            ("system", mcp_system_prompt),
-            *few_shot_examples,
-            (
-            "user",
-            "Previous conversation:\n{chat_history}\n\nCurrent question:\n{question}",
-            )
-        ])
-
-        #orfs_tmp = ChatPromptTemplate.from_template(run_orfs_prompt_template)
+        orfs_tmp = ChatPromptTemplate.from_messages(
+            [
+                ("system", mcp_system_prompt),
+                *few_shot_examples,
+                (
+                    "user",
+                    "Previous conversation:\n{chat_history}\n\nCurrent question:\n{question}",
+                ),
+            ]
+        )
 
         run_orfs_chain = orfs_tmp | model
 

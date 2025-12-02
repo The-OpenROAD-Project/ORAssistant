@@ -113,7 +113,7 @@ class ORFSBase(ORFS):
         ORFS.server._check_configuration()
         ORFS.server._command("metadata")
 
-        return f"finished metadata"
+        return "finished metadata"
 
     @staticmethod
     @ORFS.mcp.tool
