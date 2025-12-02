@@ -178,12 +178,14 @@ def main() -> None:
         sys.exit(1)
 
     db = None
+    db_generator = None
     conv_id = None
     local_history: list[dict[str, str]] = []
 
     if use_db:
         if init_database():
-            db = next(get_db())
+            db_generator = get_db()
+            db = next(db_generator)
             conv_id = uuid4()
             crud.create_conversation(db, conversation_uuid=conv_id, title=None)
             console.print("[dim]Database: enabled[/dim]")
@@ -195,8 +197,8 @@ def main() -> None:
 
     console.print("[dim]Type 'exit' or 'quit' to end session[/dim]\n")
 
-    while True:
-        try:
+    try:
+        while True:
             query = Prompt.ask("[bold blue]You[/bold blue]")
 
             if query.lower() in {"exit", "quit", "q"}:
@@ -239,13 +241,19 @@ def main() -> None:
 
             show_response(response, sources, tools)
 
-        except KeyboardInterrupt:
-            console.print("\n[yellow]Interrupted. Goodbye![/yellow]")
-            break
-        except Exception as e:
-            console.print(f"[bold red]Error:[/bold red] {str(e)}")
-            if debug:
-                logging.exception("Error in main loop")
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Interrupted. Goodbye![/yellow]")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {str(e)}")
+        if debug:
+            logging.exception("Error in main loop")
+    finally:
+        # Clean up database session
+        if db_generator is not None:
+            try:
+                next(db_generator)
+            except StopIteration:
+                pass
 
 
 if __name__ == "__main__":
