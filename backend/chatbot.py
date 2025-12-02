@@ -85,22 +85,37 @@ def get_history(
 
 def parse_output(output: list) -> tuple[str, list[str], list[str]]:
     fail_msg = "Failed to get response"
+    MIN_OUTPUT_LENGTH = 3
 
-    if not isinstance(output, list) or len(output) < 3:
+    # Validate outputs
+    if not isinstance(output, list):
+        logging.error(f"Output is not a list: {type(output)}")
+        return fail_msg, [], []
+    if len(output) < MIN_OUTPUT_LENGTH:
+        logging.error(f"Output too short: {len(output)} elements (expected >= {MIN_OUTPUT_LENGTH})")
         return fail_msg, [], []
 
+    # Validate last element contains generation
     last = output[-1]
     if not isinstance(last, dict):
+        logging.error(f"Last element is not a dict: {type(last)}")
         return fail_msg, [], []
 
+    # Determine if RAG or agent mode
     is_rag = "rag_generate" in last
     key = "rag_generate" if is_rag else "generate"
 
-    if key not in last or "messages" not in last[key]:
+    if key not in last:
+        logging.error(f"Missing '{key}' key in final output. Available keys: {list(last.keys())}")
+        return fail_msg, [], []
+
+    if "messages" not in last[key]:
+        logging.error(f"Missing 'messages' in {key}")
         return fail_msg, [], []
 
     msgs = last[key]["messages"]
     if not msgs:
+        logging.error("Empty messages list in generation output")
         return fail_msg, [], []
 
     response = str(msgs[0])
@@ -123,6 +138,7 @@ def parse_output(output: list) -> tuple[str, list[str], list[str]]:
                     urls = tool_out.get("urls", [])
                     sources.extend(urls)
 
+    # Deduplicate sources
     return response, list(set(sources)), tools
 
 
@@ -243,10 +259,20 @@ def main() -> None:
 
     except KeyboardInterrupt:
         console.print("\n[yellow]Interrupted. Goodbye![/yellow]")
-    except Exception as e:
-        console.print(f"[bold red]Error:[/bold red] {str(e)}")
+    except ValueError as e:
+        console.print(f"[bold red]Configuration Error:[/bold red] {str(e)}")
+        console.print("[yellow]Check your environment variables and try again.[/yellow]")
         if debug:
-            logging.exception("Error in main loop")
+            logging.exception("Configuration error")
+    except ConnectionError as e:
+        console.print(f"[bold red]Connection Error:[/bold red] {str(e)}")
+        console.print("[yellow]Check your network connection and database availability.[/yellow]")
+        if debug:
+            logging.exception("Connection error")
+    except Exception as e:
+        console.print(f"[bold red]Unexpected Error:[/bold red] {str(e)}")
+        console.print("[yellow]Please report this issue if it persists.[/yellow]")
+        logging.exception("Unexpected error in main loop")
     finally:
         # Clean up database session
         if db_generator is not None:
