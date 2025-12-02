@@ -253,7 +253,7 @@ async def get_agent_response(
     user_question = user_input.query
 
     conversation_uuid = user_input.conversation_uuid
-    
+
     if use_db and db:
         conversation = crud.get_or_create_conversation(
             db,
@@ -271,6 +271,7 @@ async def get_agent_response(
     else:
         if conversation_uuid is None:
             from uuid import uuid4
+
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
             chat_history[conversation_uuid] = []
@@ -294,7 +295,7 @@ async def get_agent_response(
             {"source": cs.source, "context": cs.context} for cs in context_sources
         ]
     }
-    
+
     if use_db and db and conversation_uuid:
         crud.create_message(
             db=db,
@@ -306,10 +307,9 @@ async def get_agent_response(
         )
     else:
         if conversation_uuid:
-            chat_history[conversation_uuid].append({
-                "User": user_question,
-                "AI": llm_response
-            })
+            chat_history[conversation_uuid].append(
+                {"User": user_question, "AI": llm_response}
+            )
 
     response: dict[str, Any]
     if user_input.list_sources and user_input.list_context:
@@ -366,6 +366,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
     else:
         if conversation_uuid is None:
             from uuid import uuid4
+
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
             chat_history[conversation_uuid] = []
@@ -410,7 +411,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
     yield f"Sources: {', '.join(urls)}\n\n"
 
     full_response = "".join(chunks)
-    
+
     if use_db and db and conversation_uuid:
         context_sources_dict: dict[str, Any] = {
             "sources": [{"source": url, "context": ""} for url in urls]
@@ -425,10 +426,9 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
         )
     else:
         if conversation_uuid:
-            chat_history[conversation_uuid].append({
-                "User": user_question,
-                "AI": full_response
-            })
+            chat_history[conversation_uuid].append(
+                {"User": user_question, "AI": full_response}
+            )
 
 
 @router.post("/agent-retriever/stream", response_class=StreamingResponse)
