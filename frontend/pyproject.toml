@@ -5,8 +5,20 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ora-frontend"
 version = "1.0.0"
-dynamic = ["dependencies", "optional-dependencies"]
 requires-python = ">=3.12"
+dependencies = [
+  "fastapi[standard]==0.115.14",
+  "streamlit==1.40.2",
+  "requests==2.32.4",
+  "requests-oauthlib==2.0.0",
+  "Pillow==11.0.0",
+  "google-auth==2.30.0",
+  "google-auth-httplib2==0.2.0",
+  "google-auth-oauthlib==1.2.0",
+  "gspread==6.1.2",
+  "python-dotenv==1.0.1",
+  "pymongo==4.6.3",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -16,9 +28,15 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
-optional-dependencies = { test = { file = ["requirements-test.txt"] } }
+[project.optional-dependencies]
+test = [
+  "pytz==2024.1",
+  "mypy==1.10.1",
+  "types-requests==2.32.0.20240622",
+  "pre-commit==3.7.1",
+  "ruff==0.5.1",
+  "types-Flask-Cors==6.0.0.20250809",
+]
 
 [tool.mypy]
 python_version = "3.12"
@@ -68,7 +86,7 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9","E301","E304","E305","E401","E223","E224","E242", "E", "F" ,"N", "W", "C90"]
-extend-select = ["D203", "D204"]
+extend-select = ["D204"]
 ignore = ["E501", "C901"]
 preview = true
 
