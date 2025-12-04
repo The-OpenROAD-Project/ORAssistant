@@ -67,10 +67,10 @@ jobs:
       with:
         context: ./backend
         push: false
-        tags: ghcr.io/${{ env.REPO_LOWER }}/backend:pr-${{ github.event.pull_request.number }}
+        tags: ghcr.io/luarss/orassistant-backend:pr-${{ github.event.pull_request.number }}
         cache-from: |
           type=registry,ref=ghcr.io/luarss/orassistant-backend:cache
-          type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/backend:latest
+          type=registry,ref=ghcr.io/luarss/orassistant-backend:latest
         cache-to: type=registry,ref=ghcr.io/luarss/orassistant-backend:cache,mode=max
 
     - name: Build frontend Docker image with cache
@@ -78,8 +78,8 @@ jobs:
       with:
         context: ./frontend/nextjs-frontend
         push: false
-        tags: ghcr.io/${{ env.REPO_LOWER }}/frontend:pr-${{ github.event.pull_request.number }}
+        tags: ghcr.io/luarss/orassistant-frontend:pr-${{ github.event.pull_request.number }}
         cache-from: |
           type=registry,ref=ghcr.io/luarss/orassistant-frontend:cache
-          type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/frontend:latest
+          type=registry,ref=ghcr.io/luarss/orassistant-frontend:latest
         cache-to: type=registry,ref=ghcr.io/luarss/orassistant-frontend:cache,mode=max

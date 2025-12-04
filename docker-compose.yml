@@ -19,7 +19,7 @@ services:
       retries: 5
 
   backend:
-    image: ghcr.io/the-openroad-project/orassistant/backend:latest
+    image: ghcr.io/luarss/orassistant-backend:latest
     build:
       context: ./backend
     container_name: "backend"
@@ -45,7 +45,7 @@ services:
       start_period: ${HEALTHCHECK_START_PERIOD:-1200s}
 
   frontend:
-    image: ghcr.io/the-openroad-project/orassistant/frontend:latest
+    image: ghcr.io/luarss/orassistant-frontend:latest
     build:
       context: ./frontend/nextjs-frontend
     depends_on:
