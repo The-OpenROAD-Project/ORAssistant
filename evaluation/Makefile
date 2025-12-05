@@ -12,8 +12,9 @@ format:
 
 .PHONY: check
 check:
-	@uv run mypy . && \
-		uv run ruff check
+	@uv run mypy . & \
+	uv run ruff check & \
+	wait
 
 .PHONY: clean
 clean:

@@ -19,6 +19,7 @@ services:
       retries: 5
 
   backend:
+    image: ghcr.io/luarss/orassistant-backend:latest
     build:
       context: ./backend
     container_name: "backend"
@@ -44,8 +45,9 @@ services:
       timeout: ${HEALTHCHECK_TIMEOUT:-10s}
       retries: ${HEALTHCHECK_RETRIES:-5}
       start_period: ${HEALTHCHECK_START_PERIOD:-1200s}
-  
+
   frontend:
+    image: ghcr.io/luarss/orassistant-frontend:latest
     build:
       context: ./frontend/nextjs-frontend
     depends_on:

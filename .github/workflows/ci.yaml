@@ -17,6 +17,9 @@ defaults:
 jobs:
   build-backend-docker:
     runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
     steps:
     - name: Setup python
       uses: actions/setup-python@v5
@@ -24,7 +27,7 @@ jobs:
         python-version: '3.12'
 
     - name: Install uv
-      uses: astral-sh/setup-uv@v6   
+      uses: astral-sh/setup-uv@v6
 
     - name: Checkout code
       uses: actions/checkout@v4
@@ -32,6 +35,16 @@ jobs:
     - name: Setup prereqs
       run: |
         make init-dev
+
+    - name: Cache mypy
+      uses: actions/cache@v4
+      with:
+        path: |
+          backend/.mypy_cache
+          evaluation/.mypy_cache
+        key: mypy-${{ runner.os }}-${{ hashFiles('backend/**/*.py', 'evaluation/**/*.py', 'backend/pyproject.toml', 'evaluation/pyproject.toml') }}
+        restore-keys: |
+          mypy-${{ runner.os }}-
 
     - name: Run formatting checks
       run: |
@@ -45,6 +58,25 @@ jobs:
         cp .env.test .env
         make test
 
-    - name: Build Docker images
-      run: |
-        docker compose build
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build backend Docker image with cache
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: false
+        tags: orassistant-backend:pr-${{ github.event.pull_request.number }}
+        cache-from: |
+          type=registry,ref=ghcr.io/luarss/orassistant-backend:cache
+          type=registry,ref=ghcr.io/luarss/orassistant-backend:latest
+
+    - name: Build frontend Docker image with cache
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend/nextjs-frontend
+        push: false
+        tags: orassistant-frontend:pr-${{ github.event.pull_request.number }}
+        cache-from: |
+          type=registry,ref=ghcr.io/luarss/orassistant-frontend:cache
+          type=registry,ref=ghcr.io/luarss/orassistant-frontend:latest

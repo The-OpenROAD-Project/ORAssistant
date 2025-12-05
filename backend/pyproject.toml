@@ -76,3 +76,5 @@ exclude = [
 ]
 python_version = "3.13"
 disallow_untyped_defs = true
+cache_dir = ".mypy_cache"
+incremental = true
