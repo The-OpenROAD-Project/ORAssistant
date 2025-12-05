@@ -20,11 +20,13 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Copy only necessary source files
 COPY package.json ./
-COPY next.config.ts ./
 COPY tsconfig.json ./
 COPY tailwind.config.ts ./
 COPY postcss.config.mjs ./
 COPY app ./app
+COPY components ./components
+COPY hooks ./hooks
+COPY styles ./styles
 COPY public ./public
 
 # Build the application
