@@ -36,6 +36,16 @@ jobs:
       run: |
         make init-dev
 
+    - name: Cache mypy
+      uses: actions/cache@v4
+      with:
+        path: |
+          backend/.mypy_cache
+          evaluation/.mypy_cache
+        key: mypy-${{ runner.os }}-${{ hashFiles('backend/**/*.py', 'evaluation/**/*.py', 'backend/pyproject.toml', 'evaluation/pyproject.toml') }}
+        restore-keys: |
+          mypy-${{ runner.os }}-
+
     - name: Run formatting checks
       run: |
         make check

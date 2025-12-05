@@ -54,6 +54,8 @@ warn_unused_ignores = true
 strict_optional = true
 disable_error_code = ["call-arg"]
 explicit_package_bases = true
+cache_dir = ".mypy_cache"
+incremental = true
 exclude = [
     "src/post_install.py",
     ".venv",
