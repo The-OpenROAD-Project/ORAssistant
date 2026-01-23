@@ -36,6 +36,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - faiss_data:/ORAssistant-backend/faiss_db
     networks:
       - orassistant-network
     healthcheck:
@@ -63,4 +65,6 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local
+  faiss_data:
     driver: local
