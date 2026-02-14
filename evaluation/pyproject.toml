@@ -21,6 +21,7 @@ dependencies = [
     "huggingface-hub==0.26.2",
     "instructor[vertexai]==1.5.2",
     "openai==1.58.1",
+    "protobuf>=5.29.6",
     "pydantic==2.10.4",
     "tqdm==4.67.1",
     "plotly==5.24.1",

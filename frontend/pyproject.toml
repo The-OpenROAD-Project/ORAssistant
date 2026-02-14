@@ -8,10 +8,11 @@ version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi[standard]==0.115.14",
-  "streamlit==1.40.2",
+  "streamlit>=1.54.0",
   "requests==2.32.4",
   "requests-oauthlib==2.0.0",
-  "Pillow==11.0.0",
+  "Pillow>=12.1.1",
+  "protobuf>=5.29.6",
   "google-auth==2.30.0",
   "google-auth-httplib2==0.2.0",
   "google-auth-oauthlib==1.2.0",
