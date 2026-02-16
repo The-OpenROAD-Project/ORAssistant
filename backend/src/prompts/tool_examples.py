@@ -76,5 +76,15 @@ few_shot_examples = [
 }}""",
     },
     ###
+    ### optimize
+    {"role": "user", "content": "Calculate cost function"},
+    {
+        "role": "assistant",
+        "content": """{{
+  "name": "calc_cost",
+  "args": {{}}
+}}""",
+    },
+    ###
     ### End
 ]
