@@ -1,5 +1,5 @@
 FOLDERS=backend frontend evaluation
-GOOGLE_SECRET_JSON:=$(HOME)/secret.json
+GOOGLE_SECRET_JSON?=$(HOME)/secret.json
 
 .PHONY: init
 init:
