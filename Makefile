@@ -27,7 +27,7 @@ docker-up:
 
 .PHONY: docker-down
 docker-down:
-	@docker compose -f docker-compose.yml down --remove-orphans
+	@docker compose -f docker-compose.yml down --volumes --remove-orphans
 
 .PHONY: docker-dev
 docker-dev:
