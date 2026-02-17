@@ -53,8 +53,8 @@ def llm_judge(prompt: str) -> str:
             return response_text
         except Exception as e:
             if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                print("Rate limit exceeded, sleeping for 10 seconds")
-                time.sleep(10)
+                print("Rate limit exceeded, sleeping for 60 seconds")
+                time.sleep(60)
             else:
                 log_error(f"Error in llm_judge: {str(e)}", traceback.format_exc())
                 print(
@@ -70,8 +70,8 @@ def send_request_gemini(prompt: str) -> str:
             return response_text
         except Exception as e:
             if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                print("Rate limit exceeded, sleeping for 10 seconds")
-                time.sleep(10)
+                print("Rate limit exceeded, sleeping for 60 seconds")
+                time.sleep(60)
             else:
                 log_error(
                     f"Error in send_request_gemini: {str(e)}", traceback.format_exc()
