@@ -28,7 +28,7 @@ _safety_config = [
 ]
 
 
-def base_gemini_1_5_flash(query: str) -> tuple[str, float]:
+def base_gemini_flash(query: str) -> tuple[str, float]:
     while True:
         try:
             start_time = time.time()
@@ -48,15 +48,12 @@ def base_gemini_1_5_flash(query: str) -> tuple[str, float]:
                 time.sleep(60)
             else:
                 log_error(
-                    f"Error in base_gemini_1_5_flash: {str(e)}", traceback.format_exc()
-                )
-                print(
-                    "An error occurred while sending request to Gemini. Check error_log.txt for details."
+                    f"Error in base_gemini_flash: {str(e)}", traceback.format_exc()
                 )
                 sys.exit(1)
 
 
-def base_gemini_1_5_pro(query: str) -> tuple[str, float]:
+def base_gemini_pro(query: str) -> tuple[str, float]:
     while True:
         try:
             start_time = time.time()
@@ -77,10 +74,5 @@ def base_gemini_1_5_pro(query: str) -> tuple[str, float]:
                 print("Rate limit exceeded, sleeping for 60 seconds")
                 time.sleep(60)
             else:
-                log_error(
-                    f"Error in base_gemini_1_5_pro: {str(e)}", traceback.format_exc()
-                )
-                print(
-                    "An error occurred while sending request to Gemini. Check error_log.txt for details."
-                )
+                log_error(f"Error in base_gemini_pro: {str(e)}", traceback.format_exc())
                 sys.exit(1)

@@ -8,13 +8,11 @@ def load_environment(env_path: str):
         raise FileNotFoundError(f"The specified .env file does not exist at {env_path}")
     load_dotenv(env_path, override=True)
     config = dotenv_values(env_path)
-    google_creds: Optional[str] = config.get("GOOGLE_APPLICATION_CREDENTIALS")
-    if google_creds is not None:
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = google_creds
+    api_key: Optional[str] = config.get("GOOGLE_API_KEY")
+    if api_key is not None:
+        os.environ["GOOGLE_API_KEY"] = api_key
     else:
-        raise KeyError(
-            "GOOGLE_APPLICATION_CREDENTIALS not found in .env file or is None"
-        )
+        raise KeyError("GOOGLE_API_KEY not found in .env file or is None")
 
 
 def get_config() -> dict[str, str]:
