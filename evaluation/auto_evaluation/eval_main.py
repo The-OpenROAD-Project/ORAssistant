@@ -129,15 +129,13 @@ class EvaluationHarness:
         try:
             time.sleep(5)
             response = requests.post(url, json=payload)
+            if not response.ok:
+                print(f"Error querying {retriever}: HTTP {response.status_code}")
+                return {"response": "invalid", "context_sources": [], "tools": []}, -999999
             return response.json(), response.elapsed.total_seconds() * 1000
         except Exception as e:
             print(f"Error querying {retriever}: {e}")
-            return {
-                "response": "invalid",
-                "sources": [],
-                "context": [],
-                "tool": "string",
-            }, -999999
+            return {"response": "invalid", "context_sources": [], "tools": []}, -999999
 
 
 if __name__ == "__main__":
