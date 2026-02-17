@@ -5,8 +5,8 @@ import traceback
 from script_based_evaluation.utils.logging_utils import log_error
 from script_based_evaluation.models.gpt_model import base_gpt_4o
 from script_based_evaluation.models.gemini_model import (
-    base_gemini_1_5_flash,
-    base_gemini_1_5_pro,
+    base_gemini_flash,
+    base_gemini_pro,
 )
 from openai import OpenAI
 
@@ -18,8 +18,8 @@ def send_request(
         print("Sending request to endpoint:", endpoint)
         if endpoint in agent_retriever_urls:
             url = f"{agent_retriever_urls[endpoint]}/conversations/agent-retriever"
-        elif endpoint == "base-gemini-1.5-flash":
-            response_text, response_time = base_gemini_1_5_flash(query)
+        elif endpoint == "base-gemini-flash":
+            response_text, response_time = base_gemini_flash(query)
             print("Response:", response_text)
             return response_text, response_time
         elif endpoint == "base-gpt-4o":
@@ -49,34 +49,28 @@ def send_request(
 def llm_judge(prompt: str) -> str:
     while True:
         try:
-            response_text, _ = base_gemini_1_5_pro(prompt)
+            response_text, _ = base_gemini_pro(prompt)
             return response_text
         except Exception as e:
             if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                print("Rate limit exceeded, sleeping for 10 seconds")
-                time.sleep(10)
+                print("Rate limit exceeded, sleeping for 60 seconds")
+                time.sleep(60)
             else:
                 log_error(f"Error in llm_judge: {str(e)}", traceback.format_exc())
-                print(
-                    "An error occurred while sending request to Gemini. Check error_log.txt for details."
-                )
                 sys.exit(1)
 
 
 def send_request_gemini(prompt: str) -> str:
     while True:
         try:
-            response_text, _ = base_gemini_1_5_flash(prompt)
+            response_text, _ = base_gemini_flash(prompt)
             return response_text
         except Exception as e:
             if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                print("Rate limit exceeded, sleeping for 10 seconds")
-                time.sleep(10)
+                print("Rate limit exceeded, sleeping for 60 seconds")
+                time.sleep(60)
             else:
                 log_error(
                     f"Error in send_request_gemini: {str(e)}", traceback.format_exc()
-                )
-                print(
-                    "An error occurred while sending request to Gemini. Check error_log.txt for details."
                 )
                 sys.exit(1)

@@ -11,7 +11,6 @@ from script_based_evaluation.config.config import load_environment
 from openai import OpenAI
 from tqdm import tqdm
 from typing import Any
-import vertexai
 
 
 def get_accuracy_value(response_text: str, ground_truth: str, query_text: str) -> str:
@@ -255,9 +254,6 @@ def main():
         sys.exit(1)
 
     client = OpenAI(api_key=api_key)
-
-    # Initialize Vertex AI
-    vertexai.init()
 
     # Input and Output Files
     input_file = "data/data.csv"

@@ -43,8 +43,7 @@ class EvaluationHarness:
         self.qns = preprocess.read_data(self.dataset)
         self.eval_model = GeminiModel(
             model_name="gemini-2.5-pro",
-            project=os.getenv("GOOGLE_PROJECT_ID", ""),
-            location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
+            api_key=os.getenv("GOOGLE_API_KEY"),
         )
         self.log_dir = "logs"
         os.makedirs(self.log_dir, exist_ok=True)
@@ -108,7 +107,6 @@ class EvaluationHarness:
             retrieval_tcs.append(retrieval_tc)
             response_times.append(response_time)
 
-        # parallel evaluate
         evaluate(
             test_cases=retrieval_tcs,
             metrics=[precision, recall, hallucination],

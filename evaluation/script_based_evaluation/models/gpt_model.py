@@ -23,7 +23,4 @@ def base_gpt_4o(query: str, client: OpenAI) -> tuple[str, float]:
         error_message = f"Error in base_gpt_4o: {str(e)}"
         error_details = traceback.format_exc()
         log_error(error_message, error_details)
-        print(
-            "An error occurred while sending request to GPT-4. Check error_log.txt for details."
-        )
         sys.exit(1)
