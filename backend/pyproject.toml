@@ -25,7 +25,7 @@ dependencies = [
     "markdown==3.8.2",
     "myst-parser==4.0.1",
     "nest-asyncio>=1.6.0",
-    "nltk==3.9.1",
+    "nltk==3.9.2",
     "openai==1.100.2",
     "protobuf>=5.29.6",
     "psycopg2-binary>=2.9.11",
