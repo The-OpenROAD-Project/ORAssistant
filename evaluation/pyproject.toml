@@ -8,7 +8,7 @@ version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
     "google-api-python-client==2.151.0",
-    "google-auth==2.30.0",
+    "google-auth>=2.47.0",
     "google-auth-httplib2==0.2.0",
     "google-auth-oauthlib==1.2.0",
     "gspread==6.1.2",
@@ -21,6 +21,7 @@ dependencies = [
     "huggingface-hub==0.26.2",
     "instructor[vertexai]==1.5.2",
     "openai==1.58.1",
+    "google-cloud-aiplatform>=1.133.0",
     "protobuf>=5.29.6",
     "pydantic==2.10.4",
     "tqdm==4.67.1",
