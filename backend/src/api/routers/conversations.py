@@ -291,7 +291,7 @@ async def get_agent_response(
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation_uuid),
+        "chat_history": get_history_str(db if db_persist else None, conversation_uuid),
     }
 
     if rg.graph is not None:
@@ -395,7 +395,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation_uuid),
+        "chat_history": get_history_str(db if db_persist else None, conversation_uuid),
     }
 
     urls: list[str] = []
