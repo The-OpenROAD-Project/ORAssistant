@@ -1,8 +1,12 @@
+import logging
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from sqlalchemy.exc import SQLAlchemyError
 from .models import Conversation, Message
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 
 def create_conversation(
@@ -13,9 +17,14 @@ def create_conversation(
         if conversation_uuid
         else Conversation(title=title)
     )
-    db.add(conversation)
-    db.commit()
-    db.refresh(conversation)
+    try:
+        db.add(conversation)
+        db.commit()
+        db.refresh(conversation)
+    except SQLAlchemyError:
+        db.rollback()
+        logger.error("Failed to create conversation", exc_info=True)
+        raise
     return conversation
 
 
@@ -50,17 +59,27 @@ def update_conversation_title(
 ) -> Optional[Conversation]:
     conversation = get_conversation(db, conversation_uuid)
     if conversation:
-        conversation.title = title
-        db.commit()
-        db.refresh(conversation)
+        try:
+            conversation.title = title
+            db.commit()
+            db.refresh(conversation)
+        except SQLAlchemyError:
+            db.rollback()
+            logger.error("Failed to update conversation title", exc_info=True)
+            raise
     return conversation
 
 
 def delete_conversation(db: Session, conversation_uuid: UUID) -> bool:
     conversation = get_conversation(db, conversation_uuid)
     if conversation:
-        db.delete(conversation)
-        db.commit()
+        try:
+            db.delete(conversation)
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
+            logger.error("Failed to delete conversation", exc_info=True)
+            raise
         return True
     return False
 
@@ -80,9 +99,14 @@ def create_message(
         context_sources=context_sources,
         tools=tools,
     )
-    db.add(message)
-    db.commit()
-    db.refresh(message)
+    try:
+        db.add(message)
+        db.commit()
+        db.refresh(message)
+    except SQLAlchemyError:
+        db.rollback()
+        logger.error("Failed to create message", exc_info=True)
+        raise
     return message
 
 
@@ -106,8 +130,13 @@ def get_conversation_messages(
 def delete_message(db: Session, message_id: UUID) -> bool:
     message = get_message(db, message_id)
     if message:
-        db.delete(message)
-        db.commit()
+        try:
+            db.delete(message)
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
+            logger.error("Failed to delete message", exc_info=True)
+            raise
         return True
     return False
 
