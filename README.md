@@ -30,7 +30,7 @@ This setup involves the setting of both the frontend and backend components. We 
 #### Database Schema
 
 The database uses [Alembic](https://alembic.sqlalchemy.org/) for schema migrations. On startup, the backend automatically applies any pending migrations. The following tables are managed:
-- `conversations` - Stores conversation metadata (id, title, timestamps)
+- `conversations` - Stores conversation metadata (uuid, title, timestamps)
 - `messages` - Stores individual messages within conversations
 
 **Database Migration Commands** (from `backend/`):

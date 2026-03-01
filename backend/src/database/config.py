@@ -93,9 +93,11 @@ def init_database() -> bool:
 
         try:
             run_migrations()
-        except Exception as e:
-            logger.warning(f"Alembic migration failed: {e}")
-            logger.warning("Falling back to create_all for table creation.")
+        except Exception:
+            logger.warning(
+                "Alembic migration failed; falling back to create_all for table creation.",
+                exc_info=True,
+            )
             Base.metadata.create_all(bind=engine)
 
         _db_initialized = True
