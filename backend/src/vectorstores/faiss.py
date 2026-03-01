@@ -80,16 +80,21 @@ class FAISSVectorDatabase:
         distance_strategy: DistanceStrategy = DistanceStrategy.COSINE,
         debug: bool = False,
         use_cuda: bool = False,
+        embedding_model: Optional[
+            Union[
+                HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
+            ]
+        ] = None,
     ):
         self.embeddings_model_name = embeddings_model_name
-
-        model_kwargs = {"device": "cuda"} if use_cuda else {"device": "cpu"}
 
         self.embedding_model: Union[
             HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
         ]
 
-        if embeddings_type == "GOOGLE_GENAI":
+        if embedding_model is not None:
+            self.embedding_model = embedding_model
+        elif embeddings_type == "GOOGLE_GENAI":
             self.embedding_model = _RetryingGoogleGenerativeAIEmbeddings(
                 model=self.embeddings_model_name,
                 task_type="retrieval_document",
@@ -101,6 +106,7 @@ class FAISSVectorDatabase:
             logging.info("Using Google VertexAI embeddings...")
 
         elif embeddings_type == "HF":
+            model_kwargs = {"device": "cuda"} if use_cuda else {"device": "cpu"}
             self.embedding_model = HuggingFaceEmbeddings(
                 model_name=self.embeddings_model_name,
                 multi_process=False,
