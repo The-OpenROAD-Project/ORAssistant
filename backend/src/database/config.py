@@ -2,6 +2,7 @@
 
 import os
 import logging
+from pathlib import Path
 from typing import Generator, Optional
 from sqlalchemy import create_engine, inspect, text, Engine
 from sqlalchemy.orm import sessionmaker, Session
@@ -40,6 +41,32 @@ def is_database_available() -> bool:
         return False
 
 
+def run_migrations() -> None:
+    """Run Alembic migrations to bring the database schema up to date.
+
+    Auto-detects pre-Alembic databases (app tables exist but no alembic_version
+    table) and stamps them with the current head revision so that future
+    migrations apply cleanly.
+    """
+    from alembic.config import Config
+    from alembic import command
+
+    alembic_ini = Path(__file__).resolve().parents[2] / "alembic.ini"
+    alembic_cfg = Config(str(alembic_ini))
+
+    # Stamp pre-Alembic databases so migrations don't try to recreate tables
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+    has_app_tables = "conversations" in existing_tables
+    has_alembic = "alembic_version" in existing_tables
+
+    if has_app_tables and not has_alembic:
+        logger.info("Pre-Alembic database detected — stamping with current head.")
+        command.stamp(alembic_cfg, "head")
+    else:
+        command.upgrade(alembic_cfg, "head")
+
+
 def init_database() -> bool:
     global engine, SessionLocal, _db_initialized
 
@@ -64,15 +91,12 @@ def init_database() -> bool:
             logger.warning("Database is not available. Will retry on next access.")
             return False
 
-        inspector = inspect(engine)
-        existing_tables = inspector.get_table_names()
-
-        if not existing_tables or "conversations" not in existing_tables:
-            logger.info("Initializing database tables...")
+        try:
+            run_migrations()
+        except Exception as e:
+            logger.warning(f"Alembic migration failed: {e}")
+            logger.warning("Falling back to create_all for table creation.")
             Base.metadata.create_all(bind=engine)
-            logger.info("Database tables created successfully")
-        else:
-            logger.debug("Database tables already exist")
 
         _db_initialized = True
         return True

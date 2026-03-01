@@ -121,12 +121,9 @@ class TestInitDatabase:
             },
         ), patch("src.database.config.create_engine") as mock_create_engine, patch(
             "src.database.config.is_database_available", return_value=True
-        ), patch("src.database.config.inspect") as mock_inspect:
+        ), patch("src.database.config.run_migrations"):
             mock_engine = Mock()
             mock_create_engine.return_value = mock_engine
-            mock_inspector = Mock()
-            mock_inspector.get_table_names.return_value = ["conversations", "messages"]
-            mock_inspect.return_value = mock_inspector
 
             result = init_database()
 
@@ -140,8 +137,8 @@ class TestInitDatabase:
             assert call_kwargs["echo"] is False
             assert call_kwargs["connect_args"]["connect_timeout"] == 5
 
-    def test_init_database_creates_tables_when_not_exist(self):
-        """Test init_database creates tables when they don't exist."""
+    def test_init_database_runs_migrations(self):
+        """Test init_database calls run_migrations."""
         self.setUp()
 
         with patch.dict(
@@ -155,48 +152,41 @@ class TestInitDatabase:
             },
         ), patch("src.database.config.create_engine") as mock_create_engine, patch(
             "src.database.config.is_database_available", return_value=True
-        ), patch("src.database.config.inspect") as mock_inspect, patch(
-            "src.database.config.Base"
-        ) as mock_base:
+        ), patch("src.database.config.run_migrations") as mock_run_migrations:
             mock_engine = Mock()
             mock_create_engine.return_value = mock_engine
-            mock_inspector = Mock()
-            mock_inspector.get_table_names.return_value = []
-            mock_inspect.return_value = mock_inspector
+
+            result = init_database()
+
+            assert result is True
+            mock_run_migrations.assert_called_once()
+
+    def test_init_database_falls_back_to_create_all_on_migration_failure(self):
+        """Test init_database falls back to create_all when migrations fail."""
+        self.setUp()
+
+        with patch.dict(
+            os.environ,
+            {
+                "POSTGRES_USER": "user",
+                "POSTGRES_PASSWORD": "pass",
+                "POSTGRES_HOST": "localhost",
+                "POSTGRES_PORT": "5432",
+                "POSTGRES_DB": "testdb",
+            },
+        ), patch("src.database.config.create_engine") as mock_create_engine, patch(
+            "src.database.config.is_database_available", return_value=True
+        ), patch(
+            "src.database.config.run_migrations",
+            side_effect=Exception("migration error"),
+        ), patch("src.database.config.Base") as mock_base:
+            mock_engine = Mock()
+            mock_create_engine.return_value = mock_engine
 
             result = init_database()
 
             assert result is True
             mock_base.metadata.create_all.assert_called_once_with(bind=mock_engine)
-
-    def test_init_database_skips_table_creation_when_exist(self):
-        """Test init_database skips table creation when they already exist."""
-        self.setUp()
-
-        with patch.dict(
-            os.environ,
-            {
-                "POSTGRES_USER": "user",
-                "POSTGRES_PASSWORD": "pass",
-                "POSTGRES_HOST": "localhost",
-                "POSTGRES_PORT": "5432",
-                "POSTGRES_DB": "testdb",
-            },
-        ), patch("src.database.config.create_engine") as mock_create_engine, patch(
-            "src.database.config.is_database_available", return_value=True
-        ), patch("src.database.config.inspect") as mock_inspect, patch(
-            "src.database.config.Base"
-        ) as mock_base:
-            mock_engine = Mock()
-            mock_create_engine.return_value = mock_engine
-            mock_inspector = Mock()
-            mock_inspector.get_table_names.return_value = ["conversations", "messages"]
-            mock_inspect.return_value = mock_inspector
-
-            result = init_database()
-
-            assert result is True
-            mock_base.metadata.create_all.assert_not_called()
 
     def test_init_database_returns_false_when_unavailable(self):
         """Test init_database returns False when database is unavailable."""

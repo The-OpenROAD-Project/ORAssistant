@@ -29,9 +29,18 @@ This setup involves the setting of both the frontend and backend components. We 
 
 #### Database Schema
 
-The database automatically creates the following tables:
-- `conversations` - Stores conversation metadata (id, user_id, title, timestamps)
+The database uses [Alembic](https://alembic.sqlalchemy.org/) for schema migrations. On startup, the backend automatically applies any pending migrations. The following tables are managed:
+- `conversations` - Stores conversation metadata (id, title, timestamps)
 - `messages` - Stores individual messages within conversations
+
+**Database Migration Commands** (from `backend/`):
+```bash
+make db-migrate                     # Apply pending migrations
+make db-revision msg="description"  # Generate a new migration from model changes
+make db-downgrade                   # Roll back one migration
+make db-history                     # Show migration history
+make db-current                     # Show current revision
+```
 
 #### Setting Up PostgreSQL Database Variables
 
