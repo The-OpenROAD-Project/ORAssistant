@@ -10,6 +10,7 @@ from src.database.config import (
     is_database_available,
     init_database,
     get_db,
+    run_migrations,
 )
 
 
@@ -81,6 +82,68 @@ class TestIsDatabaseAvailable:
             result = is_database_available()
 
             assert result is False
+
+
+class TestRunMigrations:
+    """Test suite for Alembic migration logic."""
+
+    def test_run_migrations_stamps_pre_alembic_database(self):
+        """Test that pre-Alembic databases (app tables, no alembic_version) get stamped."""
+        mock_engine = Mock()
+        mock_inspector = Mock()
+        mock_inspector.get_table_names.return_value = ["conversations", "messages"]
+
+        with patch.object(config, "engine", mock_engine), patch(
+            "src.database.config.inspect", return_value=mock_inspector
+        ), patch("src.database.config.Path"), patch(
+            "alembic.command.stamp"
+        ) as mock_stamp, patch("alembic.command.upgrade") as mock_upgrade, patch(
+            "alembic.config.Config"
+        ):
+            run_migrations()
+
+            mock_stamp.assert_called_once()
+            mock_upgrade.assert_not_called()
+
+    def test_run_migrations_upgrades_fresh_database(self):
+        """Test that a fresh database (no tables) runs upgrade."""
+        mock_engine = Mock()
+        mock_inspector = Mock()
+        mock_inspector.get_table_names.return_value = []
+
+        with patch.object(config, "engine", mock_engine), patch(
+            "src.database.config.inspect", return_value=mock_inspector
+        ), patch("src.database.config.Path"), patch(
+            "alembic.command.stamp"
+        ) as mock_stamp, patch("alembic.command.upgrade") as mock_upgrade, patch(
+            "alembic.config.Config"
+        ):
+            run_migrations()
+
+            mock_upgrade.assert_called_once()
+            mock_stamp.assert_not_called()
+
+    def test_run_migrations_upgrades_already_versioned_database(self):
+        """Test that a database with alembic_version runs upgrade (not stamp)."""
+        mock_engine = Mock()
+        mock_inspector = Mock()
+        mock_inspector.get_table_names.return_value = [
+            "conversations",
+            "messages",
+            "alembic_version",
+        ]
+
+        with patch.object(config, "engine", mock_engine), patch(
+            "src.database.config.inspect", return_value=mock_inspector
+        ), patch("src.database.config.Path"), patch(
+            "alembic.command.stamp"
+        ) as mock_stamp, patch("alembic.command.upgrade") as mock_upgrade, patch(
+            "alembic.config.Config"
+        ):
+            run_migrations()
+
+            mock_upgrade.assert_called_once()
+            mock_stamp.assert_not_called()
 
 
 class TestInitDatabase:
