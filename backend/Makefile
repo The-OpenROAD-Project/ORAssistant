@@ -33,3 +33,23 @@ mcp:
 .PHONY: chat
 chat:
 	@uv run python -m chatbot
+
+.PHONY: db-migrate
+db-migrate:
+	@uv run alembic upgrade head
+
+.PHONY: db-revision
+db-revision:
+	@uv run alembic revision --autogenerate -m "$(msg)"
+
+.PHONY: db-downgrade
+db-downgrade:
+	@uv run alembic downgrade -1
+
+.PHONY: db-history
+db-history:
+	@uv run alembic history
+
+.PHONY: db-current
+db-current:
+	@uv run alembic current
