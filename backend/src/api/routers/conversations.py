@@ -10,6 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessageChunk
 from starlette.responses import StreamingResponse
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from ...agents.retriever_graph import RetrieverGraph
@@ -222,7 +223,11 @@ chat_history: dict[UUID, list[dict[str, str]]] = {}
 
 def get_history_str(db: Session | None, conversation_uuid: UUID | None) -> str:
     if use_db and db and conversation_uuid:
-        history = crud.get_conversation_history(db, conversation_uuid)
+        try:
+            history = crud.get_conversation_history(db, conversation_uuid)
+        except SQLAlchemyError:
+            logging.error("Failed to retrieve conversation history", exc_info=True)
+            return ""
         history_str = ""
         for i in history:
             user_msg = i.get("User", "")
@@ -254,21 +259,27 @@ async def get_agent_response(
 
     conversation_uuid = user_input.conversation_uuid
 
-    if use_db and db:
-        conversation = crud.get_or_create_conversation(
-            db,
-            conversation_uuid=conversation_uuid,
-            title=user_question[:100] if user_question else None,
-        )
-        conversation_uuid = conversation.uuid
+    db_persist = use_db and db is not None
+    if db_persist:
+        try:
+            conversation = crud.get_or_create_conversation(
+                db,
+                conversation_uuid=conversation_uuid,
+                title=user_question[:100] if user_question else None,
+            )
+            conversation_uuid = conversation.uuid
 
-        crud.create_message(
-            db=db,
-            conversation_uuid=conversation.uuid,
-            role="user",
-            content=user_question,
-        )
-    else:
+            crud.create_message(
+                db=db,
+                conversation_uuid=conversation.uuid,
+                role="user",
+                content=user_question,
+            )
+        except SQLAlchemyError:
+            logging.error("Failed to persist user message", exc_info=True)
+            db_persist = False
+
+    if not db_persist:
         if conversation_uuid is None:
             from uuid import uuid4
 
@@ -280,7 +291,7 @@ async def get_agent_response(
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation_uuid),
+        "chat_history": get_history_str(db if db_persist else None, conversation_uuid),
     }
 
     if rg.graph is not None:
@@ -296,15 +307,18 @@ async def get_agent_response(
         ]
     }
 
-    if use_db and db and conversation_uuid:
-        crud.create_message(
-            db=db,
-            conversation_uuid=conversation_uuid,
-            role="assistant",
-            content=llm_response,
-            context_sources=context_sources_dict,
-            tools=tools,
-        )
+    if db_persist and conversation_uuid:
+        try:
+            crud.create_message(
+                db=db,
+                conversation_uuid=conversation_uuid,
+                role="assistant",
+                content=llm_response,
+                context_sources=context_sources_dict,
+                tools=tools,
+            )
+        except SQLAlchemyError:
+            logging.error("Failed to persist assistant message", exc_info=True)
     else:
         if conversation_uuid:
             chat_history[conversation_uuid].append(
@@ -349,21 +363,27 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
     conversation_uuid = user_input.conversation_uuid
 
-    if use_db and db:
-        conversation = crud.get_or_create_conversation(
-            db,
-            conversation_uuid=conversation_uuid,
-            title=user_question[:100] if user_question else None,
-        )
-        conversation_uuid = conversation.uuid
+    db_persist = use_db and db is not None
+    if db_persist:
+        try:
+            conversation = crud.get_or_create_conversation(
+                db,
+                conversation_uuid=conversation_uuid,
+                title=user_question[:100] if user_question else None,
+            )
+            conversation_uuid = conversation.uuid
 
-        crud.create_message(
-            db=db,
-            conversation_uuid=conversation.uuid,
-            role="user",
-            content=user_question,
-        )
-    else:
+            crud.create_message(
+                db=db,
+                conversation_uuid=conversation.uuid,
+                role="user",
+                content=user_question,
+            )
+        except SQLAlchemyError:
+            logging.error("Failed to persist user message", exc_info=True)
+            db_persist = False
+
+    if not db_persist:
         if conversation_uuid is None:
             from uuid import uuid4
 
@@ -375,7 +395,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db, conversation_uuid),
+        "chat_history": get_history_str(db if db_persist else None, conversation_uuid),
     }
 
     urls: list[str] = []
@@ -412,18 +432,21 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
     full_response = "".join(chunks)
 
-    if use_db and db and conversation_uuid:
-        context_sources_dict: dict[str, Any] = {
-            "sources": [{"source": url, "context": ""} for url in urls]
-        }
-        crud.create_message(
-            db=db,
-            conversation_uuid=conversation_uuid,
-            role="assistant",
-            content=full_response,
-            context_sources=context_sources_dict,
-            tools=[],
-        )
+    if db_persist and conversation_uuid:
+        try:
+            context_sources_dict: dict[str, Any] = {
+                "sources": [{"source": url, "context": ""} for url in urls]
+            }
+            crud.create_message(
+                db=db,
+                conversation_uuid=conversation_uuid,
+                role="assistant",
+                content=full_response,
+                context_sources=context_sources_dict,
+                tools=[],
+            )
+        except SQLAlchemyError:
+            logging.error("Failed to persist assistant message", exc_info=True)
     else:
         if conversation_uuid:
             chat_history[conversation_uuid].append(
@@ -446,7 +469,13 @@ async def create_conversation(db: Session = Depends(get_db)) -> ConversationResp
     """Creates a new conversation with an auto-generated UUID identifier."""
     if not use_db:
         raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
-    new_conversation = crud.create_conversation(db, conversation_uuid=None, title=None)
+    try:
+        new_conversation = crud.create_conversation(
+            db, conversation_uuid=None, title=None
+        )
+    except SQLAlchemyError:
+        logging.error("Failed to create conversation", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to create conversation")
     return ConversationResponse.model_validate(new_conversation)
 
 
@@ -457,7 +486,11 @@ async def list_conversations(
     """Retrieves a paginated list of all conversations without their messages."""
     if not use_db:
         raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
-    conversations = crud.get_all_conversations(db, skip=skip, limit=limit)
+    try:
+        conversations = crud.get_all_conversations(db, skip=skip, limit=limit)
+    except SQLAlchemyError:
+        logging.error("Failed to list conversations", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to list conversations")
     return [ConversationListResponse.model_validate(conv) for conv in conversations]
 
 
@@ -468,7 +501,11 @@ async def get_conversation(
     """Retrieves a complete conversation including all associated messages."""
     if not use_db:
         raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
-    conversation = crud.get_conversation(db, id)
+    try:
+        conversation = crud.get_conversation(db, id)
+    except SQLAlchemyError:
+        logging.error("Failed to get conversation", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to get conversation")
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return ConversationResponse.model_validate(conversation)
@@ -479,7 +516,13 @@ async def delete_conversation(id: UUID, db: Session = Depends(get_db)) -> None:
     """Permanently removes a conversation and all associated messages from the database."""
     if not use_db:
         raise HTTPException(status_code=503, detail=DB_DISABLED_MSG)
-    conversation = crud.get_conversation(db, id)
-    if not conversation:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    crud.delete_conversation(db, id)
+    try:
+        conversation = crud.get_conversation(db, id)
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        crud.delete_conversation(db, id)
+    except HTTPException:
+        raise
+    except SQLAlchemyError:
+        logging.error("Failed to delete conversation", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to delete conversation")
