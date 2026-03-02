@@ -14,10 +14,17 @@ class TestRetrieverTools:
         # Check that it's a valid instance
         assert isinstance(tools, RetrieverTools)
 
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
-    def test_initialize_success(self, mock_hybrid_chain):
+    def test_initialize_success(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
         """Test successful initialization of all retrievers."""
         tools = RetrieverTools()
+
+        mock_create_embed.return_value = Mock()
+        mock_cross_encoder.return_value = Mock()
 
         # Mock the HybridRetrieverChain instances
         mock_chains = []
@@ -40,6 +47,18 @@ class TestRetrieverTools:
             fast_mode=False,
         )
 
+        # Verify models are created exactly once
+        mock_create_embed.assert_called_once_with(embeddings_config, True)
+        mock_cross_encoder.assert_called_once_with(model_name=reranking_model_name)
+
+        # Verify the same shared instances are passed to all 6 chains
+        shared_embedding = mock_create_embed.return_value
+        shared_reranker = mock_cross_encoder.return_value
+        for call in mock_hybrid_chain.call_args_list:
+            kwargs = call[1]
+            assert kwargs["embedding_model"] is shared_embedding
+            assert kwargs["reranker_model"] is shared_reranker
+
         # Verify all retrievers are created
         assert mock_hybrid_chain.call_count == 6
 
@@ -55,10 +74,17 @@ class TestRetrieverTools:
         assert RetrieverTools.klayout_retriever == mock_chains[4].retriever
         assert RetrieverTools.errinfo_retriever == mock_chains[5].retriever
 
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
-    def test_initialize_with_fast_mode(self, mock_hybrid_chain):
+    def test_initialize_with_fast_mode(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
         """Test initialization with fast mode enabled."""
         tools = RetrieverTools()
+
+        mock_create_embed.return_value = Mock()
+        mock_cross_encoder.return_value = Mock()
 
         # Mock the HybridRetrieverChain instances
         mock_chains = []
@@ -250,10 +276,17 @@ class TestRetrieverTools:
         with pytest.raises(ValueError, match="KLayout Retriever not initialized"):
             RetrieverTools.retrieve_klayout_docs.invoke(input="test query")
 
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
-    def test_initialize_verifies_configuration_parameters(self, mock_hybrid_chain):
+    def test_initialize_verifies_configuration_parameters(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
         """Test that initialize passes correct configuration parameters."""
         tools = RetrieverTools()
+
+        mock_create_embed.return_value = Mock()
+        mock_cross_encoder.return_value = Mock()
 
         # Mock the HybridRetrieverChain instances
         mock_chains = []
@@ -283,10 +316,17 @@ class TestRetrieverTools:
             assert kwargs["weights"] == [0.6, 0.2, 0.2]
             assert kwargs["contextual_rerank"] is True
 
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
-    def test_initialize_with_environment_variables(self, mock_hybrid_chain):
+    def test_initialize_with_environment_variables(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
         """Test initialization respects environment variables."""
         tools = RetrieverTools()
+
+        mock_create_embed.return_value = Mock()
+        mock_cross_encoder.return_value = Mock()
 
         # Mock the HybridRetrieverChain instances
         mock_chains = []
@@ -323,10 +363,17 @@ class TestRetrieverTools:
         assert hasattr(RetrieverTools.retrieve_yosys_rtdocs, "name")
         assert hasattr(RetrieverTools.retrieve_klayout_docs, "name")
 
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
-    def test_different_docs_paths_for_retrievers(self, mock_hybrid_chain):
+    def test_different_docs_paths_for_retrievers(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
         """Test that different retrievers use different document paths."""
         tools = RetrieverTools()
+
+        mock_create_embed.return_value = Mock()
+        mock_cross_encoder.return_value = Mock()
 
         # Mock the HybridRetrieverChain instances
         mock_chains = []
@@ -369,10 +416,17 @@ class TestRetrieverTools:
         # Errinfo should have error-specific paths
         assert any("man3" in path for path in errinfo_paths)
 
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
-    def test_html_docs_configuration(self, mock_hybrid_chain):
+    def test_html_docs_configuration(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
         """Test HTML docs configuration for specific retrievers."""
         tools = RetrieverTools()
+
+        mock_create_embed.return_value = Mock()
+        mock_cross_encoder.return_value = Mock()
 
         # Mock the HybridRetrieverChain instances
         mock_chains = []
@@ -426,10 +480,17 @@ class TestRetrieverTools:
             result = RetrieverTools.retrieve_general.invoke(input="test")
             assert result == ("", [], [], [])
 
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
-    def test_retriever_chain_create_hybrid_retriever_called(self, mock_hybrid_chain):
+    def test_retriever_chain_create_hybrid_retriever_called(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
         """Test that create_hybrid_retriever is called on all chains."""
         tools = RetrieverTools()
+
+        mock_create_embed.return_value = Mock()
+        mock_cross_encoder.return_value = Mock()
 
         # Mock the HybridRetrieverChain instances
         mock_chains = []

@@ -3,8 +3,9 @@ from typing import Optional, Tuple, Any, Union
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain.docstore.document import Document
-from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_google_vertexai import ChatVertexAI, VertexAIEmbeddings
 from langchain_ollama import ChatOllama
 
 from ..vectorstores.faiss import FAISSVectorDatabase
@@ -28,6 +29,13 @@ class SimilarityRetrieverChain(BaseChain):
         embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
+        embedding_model: Optional[
+            Union[
+                HuggingFaceEmbeddings,
+                GoogleGenerativeAIEmbeddings,
+                VertexAIEmbeddings,
+            ]
+        ] = None,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -40,6 +48,13 @@ class SimilarityRetrieverChain(BaseChain):
 
         self.embeddings_config: Optional[dict[str, str]] = embeddings_config
         self.use_cuda: bool = use_cuda
+        self.embedding_model: Optional[
+            Union[
+                HuggingFaceEmbeddings,
+                GoogleGenerativeAIEmbeddings,
+                VertexAIEmbeddings,
+            ]
+        ] = embedding_model
 
         self.markdown_docs_path: Optional[list[str]] = markdown_docs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path
@@ -125,6 +140,7 @@ class SimilarityRetrieverChain(BaseChain):
                 embeddings_model_name=self.embeddings_config["name"],
                 embeddings_type=self.embeddings_config["type"],
                 use_cuda=self.use_cuda,
+                embedding_model=self.embedding_model,
             )
         else:
             raise ValueError("Embeddings model config not provided correctly.")

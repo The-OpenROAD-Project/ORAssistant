@@ -1,10 +1,15 @@
 import os
+import logging
 from typing import Tuple, Optional, Union
 from dotenv import load_dotenv
 
 from langchain_core.tools import tool
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_vertexai import VertexAIEmbeddings
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
 from ..chains.hybrid_retriever_chain import HybridRetrieverChain
 from ..tools.format_docs import format_docs
@@ -39,6 +44,35 @@ class RetrieverTools:
     ]
     tool_descriptions: str = ""
 
+    @staticmethod
+    def _create_embedding_model(
+        embeddings_config: dict[str, str],
+        use_cuda: bool = False,
+    ) -> Union[HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings]:
+        embeddings_type = embeddings_config["type"]
+        embeddings_model_name = embeddings_config["name"]
+
+        if embeddings_type == "GOOGLE_GENAI":
+            logging.info("Using Google GenerativeAI embeddings...")
+            return GoogleGenerativeAIEmbeddings(
+                model=embeddings_model_name,
+                task_type="retrieval_document",
+            )
+        elif embeddings_type == "GOOGLE_VERTEXAI":
+            logging.info("Using Google VertexAI embeddings...")
+            return VertexAIEmbeddings(model_name=embeddings_model_name)
+        elif embeddings_type == "HF":
+            logging.info("Using HuggingFace embeddings...")
+            model_kwargs = {"device": "cuda"} if use_cuda else {"device": "cpu"}
+            return HuggingFaceEmbeddings(
+                model_name=embeddings_model_name,
+                multi_process=False,
+                encode_kwargs={"normalize_embeddings": True},
+                model_kwargs=model_kwargs,
+            )
+        else:
+            raise ValueError("Invalid embeddings type specified.")
+
     def initialize(
         self,
         embeddings_config: dict[str, str],
@@ -46,6 +80,13 @@ class RetrieverTools:
         use_cuda: bool = False,
         fast_mode: bool = False,
     ) -> None:
+        # Create shared model instances once
+        embedding_model = self._create_embedding_model(embeddings_config, use_cuda)
+        logging.info("Shared embedding model created.")
+
+        reranker_model = HuggingFaceCrossEncoder(model_name=reranking_model_name)
+        logging.info("Shared reranker model created.")
+
         markdown_docs_map = {
             "general": [
                 "./data/markdown/OR_docs",
@@ -100,6 +141,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         general_retriever_chain.create_hybrid_retriever()
         RetrieverTools.general_retriever = general_retriever_chain.retriever
@@ -115,6 +158,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         install_retriever_chain.create_hybrid_retriever()
         RetrieverTools.install_retriever = install_retriever_chain.retriever
@@ -131,6 +176,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         commands_retriever_chain.create_hybrid_retriever()
         RetrieverTools.commands_retriever = commands_retriever_chain.retriever
@@ -146,6 +193,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         yosys_rtdocs_retriever_chain.create_hybrid_retriever()
         RetrieverTools.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
@@ -161,6 +210,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         klayout_retriever_chain.create_hybrid_retriever()
         RetrieverTools.klayout_retriever = klayout_retriever_chain.retriever
@@ -176,6 +227,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         errinfo_retriever_chain.create_hybrid_retriever()
         RetrieverTools.errinfo_retriever = errinfo_retriever_chain.retriever

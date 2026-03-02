@@ -5,8 +5,9 @@ from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
-from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_vertexai import ChatVertexAI, VertexAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_ollama import ChatOllama
 from langchain.retrievers.document_compressors.cross_encoder_rerank import (
     CrossEncoderReranker,
@@ -38,6 +39,14 @@ class HybridRetrieverChain(BaseChain):
         weights: list[float] = [0.33, 0.33, 0.33],
         chunk_size: int = 500,
         contextual_rerank: bool = False,
+        embedding_model: Optional[
+            Union[
+                HuggingFaceEmbeddings,
+                GoogleGenerativeAIEmbeddings,
+                VertexAIEmbeddings,
+            ]
+        ] = None,
+        reranker_model: Optional[HuggingFaceCrossEncoder] = None,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -48,6 +57,14 @@ class HybridRetrieverChain(BaseChain):
 
         self.reranking_model_name: Optional[str] = reranking_model_name
         self.use_cuda: bool = use_cuda
+        self.embedding_model: Optional[
+            Union[
+                HuggingFaceEmbeddings,
+                GoogleGenerativeAIEmbeddings,
+                VertexAIEmbeddings,
+            ]
+        ] = embedding_model
+        self.reranker_model: Optional[HuggingFaceCrossEncoder] = reranker_model
 
         self.search_k: int = search_k
         self.weights: list[float] = weights
@@ -74,6 +91,7 @@ class HybridRetrieverChain(BaseChain):
             html_docs_path=self.html_docs_path,
             chunk_size=self.chunk_size,
             use_cuda=self.use_cuda,
+            embedding_model=self.embedding_model,
         )
         if self.vector_db is None:
             cur_path = os.path.abspath(__file__)
@@ -121,8 +139,11 @@ class HybridRetrieverChain(BaseChain):
             )
 
         if self.contextual_rerank:
+            reranker = self.reranker_model or HuggingFaceCrossEncoder(
+                model_name=self.reranking_model_name
+            )
             compressor = CrossEncoderReranker(
-                model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name),
+                model=reranker,
                 top_n=self.search_k,
             )
             self.retriever = ContextualCompressionRetriever(

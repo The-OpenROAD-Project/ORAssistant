@@ -238,7 +238,35 @@ class TestSimilarityRetrieverChain:
 
         assert chain.vector_db == mock_db_instance
         mock_faiss_db.assert_called_once_with(
-            embeddings_model_name="test-model", embeddings_type="HF", use_cuda=True
+            embeddings_model_name="test-model",
+            embeddings_type="HF",
+            use_cuda=True,
+            embedding_model=None,
+        )
+
+    @patch("src.chains.similarity_retriever_chain.FAISSVectorDatabase")
+    def test_create_vector_db_uses_provided_embedding_model(self, mock_faiss_db):
+        """Test that a provided embedding_model is forwarded to FAISSVectorDatabase."""
+        mock_db_instance = Mock()
+        mock_faiss_db.return_value = mock_db_instance
+
+        embeddings_config = {"type": "HF", "name": "test-model"}
+        sentinel_embedding_model = object()
+
+        chain = SimilarityRetrieverChain(
+            embeddings_config=embeddings_config,
+            use_cuda=True,
+            embedding_model=sentinel_embedding_model,
+        )
+
+        chain.create_vector_db()
+
+        assert chain.vector_db == mock_db_instance
+        mock_faiss_db.assert_called_once_with(
+            embeddings_model_name="test-model",
+            embeddings_type="HF",
+            use_cuda=True,
+            embedding_model=sentinel_embedding_model,
         )
 
     def test_create_vector_db_missing_config_raises_error(self):
