@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import Optional, Union, Any
 
 from langchain.retrievers import EnsembleRetriever
@@ -121,10 +122,35 @@ class HybridRetrieverChain(BaseChain):
             )
 
         if self.contextual_rerank:
-            compressor = CrossEncoderReranker(
-                model=HuggingFaceCrossEncoder(model_name=self.reranking_model_name),
-                top_n=self.search_k,
-            )
+            reranker_type = os.getenv("RERANKER_TYPE", "HF").upper()
+
+            if reranker_type == "VERTEX_AI":
+                from langchain_google_community.vertex_rank import VertexAIRank
+
+                project_id = os.getenv("VERTEX_AI_PROJECT_ID", "")
+                location_id = os.getenv("VERTEX_AI_LOCATION", "global")
+
+                if not project_id:
+                    raise ValueError(
+                        "VERTEX_AI_PROJECT_ID must be set when using RERANKER_TYPE=VERTEX_AI"
+                    )
+
+                compressor = VertexAIRank(
+                    project_id=project_id,
+                    location_id=location_id,
+                    ranking_config="default_ranking_config",
+                    top_n=self.search_k,
+                )
+                logging.info("Using Vertex AI reranker")
+            else:
+                compressor = CrossEncoderReranker(
+                    model=HuggingFaceCrossEncoder(
+                        model_name=self.reranking_model_name
+                    ),
+                    top_n=self.search_k,
+                )
+                logging.info("Using HuggingFace CrossEncoder reranker")
+
             self.retriever = ContextualCompressionRetriever(
                 base_compressor=compressor, base_retriever=ensemble_retriever
             )

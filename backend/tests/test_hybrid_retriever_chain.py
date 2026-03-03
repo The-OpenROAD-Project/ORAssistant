@@ -141,6 +141,7 @@ class TestHybridRetrieverChain:
 
         assert chain.retriever == mock_ensemble_instance
 
+    @patch.dict("os.environ", {"RERANKER_TYPE": "HF"})
     @patch("src.chains.hybrid_retriever_chain.SimilarityRetrieverChain")
     @patch("src.chains.hybrid_retriever_chain.MMRRetrieverChain")
     @patch("src.chains.hybrid_retriever_chain.BM25RetrieverChain")
@@ -158,7 +159,7 @@ class TestHybridRetrieverChain:
         mock_mmr_chain,
         mock_sim_chain,
     ):
-        """Test creating hybrid retriever with contextual reranking enabled."""
+        """Test creating hybrid retriever with HF contextual reranking enabled."""
         mock_vector_db = Mock()
         mock_vector_db.processed_docs = [Mock(), Mock()]
 
@@ -208,6 +209,118 @@ class TestHybridRetrieverChain:
         )
 
         assert chain.retriever == mock_compression_instance
+
+    @patch.dict(
+        "os.environ",
+        {
+            "RERANKER_TYPE": "VERTEX_AI",
+            "VERTEX_AI_PROJECT_ID": "test-project",
+            "VERTEX_AI_LOCATION": "global",
+        },
+    )
+    @patch("src.chains.hybrid_retriever_chain.SimilarityRetrieverChain")
+    @patch("src.chains.hybrid_retriever_chain.MMRRetrieverChain")
+    @patch("src.chains.hybrid_retriever_chain.BM25RetrieverChain")
+    @patch("src.chains.hybrid_retriever_chain.EnsembleRetriever")
+    @patch("src.chains.hybrid_retriever_chain.ContextualCompressionRetriever")
+    def test_create_hybrid_retriever_with_vertex_ai_rerank(
+        self,
+        mock_compression,
+        mock_ensemble,
+        mock_bm25_chain,
+        mock_mmr_chain,
+        mock_sim_chain,
+    ):
+        """Test creating hybrid retriever with Vertex AI reranking enabled."""
+        mock_vector_db = Mock()
+        mock_vector_db.processed_docs = [Mock(), Mock()]
+
+        chain = HybridRetrieverChain(
+            vector_db=mock_vector_db,
+            contextual_rerank=True,
+            search_k=5,
+        )
+
+        # Setup mocks
+        mock_sim_instance = Mock()
+        mock_sim_instance.retriever = Mock()
+        mock_sim_chain.return_value = mock_sim_instance
+
+        mock_mmr_instance = Mock()
+        mock_mmr_instance.retriever = Mock()
+        mock_mmr_chain.return_value = mock_mmr_instance
+
+        mock_bm25_instance = Mock()
+        mock_bm25_instance.retriever = Mock()
+        mock_bm25_chain.return_value = mock_bm25_instance
+
+        mock_ensemble_instance = Mock()
+        mock_ensemble.return_value = mock_ensemble_instance
+
+        mock_compression_instance = Mock()
+        mock_compression.return_value = mock_compression_instance
+
+        with patch(
+            "langchain_google_community.vertex_rank.VertexAIRank"
+        ) as mock_vertex_rank:
+            mock_vertex_rank_instance = Mock()
+            mock_vertex_rank.return_value = mock_vertex_rank_instance
+
+            chain.create_hybrid_retriever()
+
+            mock_vertex_rank.assert_called_once_with(
+                project_id="test-project",
+                location_id="global",
+                ranking_config="default_ranking_config",
+                top_n=5,
+            )
+            mock_compression.assert_called_once_with(
+                base_compressor=mock_vertex_rank_instance,
+                base_retriever=mock_ensemble_instance,
+            )
+
+        assert chain.retriever == mock_compression_instance
+
+    @patch.dict(
+        "os.environ",
+        {"RERANKER_TYPE": "VERTEX_AI", "VERTEX_AI_PROJECT_ID": ""},
+    )
+    @patch("src.chains.hybrid_retriever_chain.SimilarityRetrieverChain")
+    @patch("src.chains.hybrid_retriever_chain.MMRRetrieverChain")
+    @patch("src.chains.hybrid_retriever_chain.BM25RetrieverChain")
+    @patch("src.chains.hybrid_retriever_chain.EnsembleRetriever")
+    def test_vertex_ai_rerank_raises_without_project_id(
+        self,
+        mock_ensemble,
+        mock_bm25_chain,
+        mock_mmr_chain,
+        mock_sim_chain,
+    ):
+        """Test that Vertex AI reranker raises error without project ID."""
+        mock_vector_db = Mock()
+        mock_vector_db.processed_docs = [Mock(), Mock()]
+
+        chain = HybridRetrieverChain(
+            vector_db=mock_vector_db,
+            contextual_rerank=True,
+        )
+
+        mock_sim_instance = Mock()
+        mock_sim_instance.retriever = Mock()
+        mock_sim_chain.return_value = mock_sim_instance
+
+        mock_mmr_instance = Mock()
+        mock_mmr_instance.retriever = Mock()
+        mock_mmr_chain.return_value = mock_mmr_instance
+
+        mock_bm25_instance = Mock()
+        mock_bm25_instance.retriever = Mock()
+        mock_bm25_chain.return_value = mock_bm25_instance
+
+        mock_ensemble.return_value = Mock()
+
+        with pytest.raises(ValueError, match="VERTEX_AI_PROJECT_ID must be set"):
+            chain.create_hybrid_retriever()
 
     @patch("src.chains.hybrid_retriever_chain.os.path.isdir")
     @patch("src.chains.hybrid_retriever_chain.os.listdir")
