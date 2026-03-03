@@ -104,6 +104,7 @@ class HybridRetrieverChain(BaseChain):
         mmr_retriever = mmr_retriever_chain.retriever
 
         bm25_retriever_chain = BM25RetrieverChain()
+        bm25_retriever = None
 
         if self.vector_db is not None and self.vector_db.processed_docs:
             bm25_retriever_chain.create_bm25_retriever(
@@ -119,6 +120,11 @@ class HybridRetrieverChain(BaseChain):
             ensemble_retriever = EnsembleRetriever(
                 retrievers=[similarity_retriever, mmr_retriever, bm25_retriever],
                 weights=self.weights,
+            )
+        else:
+            raise ValueError(
+                "Failed to create ensemble retriever: one or more sub-retrievers "
+                "could not be initialized. Ensure vector_db has processed documents."
             )
 
         if self.contextual_rerank:
