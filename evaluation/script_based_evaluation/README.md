@@ -18,12 +18,9 @@ This project automates the evaluation of language model responses using classifi
 
 Create a `.env` file in the root directory with the following variables:
 ```plaintext
-GOOGLE_APPLICATION_CREDENTIALS=path/to/secret.json
+GOOGLE_API_KEY=your_google_api_key
 OPENAI_API_KEY=your_openai_api_key  # Required if testing against OpenAI models
 ```
-### Required Files
-
-- `secret.json`: Ensure you have a Google Vertex AI subscription and the necessary credentials file.
 
 ### Data Files
 

@@ -1,5 +1,4 @@
 FOLDERS=backend frontend evaluation
-GOOGLE_SECRET_JSON?=$(HOME)/secret.json
 
 .PHONY: init
 init:
@@ -34,11 +33,6 @@ docker-dev:
 	@docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build --wait
 
 # --- Development Commands ---
-.PHONY: seed-credentials
-seed-credentials:
-	@cp $(GOOGLE_SECRET_JSON) backend/src
-	@cp $(GOOGLE_SECRET_JSON) evaluation/auto_evaluation/src
-
 .PHONY: changelog
 changelog:
 	@git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=short --since="2024-06-01" > CHANGELOG.md
