@@ -47,6 +47,7 @@ def sample_user_input():
         query="What is OpenROAD?",
         list_sources=False,
         list_context=False,
+        stream=False,
         conversation_uuid=uuid4(),
     )
 
@@ -125,7 +126,7 @@ class TestStreamingEndpoint:
         from src.api.routers.conversations import get_response_stream
 
         user_input = UserInput(
-            query="Test question", list_sources=False, conversation_uuid=None
+            query="Test question", list_sources=False, stream=False, conversation_uuid=None
         )
 
         async def mock_astream_events(*args, **kwargs):
@@ -171,7 +172,7 @@ class TestStreamingEndpoint:
             content="Previous answer",
         )
 
-        user_input = UserInput(query="Follow-up question", conversation_uuid=conv_uuid)
+        user_input = UserInput(query="Follow-up question", stream=False, conversation_uuid=conv_uuid)
 
         captured_inputs = []
 
@@ -386,7 +387,7 @@ class TestStreamingEndpoint:
         from src.api.routers.conversations import get_response_stream
 
         long_query = "A" * 150  # 150 characters
-        user_input = UserInput(query=long_query, conversation_uuid=None)
+        user_input = UserInput(query=long_query, stream=False, conversation_uuid=None)
 
         async def mock_astream_events(*args, **kwargs):
             yield {"event": "on_chat_model_end", "data": {}}
@@ -413,7 +414,7 @@ class TestStreamingEndpoint:
         from src.api.routers.conversations import get_agent_response_streaming
         from starlette.responses import StreamingResponse
 
-        user_input = UserInput(query="Test", conversation_uuid=uuid4())
+        user_input = UserInput(query="Test", stream=False, conversation_uuid=uuid4())
 
         async def mock_astream_events(*args, **kwargs):
             yield {"event": "on_chat_model_end", "data": {}}
@@ -502,3 +503,74 @@ class TestStreamingEndpoint:
         assert any("Sources:" in c for c in chunks)
         sources_chunk = [c for c in chunks if "Sources:" in c][0]
         assert sources_chunk.strip() == "Sources:"
+
+
+class TestUnifiedEndpointStreamBranching:
+    """Verify the unified /agent-retriever endpoint branches on stream field."""
+
+    @pytest.mark.asyncio
+    async def test_get_agent_response_stream_true(
+        self, db_session: Session, mock_retriever_graph
+    ):
+        """When stream=True the unified endpoint must return a StreamingResponse."""
+        from src.api.routers.conversations import get_agent_response
+        from starlette.responses import StreamingResponse
+
+        user_input = UserInput(
+            query="What is OpenROAD?",
+            stream=True,
+            conversation_uuid=uuid4(),
+        )
+
+        async def mock_astream_events(*args, **kwargs):
+            yield {"event": "on_chat_model_end", "data": {}}
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": AIMessageChunk(content="streamed token")},
+            }
+
+        mock_retriever_graph.astream_events = mock_astream_events
+
+        response = await get_agent_response(user_input, db_session)
+
+        assert isinstance(response, StreamingResponse), (
+            "Expected StreamingResponse when stream=True, got "
+            f"{type(response).__name__}"
+        )
+        assert response.media_type == "text/event-stream"
+
+    @pytest.mark.asyncio
+    async def test_get_agent_response_stream_false_returns_chat_response(
+        self, db_session: Session
+    ):
+        """When stream=False the unified endpoint must return a plain ChatResponse."""
+        from src.api.routers.conversations import get_agent_response
+        from src.api.models.response_model import ChatResponse
+
+        user_input = UserInput(
+            query="What is OpenROAD?",
+            stream=False,
+            conversation_uuid=uuid4(),
+        )
+
+        # Build a minimal graph output that parse_agent_output can handle
+        fake_output = [
+            {"classify": {"agent_type": ["rag_agent"]}},
+            {"retrieve_general": {"context": "ctx", "sources": [], "urls": [], "context_list": []}},
+            {
+                "rag_generate": {
+                    "messages": ["OpenROAD is a chip design tool."]
+                }
+            },
+        ]
+
+        with patch("src.api.routers.conversations.rg") as mock_rg:
+            mock_rg.graph = MagicMock()
+            mock_rg.graph.stream.return_value = iter(fake_output)
+            response = await get_agent_response(user_input, db_session)
+
+        assert isinstance(response, ChatResponse), (
+            "Expected ChatResponse when stream=False, got "
+            f"{type(response).__name__}"
+        )
+        assert response.response == "OpenROAD is a chip design tool."
