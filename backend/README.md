@@ -99,7 +99,24 @@ There are 4 variables that needs to be set up
 
 ### Setting Up Huggingface User Access Token
 
-To set up the `HF_TOKEN` variable in `.env` file , go through the following instructions:
+If you encounter **429 Too Many Requests** errors while downloading the dataset, providing an `HF_TOKEN` is necessary.
+
+1. Go to your [Hugging Face Settings -> Tokens](https://huggingface.co/settings/tokens).
+2. Click **"New token"** and select the **"Read"** type.
+3. Copy the token and add it to your `.env` file:
+   ```bash
+   HF_TOKEN=your_token_here
+   ```
+
+Alternatively, you can login via CLI:
+```bash
+uv run huggingface-cli login
+```
+
+If you still encounter 429 errors after logging in, try downloading with a single worker (sequential download):
+```bash
+uv run huggingface-cli download The-OpenROAD-Project/ORAssistant_RAG_Dataset --repo-type dataset --local-dir data/ --max-workers 1
+```
 
 - Go the official website for [Huggingface](https://huggingface.co/) and either Login or Sign up.
 - On the main page click on user access token
