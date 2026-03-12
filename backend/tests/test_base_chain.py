@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 from src.chains.base_chain import BaseChain
 

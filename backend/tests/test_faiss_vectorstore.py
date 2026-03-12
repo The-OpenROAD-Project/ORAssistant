@@ -3,7 +3,7 @@ import os
 from unittest.mock import Mock, patch
 
 from langchain_community.vectorstores.utils import DistanceStrategy
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 from src.vectorstores.faiss import FAISSVectorDatabase
 
