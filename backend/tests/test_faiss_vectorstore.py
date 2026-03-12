@@ -55,7 +55,7 @@ class TestFAISSVectorDatabase:
             )
 
             assert db.embeddings_model_name == "textembedding-gecko@001"
-            mock_vertex.assert_called_once_with(model_name="textembedding-gecko@001")
+            mock_vertex.assert_called_once_with(model="textembedding-gecko@001")
 
     def test_init_with_invalid_embeddings_type(self):
         """Test initialization with invalid embeddings type raises error."""

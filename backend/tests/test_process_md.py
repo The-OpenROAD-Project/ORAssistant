@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import patch
+from langchain_core.documents import Document
 
 from src.tools.process_md import md_to_text
 
@@ -263,8 +264,6 @@ class TestProcessMd:
             '{"test.md": "https://example.com"}'
         )
 
-        from langchain.docstore.document import Document
-
         mock_docs = [
             Document(page_content="Test content", metadata={"source": "test.md"})
         ]
@@ -299,8 +298,6 @@ class TestProcessMd:
         mock_open.return_value.__enter__.return_value.read.return_value = (
             '{"test.md": "https://example.com"}'
         )
-
-        from langchain.docstore.document import Document
 
         mock_doc = Document(page_content="Test content", metadata={"source": "test.md"})
         mock_load_docs.return_value = [mock_doc]
@@ -342,8 +339,6 @@ class TestProcessMd:
         mock_open.return_value.__enter__.return_value.read.return_value = (
             "{}"  # Empty JSON
         )
-
-        from langchain.docstore.document import Document
 
         mock_docs = [
             Document(page_content="Test content", metadata={"source": "missing.md"})
@@ -388,8 +383,6 @@ class TestProcessMd:
         mock_listdir.return_value = ["file.md"]
         mock_open.return_value.__enter__.return_value.read.return_value = "{}"
 
-        from langchain.docstore.document import Document
-
         mock_docs = [
             Document(page_content="Test content", metadata={"source": "missing.md"})
         ]
@@ -413,8 +406,6 @@ class TestProcessMd:
         mock_exists.return_value = True
         mock_listdir.return_value = ["installation.md", "usage.md"]
         mock_open.return_value.__enter__.return_value.read.return_value = '{"installation.md": "https://docs.example.com/install", "usage.md": "https://docs.example.com/usage"}'
-
-        from langchain.docstore.document import Document
 
         mock_docs = [
             Document(
