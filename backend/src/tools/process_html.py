@@ -5,7 +5,7 @@ import logging
 from tqdm import tqdm
 from typing import Optional
 
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from langchain_community.document_loaders import UnstructuredHTMLLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 

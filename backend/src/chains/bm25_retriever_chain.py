@@ -2,7 +2,7 @@ from typing import Optional, Iterable, Union
 
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.vectorstores import VectorStoreRetriever
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama

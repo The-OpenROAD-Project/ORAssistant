@@ -4,7 +4,7 @@ from typing import Any
 from ..openroad_mcp.client.client import get_tools
 from langgraph.graph import END
 from .retriever_typing import AgentState
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools.base import ToolException
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI

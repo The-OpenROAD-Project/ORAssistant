@@ -8,7 +8,7 @@ from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_vertexai import VertexAIEmbeddings
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 from ..tools.process_md import process_md
 from ..tools.process_pdf import process_pdf_docs
@@ -45,9 +45,7 @@ class FAISSVectorDatabase:
             logging.info("Using Google GenerativeAI embeddings...")
 
         elif embeddings_type == "GOOGLE_VERTEXAI":
-            self.embedding_model = VertexAIEmbeddings(
-                model_name=self.embeddings_model_name
-            )
+            self.embedding_model = VertexAIEmbeddings(model=self.embeddings_model_name)
             logging.info("Using Google VertexAI embeddings...")
 
         elif embeddings_type == "HF":

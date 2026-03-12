@@ -59,7 +59,7 @@ explicit_package_bases = true
 exclude = "src/post_install.py"
 
 [[tool.mypy.overrides]]
-module = ["deepeval.*", "huggingface_hub.*", "vertexai.*", "pandas.*", "plotly.*"]
+module = ["deepeval.*", "huggingface_hub.*", "vertexai.*", "pandas.*", "plotly.*", "openai.*", "google.*", "streamlit.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

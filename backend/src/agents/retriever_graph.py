@@ -4,7 +4,7 @@ from typing import Optional
 
 from langgraph.graph import START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama

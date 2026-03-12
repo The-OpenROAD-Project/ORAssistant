@@ -3,9 +3,9 @@ from typing import Any
 from langchain_core.messages import AnyMessage
 from langgraph.graph import END
 from langchain_core.tools import BaseTool
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from langchain.tools.render import render_text_description
+from langchain_core.tools.render import render_text_description
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
