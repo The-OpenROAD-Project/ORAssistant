@@ -92,7 +92,9 @@ def parse_output(output: list) -> tuple[str, list[str], list[str]]:
         logging.error(f"Output is not a list: {type(output)}")
         return fail_msg, [], []
     if len(output) < MIN_OUTPUT_LENGTH:
-        logging.error(f"Output too short: {len(output)} elements (expected >= {MIN_OUTPUT_LENGTH})")
+        logging.error(
+            f"Output too short: {len(output)} elements (expected >= {MIN_OUTPUT_LENGTH})"
+        )
         return fail_msg, [], []
 
     # Validate last element contains generation
@@ -106,7 +108,9 @@ def parse_output(output: list) -> tuple[str, list[str], list[str]]:
     key = "rag_generate" if is_rag else "generate"
 
     if key not in last:
-        logging.error(f"Missing '{key}' key in final output. Available keys: {list(last.keys())}")
+        logging.error(
+            f"Missing '{key}' key in final output. Available keys: {list(last.keys())}"
+        )
         return fail_msg, [], []
 
     if "messages" not in last[key]:
@@ -261,12 +265,16 @@ def main() -> None:
         console.print("\n[yellow]Interrupted. Goodbye![/yellow]")
     except ValueError as e:
         console.print(f"[bold red]Configuration Error:[/bold red] {str(e)}")
-        console.print("[yellow]Check your environment variables and try again.[/yellow]")
+        console.print(
+            "[yellow]Check your environment variables and try again.[/yellow]"
+        )
         if debug:
             logging.exception("Configuration error")
     except ConnectionError as e:
         console.print(f"[bold red]Connection Error:[/bold red] {str(e)}")
-        console.print("[yellow]Check your network connection and database availability.[/yellow]")
+        console.print(
+            "[yellow]Check your network connection and database availability.[/yellow]"
+        )
         if debug:
             logging.exception("Connection error")
     except Exception as e:

@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 from pypdf.errors import PdfStreamError
 
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 

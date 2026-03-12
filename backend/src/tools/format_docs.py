@@ -1,4 +1,4 @@
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 from ..prompts.prompt_templates import gh_discussion_prompt_template
 

@@ -3,8 +3,8 @@ from typing import Tuple, Optional, Union
 from dotenv import load_dotenv
 
 from langchain_core.tools import tool
-from langchain.retrievers import EnsembleRetriever
-from langchain.retrievers import ContextualCompressionRetriever
+from langchain_classic.retrievers import EnsembleRetriever
+from langchain_classic.retrievers import ContextualCompressionRetriever
 
 from ..chains.hybrid_retriever_chain import HybridRetrieverChain
 from ..tools.format_docs import format_docs
