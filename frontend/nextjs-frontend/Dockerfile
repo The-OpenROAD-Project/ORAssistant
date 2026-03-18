@@ -1,11 +1,8 @@
 # Install dependencies only when needed
 FROM node:22-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json* yarn.lock* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  else npm install; fi
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM node:22-alpine AS builder
