@@ -108,23 +108,25 @@ cp .env.example .env
 **Step 3**: For populating the `data` folder with OR/ORFS docs, OpenSTA docs and Yosys docs, run:
 
 ```bash
-python build_docs.py
+uv run python build_docs.py
 
 # Alternatively, pull the latest docs
 mkdir data
-huggingface-cli download The-OpenROAD-Project/ORAssistant_RAG_Dataset --repo-type dataset --local-dir data/
+# Note: If you encounter 429 errors, run 'uv run huggingface-cli login' first
+# and/or use --max-workers 1 for sequential download
+uv run huggingface-cli download The-OpenROAD-Project/ORAssistant_RAG_Dataset --repo-type dataset --local-dir data/ --max-workers 1
 ```
 
 **Step 4**: To run the server, run:
 
 ```bash
-python main.py
+uv run python main.py
 ```
 
 **Optionally**: To interact with the chatbot in your terminal, run:
 
 ```bash
-python chatbot.py
+uv run python chatbot.py
 ```
 
 The backend will then be hosted at [http://0.0.0.0:8000](http://0.0.0.0:8000).

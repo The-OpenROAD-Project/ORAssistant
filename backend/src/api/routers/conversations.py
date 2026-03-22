@@ -245,11 +245,31 @@ def get_optional_db(db: Session = Depends(get_db)) -> Session | None:
     return db if use_db else None
 
 
-@router.post("/agent-retriever", response_model=ChatResponse)
+@router.post("/agent-retriever", response_model=None)
 async def get_agent_response(
     user_input: UserInput, db: Session | None = Depends(get_optional_db)
-) -> ChatResponse:
-    """Processes a user query using the retriever agent, maintains conversation context, and returns the generated response along with relevant context sources and tools used."""
+) -> ChatResponse | StreamingResponse:
+    """Unified chat endpoint.
+
+    Pass ``stream=false`` (default) in the request body to receive a complete
+    JSON response once generation is done.  Pass ``stream=true`` to receive
+    a ``text/event-stream`` response that yields tokens in real time as the
+    LLM produces them.
+
+    Example non-streaming body::
+
+        {"query": "How do I install OpenROAD?", "stream": false}
+
+    Example streaming body::
+
+        {"query": "How do I install OpenROAD?", "stream": true}
+    """
+    if user_input.stream:
+        return StreamingResponse(
+            get_response_stream(user_input, db), media_type="text/event-stream"
+        )
+
+    # --- non-streaming path ---
     user_question = user_input.query
 
     conversation_uuid = user_input.conversation_uuid

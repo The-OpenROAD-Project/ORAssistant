@@ -8,6 +8,7 @@ class UserInput(BaseModel):
     query: str
     list_sources: bool = False
     list_context: bool = False
+    stream: bool = False
     conversation_uuid: Optional[UUID] = None
 
 
