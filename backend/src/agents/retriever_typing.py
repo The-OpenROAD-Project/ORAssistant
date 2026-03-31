@@ -9,6 +9,7 @@ class AgentState(TypedDict):
     tools: list[str]
     sources: Annotated[list[str], add_messages]
     urls: Annotated[list[str], add_messages]
+    context_list: Annotated[list[str], add_messages]
     chat_history: str
     agent_type: list[str]
     mcp_response: Annotated[list[AnyMessage], add_messages]
