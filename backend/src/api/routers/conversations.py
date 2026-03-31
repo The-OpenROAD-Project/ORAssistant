@@ -1,5 +1,6 @@
 import os
 import logging
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 from typing import Any
@@ -217,7 +218,9 @@ rg = RetrieverGraph(
 rg.initialize()
 
 
-chat_history: dict[UUID, list[dict[str, str]]] = {}
+MAX_IN_MEMORY_CONVERSATIONS = 1000
+
+chat_history: OrderedDict[UUID, list[dict[str, str]]] = OrderedDict()
 
 
 def get_history_str(db: Session | None, conversation_uuid: UUID | None) -> str:
@@ -274,6 +277,8 @@ async def get_agent_response(
 
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
+            if len(chat_history) >= MAX_IN_MEMORY_CONVERSATIONS:
+                chat_history.popitem(last=False)
             chat_history[conversation_uuid] = []
 
     inputs = {
@@ -369,6 +374,8 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
+            if len(chat_history) >= MAX_IN_MEMORY_CONVERSATIONS:
+                chat_history.popitem(last=False)
             chat_history[conversation_uuid] = []
 
     inputs = {
@@ -405,7 +412,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
                 if msg:
                     chunks.append(str(msg))
-                yield str(msg) + "\n\n"
+                    yield str(msg) + "\n\n"
 
     urls = list(set(urls))
     yield f"Sources: {', '.join(urls)}\n\n"
