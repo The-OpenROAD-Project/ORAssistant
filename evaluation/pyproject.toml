@@ -22,6 +22,7 @@ dependencies = [
     "instructor[vertexai]==1.5.2",
     "openai==1.58.1",
     "google-cloud-aiplatform>=1.133.0",
+    "pygments>=2.15.1",
     "protobuf>=5.29.6",
     "pydantic==2.10.4",
     "tqdm==4.67.1",
