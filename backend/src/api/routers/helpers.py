@@ -11,7 +11,12 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise RuntimeError("GOOGLE_API_KEY is not set")
 
-model = "gemini-2.0-flash"
+GEMINI_MODEL_MAP = {
+    "2.0_flash": "gemini-2.0-flash",
+    "2.5_flash": "gemini-2.5-flash",
+    "2.5_pro": "gemini-2.5-pro",
+}
+model = GEMINI_MODEL_MAP.get(os.getenv("GOOGLE_GEMINI", "2.0_flash"), "gemini-2.0-flash")
 client = OpenAI(
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
     api_key=GOOGLE_API_KEY,

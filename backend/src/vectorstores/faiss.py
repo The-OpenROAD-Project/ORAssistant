@@ -197,9 +197,12 @@ class FAISSVectorDatabase:
         return None
 
     def get_db_path(self) -> str:
+        env_path = os.getenv("FAISS_DB_PATH")
+        if env_path:
+            return os.path.abspath(env_path)
         cur_path = os.path.abspath(__file__)
         path = os.path.join(cur_path, "../../../", "faiss_db")
-        path = os.path.abspath(path)  # Ensure proper parent directory
+        path = os.path.abspath(path)
         return path
 
     def save_db(self, name: str) -> None:
