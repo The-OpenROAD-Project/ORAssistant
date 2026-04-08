@@ -8,6 +8,7 @@ from src.openroad_mcp.server.orfs.orfs_tools import ORFS
 from src.openroad_mcp.server.orfs.orfs_make import ORFSMake
 from src.openroad_mcp.server.orfs.orfs_base import ORFSBase
 from src.openroad_mcp.server.orfs.orfs_rag import ORFSRag
+from src.openroad_mcp.server.orfs.orfs_optimizer import ORFSOptimizer
 
 logging.basicConfig(
     level=os.environ.get("LOGLEVEL", "INFO").upper(),
@@ -25,7 +26,7 @@ class ORFSEnv(TypedDict):
     routing: list[str | None]
 
 
-class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
+class ORFSServer(ORFSBase, ORFSMake, ORFSRag, ORFSOptimizer):
     def __init__(self) -> None:
         ORFS.server = self
 
@@ -59,6 +60,9 @@ class ORFSServer(ORFSBase, ORFSMake, ORFSRag):
         if self.orfs_dir is None:
             raise ValueError("ORFS_DIR environment variable is not set")
         self.flow_dir = os.path.join(self.orfs_dir, "flow")
+
+    def logging(self, msg):
+        logging.info(msg)
 
 
 if __name__ == "__main__":
