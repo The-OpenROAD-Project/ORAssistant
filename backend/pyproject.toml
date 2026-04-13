@@ -32,7 +32,7 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.11.7",
     "pygments>=2.15.1",
-    "pypdf==6.9.2",
+    "pypdf==6.10.0",
     "rank-bm25==0.2.2",
     "rich>=13.7.0",
     "sentence-transformers>=5.1.0",
