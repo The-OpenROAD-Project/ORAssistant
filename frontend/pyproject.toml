@@ -11,7 +11,7 @@ dependencies = [
   "streamlit>=1.54.0",
   "requests==2.33.0",
   "requests-oauthlib==2.0.0",
-  "Pillow>=12.1.1",
+  "Pillow>=12.2.0",
   "protobuf>=5.29.6",
   "google-auth==2.30.0",
   "google-auth-httplib2==0.2.0",
