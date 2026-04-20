@@ -1,7 +1,7 @@
 name: ORAssistant CI
 run-name: ${{ github.actor }} started CI
 
-on: 
+on:
   pull_request:
     paths:
       - 'backend/**'
@@ -15,36 +15,82 @@ defaults:
     shell: bash
 
 jobs:
-  build-backend-docker:
+  lint:
     runs-on: self-hosted
     steps:
-    - name: Setup python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6   
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            backend/uv.lock
+            frontend/uv.lock
+            evaluation/uv.lock
 
-    - name: Setup prereqs
-      run: |
-        make init-dev
+      - name: Setup prereqs
+        run: make init-dev
 
-    - name: Run formatting checks
-      run: |
-        make check
+      - name: Run formatting checks
+        run: make check
 
-    - name: Run unit tests
-      working-directory: backend
-      run: |
-        uv pip install huggingface_hub[cli]
-        huggingface-cli download --repo-type dataset The-OpenROAD-Project/ORAssistant_RAG_Dataset --include source_list.json --local-dir data/
-        cp .env.test .env
-        make test
+  test:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Build Docker images
-      run: |
-        docker compose build
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            backend/uv.lock
+            frontend/uv.lock
+            evaluation/uv.lock
+
+      - name: Setup prereqs
+        run: make init-dev
+
+      - name: Cache HuggingFace dataset
+        uses: actions/cache@v4
+        with:
+          path: backend/data/source_list.json
+          key: hf-source-list-v1
+
+      - name: Download HuggingFace dataset
+        working-directory: backend
+        run: |
+          uv run huggingface-cli download \
+            --repo-type dataset \
+            The-OpenROAD-Project/ORAssistant_RAG_Dataset \
+            --include source_list.json \
+            --local-dir data/
+
+      - name: Run unit tests
+        working-directory: backend
+        run: |
+          cp .env.test .env
+          make test
+
+  docker-build:
+    runs-on: self-hosted
+    needs: [lint, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build

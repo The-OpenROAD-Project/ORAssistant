@@ -3,21 +3,27 @@ GOOGLE_SECRET_JSON?=$(HOME)/secret.json
 
 .PHONY: init
 init:
-	@for folder in $(FOLDERS); do (cd $$folder && make init && cd ../); done
+	@pids=""; \
+	 for folder in $(FOLDERS); do (cd $$folder && make init) & pids="$$pids $$!"; done; \
+	 for pid in $$pids; do wait $$pid || exit 1; done
 
 .PHONY: init-dev
 init-dev:
-	@for folder in $(FOLDERS); do (cd $$folder && make init-dev && cd ../); done
+	@pids=""; \
+	 for folder in $(FOLDERS); do (cd $$folder && make init-dev) & pids="$$pids $$!"; done; \
+	 for pid in $$pids; do wait $$pid || exit 1; done
 
 .PHONY: format
 format:
-	@for folder in $(FOLDERS); do (cd $$folder && make format && cd ../); done
+	@pids=""; \
+	 for folder in $(FOLDERS); do (cd $$folder && make format) & pids="$$pids $$!"; done; \
+	 for pid in $$pids; do wait $$pid || exit 1; done
 
 .PHONY: check
 check:
-	@for folder in $(FOLDERS); do \
- 	   (cd $$folder && make check && cd ../) || exit 1; \
-		done
+	@pids=""; \
+	 for folder in $(FOLDERS); do (cd $$folder && make check) & pids="$$pids $$!"; done; \
+	 for pid in $$pids; do wait $$pid || exit 1; done
 	@. ./backend/.venv/bin/activate && \
 		pre-commit run --all-files
 
