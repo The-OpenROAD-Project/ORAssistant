@@ -68,7 +68,7 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
 
 
 def main():
-    model = GoogleGeminiLangChain(model_name="gemini-2.5-pro")
+    model = GoogleGeminiLangChain(model_name="gemini-3.1-pro-preview")
     prompt = "Write me a joke"
     print(f"Prompt: {prompt}")
     response = model.generate(prompt, schema=Response)
@@ -76,7 +76,7 @@ def main():
 
 
 async def main_async():
-    model = GoogleGeminiLangChain(model_name="gemini-2.5-pro")
+    model = GoogleGeminiLangChain(model_name="gemini-3.1-pro-preview")
     prompt = "Write me a joke"
     print(f"Prompt: {prompt}")
     response = await model.a_generate(prompt, schema=Response)
