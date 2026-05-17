@@ -11,8 +11,8 @@ import os
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
 from deepeval import evaluate
-from deepeval.models import GeminiModel
 
+from auto_evaluation.src.models.gemini import GoogleGeminiLangChain
 from auto_evaluation.src.metrics.retrieval import (
     make_contextual_precision_metric,
     make_contextual_recall_metric,
@@ -41,10 +41,7 @@ class EvaluationHarness:
         self.dataset = dataset
         self.reranker_base_url = reranker_base_url
         self.qns = preprocess.read_data(self.dataset)
-        self.eval_model = GeminiModel(
-            model_name="gemini-2.5-pro",
-            api_key=os.getenv("GOOGLE_API_KEY"),
-        )
+        self.eval_model = GoogleGeminiLangChain(model_name="gemini-3.1-pro-preview")
         self.log_dir = "logs"
         os.makedirs(self.log_dir, exist_ok=True)
         self.sanity_check()
