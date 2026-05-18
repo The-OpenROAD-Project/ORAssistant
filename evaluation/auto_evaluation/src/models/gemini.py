@@ -35,13 +35,13 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
                     response_schema=schema,
                 ),
             )
-            return response.parsed, 0
+            return response.parsed
         else:
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
             )
-            return response.text, 0
+            return response.text
 
     async def a_generate(
         self, prompt: str, schema: Optional[Type[BaseModel]] = None
@@ -55,13 +55,13 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
                     response_schema=schema,
                 ),
             )
-            return response.parsed, 0
+            return response.parsed
         else:
             response = await self.client.aio.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
             )
-            return response.text, 0
+            return response.text
 
     def get_model_name(self):
         return self.model_name or "model-not-specified"
