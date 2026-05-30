@@ -1,6 +1,11 @@
 FOLDERS=backend frontend evaluation
 GOOGLE_SECRET_JSON?=$(HOME)/secret.json
 
+.PHONY: lock
+lock:
+	@for folder in $(FOLDERS); do (cd $$folder && make lock && cd ../); done
+	@cd frontend/mock-flask-api && make lock
+
 .PHONY: init
 init:
 	@for folder in $(FOLDERS); do (cd $$folder && make init && cd ../); done
