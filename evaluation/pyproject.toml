@@ -7,7 +7,9 @@ name = "ora-evaluation"
 version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
+    "aiohttp>=3.14.0",
     "google-api-python-client==2.151.0",
+    "pyarrow>=23.0.1",
     "google-auth>=2.47.0",
     "google-auth-httplib2==0.2.0",
     "google-auth-oauthlib==1.2.0",
@@ -24,7 +26,7 @@ dependencies = [
     "instructor[vertexai]==1.5.2",
     "openai==1.58.1",
     "google-cloud-aiplatform>=1.133.0",
-    "pygments>=2.15.1",
+    "pygments>=2.20.0",
     "protobuf>=5.29.6",
     "pydantic==2.10.4",
     "tqdm==4.67.1",
