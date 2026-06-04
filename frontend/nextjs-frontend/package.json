@@ -42,6 +42,9 @@
     "extends": "next"
   },
   "resolutions": {
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.10",
+    "brace-expansion": ">=1.1.13",
+    "@eslint/plugin-kit": ">=0.3.4",
+    "ajv": ">=6.14.0"
   }
 }
