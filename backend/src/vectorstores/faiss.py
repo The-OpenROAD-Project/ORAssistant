@@ -1,4 +1,5 @@
 import os
+import time
 import logging
 from typing import Optional, Union
 from dotenv import load_dotenv
@@ -74,13 +75,13 @@ class FAISSVectorDatabase:
 
     @retry(
         stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=2, min=10, max=120),
+        wait=wait_exponential(multiplier=2, min=60, max=600),
         retry=retry_if_exception(
             lambda e: "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e)
         ),
         reraise=True,
     )
-    def _add_to_db(self, documents: list[Document]) -> None:
+    def _embed_and_add(self, documents: list[Document]) -> None:
         if self._faiss_db is None:
             self._faiss_db = FAISS.from_documents(
                 documents=documents,
@@ -89,6 +90,13 @@ class FAISSVectorDatabase:
             )
         else:
             self._faiss_db.add_documents(documents)
+
+    def _add_to_db(self, documents: list[Document], batch_size: int = 100) -> None:
+        for i in range(0, len(documents), batch_size):
+            batch = documents[i : i + batch_size]
+            self._embed_and_add(batch)
+            if i + batch_size < len(documents):
+                time.sleep(1)
 
     def add_md_docs(
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
@@ -229,7 +237,7 @@ class FAISSVectorDatabase:
 
     @retry(
         stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=2, min=10, max=120),
+        wait=wait_exponential(multiplier=2, min=60, max=600),
         retry=retry_if_exception(
             lambda e: "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e)
         ),
