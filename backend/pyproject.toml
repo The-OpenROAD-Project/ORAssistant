@@ -49,6 +49,7 @@ dependencies = [
     "sphinxcontrib-mermaid==1.0.0",
     "sqlalchemy>=2.0.43",
     "starlette>=1.0.1",
+    "tenacity>=9.0.0",
     "unstructured==0.18.18",
 ]
 
