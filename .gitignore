@@ -1,7 +1,8 @@
 .env
 *.ipynb
 __pycache__/
-backend/data/
+backend/data/*
+!backend/data/source_list.json
 backend/src/*.json
 *.pyc
 *.egg-info/

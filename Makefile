@@ -26,6 +26,12 @@ check:
 	@. ./backend/.venv/bin/activate && \
 		pre-commit run --all-files
 
+.PHONY: check-ci
+check-ci:
+	@for folder in $(FOLDERS); do \
+	   (cd $$folder && make check && cd ../) || exit 1; \
+		done
+
 .PHONY: docker-up
 docker-up:
 	@docker compose -f docker-compose.yml up --build --wait
