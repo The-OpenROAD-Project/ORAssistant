@@ -9,6 +9,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_core.documents import Document
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
 
 from ..tools.process_md import process_md
 from ..tools.process_pdf import process_pdf_docs
@@ -71,6 +72,14 @@ class FAISSVectorDatabase:
     def faiss_db(self) -> Optional[FAISS]:
         return self._faiss_db
 
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, min=10, max=120),
+        retry=retry_if_exception(
+            lambda e: "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e)
+        ),
+        reraise=True,
+    )
     def _add_to_db(self, documents: list[Document]) -> None:
         if self._faiss_db is None:
             self._faiss_db = FAISS.from_documents(
@@ -218,6 +227,14 @@ class FAISSVectorDatabase:
     def get_documents(self) -> list[Document]:
         return self._faiss_db.docstore._dict.values()  # type: ignore
 
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, min=10, max=120),
+        retry=retry_if_exception(
+            lambda e: "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e)
+        ),
+        reraise=True,
+    )
     def process_json(self, folder_paths: list[str]) -> FAISS:
         logging.info("Processing json files...")
         if not isinstance(folder_paths, list):
