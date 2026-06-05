@@ -14,37 +14,20 @@ cp .env.example .env
 ```
 
 
-### Setting Up Google API Key and Credentials Variables
-
-There are 2 variables that needs to be set up
+### Setting Up Google API Key
 
 - `GOOGLE_API_KEY`
 
-This key is used to access the various google cloud functions.
+This key is used to access the Google Gemini API.
   - Go to [Google Cloud Console](https://console.cloud.google.com/)
   - Create new project or select existing one
   - Enable required APIs:
        - Google Gemini API
-       - Vertex AI API
   - Go to APIs & Services > Credentials
   - Click "Create Credentials" > "API Key"
-  - Copy the generated key and it to the `.env` file
-  
-- `GOOGLE_APPLICATION_CREDENTIALS`
-  Since most of the GCP functions / services would be used by our app, we need to have a special credential that would allow `ORAssistant`'s access to the GCP
-    Steps to set up Service Account Credentials:
-  - In Google Cloud Console, go to IAM & Admin > Service Accounts
-  - Click "Create Service Account"
-  Fill in service account details
-  -  Grant required roles:
-       - Vertex AI User
-       - Vertex AI Service Agent
-  - Create key (JSON format)
-  - Download JSON file
-  - Store securely and add path to .env:
-       `GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json`
+  - Copy the generated key and add it to the `.env` file
 
-**NOTE**: The user might need billing to be set up on google cloud account and make sure to name the file as `credentials.json`  as this would be ignored by `.git` and wouldn't be exposed on Github
+**NOTE**: The user might need billing to be set up on their Google Cloud account.
 
 ### Running ORAssistant with a Local Ollama Model
 
