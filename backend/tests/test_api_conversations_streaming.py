@@ -37,7 +37,13 @@ def mock_retriever_graph():
     """Mock RetrieverGraph for streaming tests."""
     # Reset the mock for each test
     mock_graph_global.reset_mock()
+    # Set up the lazy-loaded graph so get_graph() returns the mock
+    conversations._rg = mock_rg_instance
+    conversations._rg_started.set()
+    conversations._rg_ready.set()
     yield mock_graph_global
+    # Teardown: reset graph state for next test
+    conversations.reset_graph_state_for_testing()
 
 
 @pytest.fixture
@@ -436,16 +442,15 @@ class TestStreamingEndpoint:
         """Test behavior when graph is not initialized."""
         from src.api.routers.conversations import get_response_stream
 
-        with patch("src.api.routers.conversations.rg") as mock_rg:
-            mock_rg.graph = None
+        # Reset to simulate a fresh process where the graph hasn't been started yet
+        conversations.reset_graph_state_for_testing()
 
-            chunks = []
-            async for chunk in get_response_stream(sample_user_input, db_session):
-                chunks.append(chunk)
+        chunks = []
+        async for chunk in get_response_stream(sample_user_input, db_session):
+            chunks.append(chunk)
 
-            # When graph is None, streaming continues but produces no content chunks
-            # Should still have sources line
-            assert any("Sources:" in c for c in chunks)
+        # When graph is None, the stream yields an error and returns early
+        assert any("still initializing" in c for c in chunks)
 
     @pytest.mark.asyncio
     async def test_get_response_stream_empty_content(
