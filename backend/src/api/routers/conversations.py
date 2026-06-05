@@ -1,8 +1,9 @@
 import os
 import logging
+import threading
 from dotenv import load_dotenv
 
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_google_vertexai import ChatVertexAI
@@ -204,17 +205,56 @@ def parse_agent_output(output: list) -> tuple[str, list[ContextSource], list[str
     return llm_response, context_sources, tools
 
 
-rg = RetrieverGraph(
-    llm_model=llm,
-    embeddings_config=embeddings_config,
-    reranking_model_name=hf_reranker,
-    use_cuda=use_cuda,
-    inbuilt_tool_calling=True,
-    fast_mode=fast_mode,
-    debug=debug,
-    enable_mcp=enable_mcp,
-)
-rg.initialize()
+_rg: Optional[RetrieverGraph] = None
+_rg_started = threading.Event()
+_rg_ready = threading.Event()
+
+
+def get_graph() -> Optional[RetrieverGraph]:
+    """Return the initialized graph, or None if not ready yet."""
+    return _rg if _rg_ready.is_set() else None
+
+
+def _initialize_graph() -> None:
+    """Build and initialize the RetrieverGraph (runs in background thread)."""
+    global _rg
+    graph = RetrieverGraph(
+        llm_model=llm,
+        embeddings_config=embeddings_config,
+        reranking_model_name=hf_reranker,
+        use_cuda=use_cuda,
+        inbuilt_tool_calling=True,
+        fast_mode=fast_mode,
+        debug=debug,
+        enable_mcp=enable_mcp,
+    )
+    graph.initialize()
+    _rg = graph
+    _rg_ready.set()
+
+
+def start_graph_init() -> None:
+    """Start graph initialization in a background thread (idempotent)."""
+    if _rg_started.is_set():
+        return
+    _rg_started.set()
+    threading.Thread(target=_initialize_graph, daemon=True).start()
+
+
+def reset_graph_state_for_testing() -> None:
+    """Reset graph state so tests can simulate a fresh startup."""
+    global _rg
+    _rg = None
+    _rg_started.clear()
+    _rg_ready.clear()
+
+
+@router.get("/ready")
+async def ready() -> dict[str, str]:
+    """Readiness probe — returns 'ready' when the graph is fully initialized."""
+    if _rg_ready.is_set():
+        return {"status": "ready"}
+    return {"status": "initializing"}
 
 
 chat_history: dict[UUID, list[dict[str, str]]] = {}
@@ -283,10 +323,11 @@ async def get_agent_response(
         "chat_history": get_history_str(db, conversation_uuid),
     }
 
-    if rg.graph is not None:
-        output = list(rg.graph.stream(inputs, stream_mode="updates"))
+    graph = get_graph()
+    if graph is not None and graph.graph is not None:
+        output = list(graph.graph.stream(inputs, stream_mode="updates"))
     else:
-        raise ValueError("RetrieverGraph not initialized.")
+        raise HTTPException(status_code=503, detail="Graph is still initializing. Please retry shortly.")
 
     llm_response, context_sources, tools = parse_agent_output(output)
 
@@ -382,8 +423,9 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
     current_llm_call_count = 1
     chunks: list[str] = []
 
-    if rg.graph is not None:
-        async for event in rg.graph.astream_events(inputs, version="v2"):
+    graph = get_graph()
+    if graph is not None and graph.graph is not None:
+        async for event in graph.graph.astream_events(inputs, version="v2"):
             chunk = event["event"]
 
             if chunk == "on_chat_model_end":
@@ -406,6 +448,9 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
                 if msg:
                     chunks.append(str(msg))
                 yield str(msg) + "\n\n"
+    else:
+        yield "Error: Graph is still initializing. Please retry shortly.\n\n"
+        return
 
     urls = list(set(urls))
     yield f"Sources: {', '.join(urls)}\n\n"
