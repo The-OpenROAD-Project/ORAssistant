@@ -36,9 +36,17 @@ check-ci:
 docker-up:
 	@docker compose -f docker-compose.yml up --build --wait
 
+.PHONY: docker-up-ci
+docker-up-ci:
+	@docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build --wait
+
 .PHONY: docker-down
 docker-down:
 	@docker compose -f docker-compose.yml down --volumes --remove-orphans
+
+.PHONY: docker-down-ci
+docker-down-ci:
+	@docker compose -f docker-compose.yml -f docker-compose.ci.yml down --volumes --remove-orphans
 
 .PHONY: docker-dev
 docker-dev:

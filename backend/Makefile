@@ -28,7 +28,7 @@ build-docs:
 
 .PHONY: test
 test:
-	@uv run pytest
+	@uv run pytest -n auto
 
 .PHONY: mcp
 mcp:
