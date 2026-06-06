@@ -20,12 +20,15 @@ RUN pip install uv
 COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
 COPY . .
 
-RUN uv venv .venv && uv sync --dev && uv run /ORAssistant-backend/src/post_install.py
+RUN uv venv .venv && uv sync && uv run /ORAssistant-backend/src/post_install.py
 
-RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
+ARG SKIP_HF_DOWNLOAD=false
+RUN if [ "$SKIP_HF_DOWNLOAD" = "false" ]; then \
+    git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
     mkdir -p data && \
     mv ORAssistant_RAG_Dataset/* data/ && \
-    rm -rf ORAssistant_RAG_Dataset
+    rm -rf ORAssistant_RAG_Dataset; \
+fi
 
 EXPOSE 8000
 
