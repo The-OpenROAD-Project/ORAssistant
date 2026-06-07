@@ -45,6 +45,7 @@ class RetrieverTools:
         reranking_model_name: str,
         use_cuda: bool = False,
         fast_mode: bool = False,
+        contextual_rerank: bool = True,
     ) -> None:
         markdown_docs_map = {
             "general": [
@@ -97,7 +98,7 @@ class RetrieverTools:
             else markdown_docs_map["general"],
             other_docs_path=[] if fast_mode else ["./data/pdf"],
             weights=[0.6, 0.2, 0.2],
-            contextual_rerank=True,
+            contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
         )
@@ -112,7 +113,7 @@ class RetrieverTools:
             if fast_mode
             else markdown_docs_map["install"],
             weights=[0.6, 0.2, 0.2],
-            contextual_rerank=True,
+            contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
         )
@@ -128,7 +129,7 @@ class RetrieverTools:
             else markdown_docs_map["commands"],
             other_docs_path=[] if fast_mode else ["./data/pdf"],
             weights=[0.6, 0.2, 0.2],
-            contextual_rerank=True,
+            contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
         )
@@ -143,7 +144,7 @@ class RetrieverTools:
             if fast_mode
             else ["./data/html/yosys_docs"],
             weights=[0.6, 0.2, 0.2],
-            contextual_rerank=True,
+            contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
         )
@@ -158,7 +159,7 @@ class RetrieverTools:
             if fast_mode
             else ["./data/html/klayout_docs"],
             weights=[0.6, 0.2, 0.2],
-            contextual_rerank=True,
+            contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
         )
@@ -173,7 +174,7 @@ class RetrieverTools:
             if fast_mode
             else markdown_docs_map["errinfo"],
             weights=[0.6, 0.2, 0.2],
-            contextual_rerank=True,
+            contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
         )
