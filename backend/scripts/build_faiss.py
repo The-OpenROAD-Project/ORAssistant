@@ -14,9 +14,11 @@ EMBEDDINGS_TYPE and HF_EMBEDDINGS are read from the environment so the Dockerfil
 ARG values propagate through cleanly.
 """
 
+import logging
 import os
 import sys
-import logging
+
+from src.agents.retriever_tools import RetrieverTools
 
 logging.basicConfig(level="INFO", format="%(levelname)s %(message)s")
 
@@ -37,8 +39,6 @@ embeddings_config = {"type": embeddings_type, "name": hf_embeddings}
 logging.info("Pre-building FAISS indices")
 logging.info("  model     : %s", hf_embeddings)
 logging.info("  fast_mode : %s", fast_mode)
-
-from src.agents.retriever_tools import RetrieverTools
 
 tools = RetrieverTools()
 tools.initialize(
