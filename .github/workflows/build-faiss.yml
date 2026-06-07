@@ -1,0 +1,59 @@
+name: Build FAISS cache image
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Upload latest documentation"]
+    types: [completed]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  CACHE_IMAGE: ghcr.io/${{ github.repository_owner }}/orassistant-faiss-cache
+
+jobs:
+  build-faiss-cache:
+    # Skip if triggered by upload workflow that failed
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772  # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore previous faiss_db for incremental build
+        run: |
+          mkdir -p backend/faiss_db
+          if docker pull ${{ env.CACHE_IMAGE }}:latest 2>/dev/null; then
+            docker create --name prev-faiss ${{ env.CACHE_IMAGE }}:latest
+            docker cp prev-faiss:/ORAssistant-backend/faiss_db/. backend/faiss_db/ || true
+            docker rm prev-faiss
+            echo "Restored previous faiss_db for incremental build"
+          else
+            echo "No previous cache image found — building all indices from scratch"
+          fi
+          # Ensure at least one file exists so COPY ./faiss_db in Dockerfile always succeeds
+          touch backend/faiss_db/.keep
+
+      - name: Build FAISS cache image
+        run: |
+          docker build \
+            -f backend/Dockerfile.faiss-cache \
+            -t ${{ env.CACHE_IMAGE }}:latest \
+            -t ${{ env.CACHE_IMAGE }}:${{ github.sha }} \
+            backend/
+
+      - name: Push FAISS cache image
+        run: |
+          docker push ${{ env.CACHE_IMAGE }}:latest
+          docker push ${{ env.CACHE_IMAGE }}:${{ github.sha }}

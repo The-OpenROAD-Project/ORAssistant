@@ -36,6 +36,7 @@ class HybridRetrieverChain(BaseChain):
         weights: list[float] = [0.33, 0.33, 0.33],
         chunk_size: int = 500,
         contextual_rerank: bool = False,
+        index_name: Optional[str] = None,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -58,6 +59,7 @@ class HybridRetrieverChain(BaseChain):
         self.chunk_size: int = chunk_size
 
         self.contextual_rerank: bool = contextual_rerank
+        self.index_name: Optional[str] = index_name
         self.retriever: Any  # RunnableParallel compatibility
 
     def create_hybrid_retriever(self) -> None:
@@ -72,6 +74,7 @@ class HybridRetrieverChain(BaseChain):
             html_docs_path=self.html_docs_path,
             chunk_size=self.chunk_size,
             use_cuda=self.use_cuda,
+            name=self.index_name,
         )
         if self.vector_db is None:
             cur_path = os.path.abspath(__file__)

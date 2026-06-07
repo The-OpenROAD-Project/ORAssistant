@@ -1,0 +1,7 @@
+.venv
+*.egg-info
+.mypy-cache
+__pycache__
+data
+tests
+# faiss_db is intentionally NOT excluded — CI places previous indices here for incremental builds

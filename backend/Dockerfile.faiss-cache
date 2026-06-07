@@ -1,0 +1,40 @@
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+
+WORKDIR /ORAssistant-backend
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    git \
+    git-lfs \
+    wget && \
+    git lfs install && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install uv
+
+COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
+COPY ./src ./src
+COPY ./scripts ./scripts
+
+RUN uv venv .venv && uv sync --dev && uv run /ORAssistant-backend/src/post_install.py
+
+# Restore previous faiss_db for incremental builds.
+# The build-faiss CI workflow extracts faiss_db/ from the previous cache image and places
+# it in the build context. On first run the directory contains only a .keep sentinel.
+COPY ./faiss_db ./faiss_db
+
+# Download the RAG dataset (always refreshed so the hash check in build_faiss.py
+# can detect data changes from the latest upload).
+RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
+    mkdir -p data && \
+    mv ORAssistant_RAG_Dataset/* data/ && \
+    rm -rf ORAssistant_RAG_Dataset
+
+ARG BUILD_EMBEDDINGS_TYPE=HF
+ARG BUILD_HF_MODEL=thenlper/gte-large
+RUN PYTHONPATH=/ORAssistant-backend \
+    EMBEDDINGS_TYPE=${BUILD_EMBEDDINGS_TYPE} \
+    HF_EMBEDDINGS=${BUILD_HF_MODEL} \
+    FAST_MODE=true \
+    uv run python scripts/build_faiss.py

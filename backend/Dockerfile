@@ -1,3 +1,8 @@
+# Pull pre-built FAISS indices from the cache image (built by the build-faiss CI workflow).
+# This avoids rebuilding indices on every PR — only the secret CI rebuilds them.
+ARG FAISS_CACHE_IMAGE=ghcr.io/the-openroad-project/orassistant-faiss-cache:latest
+FROM ${FAISS_CACHE_IMAGE} AS faiss-cache
+
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /ORAssistant-backend
@@ -22,25 +27,13 @@ COPY . .
 
 RUN uv venv .venv && uv sync --dev && uv run /ORAssistant-backend/src/post_install.py
 
-RUN git clone https://huggingface.co/datasets/The-OpenROAD-Project/ORAssistant_RAG_Dataset && \
-    mkdir -p data && \
-    mv ORAssistant_RAG_Dataset/* data/ && \
-    rm -rf ORAssistant_RAG_Dataset
+# Copy pre-built FAISS indices from the cache image.
+# HybridRetrieverChain detects faiss_db/<name> at startup and takes the fast load_db()
+# path, reducing graph init from ~60 min to a few seconds.
+COPY --from=faiss-cache /ORAssistant-backend/faiss_db ./faiss_db
 
-# Build FAISS indices into the image using HuggingFace embeddings (no API quota).
-# At container startup HybridRetrieverChain detects faiss_db/ and loads from disk,
-# reducing graph init from ~60 min to a few seconds.
-# Override these ARGs to build with a different model when needed.
-ARG BUILD_EMBEDDINGS_TYPE=HF
-ARG BUILD_HF_MODEL=thenlper/gte-large
-RUN PYTHONPATH=/ORAssistant-backend \
-    EMBEDDINGS_TYPE=${BUILD_EMBEDDINGS_TYPE} \
-    HF_EMBEDDINGS=${BUILD_HF_MODEL} \
-    FAST_MODE=true \
-    uv run python scripts/build_faiss.py
-
-# Set HF as the default embedding backend so runtime matches the pre-built indices.
-# Override at container runtime (docker run -e / docker-compose environment) if needed.
+# Runtime embedding model must match the model used when building the indices.
+# Override via docker run -e or docker-compose environment if using a different model.
 ENV EMBEDDINGS_TYPE=HF
 ENV HF_EMBEDDINGS=thenlper/gte-large
 

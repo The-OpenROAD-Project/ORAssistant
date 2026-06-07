@@ -28,6 +28,7 @@ class SimilarityRetrieverChain(BaseChain):
         embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
+        name: Optional[str] = None,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -36,7 +37,7 @@ class SimilarityRetrieverChain(BaseChain):
         )
 
         SimilarityRetrieverChain.count += 1
-        self.name = f"similarity_INST{SimilarityRetrieverChain.count}"
+        self.name = name if name is not None else f"similarity_INST{SimilarityRetrieverChain.count}"
 
         self.embeddings_config: Optional[dict[str, str]] = embeddings_config
         self.use_cuda: bool = use_cuda

@@ -101,6 +101,7 @@ class RetrieverTools:
             contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
+            index_name="general",
         )
         general_retriever_chain.create_hybrid_retriever()
         RetrieverTools.general_retriever = general_retriever_chain.retriever
@@ -116,6 +117,7 @@ class RetrieverTools:
             contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
+            index_name="install",
         )
         install_retriever_chain.create_hybrid_retriever()
         RetrieverTools.install_retriever = install_retriever_chain.retriever
@@ -132,6 +134,7 @@ class RetrieverTools:
             contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
+            index_name="commands",
         )
         commands_retriever_chain.create_hybrid_retriever()
         RetrieverTools.commands_retriever = commands_retriever_chain.retriever
@@ -147,6 +150,7 @@ class RetrieverTools:
             contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
+            index_name="yosys_rtdocs",
         )
         yosys_rtdocs_retriever_chain.create_hybrid_retriever()
         RetrieverTools.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
@@ -162,6 +166,7 @@ class RetrieverTools:
             contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
+            index_name="klayout",
         )
         klayout_retriever_chain.create_hybrid_retriever()
         RetrieverTools.klayout_retriever = klayout_retriever_chain.retriever
@@ -177,6 +182,7 @@ class RetrieverTools:
             contextual_rerank=contextual_rerank,
             search_k=search_k,
             chunk_size=chunk_size,
+            index_name="errinfo",
         )
         errinfo_retriever_chain.create_hybrid_retriever()
         RetrieverTools.errinfo_retriever = errinfo_retriever_chain.retriever
