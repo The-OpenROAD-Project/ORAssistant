@@ -81,6 +81,22 @@ class TestApiHelpers:
         assert model == "gemini-2.0-flash"
         # GOOGLE_API_KEY should be set or raise error during module import
 
+    def test_resolve_gemini_model_maps_known_versions(self):
+        """_resolve_gemini_model maps GOOGLE_GEMINI values to model names (issue #259)."""
+        from src.api.routers.helpers import _resolve_gemini_model
+
+        assert _resolve_gemini_model("2.0_flash") == "gemini-2.0-flash"
+        assert _resolve_gemini_model("2.5_flash") == "gemini-2.5-flash"
+        assert _resolve_gemini_model("2.5_pro") == "gemini-2.5-pro"
+
+    def test_resolve_gemini_model_defaults_for_unknown_or_unset(self):
+        """_resolve_gemini_model falls back to gemini-2.0-flash for unset/unknown values."""
+        from src.api.routers.helpers import _resolve_gemini_model
+
+        assert _resolve_gemini_model(None) == "gemini-2.0-flash"
+        assert _resolve_gemini_model("") == "gemini-2.0-flash"
+        assert _resolve_gemini_model("nonexistent") == "gemini-2.0-flash"
+
     def test_router_configuration(self):
         """Test that router is properly configured."""
         from src.api.routers.helpers import router
