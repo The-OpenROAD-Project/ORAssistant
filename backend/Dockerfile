@@ -20,7 +20,7 @@ RUN pip install uv
 COPY ./pyproject.toml /ORAssistant-backend/pyproject.toml
 COPY . .
 
-RUN uv venv .venv && uv sync && uv run /ORAssistant-backend/src/post_install.py
+RUN uv venv .venv && uv sync
 
 ARG SKIP_HF_DOWNLOAD=false
 RUN if [ "$SKIP_HF_DOWNLOAD" = "false" ]; then \
