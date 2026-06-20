@@ -48,3 +48,13 @@ class TestPromptTemplates:
         assert isinstance(suggested_questions_prompt_template, str)
         assert suggested_questions_prompt_template != ""
         assert suggested_questions_prompt_template is not None
+
+    def test_summarise_prompt_template_has_no_typo(self):
+        """summarise_prompt_template should use correct spelling (issue #259)."""
+        from src.prompts.prompt_templates import summarise_prompt_template
+
+        assert "avaiable" not in summarise_prompt_template
+        assert (
+            "Sorry, it's not available in my knowledge base."
+            in summarise_prompt_template
+        )
