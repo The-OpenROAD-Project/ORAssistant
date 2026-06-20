@@ -21,7 +21,7 @@ class TestProcessHTML:
         assert result == []
 
     @patch("src.tools.process_html.glob.glob")
-    @patch("src.tools.process_html.UnstructuredHTMLLoader")
+    @patch("src.tools.process_html.BSHTMLLoader")
     @patch(
         "builtins.open",
         new_callable=mock_open,
@@ -52,7 +52,7 @@ class TestProcessHTML:
         assert result[0].metadata["source"] == "test.html"
 
     @patch("src.tools.process_html.glob.glob")
-    @patch("src.tools.process_html.UnstructuredHTMLLoader")
+    @patch("src.tools.process_html.BSHTMLLoader")
     @patch(
         "builtins.open",
         new_callable=mock_open,
@@ -95,7 +95,7 @@ class TestProcessHTML:
         mock_chunk.assert_called_once_with(500, [mock_doc])
 
     @patch("src.tools.process_html.glob.glob")
-    @patch("src.tools.process_html.UnstructuredHTMLLoader")
+    @patch("src.tools.process_html.BSHTMLLoader")
     @patch("builtins.open", new_callable=mock_open, read_data="{}")
     @patch("src.tools.process_html.os.path.exists")
     @patch("src.tools.process_html.os.listdir")
@@ -133,7 +133,7 @@ class TestProcessHTML:
                 mock_open(read_data='{"test.html": "https://example.com"}'),
             ):
                 with patch(
-                    "src.tools.process_html.UnstructuredHTMLLoader"
+                    "src.tools.process_html.BSHTMLLoader"
                 ) as mock_loader:
                     mock_doc = Mock()
                     mock_doc.metadata = {"source": "test.html"}
@@ -145,7 +145,7 @@ class TestProcessHTML:
                         process_html(temp_dir, split_text=True, chunk_size=None)
 
     @patch("src.tools.process_html.glob.glob")
-    @patch("src.tools.process_html.UnstructuredHTMLLoader")
+    @patch("src.tools.process_html.BSHTMLLoader")
     @patch(
         "builtins.open",
         new_callable=mock_open,
@@ -198,7 +198,7 @@ class TestProcessHTML:
 
     @patch("src.tools.process_html.logging")
     @patch("src.tools.process_html.glob.glob")
-    @patch("src.tools.process_html.UnstructuredHTMLLoader")
+    @patch("src.tools.process_html.BSHTMLLoader")
     @patch("builtins.open", new_callable=mock_open, read_data="{}")
     @patch("src.tools.process_html.os.path.exists")
     @patch("src.tools.process_html.os.listdir")
@@ -225,7 +225,7 @@ class TestProcessHTML:
     def test_process_html_metadata_transformation(self):
         """Test that metadata is properly transformed."""
         with patch("src.tools.process_html.glob.glob") as mock_glob:
-            with patch("src.tools.process_html.UnstructuredHTMLLoader") as mock_loader:
+            with patch("src.tools.process_html.BSHTMLLoader") as mock_loader:
                 with patch(
                     "builtins.open",
                     mock_open(read_data='{"test.html": "https://example.com"}'),
@@ -281,7 +281,7 @@ class TestProcessHTML:
                 mock_open(read_data='{"docs/html/test.html": "https://example.com"}'),
             ):
                 with patch(
-                    "src.tools.process_html.UnstructuredHTMLLoader"
+                    "src.tools.process_html.BSHTMLLoader"
                 ) as mock_loader:
                     mock_doc = Mock()
                     mock_doc.metadata = {"source": "test.html"}
