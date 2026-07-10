@@ -132,9 +132,7 @@ class TestProcessHTML:
                 "builtins.open",
                 mock_open(read_data='{"test.html": "https://example.com"}'),
             ):
-                with patch(
-                    "src.tools.process_html.BSHTMLLoader"
-                ) as mock_loader:
+                with patch("src.tools.process_html.BSHTMLLoader") as mock_loader:
                     mock_doc = Mock()
                     mock_doc.metadata = {"source": "test.html"}
                     mock_loader_instance = Mock()
@@ -280,9 +278,7 @@ class TestProcessHTML:
                 "builtins.open",
                 mock_open(read_data='{"docs/html/test.html": "https://example.com"}'),
             ):
-                with patch(
-                    "src.tools.process_html.BSHTMLLoader"
-                ) as mock_loader:
+                with patch("src.tools.process_html.BSHTMLLoader") as mock_loader:
                     mock_doc = Mock()
                     mock_doc.metadata = {"source": "test.html"}
                     mock_doc.page_content = "Test Content"

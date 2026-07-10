@@ -16,6 +16,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     init_database()
     logger.info("Starting graph initialization in background...")
     from .routers.conversations import start_graph_init
+
     start_graph_init()
     yield
     logger.info("Shutting down...")
