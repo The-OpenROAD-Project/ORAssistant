@@ -6,6 +6,7 @@ from langgraph.graph.message import add_messages
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     context: Annotated[list[AnyMessage], add_messages]
+    context_list: Annotated[list[str], add_messages]
     tools: list[str]
     sources: Annotated[list[str], add_messages]
     urls: Annotated[list[str], add_messages]

@@ -184,7 +184,7 @@ class TestFAISSVectorDatabase:
                 db.add_md_docs(folder_paths="not_a_list")
 
     def test_get_db_path(self):
-        """Test get_db_path returns correct path."""
+        """get_db_path falls back to the default ./faiss_db when FAISS_DB_PATH is unset."""
         with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
             mock_hf.return_value = Mock()
 
@@ -192,9 +192,26 @@ class TestFAISSVectorDatabase:
                 embeddings_type="HF", embeddings_model_name="test-model"
             )
 
-            path = db.get_db_path()
+            with patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("FAISS_DB_PATH", None)
+                path = db.get_db_path()
+
             assert path.endswith("faiss_db")
             assert os.path.isabs(path)
+
+    def test_get_db_path_respects_env_var(self):
+        """get_db_path honors the FAISS_DB_PATH environment variable (issue #259)."""
+        with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
+            mock_hf.return_value = Mock()
+
+            db = FAISSVectorDatabase(
+                embeddings_type="HF", embeddings_model_name="test-model"
+            )
+
+            with patch.dict(os.environ, {"FAISS_DB_PATH": "custom_dir/faiss_index"}):
+                path = db.get_db_path()
+
+            assert path == os.path.abspath("custom_dir/faiss_index")
 
     def test_save_db_without_documents_raises_error(self):
         """Test save_db raises error when no documents in database."""
