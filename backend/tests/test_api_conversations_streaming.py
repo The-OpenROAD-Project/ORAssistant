@@ -507,3 +507,59 @@ class TestStreamingEndpoint:
         assert any("Sources:" in c for c in chunks)
         sources_chunk = [c for c in chunks if "Sources:" in c][0]
         assert sources_chunk.strip() == "Sources:"
+
+    @pytest.mark.asyncio
+    async def test_get_response_stream_never_yields_none(
+        self, db_session: Session, mock_retriever_graph, sample_user_input: UserInput
+    ):
+        """Regression: non-AIMessageChunk events must not leak "None" into the client stream (issue #243, bug 2)."""
+        from src.api.routers.conversations import get_response_stream
+
+        async def mock_astream_events(*args, **kwargs):
+            yield {"event": "on_chat_model_end", "data": {}}
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": "plain_string"},
+            }
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": AIMessageChunk(content="Valid content")},
+            }
+
+        mock_retriever_graph.astream_events = mock_astream_events
+
+        chunks = []
+        async for chunk in get_response_stream(sample_user_input, db_session):
+            chunks.append(chunk)
+
+        assert not any(c.strip() == "None" for c in chunks)
+
+
+class TestInMemoryChatHistoryBounding:
+    """Regression tests: in-memory chat_history must be bounded when USE_DB is false (issue #243, bug 4)."""
+
+    @pytest.fixture(autouse=True)
+    def _clean_chat_history(self):
+        conversations.chat_history.clear()
+        yield
+        conversations.chat_history.clear()
+
+    def test_add_conversation_evicts_oldest_when_over_capacity(self):
+        with patch.object(conversations, "MAX_IN_MEMORY_CONVERSATIONS", 3):
+            uuids = [uuid4() for _ in range(5)]
+            for u in uuids:
+                conversations.add_conversation_to_history(u)
+
+            assert len(conversations.chat_history) == 3
+            assert uuids[0] not in conversations.chat_history
+            assert uuids[1] not in conversations.chat_history
+            assert uuids[2] in conversations.chat_history
+            assert uuids[3] in conversations.chat_history
+            assert uuids[4] in conversations.chat_history
+
+    def test_add_conversation_stays_bounded_over_many_inserts(self):
+        with patch.object(conversations, "MAX_IN_MEMORY_CONVERSATIONS", 10):
+            for _ in range(1000):
+                conversations.add_conversation_to_history(uuid4())
+
+            assert len(conversations.chat_history) == 10

@@ -1,6 +1,7 @@
 import os
 import logging
 import threading
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 from typing import Any, Optional
@@ -257,7 +258,15 @@ async def ready() -> dict[str, str]:
     return {"status": "initializing"}
 
 
-chat_history: dict[UUID, list[dict[str, str]]] = {}
+MAX_IN_MEMORY_CONVERSATIONS = int(os.getenv("MAX_IN_MEMORY_CONVERSATIONS", "1000"))
+chat_history: OrderedDict[UUID, list[dict[str, str]]] = OrderedDict()
+
+
+def add_conversation_to_history(conversation_uuid: UUID) -> None:
+    """Registers a new conversation, evicting the oldest one if over capacity."""
+    chat_history[conversation_uuid] = []
+    if len(chat_history) > MAX_IN_MEMORY_CONVERSATIONS:
+        chat_history.popitem(last=False)
 
 
 def get_history_str(db: Session | None, conversation_uuid: UUID | None) -> str:
@@ -314,7 +323,7 @@ async def get_agent_response(
 
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
-            chat_history[conversation_uuid] = []
+            add_conversation_to_history(conversation_uuid)
 
     inputs = {
         "messages": [
@@ -327,7 +336,9 @@ async def get_agent_response(
     if graph is not None and graph.graph is not None:
         output = list(graph.graph.stream(inputs, stream_mode="updates"))
     else:
-        raise HTTPException(status_code=503, detail="Graph is still initializing. Please retry shortly.")
+        raise HTTPException(
+            status_code=503, detail="Graph is still initializing. Please retry shortly."
+        )
 
     llm_response, context_sources, tools = parse_agent_output(output)
 
@@ -410,7 +421,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
-            chat_history[conversation_uuid] = []
+            add_conversation_to_history(conversation_uuid)
 
     inputs = {
         "messages": [
@@ -447,7 +458,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
                 if msg:
                     chunks.append(str(msg))
-                yield str(msg) + "\n\n"
+                    yield str(msg) + "\n\n"
     else:
         yield "Error: Graph is still initializing. Please retry shortly.\n\n"
         return
