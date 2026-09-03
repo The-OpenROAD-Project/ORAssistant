@@ -1,0 +1,57 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directories:
+      - /backend
+      - /evaluation
+      - /frontend
+      - /frontend/mock-flask-api
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      python:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
+    directory: /frontend/nextjs-frontend
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      npm:
+        patterns:
+          - "*"
+
+  - package-ecosystem: docker
+    directories:
+      - /backend
+      - /common
+      - /frontend
+      - /frontend/nextjs-frontend
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      images:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns:
+          - "*"
