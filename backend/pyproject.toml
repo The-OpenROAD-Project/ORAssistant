@@ -8,7 +8,7 @@ dependencies = [
     "aiohttp>=3.14.3",
     "asyncpg>=0.30.0",
     "pyarrow>=23.0.1",
-    "cryptography>=48.0.1",
+    "cryptography>=50.0.0",
     "faiss-cpu==1.12.0",
     "fastapi>=0.117.0",
     "fastmcp>=2.12.2",
