@@ -63,6 +63,7 @@ git clone https://github.com/The-OpenROAD-Project/ORAssistant.git
 ```
 
 **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
+> **Note:** When configuring `EMBEDDINGS_TYPE`, valid options are `HF`, `GOOGLE_GENAI`, or `GOOGLE_VERTEXAI`. If using `HF`, no API key is needed but startup is slower. If using `GOOGLE_GENAI`, ensure `GOOGLE_API_KEY` is set.
 
 Modify the Docker `HEALTHCHECK_` variables based on the hardware requirements.
 If you have a resource-constrained PC, try increasing `HEALTHCHECK_START_PERIOD` to a value large
@@ -99,6 +100,7 @@ uv sync
 ```
 
 **Step 2**: Copy the `.env.example` file, and update your `.env` file with the appropriate API keys.
+> **Note:** When configuring `EMBEDDINGS_TYPE`, valid options are `HF`, `GOOGLE_GENAI`, or `GOOGLE_VERTEXAI`. If using `HF`, no API key is needed but startup is slower. If using `GOOGLE_GENAI`, ensure `GOOGLE_API_KEY` is set.
 
 ```bash
 cd backend
