@@ -1,8 +1,10 @@
 """Unit tests for database CRUD operations."""
 
 import pytest
+from unittest.mock import Mock
 from uuid import uuid4, UUID
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, Session
 from src.database.models import Base
 from src.database import crud
@@ -400,3 +402,69 @@ class TestConversationHistory:
 
         # Assistant messages without user messages should be ignored
         assert len(history) == 0
+
+
+class TestCRUDExceptionHandling:
+    """Test suite for CRUD exception handling and rollback behavior."""
+
+    def test_create_conversation_rollback_on_error(self):
+        """Test that create_conversation rolls back on commit failure."""
+        mock_db = Mock(spec=Session)
+        mock_db.commit.side_effect = SQLAlchemyError("DB error")
+
+        with pytest.raises(SQLAlchemyError):
+            crud.create_conversation(mock_db, title="Test")
+
+        mock_db.rollback.assert_called_once()
+
+    def test_update_conversation_title_rollback_on_error(self, db_session: Session):
+        """Test that update_conversation_title rolls back on commit failure."""
+        conv = crud.create_conversation(db_session, title="Original")
+
+        mock_db = Mock(spec=Session)
+        mock_db.query.return_value.filter.return_value.first.return_value = conv
+        mock_db.commit.side_effect = SQLAlchemyError("DB error")
+
+        with pytest.raises(SQLAlchemyError):
+            crud.update_conversation_title(mock_db, conv.uuid, "New Title")
+
+        mock_db.rollback.assert_called_once()
+
+    def test_delete_conversation_rollback_on_error(self, db_session: Session):
+        """Test that delete_conversation rolls back on commit failure."""
+        conv = crud.create_conversation(db_session, title="Test")
+
+        mock_db = Mock(spec=Session)
+        mock_db.query.return_value.filter.return_value.first.return_value = conv
+        mock_db.commit.side_effect = SQLAlchemyError("DB error")
+
+        with pytest.raises(SQLAlchemyError):
+            crud.delete_conversation(mock_db, conv.uuid)
+
+        mock_db.rollback.assert_called_once()
+
+    def test_create_message_rollback_on_error(self, db_session: Session):
+        """Test that create_message rolls back on commit failure."""
+        conv = crud.create_conversation(db_session, title="Test")
+
+        mock_db = Mock(spec=Session)
+        mock_db.commit.side_effect = SQLAlchemyError("DB error")
+
+        with pytest.raises(SQLAlchemyError):
+            crud.create_message(mock_db, conv.uuid, "user", "Hello")
+
+        mock_db.rollback.assert_called_once()
+
+    def test_delete_message_rollback_on_error(self, db_session: Session):
+        """Test that delete_message rolls back on commit failure."""
+        conv = crud.create_conversation(db_session, title="Test")
+        msg = crud.create_message(db_session, conv.uuid, "user", "Hello")
+
+        mock_db = Mock(spec=Session)
+        mock_db.query.return_value.filter.return_value.first.return_value = msg
+        mock_db.commit.side_effect = SQLAlchemyError("DB error")
+
+        with pytest.raises(SQLAlchemyError):
+            crud.delete_message(mock_db, msg.uuid)
+
+        mock_db.rollback.assert_called_once()
