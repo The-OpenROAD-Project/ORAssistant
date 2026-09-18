@@ -13,7 +13,7 @@ dependencies = [
     "google-auth>=2.57.0",
     "google-auth-httplib2==0.4.2",
     "google-auth-oauthlib==1.4.1",
-    "gitpython>=3.1.61",
+    "gitpython>=3.1.62",
     "gspread==6.2.1",
     "python-dotenv==1.2.3",
     "requests==2.34.2",
