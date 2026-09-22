@@ -118,25 +118,15 @@ class EvaluationHarness:
         """
         endpoint = ALL_RETRIEVERS[retriever]
         url = (
-            f"{self.base_url}/{endpoint}"
+            f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
             if retriever != "agent-retriever-reranker"
-            else f"{self.reranker_base_url}/{endpoint}"
+            else f"{self.reranker_base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         )
         payload = {"query": query, "list_context": True, "list_sources": False}
-        try:
-            time.sleep(5)
-            response = requests.post(url, json=payload)
-            if not response.ok:
-                print(f"Error querying {retriever}: HTTP {response.status_code}")
-                return {
-                    "response": "invalid",
-                    "context_sources": [],
-                    "tools": [],
-                }, -999999
-            return response.json(), response.elapsed.total_seconds() * 1000
-        except Exception as e:
-            print(f"Error querying {retriever}: {e}")
-            return {"response": "invalid", "context_sources": [], "tools": []}, -999999
+        time.sleep(5)
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        return response.json(), response.elapsed.total_seconds() * 1000
 
 
 if __name__ == "__main__":
