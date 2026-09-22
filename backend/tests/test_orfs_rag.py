@@ -2,10 +2,10 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 import sys
 
-# Mock HybridRetrieverChain before importing orfs_rag to prevent model downloads during import
+# Mock external model classes before importing orfs_rag to prevent model setup.
 with patch(
     "src.chains.hybrid_retriever_chain.HybridRetrieverChain"
-) as mock_chain_class:
+) as mock_chain_class, patch("langchain_google_vertexai.ChatVertexAI"):
     mock_instance = MagicMock()
     mock_instance.create_hybrid_retriever = MagicMock()
     mock_instance.retriever = MagicMock()
