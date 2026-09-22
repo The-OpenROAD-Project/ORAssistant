@@ -3,12 +3,6 @@ run-name: ${{ github.actor }} started CI
 
 on:
   pull_request:
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'evaluation/**'
-      - 'Makefile'
-      - 'docker-compose.yml'
 
 defaults:
   run:
@@ -108,3 +102,15 @@ jobs:
 
     - name: Build Docker images
       run: docker compose build --parallel
+
+  ci-gate:
+    if: always()
+    needs: [lint-backend, lint-frontend, lint-evaluation, test, docker-build]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Require successful CI jobs
+      env:
+        NEEDS_JSON: ${{ toJSON(needs) }}
+      run: |
+        echo "$NEEDS_JSON"
+        jq -e 'all(.[]; .result == "success")' <<< "$NEEDS_JSON"
