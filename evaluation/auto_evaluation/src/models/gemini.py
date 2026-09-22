@@ -2,11 +2,12 @@
 Custom DeepEvalLLM wrapper using Google Gemini API (google.genai).
 """
 
+import asyncio
 import os
 from typing import Any, Optional, Type
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 from deepeval.models.base_model import DeepEvalBaseLLM
 from pydantic import BaseModel
 
@@ -17,6 +18,9 @@ class Response(BaseModel):
 
 class GoogleGeminiLangChain(DeepEvalBaseLLM):
     """Class that implements Google Gemini API for DeepEval"""
+
+    MAX_GENERATE_ATTEMPTS = 8
+    MAX_RETRY_DELAY_SECONDS = 30
 
     def __init__(self, model_name, *args, **kwargs):
         self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -46,22 +50,30 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
     async def a_generate(
         self, prompt: str, schema: Optional[Type[BaseModel]] = None
     ) -> Any:
+        config = None
         if schema is not None:
-            response = await self.client.aio.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=schema,
-                ),
+            config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=schema,
             )
+
+        for attempt in range(self.MAX_GENERATE_ATTEMPTS):
+            try:
+                response = await self.client.aio.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                    config=config,
+                )
+                break
+            except errors.ServerError:
+                if attempt == self.MAX_GENERATE_ATTEMPTS - 1:
+                    raise
+                delay = min(2**attempt, self.MAX_RETRY_DELAY_SECONDS)
+                await asyncio.sleep(delay)
+
+        if schema is not None:
             return response.parsed
-        else:
-            response = await self.client.aio.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-            )
-            return response.text
+        return response.text
 
     def get_model_name(self):
         return self.model_name or "model-not-specified"
@@ -84,7 +96,6 @@ async def main_async():
 
 
 if __name__ == "__main__":
-    import asyncio
     from dotenv import load_dotenv
 
     load_dotenv()

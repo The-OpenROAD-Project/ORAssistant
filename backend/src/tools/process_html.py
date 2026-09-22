@@ -43,7 +43,10 @@ def process_html(
 
     documents = []
     for file_path in tqdm(html_files, desc="Loading HTML files"):
-        content = BSHTMLLoader(file_path=file_path).load()
+        content = BSHTMLLoader(
+            file_path=file_path,
+            bs_kwargs={"features": "html.parser"},
+        ).load()
         for doc in content:
             doc.metadata["source"] = file_path.split("./")[-1]
         documents.extend(content)

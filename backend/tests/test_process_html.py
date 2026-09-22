@@ -1,3 +1,5 @@
+import json
+
 import pytest
 import tempfile
 from unittest.mock import patch, Mock, mock_open
@@ -8,6 +10,30 @@ from src.tools.process_html import process_html
 
 class TestProcessHTML:
     """Test suite for process_html utility function."""
+
+    def test_process_html_loads_real_html(self, tmp_path, monkeypatch):
+        """Load HTML with the parser available in the production environment."""
+        docs_dir = tmp_path / "docs"
+        docs_dir.mkdir()
+        html_file = docs_dir / "test.html"
+        html_file.write_text("<html><body><p>Test content</p></body></html>")
+
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        source = str(html_file)
+        (data_dir / "source_list.json").write_text(
+            json.dumps({source: "https://example.com"})
+        )
+        monkeypatch.chdir(tmp_path)
+
+        documents = process_html(str(docs_dir), split_text=False)
+
+        assert len(documents) == 1
+        assert "Test content" in documents[0].page_content
+        assert documents[0].metadata == {
+            "url": "https://example.com",
+            "source": source,
+        }
 
     def test_process_html_empty_folder(self):
         """Test processing empty folder returns empty list."""
@@ -170,7 +196,8 @@ class TestProcessHTML:
         mock_doc2.metadata = {"source": "file2.html"}
         mock_doc2.page_content = "Content 2"
 
-        def loader_side_effect(file_path):
+        def loader_side_effect(file_path, bs_kwargs):
+            assert bs_kwargs == {"features": "html.parser"}
             mock_loader_instance = Mock()
             if "file1.html" in file_path:
                 mock_loader_instance.load.return_value = [mock_doc1]
