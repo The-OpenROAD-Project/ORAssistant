@@ -171,6 +171,59 @@ class TestFAISSVectorDatabase:
                     folder_path="test_folder", chunk_size=500, split_text=True
                 )
 
+    @patch("src.vectorstores.faiss.process_md")
+    @patch("src.vectorstores.faiss.FAISS")
+    def test_add_md_docs_retries_temporary_embedding_unavailability(
+        self, mock_faiss, mock_process_md
+    ):
+        documents = [
+            Document(page_content="Test content", metadata={"source": "test.md"})
+        ]
+        mock_process_md.return_value = documents
+        mock_faiss.from_documents.side_effect = [
+            RuntimeError("503 UNAVAILABLE: temporary embedding service error"),
+            Mock(),
+        ]
+
+        with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
+            mock_hf.return_value = Mock()
+            db = FAISSVectorDatabase(
+                embeddings_type="HF", embeddings_model_name="test-model"
+            )
+
+            with patch.object(db._embed_and_add.retry, "sleep"):
+                result = db.add_md_docs(folder_paths=["test_folder"], return_docs=True)
+
+        assert result == documents
+        assert len(db.processed_docs) == 1
+        assert mock_faiss.from_documents.call_count == 2
+
+    @patch("src.vectorstores.faiss.process_md")
+    @patch("src.vectorstores.faiss.FAISS")
+    def test_add_md_docs_does_not_retry_non_transient_embedding_error(
+        self, mock_faiss, mock_process_md
+    ):
+        documents = [
+            Document(page_content="Test content", metadata={"source": "test.md"})
+        ]
+        mock_process_md.return_value = documents
+        mock_faiss.from_documents.side_effect = ValueError("invalid embedding request")
+
+        with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
+            mock_hf.return_value = Mock()
+            db = FAISSVectorDatabase(
+                embeddings_type="HF", embeddings_model_name="test-model"
+            )
+
+            with (
+                patch.object(db._embed_and_add.retry, "sleep") as retry_sleep,
+                pytest.raises(ValueError, match="invalid embedding request"),
+            ):
+                db.add_md_docs(folder_paths=["test_folder"])
+
+        retry_sleep.assert_not_called()
+        mock_faiss.from_documents.assert_called_once()
+
     def test_add_md_docs_invalid_folder_paths(self):
         """Test add_md_docs with invalid folder_paths parameter."""
         with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:

@@ -22,6 +22,25 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 load_dotenv()
 
 
+_quota_retry_wait = wait_exponential(multiplier=2, min=60, max=600)
+_transient_retry_wait = wait_exponential(multiplier=2, min=2, max=30)
+
+
+def _is_retryable_embedding_error(error: Exception) -> bool:
+    message = str(error)
+    return any(
+        marker in message
+        for marker in ("RESOURCE_EXHAUSTED", "429", "UNAVAILABLE", "503")
+    )
+
+
+def _wait_for_embedding_retry(retry_state) -> float:
+    error = retry_state.outcome.exception()
+    if "UNAVAILABLE" in str(error) or "503" in str(error):
+        return _transient_retry_wait(retry_state)
+    return _quota_retry_wait(retry_state)
+
+
 class FAISSVectorDatabase:
     def __init__(
         self,
@@ -75,10 +94,8 @@ class FAISSVectorDatabase:
 
     @retry(
         stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=2, min=60, max=600),
-        retry=retry_if_exception(
-            lambda e: "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e)
-        ),
+        wait=_wait_for_embedding_retry,
+        retry=retry_if_exception(_is_retryable_embedding_error),
         reraise=True,
     )
     def _embed_and_add(self, documents: list[Document]) -> None:
