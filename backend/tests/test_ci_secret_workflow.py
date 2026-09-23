@@ -9,10 +9,67 @@ import pytest
 
 
 WORKFLOW = Path(__file__).parents[2] / ".github/workflows/ci-secret.yaml"
+MAKEFILE = Path(__file__).parents[2] / "Makefile"
+SECRET_TARGETS = ("backend/src", "evaluation/auto_evaluation/src")
 
+requires_make = pytest.mark.skipif(
+    shutil.which("make") is None, reason="GNU make is not installed"
+)
 requires_jq = pytest.mark.skipif(
     shutil.which("jq") is None, reason="jq is not installed"
 )
+
+
+def _run_seed_credentials(
+    tmp_path: Path, secret: str
+) -> subprocess.CompletedProcess[str]:
+    shutil.copy(MAKEFILE, tmp_path / "Makefile")
+    for target in SECRET_TARGETS:
+        (tmp_path / target).mkdir(parents=True)
+    return subprocess.run(
+        ["make", "seed-credentials"],
+        cwd=tmp_path,
+        env={**os.environ, "GOOGLE_SECRET_JSON": secret},
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+
+@requires_make
+def test_seed_credentials_writes_inline_json(tmp_path: Path) -> None:
+    content = '{\n  "type": "service_account",\n  "project_id": "demo"\n}'
+
+    result = _run_seed_credentials(tmp_path, content)
+
+    assert result.returncode == 0, result.stderr
+    for target in SECRET_TARGETS:
+        written = (tmp_path / target / "secret.json").read_text()
+        assert json.loads(written) == {
+            "type": "service_account",
+            "project_id": "demo",
+        }
+
+
+@requires_make
+def test_seed_credentials_copies_a_file_path(tmp_path: Path) -> None:
+    source = tmp_path / "creds.json"
+    source.write_text('{"type": "service_account"}\n')
+
+    result = _run_seed_credentials(tmp_path, str(source))
+
+    assert result.returncode == 0, result.stderr
+    for target in SECRET_TARGETS:
+        copied = tmp_path / target / "secret.json"
+        assert copied.read_text() == source.read_text()
+
+
+@requires_make
+def test_seed_credentials_rejects_an_empty_value(tmp_path: Path) -> None:
+    result = _run_seed_credentials(tmp_path, "")
+
+    assert result.returncode != 0
+    assert "GOOGLE_SECRET_JSON is empty" in result.stderr
 
 
 def _run_resolve_step(
