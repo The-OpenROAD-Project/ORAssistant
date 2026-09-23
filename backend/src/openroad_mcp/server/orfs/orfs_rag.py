@@ -7,6 +7,7 @@ from langchain_ollama import ChatOllama
 from langchain_google_vertexai import ChatVertexAI
 from src.chains.hybrid_retriever_chain import HybridRetrieverChain
 from src.tools.format_docs import format_docs
+from src.tools.vertex_models import vertex_chat_kwargs
 
 
 class ORFSRag(ORFS):
@@ -86,11 +87,17 @@ class ORFSRag(ORFS):
                 "Please upgrade to version 2.0 or higher (e.g., 3.6_flash, 2.5_flash, 2.5_pro)."
             )
         elif gemini_model == "3.6_flash":
-            ORFS.llm = ChatVertexAI(model_name="gemini-3.6-flash", temperature=llm_temp)
+            ORFS.llm = ChatVertexAI(
+                **vertex_chat_kwargs("gemini-3.6-flash"), temperature=llm_temp
+            )
         elif gemini_model == "2.5_flash":
-            ORFS.llm = ChatVertexAI(model_name="gemini-2.5-flash", temperature=llm_temp)
+            ORFS.llm = ChatVertexAI(
+                **vertex_chat_kwargs("gemini-2.5-flash"), temperature=llm_temp
+            )
         elif gemini_model == "2.5_pro":
-            ORFS.llm = ChatVertexAI(model_name="gemini-2.5-pro", temperature=llm_temp)
+            ORFS.llm = ChatVertexAI(
+                **vertex_chat_kwargs("gemini-2.5-pro"), temperature=llm_temp
+            )
         else:
             raise ValueError(
                 f"GOOGLE_GEMINI environment variable '{gemini_model}' not set to a valid value. "
