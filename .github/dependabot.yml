@@ -74,9 +74,10 @@ updates:
     # constraints are migrated. Other major upgrades remain individual PRs.
     ignore:
       - dependency-name: instructor
-        versions: [">=2"]  # Evaluation pins instructor to 1.5.2.
+        # Instructor 1.13.0 and later require OpenAI >=2; evaluation pins 1.x.
+        versions: [">=1.13.0"]
       - dependency-name: openai
-        versions: [">=2"]  # Evaluation pins openai to 1.58.1.
+        versions: [">=2"]  # Evaluation pins openai to 1.x.
       - dependency-name: google-cloud-aiplatform
         versions: [">=2"]  # Evaluation requires google-cloud-aiplatform <2.
       - dependency-name: protobuf
