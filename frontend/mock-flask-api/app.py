@@ -2,6 +2,7 @@ import os
 import time
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 
@@ -12,7 +13,7 @@ PORT = int(os.getenv("PORT", 8000))
 
 # --- In-Memory Database ---
 # Structure mimics: backend/src/database/models.py
-conversations_db = {}
+conversations_db: dict[str, dict[str, Any]] = {}
 
 
 # --- Helpers ---
