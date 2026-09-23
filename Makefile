@@ -1,5 +1,8 @@
 FOLDERS=backend frontend evaluation
+# Path to the Google service-account file, or its JSON content. CI stores the
+# content in a secret; local setups keep a file.
 GOOGLE_SECRET_JSON?=$(HOME)/secret.json
+export GOOGLE_SECRET_JSON
 
 .PHONY: lock
 lock:
@@ -55,8 +58,16 @@ docker-dev:
 # --- Development Commands ---
 .PHONY: seed-credentials
 seed-credentials:
-	@cp $(GOOGLE_SECRET_JSON) backend/src
-	@cp $(GOOGLE_SECRET_JSON) evaluation/auto_evaluation/src
+	@for dir in backend/src evaluation/auto_evaluation/src; do \
+		if [ -f "$$GOOGLE_SECRET_JSON" ]; then \
+			cp "$$GOOGLE_SECRET_JSON" "$$dir/secret.json"; \
+		elif [ -n "$$GOOGLE_SECRET_JSON" ]; then \
+			printf '%s\n' "$$GOOGLE_SECRET_JSON" > "$$dir/secret.json"; \
+		else \
+			echo "GOOGLE_SECRET_JSON is empty: set a file path or JSON content" >&2; \
+			exit 1; \
+		fi; \
+	done
 
 .PHONY: changelog
 changelog:
