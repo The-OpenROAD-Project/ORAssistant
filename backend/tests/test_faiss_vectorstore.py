@@ -31,7 +31,9 @@ class TestFAISSVectorDatabase:
 
     def test_init_with_google_genai_embeddings(self):
         """Test initialization with Google GenAI embeddings."""
-        with patch("src.vectorstores.faiss.GoogleGenerativeAIEmbeddings") as mock_genai:
+        with patch(
+            "src.vectorstores.faiss._RetryingGoogleGenerativeAIEmbeddings"
+        ) as mock_genai:
             mock_genai.return_value = Mock()
 
             db = FAISSVectorDatabase(
@@ -171,6 +173,59 @@ class TestFAISSVectorDatabase:
                     folder_path="test_folder", chunk_size=500, split_text=True
                 )
 
+    @patch("src.vectorstores.faiss.process_md")
+    @patch("src.vectorstores.faiss.FAISS")
+    def test_add_md_docs_retries_temporary_embedding_unavailability(
+        self, mock_faiss, mock_process_md
+    ):
+        documents = [
+            Document(page_content="Test content", metadata={"source": "test.md"})
+        ]
+        mock_process_md.return_value = documents
+        mock_faiss.from_documents.side_effect = [
+            RuntimeError("503 UNAVAILABLE: temporary embedding service error"),
+            Mock(),
+        ]
+
+        with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
+            mock_hf.return_value = Mock()
+            db = FAISSVectorDatabase(
+                embeddings_type="HF", embeddings_model_name="test-model"
+            )
+
+            with patch.object(db._embed_and_add.retry, "sleep"):
+                result = db.add_md_docs(folder_paths=["test_folder"], return_docs=True)
+
+        assert result == documents
+        assert len(db.processed_docs) == 1
+        assert mock_faiss.from_documents.call_count == 2
+
+    @patch("src.vectorstores.faiss.process_md")
+    @patch("src.vectorstores.faiss.FAISS")
+    def test_add_md_docs_does_not_retry_non_transient_embedding_error(
+        self, mock_faiss, mock_process_md
+    ):
+        documents = [
+            Document(page_content="Test content", metadata={"source": "test.md"})
+        ]
+        mock_process_md.return_value = documents
+        mock_faiss.from_documents.side_effect = ValueError("invalid embedding request")
+
+        with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
+            mock_hf.return_value = Mock()
+            db = FAISSVectorDatabase(
+                embeddings_type="HF", embeddings_model_name="test-model"
+            )
+
+            with (
+                patch.object(db._embed_and_add.retry, "sleep") as retry_sleep,
+                pytest.raises(ValueError, match="invalid embedding request"),
+            ):
+                db.add_md_docs(folder_paths=["test_folder"])
+
+        retry_sleep.assert_not_called()
+        mock_faiss.from_documents.assert_called_once()
+
     def test_add_md_docs_invalid_folder_paths(self):
         """Test add_md_docs with invalid folder_paths parameter."""
         with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
@@ -184,7 +239,7 @@ class TestFAISSVectorDatabase:
                 db.add_md_docs(folder_paths="not_a_list")
 
     def test_get_db_path(self):
-        """Test get_db_path returns correct path."""
+        """get_db_path falls back to the default ./faiss_db when FAISS_DB_PATH is unset."""
         with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
             mock_hf.return_value = Mock()
 
@@ -192,9 +247,26 @@ class TestFAISSVectorDatabase:
                 embeddings_type="HF", embeddings_model_name="test-model"
             )
 
-            path = db.get_db_path()
+            with patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("FAISS_DB_PATH", None)
+                path = db.get_db_path()
+
             assert path.endswith("faiss_db")
             assert os.path.isabs(path)
+
+    def test_get_db_path_respects_env_var(self):
+        """get_db_path honors the FAISS_DB_PATH environment variable (issue #259)."""
+        with patch("src.vectorstores.faiss.HuggingFaceEmbeddings") as mock_hf:
+            mock_hf.return_value = Mock()
+
+            db = FAISSVectorDatabase(
+                embeddings_type="HF", embeddings_model_name="test-model"
+            )
+
+            with patch.dict(os.environ, {"FAISS_DB_PATH": "custom_dir/faiss_index"}):
+                path = db.get_db_path()
+
+            assert path == os.path.abspath("custom_dir/faiss_index")
 
     def test_save_db_without_documents_raises_error(self):
         """Test save_db raises error when no documents in database."""
@@ -624,3 +696,38 @@ class TestFAISSVectorDatabase:
             assert result == []
             assert len(db.processed_docs) == 0
             assert db.faiss_db is None
+
+
+class TestQueryEmbeddingRetry:
+    """Query embeddings retry temporary Gemini unavailability."""
+
+    def _embeddings(self):
+        from src.vectorstores.faiss import _RetryingGoogleGenerativeAIEmbeddings
+
+        return _RetryingGoogleGenerativeAIEmbeddings(
+            model="models/embedding-001", google_api_key="test-key"
+        )
+
+    def test_embed_query_retries_temporary_unavailability(self):
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+        embeddings = self._embeddings()
+        base = Mock(side_effect=[RuntimeError("503 UNAVAILABLE"), [0.1, 0.2]])
+
+        with patch.object(GoogleGenerativeAIEmbeddings, "embed_query", base):
+            with patch.object(type(embeddings).embed_query.retry, "sleep"):
+                assert embeddings.embed_query("How to use OpenROAD?") == [0.1, 0.2]
+
+        assert base.call_count == 2
+
+    def test_embed_query_does_not_retry_quota_errors(self):
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+        embeddings = self._embeddings()
+        base = Mock(side_effect=RuntimeError("429 RESOURCE_EXHAUSTED"))
+
+        with patch.object(GoogleGenerativeAIEmbeddings, "embed_query", base):
+            with pytest.raises(RuntimeError, match="429"):
+                embeddings.embed_query("How to use OpenROAD?")
+
+        assert base.call_count == 1

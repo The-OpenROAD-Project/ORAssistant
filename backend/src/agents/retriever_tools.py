@@ -21,22 +21,22 @@ class RetrieverTools:
 
     install_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     general_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     commands_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     errinfo_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     yosys_rtdocs_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     klayout_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     tool_descriptions: str = ""
 
     def initialize(

@@ -1,18 +1,20 @@
 import os
 import logging
+import threading
+from collections import OrderedDict
 from dotenv import load_dotenv
 
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessageChunk
 from starlette.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from ...agents.retriever_graph import RetrieverGraph
+from ...tools.vertex_models import vertex_chat_kwargs
 from ...database import get_db
 from ...database import crud
 from ..models.response_model import (
@@ -81,7 +83,7 @@ embeddings_config = {"type": embeddings_type, "name": embeddings_model_name}
 
 hf_reranker: str = str(os.getenv("HF_RERANKER"))
 
-llm: ChatGoogleGenerativeAI | ChatVertexAI | ChatOllama
+llm: ChatVertexAI | ChatOllama
 
 if os.getenv("LLM_MODEL") == "ollama":
     model_name = str(os.getenv("OLLAMA_MODEL"))
@@ -92,14 +94,18 @@ elif os.getenv("LLM_MODEL") == "gemini":
     if gemini_model in {"1_pro", "1.5_flash", "1.5_pro"}:
         raise ValueError(
             f"The selected Gemini model '{gemini_model}' (version 1.0–1.5) is disabled. "
-            "Please upgrade to version 2.0 or higher (e.g., 2.0_flash, 2.5_pro)."
+            "Please upgrade to version 2.0 or higher (e.g., 3.6_flash, 2.5_pro)."
         )
-    elif gemini_model == "2.0_flash":
-        llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=llm_temp)
+    elif gemini_model == "3.6_flash":
+        llm = ChatVertexAI(
+            **vertex_chat_kwargs("gemini-3.6-flash"), temperature=llm_temp
+        )
     elif gemini_model == "2.5_flash":
-        llm = ChatVertexAI(model_name="gemini-2.5-flash", temperature=llm_temp)
+        llm = ChatVertexAI(
+            **vertex_chat_kwargs("gemini-2.5-flash"), temperature=llm_temp
+        )
     elif gemini_model == "2.5_pro":
-        llm = ChatVertexAI(model_name="gemini-2.5-pro", temperature=llm_temp)
+        llm = ChatVertexAI(**vertex_chat_kwargs("gemini-2.5-pro"), temperature=llm_temp)
     else:
         raise ValueError("GOOGLE_GEMINI environment variable not set to a valid value.")
 
@@ -204,20 +210,67 @@ def parse_agent_output(output: list) -> tuple[str, list[ContextSource], list[str
     return llm_response, context_sources, tools
 
 
-rg = RetrieverGraph(
-    llm_model=llm,
-    embeddings_config=embeddings_config,
-    reranking_model_name=hf_reranker,
-    use_cuda=use_cuda,
-    inbuilt_tool_calling=True,
-    fast_mode=fast_mode,
-    debug=debug,
-    enable_mcp=enable_mcp,
-)
-rg.initialize()
+_rg: Optional[RetrieverGraph] = None
+_rg_started = threading.Event()
+_rg_ready = threading.Event()
 
 
-chat_history: dict[UUID, list[dict[str, str]]] = {}
+def get_graph() -> Optional[RetrieverGraph]:
+    """Return the initialized graph, or None if not ready yet."""
+    return _rg if _rg_ready.is_set() else None
+
+
+def _initialize_graph() -> None:
+    """Build and initialize the RetrieverGraph (runs in background thread)."""
+    global _rg
+    graph = RetrieverGraph(
+        llm_model=llm,
+        embeddings_config=embeddings_config,
+        reranking_model_name=hf_reranker,
+        use_cuda=use_cuda,
+        inbuilt_tool_calling=True,
+        fast_mode=fast_mode,
+        debug=debug,
+        enable_mcp=enable_mcp,
+    )
+    graph.initialize()
+    _rg = graph
+    _rg_ready.set()
+
+
+def start_graph_init() -> None:
+    """Start graph initialization in a background thread (idempotent)."""
+    if _rg_started.is_set():
+        return
+    _rg_started.set()
+    threading.Thread(target=_initialize_graph, daemon=True).start()
+
+
+def reset_graph_state_for_testing() -> None:
+    """Reset graph state so tests can simulate a fresh startup."""
+    global _rg
+    _rg = None
+    _rg_started.clear()
+    _rg_ready.clear()
+
+
+@router.get("/ready")
+async def ready() -> dict[str, str]:
+    """Readiness probe — returns 'ready' when the graph is fully initialized."""
+    if _rg_ready.is_set():
+        return {"status": "ready"}
+    return {"status": "initializing"}
+
+
+MAX_IN_MEMORY_CONVERSATIONS = int(os.getenv("MAX_IN_MEMORY_CONVERSATIONS", "1000"))
+chat_history: OrderedDict[UUID, list[dict[str, str]]] = OrderedDict()
+
+
+def add_conversation_to_history(conversation_uuid: UUID) -> None:
+    """Registers a new conversation, evicting the oldest one if over capacity."""
+    chat_history[conversation_uuid] = []
+    if len(chat_history) > MAX_IN_MEMORY_CONVERSATIONS:
+        chat_history.popitem(last=False)
 
 
 def get_history_str(db: Session | None, conversation_uuid: UUID | None) -> str:
@@ -274,7 +327,7 @@ async def get_agent_response(
 
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
-            chat_history[conversation_uuid] = []
+            add_conversation_to_history(conversation_uuid)
 
     inputs = {
         "messages": [
@@ -283,10 +336,13 @@ async def get_agent_response(
         "chat_history": get_history_str(db, conversation_uuid),
     }
 
-    if rg.graph is not None:
-        output = list(rg.graph.stream(inputs, stream_mode="updates"))
+    graph = get_graph()
+    if graph is not None and graph.graph is not None:
+        output = list(graph.graph.stream(inputs, stream_mode="updates"))
     else:
-        raise ValueError("RetrieverGraph not initialized.")
+        raise HTTPException(
+            status_code=503, detail="Graph is still initializing. Please retry shortly."
+        )
 
     llm_response, context_sources, tools = parse_agent_output(output)
 
@@ -369,7 +425,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
             conversation_uuid = uuid4()
         if conversation_uuid not in chat_history:
-            chat_history[conversation_uuid] = []
+            add_conversation_to_history(conversation_uuid)
 
     inputs = {
         "messages": [
@@ -382,8 +438,9 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
     current_llm_call_count = 1
     chunks: list[str] = []
 
-    if rg.graph is not None:
-        async for event in rg.graph.astream_events(inputs, version="v2"):
+    graph = get_graph()
+    if graph is not None and graph.graph is not None:
+        async for event in graph.graph.astream_events(inputs, version="v2"):
             chunk = event["event"]
 
             if chunk == "on_chat_model_end":
@@ -405,7 +462,10 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
                 if msg:
                     chunks.append(str(msg))
-                yield str(msg) + "\n\n"
+                    yield str(msg) + "\n\n"
+    else:
+        yield "Error: Graph is still initializing. Please retry shortly.\n\n"
+        return
 
     urls = list(set(urls))
     yield f"Sources: {', '.join(urls)}\n\n"

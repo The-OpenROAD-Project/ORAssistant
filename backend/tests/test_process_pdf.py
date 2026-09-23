@@ -77,15 +77,27 @@ class TestProcessPDF:
         assert all(doc.metadata["url"] == "https://example1.com" for doc in result)
         assert all(doc.metadata["source"] == "doc1.pdf" for doc in result)
 
-    # Note: Commented out due to bug in process_pdf_docs function
-    # The function doesn't properly handle PdfStreamError - it logs but then
-    # tries to use undefined 'documents' variable
-    # @patch('src.tools.process_pdf.logging')
-    # @patch('src.tools.process_pdf.PyPDFLoader')
-    # @patch('builtins.open', new_callable=mock_open, read_data='{"corrupted.pdf": "https://example.com"}')
-    # def test_process_pdf_docs_corrupted_file(self, mock_file, mock_loader, mock_logging):
-    #     """Test PDF processing with corrupted file."""
-    #     pass
+    @patch("src.tools.process_pdf.PyPDFLoader")
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data='{"corrupted.pdf": "https://example.com"}',
+    )
+    def test_process_pdf_docs_corrupted_file_returns_empty(
+        self, mock_file, mock_loader
+    ):
+        """A corrupted PDF (PdfStreamError) should return [] instead of crashing."""
+        from pypdf.errors import PdfStreamError
+
+        mock_loader_instance = Mock()
+        mock_loader_instance.load_and_split.side_effect = PdfStreamError(
+            "corrupted stream"
+        )
+        mock_loader.return_value = mock_loader_instance
+
+        result = process_pdf_docs("./corrupted.pdf")
+
+        assert result == []
 
     @patch("src.tools.process_pdf.logging")
     @patch("src.tools.process_pdf.PyPDFLoader")

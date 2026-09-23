@@ -1,0 +1,43 @@
+import os
+import subprocess
+import unittest
+from pathlib import Path
+
+
+SCRIPT = Path(__file__).parents[1] / "auto_evaluation/llm_tests.sh"
+TIMEOUT_VAR = "DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE"
+
+
+def _budget_seen_by_python(env: dict[str, str]) -> set[str]:
+    """Run the script with python stubbed by an exported bash function."""
+    # A function, not a stub file, so a noexec temporary directory still works.
+    wrapper = (
+        f'python() {{ echo "budget=${{{TIMEOUT_VAR}}}"; }}\n'
+        f'export -f python\nbash "{SCRIPT}"\n'
+    )
+    result = subprocess.run(
+        ["bash", "-c", wrapper],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
+    return {line for line in result.stdout.splitlines() if line.startswith("budget=")}
+
+
+class LlmTestsScriptTest(unittest.TestCase):
+    def test_script_raises_the_deepeval_budget(self) -> None:
+        env = {k: v for k, v in os.environ.items() if k != TIMEOUT_VAR}
+
+        self.assertEqual(_budget_seen_by_python(env), {"budget=900"})
+
+    def test_script_keeps_a_caller_budget(self) -> None:
+        env = {**os.environ, TIMEOUT_VAR: "1234"}
+
+        self.assertEqual(_budget_seen_by_python(env), {"budget=1234"})
+
+
+if __name__ == "__main__":
+    unittest.main()

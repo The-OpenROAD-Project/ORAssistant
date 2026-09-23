@@ -107,7 +107,7 @@ class RAG:
         self.tool_descriptions = ""
         for tool in self.tools:
             text_desc = render_text_description([tool])
-            text_desc.replace("(query: str) -> Tuple[str, list[str], list[str]]", " ")
+            text_desc = text_desc.replace("(query: str) -> Tuple[str, list[str], list[str]]", " ")
             self.tool_descriptions += text_desc + "\n\n"
 
     def rag_agent(self, state: AgentState) -> dict[str, list[Any]]:
@@ -159,12 +159,14 @@ class RAG:
                 )
                 return {"tools": []}
 
+            tool_calls: list[str] = []
             if "tool_names" in str(response):
-                tool_calls = response.get("tool_names", [])  # type: ignore
-                for tool in tool_calls:
-                    if tool not in self.tool_names:
+                raw_tool_calls = response.get("tool_names", [])  # type: ignore
+                for tool in raw_tool_calls:
+                    if tool in self.tool_names:
+                        tool_calls.append(tool)
+                    else:
                         logging.warning(f"Tool {tool} not found in tool list.")
-                        tool_calls.remove(tool)
             else:
                 logging.warning(str(response))
                 logging.warning("Tool selection failed. Returning empty tool list.")

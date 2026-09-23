@@ -1,6 +1,9 @@
 import pytest
 from unittest.mock import Mock, patch
 
+from langchain_core.messages import AIMessage
+from langchain_core.runnables import RunnableLambda
+
 from src.agents.retriever_graph import RetrieverGraph
 from src.agents.retriever_rag import ToolNode
 
@@ -208,3 +211,78 @@ class TestRetrieverGraph:
         result = graph.rag_route(state)
 
         assert result == "retrieve_general"
+
+
+class TestRagAgentToolSelection:
+    """Regression tests for the non-inbuilt-tool-calling branch of RAG.rag_agent."""
+
+    def _make_graph(self, fake_llm: RunnableLambda) -> RetrieverGraph:
+        with (
+            patch("src.agents.retriever_rag.RetrieverTools") as mock_retriever_tools,
+            patch("src.agents.retriever_graph.BaseChain") as mock_base_chain,
+        ):
+            mock_chain_instance = Mock()
+            mock_base_chain.return_value = mock_chain_instance
+            mock_chain_instance.get_llm_chain.return_value = Mock()
+
+            mock_tools_instance = Mock()
+            mock_retriever_tools.return_value = mock_tools_instance
+            mock_tools_instance.retrieve_cmds = Mock()
+            mock_tools_instance.retrieve_install = Mock()
+            mock_tools_instance.retrieve_general = Mock()
+            mock_tools_instance.retrieve_klayout_docs = Mock()
+            mock_tools_instance.retrieve_errinfo = Mock()
+            mock_tools_instance.retrieve_yosys_rtdocs = Mock()
+
+            return RetrieverGraph(
+                llm_model=fake_llm,
+                embeddings_config={"type": "HF", "name": "test-model"},
+                reranking_model_name="test-reranker",
+                inbuilt_tool_calling=False,
+            )
+
+    def _make_state(self) -> dict:
+        mock_message = Mock()
+        mock_message.content = "test query"
+        return {
+            "messages": [mock_message],
+            "context": [],
+            "context_list": [],
+            "tools": [],
+            "sources": [],
+            "urls": [],
+            "chat_history": "",
+        }
+
+    def test_rag_agent_missing_tool_names_does_not_crash(self):
+        """Regression: response without "tool_names" must not raise UnboundLocalError (issue #243, bug 1)."""
+        fake_llm = RunnableLambda(lambda _: AIMessage(content='{"foo": "bar"}'))
+        graph = self._make_graph(fake_llm)
+
+        result = graph.rag_agent(self._make_state())
+
+        assert result == {"tools": []}
+
+    def test_rag_agent_filters_invalid_tool_names(self):
+        """Regression: invalid tools must not be included without skipping adjacent valid ones (issue #243, bug 1)."""
+        fake_llm = RunnableLambda(
+            lambda _: AIMessage(
+                content='{"tool_names": ["invalid1", "invalid2", "retrieve_cmds"]}'
+            )
+        )
+        graph = self._make_graph(fake_llm)
+
+        result = graph.rag_agent(self._make_state())
+
+        assert result["tools"] == ["retrieve_cmds"]
+
+    def test_rag_agent_all_invalid_tool_names_returns_empty(self):
+        """Regression: all-invalid tool list must return empty tools, not crash (issue #243, bug 1)."""
+        fake_llm = RunnableLambda(
+            lambda _: AIMessage(content='{"tool_names": ["bad1", "bad2"]}')
+        )
+        graph = self._make_graph(fake_llm)
+
+        result = graph.rag_agent(self._make_state())
+
+        assert result == {"tools": []}

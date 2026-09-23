@@ -1,5 +1,13 @@
 FOLDERS=backend frontend evaluation
+# Path to the Google service-account file, or its JSON content. CI stores the
+# content in a secret; local setups keep a file.
 GOOGLE_SECRET_JSON?=$(HOME)/secret.json
+export GOOGLE_SECRET_JSON
+
+.PHONY: lock
+lock:
+	@for folder in $(FOLDERS); do (cd $$folder && make lock && cd ../); done
+	@cd frontend/mock-flask-api && make lock
 
 .PHONY: init
 init:
@@ -21,13 +29,27 @@ check:
 	@. ./backend/.venv/bin/activate && \
 		pre-commit run --all-files
 
+.PHONY: check-ci
+check-ci:
+	@for folder in $(FOLDERS); do \
+	   (cd $$folder && make check && cd ../) || exit 1; \
+		done
+
 .PHONY: docker-up
 docker-up:
 	@docker compose -f docker-compose.yml up --build --wait
 
+.PHONY: docker-up-ci
+docker-up-ci:
+	@docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build --wait
+
 .PHONY: docker-down
 docker-down:
 	@docker compose -f docker-compose.yml down --volumes --remove-orphans
+
+.PHONY: docker-down-ci
+docker-down-ci:
+	@docker compose -f docker-compose.yml -f docker-compose.ci.yml down --volumes --remove-orphans
 
 .PHONY: docker-dev
 docker-dev:
@@ -36,8 +58,16 @@ docker-dev:
 # --- Development Commands ---
 .PHONY: seed-credentials
 seed-credentials:
-	@cp $(GOOGLE_SECRET_JSON) backend/src
-	@cp $(GOOGLE_SECRET_JSON) evaluation/auto_evaluation/src
+	@for dir in backend/src evaluation/auto_evaluation/src; do \
+		if [ -f "$$GOOGLE_SECRET_JSON" ]; then \
+			cp "$$GOOGLE_SECRET_JSON" "$$dir/secret.json"; \
+		elif [ -n "$$GOOGLE_SECRET_JSON" ]; then \
+			printf '%s\n' "$$GOOGLE_SECRET_JSON" > "$$dir/secret.json"; \
+		else \
+			echo "GOOGLE_SECRET_JSON is empty: set a file path or JSON content" >&2; \
+			exit 1; \
+		fi; \
+	done
 
 .PHONY: changelog
 changelog:

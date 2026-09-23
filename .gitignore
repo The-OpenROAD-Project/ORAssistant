@@ -1,7 +1,8 @@
 .env
 *.ipynb
 __pycache__/
-backend/data/
+backend/data/*
+!backend/data/source_list.json
 backend/src/*.json
 *.pyc
 *.egg-info/
@@ -31,6 +32,7 @@ creds.json
 **/.deepeval-cache.json
 temp_test_run_data.json
 **/llm_tests_output.txt
+**/llm_tests_summary.md
 **/error_log.txt
 
 # backend

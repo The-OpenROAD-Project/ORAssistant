@@ -225,6 +225,17 @@ make format
 make check
 ```
 
+The full evaluation (`ORAssistant Secret CI`) runs on every push to `master`.
+To run it against an open pull request before merging, a maintainer starts it
+by hand with the PR number:
+
+```
+gh workflow run ci-secret.yaml -f pr=<number>
+```
+
+The run checks out the PR's merge result, posts a `Secret CI` status on the PR
+head, and comments the evaluation output on the PR. The PR must be mergeable.
+
 ## Acknowledgements
 
 This work is completed as part of the Google Summer of Code 2024 project under the
