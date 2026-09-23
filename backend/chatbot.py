@@ -15,7 +15,6 @@ from src.database import get_db, init_database
 from src.database import crud
 
 from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
 load_dotenv()
@@ -24,7 +23,7 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 console = Console()
 
 
-def setup_llm() -> ChatVertexAI | ChatGoogleGenerativeAI | ChatOllama:
+def setup_llm() -> ChatVertexAI | ChatOllama:
     temp = float(os.getenv("LLM_TEMP", "0.0"))
 
     if os.getenv("LLM_MODEL") == "ollama":
@@ -35,8 +34,8 @@ def setup_llm() -> ChatVertexAI | ChatGoogleGenerativeAI | ChatOllama:
         gemini = os.getenv("GOOGLE_GEMINI")
         if gemini in {"1_pro", "1.5_flash", "1.5_pro"}:
             raise ValueError(f"Gemini {gemini} (v1.0-1.5) disabled. Use v2.0+")
-        elif gemini == "2.0_flash":
-            return ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=temp)
+        elif gemini == "3.6_flash":
+            return ChatVertexAI(model_name="gemini-3.6-flash", temperature=temp)
         elif gemini == "2.5_flash":
             return ChatVertexAI(model_name="gemini-2.5-flash", temperature=temp)
         elif gemini == "2.5_pro":
