@@ -86,3 +86,8 @@ exclude = [
 ]
 python_version = "3.13"
 disallow_untyped_defs = true
+
+[tool.ruff.lint]
+# Ruff's historical default rule set. Newer ruff releases widen the default
+# selection; keep lint results stable across ruff upgrades.
+select = ["E4", "E7", "E9", "F"]
