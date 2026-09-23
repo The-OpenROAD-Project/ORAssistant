@@ -18,6 +18,11 @@ class ORFSBase(ORFS):
         ORFS.server.platform = "sky130hd"
         return ORFS.server.platform
 
+    def _make(self, cmd) -> None:
+        assert ORFS.server is not None
+        ORFS.server._check_configuration()
+        ORFS.server._command(cmd)
+
     def _get_designs_impl(self) -> str:
         """Internal implementation of get_designs"""
         # TODO: scrape designs instead of default riscv
@@ -40,7 +45,7 @@ class ORFSBase(ORFS):
         working = os.getcwd()
         os.chdir(ORFS.server.flow_dir)
 
-        make = f"make DESIGN_CONFIG={ORFS.server.flow_dir}/designs/{ORFS.server.platform}/{ORFS.server.design}/config.mk"
+        make = f"make DESIGN_CONFIG={ORFS.server.makefile_pointer}"
         logging.info(cmd)
         build_command = f"{make} {cmd}"
         ORFS.server._run_command(build_command)
@@ -99,9 +104,7 @@ class ORFSBase(ORFS):
 
         Use this for any makefile target not covered by step/jump commands.
         """
-        assert ORFS.server is not None
-        ORFS.server._check_configuration()
-        ORFS.server._command(cmd)
+        ORFS.server._make(cmd)
 
         return f"finished {cmd}"
 
