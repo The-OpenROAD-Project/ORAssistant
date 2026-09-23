@@ -33,7 +33,7 @@ def base_gemini_flash(query: str) -> tuple[str, float]:
         try:
             start_time = time.time()
             response = _client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-3.6-flash",
                 contents=" " + query,
                 config=types.GenerateContentConfig(
                     safety_settings=_safety_config,
@@ -58,7 +58,7 @@ def base_gemini_pro(query: str) -> tuple[str, float]:
         try:
             start_time = time.time()
             response = _client.models.generate_content(
-                model="gemini-2.5-pro",
+                model="gemini-3.1-pro-preview",
                 contents=" " + query,
                 config=types.GenerateContentConfig(
                     safety_settings=_safety_config,

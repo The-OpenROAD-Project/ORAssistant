@@ -3,8 +3,8 @@ from typing import Tuple, Optional, Union
 from dotenv import load_dotenv
 
 from langchain_core.tools import tool
-from langchain.retrievers import EnsembleRetriever
-from langchain.retrievers import ContextualCompressionRetriever
+from langchain_classic.retrievers import EnsembleRetriever
+from langchain_classic.retrievers import ContextualCompressionRetriever
 
 from ..chains.hybrid_retriever_chain import HybridRetrieverChain
 from ..tools.format_docs import format_docs
@@ -21,22 +21,22 @@ class RetrieverTools:
 
     install_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     general_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     commands_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     errinfo_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     yosys_rtdocs_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     klayout_retriever: Optional[
         Union[EnsembleRetriever, ContextualCompressionRetriever]
-    ]
+    ] = None
     tool_descriptions: str = ""
 
     def initialize(

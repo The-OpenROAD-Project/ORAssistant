@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 from src.chains.bm25_retriever_chain import BM25RetrieverChain
 

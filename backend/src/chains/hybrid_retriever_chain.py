@@ -1,16 +1,14 @@
 import os
 from typing import Optional, Union, Any
 
-from langchain.retrievers import EnsembleRetriever
-from langchain.retrievers import ContextualCompressionRetriever
+from langchain_classic.retrievers import EnsembleRetriever
+from langchain_classic.retrievers import ContextualCompressionRetriever
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
-from langchain.retrievers.document_compressors.cross_encoder_rerank import (
-    CrossEncoderReranker,
-)
+from langchain_classic.retrievers.document_compressors import CrossEncoderReranker
 
 from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain

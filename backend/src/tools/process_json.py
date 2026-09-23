@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Any
 
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 

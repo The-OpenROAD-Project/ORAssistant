@@ -5,8 +5,8 @@ import logging
 from tqdm import tqdm
 from typing import Optional
 
-from langchain.docstore.document import Document
-from langchain_community.document_loaders import UnstructuredHTMLLoader
+from langchain_core.documents import Document
+from langchain_community.document_loaders import BSHTMLLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from .chunk_documents import chunk_documents
@@ -43,7 +43,10 @@ def process_html(
 
     documents = []
     for file_path in tqdm(html_files, desc="Loading HTML files"):
-        content = UnstructuredHTMLLoader(file_path=file_path).load()
+        content = BSHTMLLoader(
+            file_path=file_path,
+            bs_kwargs={"features": "html.parser"},
+        ).load()
         for doc in content:
             doc.metadata["source"] = file_path.split("./")[-1]
         documents.extend(content)

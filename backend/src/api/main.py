@@ -11,9 +11,12 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Initialize database on startup."""
+    """Initialize database on startup and start graph background init."""
     logger.info("Initializing database connection...")
     init_database()
+    logger.info("Starting graph initialization in background...")
+    from .routers.conversations import start_graph_init
+    start_graph_init()
     yield
     logger.info("Shutting down...")
 

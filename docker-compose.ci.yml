@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      args:
+        SKIP_HF_DOWNLOAD: "true"
+    volumes:
+      - faiss_data:/ORAssistant-backend/faiss_db
+      - ./data:/ORAssistant-backend/data
+    environment:
+      HEALTHCHECK_START_PERIOD: "300s"
+      HEALTHCHECK_INTERVAL: "10s"
+      HEALTHCHECK_RETRIES: "30"
+
+volumes:
+  faiss_data:
+    driver: local

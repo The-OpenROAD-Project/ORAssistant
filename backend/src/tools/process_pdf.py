@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 from pypdf.errors import PdfStreamError
 
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -31,6 +31,7 @@ def process_pdf_docs(file_path: str) -> list[Document]:
         documents = loader.load_and_split(text_splitter=text_splitter)
     except PdfStreamError:
         logging.error(f"Error processing PDF: {file_path} is corrupted or incomplete.")
+        return []
 
     for doc in documents:
         try:

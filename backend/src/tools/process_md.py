@@ -7,7 +7,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 from typing import Optional
 
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from .chunk_documents import chunk_documents
 

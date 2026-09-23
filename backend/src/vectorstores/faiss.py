@@ -1,6 +1,7 @@
 import os
+import time
 import logging
-from typing import Optional, Union
+from typing import Any, Optional, Union
 from dotenv import load_dotenv
 
 from langchain_community.vectorstores import FAISS
@@ -8,7 +9,14 @@ from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_vertexai import VertexAIEmbeddings
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
+from tenacity import (
+    RetryCallState,
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from ..tools.process_md import process_md
 from ..tools.process_pdf import process_pdf_docs
@@ -18,6 +26,50 @@ from ..tools.process_json import generate_knowledge_base
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 load_dotenv()
+
+
+_quota_retry_wait = wait_exponential(multiplier=2, min=60, max=600)
+_transient_retry_wait = wait_exponential(multiplier=2, min=2, max=30)
+
+
+def _is_retryable_embedding_error(error: BaseException) -> bool:
+    message = str(error)
+    return any(
+        marker in message
+        for marker in ("RESOURCE_EXHAUSTED", "429", "UNAVAILABLE", "503")
+    )
+
+
+def _is_temporary_unavailability(error: BaseException) -> bool:
+    return "UNAVAILABLE" in str(error) or "503" in str(error)
+
+
+def _wait_for_embedding_retry(retry_state: RetryCallState) -> float:
+    if retry_state.outcome is None:
+        return _quota_retry_wait(retry_state)
+
+    error = retry_state.outcome.exception()
+    if error is not None and _is_temporary_unavailability(error):
+        return _transient_retry_wait(retry_state)
+    return _quota_retry_wait(retry_state)
+
+
+class _RetryingGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+    """Gemini embeddings that retry a query on temporary unavailability.
+
+    Each question embeds its query in one call, so a single 503 used to fail
+    the whole request. Quota errors are not retried here: their backoff is too
+    long to hold a request open.
+    """
+
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=_transient_retry_wait,
+        retry=retry_if_exception(_is_temporary_unavailability),
+        reraise=True,
+    )
+    def embed_query(self, text: str, **kwargs: Any) -> list[float]:
+        return super().embed_query(text, **kwargs)
 
 
 class FAISSVectorDatabase:
@@ -38,16 +90,14 @@ class FAISSVectorDatabase:
         ]
 
         if embeddings_type == "GOOGLE_GENAI":
-            self.embedding_model = GoogleGenerativeAIEmbeddings(
+            self.embedding_model = _RetryingGoogleGenerativeAIEmbeddings(
                 model=self.embeddings_model_name,
                 task_type="retrieval_document",
             )
             logging.info("Using Google GenerativeAI embeddings...")
 
         elif embeddings_type == "GOOGLE_VERTEXAI":
-            self.embedding_model = VertexAIEmbeddings(
-                model_name=self.embeddings_model_name
-            )
+            self.embedding_model = VertexAIEmbeddings(model=self.embeddings_model_name)
             logging.info("Using Google VertexAI embeddings...")
 
         elif embeddings_type == "HF":
@@ -73,7 +123,13 @@ class FAISSVectorDatabase:
     def faiss_db(self) -> Optional[FAISS]:
         return self._faiss_db
 
-    def _add_to_db(self, documents: list[Document]) -> None:
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=_wait_for_embedding_retry,
+        retry=retry_if_exception(_is_retryable_embedding_error),
+        reraise=True,
+    )
+    def _embed_and_add(self, documents: list[Document]) -> None:
         if self._faiss_db is None:
             self._faiss_db = FAISS.from_documents(
                 documents=documents,
@@ -82,6 +138,13 @@ class FAISSVectorDatabase:
             )
         else:
             self._faiss_db.add_documents(documents)
+
+    def _add_to_db(self, documents: list[Document], batch_size: int = 100) -> None:
+        for i in range(0, len(documents), batch_size):
+            batch = documents[i : i + batch_size]
+            self._embed_and_add(batch)
+            if i + batch_size < len(documents):
+                time.sleep(1)
 
     def add_md_docs(
         self, folder_paths: list[str], chunk_size: int = 500, return_docs: bool = False
@@ -199,6 +262,9 @@ class FAISSVectorDatabase:
         return None
 
     def get_db_path(self) -> str:
+        env_path = os.getenv("FAISS_DB_PATH")
+        if env_path:
+            return os.path.abspath(env_path)
         cur_path = os.path.abspath(__file__)
         path = os.path.join(cur_path, "../../../", "faiss_db")
         path = os.path.abspath(path)  # Ensure proper parent directory
@@ -220,6 +286,14 @@ class FAISSVectorDatabase:
     def get_documents(self) -> list[Document]:
         return self._faiss_db.docstore._dict.values()  # type: ignore
 
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, min=60, max=600),
+        retry=retry_if_exception(
+            lambda e: "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e)
+        ),
+        reraise=True,
+    )
     def process_json(self, folder_paths: list[str]) -> FAISS:
         logging.info("Processing json files...")
         if not isinstance(folder_paths, list):

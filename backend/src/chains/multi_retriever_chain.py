@@ -4,7 +4,7 @@ from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-from langchain.retrievers import EnsembleRetriever
+from langchain_classic.retrievers import EnsembleRetriever
 
 from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain

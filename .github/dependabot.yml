@@ -1,0 +1,123 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directories:
+      - /backend
+      - /frontend
+      - /frontend/mock-flask-api
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      quality-tools:
+        applies-to: version-updates
+        patterns:
+          - "ruff"
+          - "mypy"
+          - "pre-commit"
+          - "pytest"
+          - "pytest-*"
+          - "types-*"
+        update-types:
+          - patch
+      python-runtime:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "ruff"
+          - "mypy"
+          - "pre-commit"
+          - "pytest"
+          - "pytest-*"
+          - "types-*"
+        update-types:
+          - minor
+          - patch
+  # Evaluation has compatibility bounds that do not apply to the backend.
+  - package-ecosystem: uv
+    directory: /evaluation
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      quality-tools:
+        applies-to: version-updates
+        patterns:
+          - "ruff"
+          - "mypy"
+          - "pre-commit"
+          - "pytest"
+          - "pytest-*"
+          - "types-*"
+        update-types:
+          - patch
+      python-runtime:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "ruff"
+          - "mypy"
+          - "pre-commit"
+          - "pytest"
+          - "pytest-*"
+          - "types-*"
+        update-types:
+          - minor
+          - patch
+    # Remove these ignores when the matching evaluation/pyproject.toml
+    # constraints are migrated. Other major upgrades remain individual PRs.
+    ignore:
+      - dependency-name: instructor
+        versions: [">=2"]  # Evaluation pins instructor to 1.5.2.
+      - dependency-name: openai
+        versions: [">=2"]  # Evaluation pins openai to 1.58.1.
+      - dependency-name: google-cloud-aiplatform
+        versions: [">=2"]  # Evaluation requires google-cloud-aiplatform <2.
+      - dependency-name: protobuf
+        versions: [">=7"]  # Evaluation requires protobuf <7; 6.x is allowed.
+
+  - package-ecosystem: npm
+    directory: /frontend/nextjs-frontend
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      npm:
+        patterns:
+          - "*"
+
+  - package-ecosystem: docker
+    directories:
+      - /backend
+      - /common
+      - /frontend
+      - /frontend/nextjs-frontend
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      images:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns:
+          - "*"

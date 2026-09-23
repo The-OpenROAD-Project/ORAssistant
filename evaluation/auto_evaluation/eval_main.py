@@ -10,9 +10,9 @@ import os
 
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
-from deepeval import evaluate
-from deepeval.models import GeminiModel
+from deepeval.evaluate import evaluate
 
+from auto_evaluation.src.models.gemini import GoogleGeminiLangChain
 from auto_evaluation.src.metrics.retrieval import (
     make_contextual_precision_metric,
     make_contextual_recall_metric,
@@ -41,10 +41,7 @@ class EvaluationHarness:
         self.dataset = dataset
         self.reranker_base_url = reranker_base_url
         self.qns = preprocess.read_data(self.dataset)
-        self.eval_model = GeminiModel(
-            model_name="gemini-2.5-pro",
-            api_key=os.getenv("GOOGLE_API_KEY"),
-        )
+        self.eval_model = GoogleGeminiLangChain(model_name="gemini-3.1-pro-preview")
         self.log_dir = "logs"
         os.makedirs(self.log_dir, exist_ok=True)
         self.sanity_check()
@@ -121,21 +118,15 @@ class EvaluationHarness:
         """
         endpoint = ALL_RETRIEVERS[retriever]
         url = (
-            f"{self.base_url}/{endpoint}"
+            f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
             if retriever != "agent-retriever-reranker"
-            else f"{self.reranker_base_url}/{endpoint}"
+            else f"{self.reranker_base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         )
         payload = {"query": query, "list_context": True, "list_sources": False}
-        try:
-            time.sleep(5)
-            response = requests.post(url, json=payload)
-            if not response.ok:
-                print(f"Error querying {retriever}: HTTP {response.status_code}")
-                return {"response": "invalid", "context_sources": [], "tools": []}, -999999
-            return response.json(), response.elapsed.total_seconds() * 1000
-        except Exception as e:
-            print(f"Error querying {retriever}: {e}")
-            return {"response": "invalid", "context_sources": [], "tools": []}, -999999
+        time.sleep(5)
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        return response.json(), response.elapsed.total_seconds() * 1000
 
 
 if __name__ == "__main__":

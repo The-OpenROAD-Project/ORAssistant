@@ -2,7 +2,7 @@ import os
 from typing import Optional, Tuple, Any, Union
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama

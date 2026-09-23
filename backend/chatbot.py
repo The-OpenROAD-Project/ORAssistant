@@ -13,9 +13,9 @@ from sqlalchemy.orm import Session
 from src.agents.retriever_graph import RetrieverGraph
 from src.database import get_db, init_database
 from src.database import crud
+from src.tools.vertex_models import vertex_chat_kwargs
 
 from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
 load_dotenv()
@@ -24,7 +24,7 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 console = Console()
 
 
-def setup_llm() -> ChatVertexAI | ChatGoogleGenerativeAI | ChatOllama:
+def setup_llm() -> ChatVertexAI | ChatOllama:
     temp = float(os.getenv("LLM_TEMP", "0.0"))
 
     if os.getenv("LLM_MODEL") == "ollama":
@@ -35,12 +35,18 @@ def setup_llm() -> ChatVertexAI | ChatGoogleGenerativeAI | ChatOllama:
         gemini = os.getenv("GOOGLE_GEMINI")
         if gemini in {"1_pro", "1.5_flash", "1.5_pro"}:
             raise ValueError(f"Gemini {gemini} (v1.0-1.5) disabled. Use v2.0+")
-        elif gemini == "2.0_flash":
-            return ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=temp)
+        elif gemini == "3.6_flash":
+            return ChatVertexAI(
+                **vertex_chat_kwargs("gemini-3.6-flash"), temperature=temp
+            )
         elif gemini == "2.5_flash":
-            return ChatVertexAI(model_name="gemini-2.5-flash", temperature=temp)
+            return ChatVertexAI(
+                **vertex_chat_kwargs("gemini-2.5-flash"), temperature=temp
+            )
         elif gemini == "2.5_pro":
-            return ChatVertexAI(model_name="gemini-2.5-pro", temperature=temp)
+            return ChatVertexAI(
+                **vertex_chat_kwargs("gemini-2.5-pro"), temperature=temp
+            )
         else:
             raise ValueError(f"Invalid GOOGLE_GEMINI value: {gemini}")
 
@@ -92,7 +98,9 @@ def parse_output(output: list) -> tuple[str, list[str], list[str]]:
         logging.error(f"Output is not a list: {type(output)}")
         return fail_msg, [], []
     if len(output) < MIN_OUTPUT_LENGTH:
-        logging.error(f"Output too short: {len(output)} elements (expected >= {MIN_OUTPUT_LENGTH})")
+        logging.error(
+            f"Output too short: {len(output)} elements (expected >= {MIN_OUTPUT_LENGTH})"
+        )
         return fail_msg, [], []
 
     # Validate last element contains generation
@@ -106,7 +114,9 @@ def parse_output(output: list) -> tuple[str, list[str], list[str]]:
     key = "rag_generate" if is_rag else "generate"
 
     if key not in last:
-        logging.error(f"Missing '{key}' key in final output. Available keys: {list(last.keys())}")
+        logging.error(
+            f"Missing '{key}' key in final output. Available keys: {list(last.keys())}"
+        )
         return fail_msg, [], []
 
     if "messages" not in last[key]:
@@ -261,12 +271,16 @@ def main() -> None:
         console.print("\n[yellow]Interrupted. Goodbye![/yellow]")
     except ValueError as e:
         console.print(f"[bold red]Configuration Error:[/bold red] {str(e)}")
-        console.print("[yellow]Check your environment variables and try again.[/yellow]")
+        console.print(
+            "[yellow]Check your environment variables and try again.[/yellow]"
+        )
         if debug:
             logging.exception("Configuration error")
     except ConnectionError as e:
         console.print(f"[bold red]Connection Error:[/bold red] {str(e)}")
-        console.print("[yellow]Check your network connection and database availability.[/yellow]")
+        console.print(
+            "[yellow]Check your network connection and database availability.[/yellow]"
+        )
         if debug:
             logging.exception("Connection error")
     except Exception as e:

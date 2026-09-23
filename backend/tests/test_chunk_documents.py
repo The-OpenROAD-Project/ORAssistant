@@ -1,5 +1,5 @@
 import pytest
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 from src.tools.chunk_documents import chunk_documents
 

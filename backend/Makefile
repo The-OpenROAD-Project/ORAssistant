@@ -1,3 +1,7 @@
+.PHONY: lock
+lock:
+	@uv lock
+
 .PHONY: init
 init:
 	@uv venv .venv && \
@@ -24,7 +28,7 @@ build-docs:
 
 .PHONY: test
 test:
-	@uv run pytest
+	@uv run pytest -n auto
 
 .PHONY: mcp
 mcp:
