@@ -217,3 +217,56 @@ def test_every_workflow_expression_is_closed() -> None:
 
     assert unclosed == []
     assert workflow["run-name"].endswith("}}")
+
+
+def _run_report_step(
+    tmp_path: Path, needs: dict[str, object], report: str | None
+) -> tuple[subprocess.CompletedProcess[str], str]:
+    """Run the PR report step with a gh stub that records its arguments."""
+    calls = tmp_path / "gh_calls"
+    if report is not None:
+        (tmp_path / "evaluation-output").mkdir()
+        (tmp_path / "evaluation-output/llm_tests_output.txt").write_text(report)
+    stub = f'gh() {{ printf "%s\\n" "$*" >> {calls}; }}\n'
+    script = stub + _workflow_step_script("Report the result on the pull request")
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "NEEDS_JSON": json.dumps(needs),
+            "PR": "42",
+            "HEAD_SHA": "feed",
+            "GITHUB_REPOSITORY": "org/repo",
+            "RUN_URL": "https://example.test/run",
+        },
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    return result, calls.read_text() if calls.exists() else ""
+
+
+@requires_jq
+def test_report_posts_success_and_the_evaluation_output(tmp_path: Path) -> None:
+    needs = {"resolve": {"result": "success"}, "docker-eval": {"result": "success"}}
+
+    result, calls = _run_report_step(tmp_path, needs, "all tests passed\n")
+
+    assert result.returncode == 0, result.stderr
+    assert "statuses/feed -f state=success -f context=Secret CI" in calls
+    assert "pr comment 42 --repo org/repo --body-file" in calls
+
+
+@requires_jq
+def test_report_posts_failure_when_an_early_job_fails(tmp_path: Path) -> None:
+    needs = {
+        "lint-backend": {"result": "failure"},
+        "docker-eval": {"result": "skipped"},
+    }
+
+    result, calls = _run_report_step(tmp_path, needs, None)
+
+    assert result.returncode == 0, result.stderr
+    assert "state=failure" in calls
+    assert "Secret CI failure with no evaluation output" in calls
