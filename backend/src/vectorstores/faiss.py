@@ -10,7 +10,13 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_core.documents import Document
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+from tenacity import (
+    RetryCallState,
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from ..tools.process_md import process_md
 from ..tools.process_pdf import process_pdf_docs
@@ -26,7 +32,7 @@ _quota_retry_wait = wait_exponential(multiplier=2, min=60, max=600)
 _transient_retry_wait = wait_exponential(multiplier=2, min=2, max=30)
 
 
-def _is_retryable_embedding_error(error: Exception) -> bool:
+def _is_retryable_embedding_error(error: BaseException) -> bool:
     message = str(error)
     return any(
         marker in message
@@ -34,9 +40,12 @@ def _is_retryable_embedding_error(error: Exception) -> bool:
     )
 
 
-def _wait_for_embedding_retry(retry_state) -> float:
+def _wait_for_embedding_retry(retry_state: RetryCallState) -> float:
+    if retry_state.outcome is None:
+        return _quota_retry_wait(retry_state)
+
     error = retry_state.outcome.exception()
-    if "UNAVAILABLE" in str(error) or "503" in str(error):
+    if error is not None and ("UNAVAILABLE" in str(error) or "503" in str(error)):
         return _transient_retry_wait(retry_state)
     return _quota_retry_wait(retry_state)
 
