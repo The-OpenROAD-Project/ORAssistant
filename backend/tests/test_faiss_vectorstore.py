@@ -31,7 +31,9 @@ class TestFAISSVectorDatabase:
 
     def test_init_with_google_genai_embeddings(self):
         """Test initialization with Google GenAI embeddings."""
-        with patch("src.vectorstores.faiss.GoogleGenerativeAIEmbeddings") as mock_genai:
+        with patch(
+            "src.vectorstores.faiss._RetryingGoogleGenerativeAIEmbeddings"
+        ) as mock_genai:
             mock_genai.return_value = Mock()
 
             db = FAISSVectorDatabase(
@@ -694,3 +696,38 @@ class TestFAISSVectorDatabase:
             assert result == []
             assert len(db.processed_docs) == 0
             assert db.faiss_db is None
+
+
+class TestQueryEmbeddingRetry:
+    """Query embeddings retry temporary Gemini unavailability."""
+
+    def _embeddings(self):
+        from src.vectorstores.faiss import _RetryingGoogleGenerativeAIEmbeddings
+
+        return _RetryingGoogleGenerativeAIEmbeddings(
+            model="models/embedding-001", google_api_key="test-key"
+        )
+
+    def test_embed_query_retries_temporary_unavailability(self):
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+        embeddings = self._embeddings()
+        base = Mock(side_effect=[RuntimeError("503 UNAVAILABLE"), [0.1, 0.2]])
+
+        with patch.object(GoogleGenerativeAIEmbeddings, "embed_query", base):
+            with patch.object(type(embeddings).embed_query.retry, "sleep"):
+                assert embeddings.embed_query("How to use OpenROAD?") == [0.1, 0.2]
+
+        assert base.call_count == 2
+
+    def test_embed_query_does_not_retry_quota_errors(self):
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+        embeddings = self._embeddings()
+        base = Mock(side_effect=RuntimeError("429 RESOURCE_EXHAUSTED"))
+
+        with patch.object(GoogleGenerativeAIEmbeddings, "embed_query", base):
+            with pytest.raises(RuntimeError, match="429"):
+                embeddings.embed_query("How to use OpenROAD?")
+
+        assert base.call_count == 1

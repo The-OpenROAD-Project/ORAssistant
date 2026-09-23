@@ -1,7 +1,7 @@
 import os
 import time
 import logging
-from typing import Optional, Union
+from typing import Any, Optional, Union
 from dotenv import load_dotenv
 
 from langchain_community.vectorstores import FAISS
@@ -40,14 +40,36 @@ def _is_retryable_embedding_error(error: BaseException) -> bool:
     )
 
 
+def _is_temporary_unavailability(error: BaseException) -> bool:
+    return "UNAVAILABLE" in str(error) or "503" in str(error)
+
+
 def _wait_for_embedding_retry(retry_state: RetryCallState) -> float:
     if retry_state.outcome is None:
         return _quota_retry_wait(retry_state)
 
     error = retry_state.outcome.exception()
-    if error is not None and ("UNAVAILABLE" in str(error) or "503" in str(error)):
+    if error is not None and _is_temporary_unavailability(error):
         return _transient_retry_wait(retry_state)
     return _quota_retry_wait(retry_state)
+
+
+class _RetryingGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+    """Gemini embeddings that retry a query on temporary unavailability.
+
+    Each question embeds its query in one call, so a single 503 used to fail
+    the whole request. Quota errors are not retried here: their backoff is too
+    long to hold a request open.
+    """
+
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=_transient_retry_wait,
+        retry=retry_if_exception(_is_temporary_unavailability),
+        reraise=True,
+    )
+    def embed_query(self, text: str, **kwargs: Any) -> list[float]:
+        return super().embed_query(text, **kwargs)
 
 
 class FAISSVectorDatabase:
@@ -68,7 +90,7 @@ class FAISSVectorDatabase:
         ]
 
         if embeddings_type == "GOOGLE_GENAI":
-            self.embedding_model = GoogleGenerativeAIEmbeddings(
+            self.embedding_model = _RetryingGoogleGenerativeAIEmbeddings(
                 model=self.embeddings_model_name,
                 task_type="retrieval_document",
             )
