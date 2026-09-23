@@ -33,7 +33,7 @@ def base_gemini_flash(query: str) -> tuple[str, float]:
         try:
             start_time = time.time()
             response = _client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-3.6-flash",
                 contents=" " + query,
                 config=types.GenerateContentConfig(
                     safety_settings=_safety_config,

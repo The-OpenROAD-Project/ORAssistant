@@ -10,7 +10,7 @@ import os
 
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
-from deepeval import evaluate
+from deepeval.evaluate import evaluate
 
 from auto_evaluation.src.models.gemini import GoogleGeminiLangChain
 from auto_evaluation.src.metrics.retrieval import (
