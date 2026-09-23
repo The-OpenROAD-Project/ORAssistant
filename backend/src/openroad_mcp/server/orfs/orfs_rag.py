@@ -83,10 +83,10 @@ class ORFSRag(ORFS):
         if gemini_model in {"1_pro", "1.5_flash", "1.5_pro"}:
             raise ValueError(
                 f"The selected Gemini model '{gemini_model}' (version 1.0–1.5) is disabled. "
-                "Please upgrade to version 2.0 or higher (e.g., 2.0_flash, 2.5_flash, 2.5_pro)."
+                "Please upgrade to version 2.0 or higher (e.g., 3.6_flash, 2.5_flash, 2.5_pro)."
             )
-        elif gemini_model == "2.0_flash":
-            ORFS.llm = ChatVertexAI(model_name="gemini-2.0-flash", temperature=llm_temp)
+        elif gemini_model == "3.6_flash":
+            ORFS.llm = ChatVertexAI(model_name="gemini-3.6-flash", temperature=llm_temp)
         elif gemini_model == "2.5_flash":
             ORFS.llm = ChatVertexAI(model_name="gemini-2.5-flash", temperature=llm_temp)
         elif gemini_model == "2.5_pro":
@@ -94,7 +94,7 @@ class ORFSRag(ORFS):
         else:
             raise ValueError(
                 f"GOOGLE_GEMINI environment variable '{gemini_model}' not set to a valid value. "
-                "Valid options: 2.0_flash, 2.5_flash, 2.5_pro"
+                "Valid options: 3.6_flash, 2.5_flash, 2.5_pro"
             )
     else:
         raise ValueError("LLM_MODEL environment variable not set to a valid value.")

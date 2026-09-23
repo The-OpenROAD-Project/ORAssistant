@@ -8,7 +8,6 @@ from typing import Any, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_google_vertexai import ChatVertexAI
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_core.messages import AIMessageChunk
 from starlette.responses import StreamingResponse
@@ -83,7 +82,7 @@ embeddings_config = {"type": embeddings_type, "name": embeddings_model_name}
 
 hf_reranker: str = str(os.getenv("HF_RERANKER"))
 
-llm: ChatGoogleGenerativeAI | ChatVertexAI | ChatOllama
+llm: ChatVertexAI | ChatOllama
 
 if os.getenv("LLM_MODEL") == "ollama":
     model_name = str(os.getenv("OLLAMA_MODEL"))
@@ -94,10 +93,10 @@ elif os.getenv("LLM_MODEL") == "gemini":
     if gemini_model in {"1_pro", "1.5_flash", "1.5_pro"}:
         raise ValueError(
             f"The selected Gemini model '{gemini_model}' (version 1.0–1.5) is disabled. "
-            "Please upgrade to version 2.0 or higher (e.g., 2.0_flash, 2.5_pro)."
+            "Please upgrade to version 2.0 or higher (e.g., 3.6_flash, 2.5_pro)."
         )
-    elif gemini_model == "2.0_flash":
-        llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=llm_temp)
+    elif gemini_model == "3.6_flash":
+        llm = ChatVertexAI(model_name="gemini-3.6-flash", temperature=llm_temp)
     elif gemini_model == "2.5_flash":
         llm = ChatVertexAI(model_name="gemini-2.5-flash", temperature=llm_temp)
     elif gemini_model == "2.5_pro":

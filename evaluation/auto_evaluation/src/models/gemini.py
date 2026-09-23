@@ -23,6 +23,7 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
     MAX_RETRY_DELAY_SECONDS = 30
 
     def __init__(self, model_name, *args, **kwargs):
+        self._model_name = model_name
         self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
         super().__init__(model_name, *args, **kwargs)
 
@@ -32,7 +33,7 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
     def generate(self, prompt: str, schema: Optional[Type[BaseModel]] = None) -> Any:
         if schema is not None:
             response = self.client.models.generate_content(
-                model=self.model_name,
+                model=self._model_name,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
@@ -42,7 +43,7 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
             return response.parsed
         else:
             response = self.client.models.generate_content(
-                model=self.model_name,
+                model=self._model_name,
                 contents=prompt,
             )
             return response.text
@@ -60,7 +61,7 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
         for attempt in range(self.MAX_GENERATE_ATTEMPTS):
             try:
                 response = await self.client.aio.models.generate_content(
-                    model=self.model_name,
+                    model=self._model_name,
                     contents=prompt,
                     config=config,
                 )
@@ -76,7 +77,7 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
         return response.text
 
     def get_model_name(self):
-        return self.model_name or "model-not-specified"
+        return self._model_name or "model-not-specified"
 
 
 def main():
