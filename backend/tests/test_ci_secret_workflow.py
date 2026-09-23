@@ -220,13 +220,13 @@ def test_every_workflow_expression_is_closed() -> None:
 
 
 def _run_report_step(
-    tmp_path: Path, needs: dict[str, object], report: str | None
+    tmp_path: Path, needs: dict[str, object], summary: str | None
 ) -> tuple[subprocess.CompletedProcess[str], str]:
     """Run the PR report step with a gh stub that records its arguments."""
     calls = tmp_path / "gh_calls"
-    if report is not None:
+    if summary is not None:
         (tmp_path / "evaluation-output").mkdir()
-        (tmp_path / "evaluation-output/llm_tests_output.txt").write_text(report)
+        (tmp_path / "evaluation-output/llm_tests_summary.md").write_text(summary)
     stub = f'gh() {{ printf "%s\\n" "$*" >> {calls}; }}\n'
     script = stub + _workflow_step_script("Report the result on the pull request")
     result = subprocess.run(
@@ -248,14 +248,17 @@ def _run_report_step(
 
 
 @requires_jq
-def test_report_posts_success_and_the_evaluation_output(tmp_path: Path) -> None:
+def test_report_posts_success_and_the_summary(tmp_path: Path) -> None:
     needs = {"resolve": {"result": "success"}, "docker-eval": {"result": "success"}}
 
-    result, calls = _run_report_step(tmp_path, needs, "all tests passed\n")
+    result, calls = _run_report_step(tmp_path, needs, "Aggregate Metrics\n")
 
     assert result.returncode == 0, result.stderr
     assert "statuses/feed -f state=success -f context=Secret CI" in calls
-    assert "pr comment 42 --repo org/repo --body-file" in calls
+    assert "pr comment 42 --repo org/repo --body-file comment.md" in calls
+    comment = (tmp_path / "comment.md").read_text()
+    assert comment.startswith("Secret CI success: https://example.test/run")
+    assert "Aggregate Metrics" in comment
 
 
 @requires_jq
@@ -269,4 +272,54 @@ def test_report_posts_failure_when_an_early_job_fails(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert "state=failure" in calls
-    assert "Secret CI failure with no evaluation output" in calls
+    comment = (tmp_path / "comment.md").read_text()
+    assert "Secret CI failure with no evaluation output" in comment
+
+
+def _run_summarize_step(tmp_path: Path, output: str | None) -> Path:
+    """Run the summarize step and return the summary path it may create."""
+    work = tmp_path / "evaluation/auto_evaluation"
+    work.mkdir(parents=True)
+    if output is not None:
+        (work / "llm_tests_output.txt").write_text(output)
+    result = subprocess.run(
+        [
+            "bash",
+            "-eo",
+            "pipefail",
+            "-c",
+            _workflow_step_script("Summarize evaluation output"),
+        ],
+        cwd=work,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    return work / "llm_tests_summary.md"
+
+
+def test_summary_keeps_only_the_aggregate_metrics(tmp_path: Path) -> None:
+    progress = "".join(f"test case {i} details\n" * 40 for i in range(200))
+    output = progress + "border\nAggregate Metrics\nPass Rate: 70.0%\n"
+
+    summary = _run_summarize_step(tmp_path, output).read_text()
+
+    assert len(output) > 65536
+    assert len(summary) < 65536
+    assert summary.startswith("```text\nborder\nAggregate Metrics")
+    assert "Pass Rate: 70.0%" in summary
+    assert "test case 0 details" not in summary
+
+
+def test_summary_falls_back_to_the_last_lines(tmp_path: Path) -> None:
+    output = "".join(f"line {i}\n" for i in range(300)) + "Traceback: boom\n"
+
+    summary = _run_summarize_step(tmp_path, output).read_text()
+
+    assert "Traceback: boom" in summary
+    assert "line 0\n" not in summary
+
+
+def test_summary_is_skipped_without_output(tmp_path: Path) -> None:
+    assert not _run_summarize_step(tmp_path, None).exists()
