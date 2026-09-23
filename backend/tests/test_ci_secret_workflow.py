@@ -132,3 +132,31 @@ def test_graph_readiness_timeout_fails_the_step() -> None:
 
     assert result.returncode != 0
     assert "Graph did not become ready" in result.stdout
+
+
+def _strings(node: object) -> list[str]:
+    if isinstance(node, str):
+        return [node]
+    if isinstance(node, dict):
+        return [
+            s for key, value in node.items() for s in _strings(key) + _strings(value)
+        ]
+    if isinstance(node, list):
+        return [s for item in node for s in _strings(item)]
+    return []
+
+
+def _expressions_closed(value: str) -> bool:
+    """Each ${{ must be closed by }} before the next ${{ starts."""
+    return all("}}" in chunk for chunk in value.split("${{")[1:])
+
+
+def test_every_workflow_expression_is_closed() -> None:
+    # An unquoted " #" starts a YAML comment and silently cuts a line short.
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+
+    unclosed = [value for value in _strings(workflow) if not _expressions_closed(value)]
+
+    assert unclosed == []
+    assert workflow["run-name"].endswith("}}")
