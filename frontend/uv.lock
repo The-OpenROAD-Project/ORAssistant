@@ -1109,7 +1109,7 @@ requires-dist = [
     { name = "starlette", specifier = ">=1.6.0" },
     { name = "streamlit", specifier = ">=1.64.0" },
     { name = "types-flask-cors", marker = "extra == 'test'", specifier = "==6.0.0.20250809" },
-    { name = "types-requests", marker = "extra == 'test'", specifier = "==2.32.0.20240622" },
+    { name = "types-requests", marker = "extra == 'test'", specifier = "==2.33.0.20260906" },
 ]
 provides-extras = ["test"]
 
@@ -1978,14 +1978,14 @@ wheels = [
 
 [[package]]
 name = "types-requests"
-version = "2.32.0.20240622"
+version = "2.33.0.20260906"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cf/99/ab96b7a68b26bbcff2865d0aa71bf6a895f04397a303dc027f96c58c4a58/types-requests-2.32.0.20240622.tar.gz", hash = "sha256:ed5e8a412fcc39159d6319385c009d642845f250c63902718f605cd90faade31", size = 17675, upload-time = "2024-06-22T02:23:05.437Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c0/18/4c2c0290953f8b3b9612adfcb07b57f144ade3ad32a76764fca42b77c5f3/types_requests-2.33.0.20260906.tar.gz", hash = "sha256:76ab8a0fb736744a0c3deee7aa57b2927e301f078d9e61f5391b3e92002416b9", size = 25263, upload-time = "2026-09-06T06:35:47.707Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8f/d0/409f7b40f9c34896b153c911d442c6e8d0f78035ddbfa387183aec5aa8c5/types_requests-2.32.0.20240622-py3-none-any.whl", hash = "sha256:97bac6b54b5bd4cf91d407e62f0932a74821bc2211f22116d9ee1dd643826caf", size = 15784, upload-time = "2024-06-22T02:23:03.651Z" },
+    { url = "https://files.pythonhosted.org/packages/60/4c/51ec821d22a45b4162fa3f3e9e94ea4c0f8c49e82363b10955baa5438391/types_requests-2.33.0.20260906-py3-none-any.whl", hash = "sha256:9f53622652bd921ead7a54d665be1b8d518165c8b51cc9d68d944cd6b6bfa8fb", size = 21461, upload-time = "2026-09-06T06:35:45.856Z" },
 ]
 
 [[package]]
