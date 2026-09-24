@@ -18,12 +18,9 @@ This project automates the evaluation of language model responses using classifi
 
 Create a `.env` file in the root directory with the following variables:
 ```plaintext
-GOOGLE_APPLICATION_CREDENTIALS=path/to/secret.json
-OPENAI_API_KEY=your_openai_api_key  # Required if testing against OpenAI models
+GOOGLE_API_KEY=your_google_api_key
+OPENAI_API_KEY=your_openai_api_key
 ```
-### Required Files
-
-- `secret.json`: Ensure you have a Google Vertex AI subscription and the necessary credentials file.
 
 ### Data Files
 
@@ -46,11 +43,10 @@ OPENAI_API_KEY=your_openai_api_key  # Required if testing against OpenAI models
    Use the following command to execute the script with customizable options:
 
    ```bash
-   python script.py --env-path /path/to/.env --creds-path /path/to/secret.json --iterations 10 --llms "base-gemini-1.5-flash,base-gpt-4o" --agent-retrievers "v1=http://url1.com,v2=http://url2.com"
+   python main.py --env-path /path/to/.env --iterations 10 --llms "base-gemini-1.5-flash,base-gpt-4o" --agent-retrievers "v1=http://url1.com,v2=http://url2.com"
    ```
 
    - `--env-path`: Path to the `.env` file.
-   - `--creds-path`: Path to the `secret.json` file.
    - `--iterations`: Number of iterations per question.
    - `--llms`: Comma-separated list of LLMs to test.
    - `--agent-retrievers`: Comma-separated list of agent-retriever names and URLs.
@@ -73,10 +69,10 @@ python main.py
 - Tests all available LLMs.
 - No additional agent-retrievers.
 
-### b. Specify .env and secret.json Paths
+### b. Specify .env Path
 
 ```bash
-python main.py --env-path /path/to/.env --creds-path /path/to/secret.json
+python main.py --env-path /path/to/.env
 ```
 
 ### c. Customize Iterations and Select Specific LLMs
@@ -96,7 +92,6 @@ python main.py --agent-retrievers "v1=http://url1.com,v2=http://url2.com"
 ```bash
 python main.py \
     --env-path /path/to/.env \
-    --creds-path /path/to/secret.json \
     --iterations 10 \
     --llms "base-gemini-1.5-flash,base-gpt-4o" \
     --agent-retrievers "v1=http://url1.com,v2=http://url2.com"
