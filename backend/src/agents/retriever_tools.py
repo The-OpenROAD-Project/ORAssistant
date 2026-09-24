@@ -1,12 +1,15 @@
 import os
+import logging
 from typing import Tuple, Optional, Union
 from dotenv import load_dotenv
 
 from langchain_core.tools import tool
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_classic.retrievers import ContextualCompressionRetriever
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
 from ..chains.hybrid_retriever_chain import HybridRetrieverChain
+from ..vectorstores.faiss import create_embedding_model
 from ..tools.format_docs import format_docs
 
 load_dotenv()
@@ -46,6 +49,19 @@ class RetrieverTools:
         use_cuda: bool = False,
         fast_mode: bool = False,
     ) -> None:
+        # Create shared model instances once
+        embedding_model = create_embedding_model(
+            embeddings_config["type"], embeddings_config["name"], use_cuda
+        )
+        logging.info("Shared embedding model created.")
+
+        # Only the HuggingFace reranker is a local model worth sharing. The
+        # chains build the Vertex AI reranker as an API client.
+        reranker_model: Optional[HuggingFaceCrossEncoder] = None
+        if os.getenv("RERANKER_TYPE", "HF").upper() != "VERTEX_AI":
+            reranker_model = HuggingFaceCrossEncoder(model_name=reranking_model_name)
+            logging.info("Shared reranker model created.")
+
         markdown_docs_map = {
             "general": [
                 "./data/markdown/OR_docs",
@@ -100,6 +116,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         general_retriever_chain.create_hybrid_retriever()
         RetrieverTools.general_retriever = general_retriever_chain.retriever
@@ -115,6 +133,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         install_retriever_chain.create_hybrid_retriever()
         RetrieverTools.install_retriever = install_retriever_chain.retriever
@@ -131,6 +151,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         commands_retriever_chain.create_hybrid_retriever()
         RetrieverTools.commands_retriever = commands_retriever_chain.retriever
@@ -146,6 +168,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         yosys_rtdocs_retriever_chain.create_hybrid_retriever()
         RetrieverTools.yosys_rtdocs_retriever = yosys_rtdocs_retriever_chain.retriever
@@ -161,6 +185,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         klayout_retriever_chain.create_hybrid_retriever()
         RetrieverTools.klayout_retriever = klayout_retriever_chain.retriever
@@ -176,6 +202,8 @@ class RetrieverTools:
             contextual_rerank=True,
             search_k=search_k,
             chunk_size=chunk_size,
+            embedding_model=embedding_model,
+            reranker_model=reranker_model,
         )
         errinfo_retriever_chain.create_hybrid_retriever()
         RetrieverTools.errinfo_retriever = errinfo_retriever_chain.retriever

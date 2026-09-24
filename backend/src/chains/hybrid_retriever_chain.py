@@ -15,7 +15,7 @@ from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain
 from .mmr_retriever_chain import MMRRetrieverChain
 from .bm25_retriever_chain import BM25RetrieverChain
-from ..vectorstores.faiss import FAISSVectorDatabase
+from ..vectorstores.faiss import EmbeddingModel, FAISSVectorDatabase
 
 
 class HybridRetrieverChain(BaseChain):
@@ -37,6 +37,8 @@ class HybridRetrieverChain(BaseChain):
         weights: list[float] = [0.33, 0.33, 0.33],
         chunk_size: int = 500,
         contextual_rerank: bool = False,
+        embedding_model: Optional[EmbeddingModel] = None,
+        reranker_model: Optional[HuggingFaceCrossEncoder] = None,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -47,6 +49,8 @@ class HybridRetrieverChain(BaseChain):
 
         self.reranking_model_name: Optional[str] = reranking_model_name
         self.use_cuda: bool = use_cuda
+        self.embedding_model: Optional[EmbeddingModel] = embedding_model
+        self.reranker_model: Optional[HuggingFaceCrossEncoder] = reranker_model
 
         self.search_k: int = search_k
         self.weights: list[float] = weights
@@ -73,6 +77,7 @@ class HybridRetrieverChain(BaseChain):
             html_docs_path=self.html_docs_path,
             chunk_size=self.chunk_size,
             use_cuda=self.use_cuda,
+            embedding_model=self.embedding_model,
         )
         if self.vector_db is None:
             cur_path = os.path.abspath(__file__)
@@ -147,12 +152,10 @@ class HybridRetrieverChain(BaseChain):
                 )
                 logging.info("Using Vertex AI reranker")
             else:
-                compressor = CrossEncoderReranker(
-                    model=HuggingFaceCrossEncoder(
-                        model_name=self.reranking_model_name
-                    ),
-                    top_n=self.search_k,
+                reranker = self.reranker_model or HuggingFaceCrossEncoder(
+                    model_name=self.reranking_model_name
                 )
+                compressor = CrossEncoderReranker(model=reranker, top_n=self.search_k)
                 logging.info("Using HuggingFace CrossEncoder reranker")
 
             self.retriever = ContextualCompressionRetriever(
