@@ -52,7 +52,9 @@ def test_run_passes_at_the_limit() -> None:
     check_retrieval(results)
 
 
-def test_harness_stops_before_the_judge_when_retrieval_is_empty() -> None:
+def test_harness_stops_before_the_judge_when_retrieval_is_empty(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     harness = object.__new__(EvaluationHarness)
     harness.qns = [
         {"question": f"question {i}", "ground_truth": "truth"} for i in range(5)
@@ -66,6 +68,8 @@ def test_harness_stops_before_the_judge_when_retrieval_is_empty() -> None:
         patch("auto_evaluation.eval_main.evaluate") as judge,
         pytest.raises(EmptyRetrievalError, match="5 of 5 questions"),
     ):
-        harness.evaluate("agent-retriever")
+        harness.evaluate("agent-retriever", metadata={"judge": "j"})
 
     judge.assert_not_called()
+    # A stopped run still names its setup.
+    assert "Run metadata: judge=j" in capsys.readouterr().out.splitlines()
