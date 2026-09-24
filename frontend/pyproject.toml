@@ -1,5 +1,5 @@
 [build-system]
-requires = ['setuptools>=60', 'Cython==3.0.7', 'wheel==0.48.0']
+requires = ['setuptools>=84.0.0', 'Cython==3.0.7', 'wheel==0.48.0']
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,8 +7,8 @@ name = "ora-frontend"
 version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
-  "fastapi[standard]>=0.136.3",
-  "pyarrow>=23.0.1",
+  "fastapi[standard]>=0.141.1",
+  "pyarrow>=25.0.1",
   "starlette>=1.6.0",
   "gitpython>=3.1.62",
   "streamlit>=1.64.0",
@@ -35,10 +35,10 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-  "pytz==2024.1",
+  "pytz==2026.3.post1",
   "mypy==2.3.1",
   "types-requests==2.33.0.20260906",
-  "pre-commit==3.7.1",
+  "pre-commit==4.6.2",
   "ruff==0.16.8",
   "types-Flask-Cors==6.0.0.20250809",
 ]
