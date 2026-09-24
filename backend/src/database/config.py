@@ -54,6 +54,9 @@ def run_migrations() -> None:
     alembic_ini = Path(__file__).resolve().parents[2] / "alembic.ini"
     alembic_cfg = Config(str(alembic_ini))
 
+    if engine is None:
+        raise RuntimeError("Database engine is not initialized")
+
     # Stamp pre-Alembic databases so migrations don't try to recreate tables
     inspector = inspect(engine)
     existing_tables = inspector.get_table_names()
