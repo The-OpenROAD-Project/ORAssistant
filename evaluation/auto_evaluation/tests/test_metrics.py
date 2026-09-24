@@ -16,7 +16,7 @@ from deepeval.metrics import (
 )
 from deepeval.models.base_model import DeepEvalBaseLLM
 
-from src.metrics.retrieval import (
+from auto_evaluation.src.metrics.retrieval import (
     make_contextual_precision_metric,
     make_contextual_recall_metric,
     make_contextual_relevancy_metric,
@@ -26,7 +26,7 @@ from src.metrics.retrieval import (
     RECALL_THRESHOLD,
     HALLUCINATION_THRESHOLD,
 )
-from src.metrics.content import (
+from auto_evaluation.src.metrics.content import (
     make_answer_relevancy_metric,
     make_bias_metric,
     make_toxicity_metric,
@@ -34,7 +34,7 @@ from src.metrics.content import (
     BIAS_THRESHOLD,
     TOXICITY_THRESHOLD,
 )
-from src.metrics.geval import make_correctness_metric
+from auto_evaluation.src.metrics.geval import make_correctness_metric
 
 
 @pytest.fixture

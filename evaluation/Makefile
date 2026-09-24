@@ -18,7 +18,8 @@ format:
 check:
 	@uv run mypy . && \
 		uv run ruff check && \
-		uv run python -m unittest tests/test_dependency_contracts.py tests/test_llm_tests_script.py
+		uv run python -m unittest tests/test_dependency_contracts.py tests/test_llm_tests_script.py && \
+		uv run pytest -q auto_evaluation/tests
 
 .PHONY: clean
 clean:
