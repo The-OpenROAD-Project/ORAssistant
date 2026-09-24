@@ -19,6 +19,7 @@ from deepeval.metrics import (
 )
 from deepeval.models.base_model import DeepEvalBaseLLM
 from deepeval.metrics.bias.schema import BiasVerdict
+from deepeval.metrics.hallucination.schema import HallucinationVerdict
 from deepeval.metrics.toxicity.schema import ToxicityVerdict
 from deepeval.test_case import LLMTestCase
 
@@ -230,6 +231,48 @@ class TestSafetyMetricDirection:
             patch.object(metric, "_a_generate_reason", AsyncMock(return_value="")),
         ):
             test_case = LLMTestCase(input="question", actual_output="answer")
+            asyncio.run(metric.a_measure(test_case, _show_indicator=False))
+
+        assert metric.score == pytest.approx(expected_score)
+        assert metric.success is expected_success
+
+
+class TestHallucinationMetricDirection:
+    """A high share of contradicted contexts must fail the case.
+
+    The judge LLM calls are mocked. DeepEval's own scoring and threshold
+    comparison run unchanged.
+    """
+
+    @pytest.mark.parametrize(
+        ("contradicted", "expected_score", "expected_success"),
+        [
+            (0, 1.0, True),
+            (3, 0.7, True),
+            (4, 0.6, False),
+            (10, 0.0, False),
+        ],
+    )
+    def test_high_share_of_contradicted_contexts_fails(
+        self, mock_model, contradicted, expected_score, expected_success
+    ):
+        total = 10
+        # A "no" verdict means the answer contradicts that context.
+        verdicts = [HallucinationVerdict(verdict="no", reason="")] * contradicted + [
+            HallucinationVerdict(verdict="yes", reason="")
+        ] * (total - contradicted)
+        metric = make_hallucination_metric(mock_model)
+        with (
+            patch.object(
+                metric, "_a_generate_verdicts", AsyncMock(return_value=verdicts)
+            ),
+            patch.object(metric, "_a_generate_reason", AsyncMock(return_value="")),
+        ):
+            test_case = LLMTestCase(
+                input="question",
+                actual_output="answer",
+                context=[f"context {i}" for i in range(total)],
+            )
             asyncio.run(metric.a_measure(test_case, _show_indicator=False))
 
         assert metric.score == pytest.approx(expected_score)
