@@ -2164,6 +2164,7 @@ dependencies = [
 test = [
     { name = "google-api-python-client-stubs" },
     { name = "mypy" },
+    { name = "pytest" },
     { name = "ruff" },
     { name = "types-requests" },
     { name = "types-tqdm" },
@@ -2194,6 +2195,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=23.0.1" },
     { name = "pydantic", specifier = "==2.13.5" },
     { name = "pygments", specifier = ">=2.21.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = "==9.1.1" },
     { name = "python-dotenv", specifier = "==1.2.3" },
     { name = "requests", specifier = "==2.34.2" },
     { name = "ruff", marker = "extra == 'test'", specifier = "==0.16.8" },

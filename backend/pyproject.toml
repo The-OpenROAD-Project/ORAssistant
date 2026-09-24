@@ -18,6 +18,7 @@ dependencies = [
     "langchain>=1.4.1",
     "langchain-classic>=1.0.8",
     "langchain-community>=0.4.2",
+    "langchain-google-community[vertexaisearch]>=5.0.0",
     "langchain-google-genai>=4.4.0",
     "langchain-google-vertexai>=3.2.4",
     "langchain-huggingface>=1.2.2",
@@ -78,6 +79,10 @@ asyncio_mode = "auto"
 
 [[tool.mypy.overrides]]
 module = "nest_asyncio"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "langchain_google_community.*"
 ignore_missing_imports = true
 
 [tool.mypy]
