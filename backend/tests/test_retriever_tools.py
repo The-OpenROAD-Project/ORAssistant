@@ -15,7 +15,7 @@ class TestRetrieverTools:
         assert isinstance(tools, RetrieverTools)
 
     @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
-    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
+    @patch("src.agents.retriever_tools.create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_initialize_success(
         self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
@@ -48,7 +48,7 @@ class TestRetrieverTools:
         )
 
         # Verify models are created exactly once
-        mock_create_embed.assert_called_once_with(embeddings_config, True)
+        mock_create_embed.assert_called_once_with("HF", "test-model", True)
         mock_cross_encoder.assert_called_once_with(model_name=reranking_model_name)
 
         # Verify the same shared instances are passed to all 6 chains
@@ -75,7 +75,7 @@ class TestRetrieverTools:
         assert RetrieverTools.errinfo_retriever == mock_chains[5].retriever
 
     @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
-    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
+    @patch("src.agents.retriever_tools.create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_initialize_with_fast_mode(
         self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
@@ -277,7 +277,7 @@ class TestRetrieverTools:
             RetrieverTools.retrieve_klayout_docs.invoke(input="test query")
 
     @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
-    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
+    @patch("src.agents.retriever_tools.create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_initialize_verifies_configuration_parameters(
         self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
@@ -317,7 +317,7 @@ class TestRetrieverTools:
             assert kwargs["contextual_rerank"] is True
 
     @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
-    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
+    @patch("src.agents.retriever_tools.create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_initialize_with_environment_variables(
         self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
@@ -364,7 +364,7 @@ class TestRetrieverTools:
         assert hasattr(RetrieverTools.retrieve_klayout_docs, "name")
 
     @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
-    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
+    @patch("src.agents.retriever_tools.create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_different_docs_paths_for_retrievers(
         self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
@@ -417,7 +417,7 @@ class TestRetrieverTools:
         assert any("man3" in path for path in errinfo_paths)
 
     @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
-    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
+    @patch("src.agents.retriever_tools.create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_html_docs_configuration(
         self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
@@ -481,7 +481,7 @@ class TestRetrieverTools:
             assert result == ("", [], [], [])
 
     @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
-    @patch("src.agents.retriever_tools.RetrieverTools._create_embedding_model")
+    @patch("src.agents.retriever_tools.create_embedding_model")
     @patch("src.agents.retriever_tools.HybridRetrieverChain")
     def test_retriever_chain_create_hybrid_retriever_called(
         self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder

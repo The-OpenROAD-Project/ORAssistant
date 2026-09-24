@@ -72,6 +72,38 @@ class _RetryingGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
         return super().embed_query(text, **kwargs)
 
 
+EmbeddingModel = Union[
+    HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
+]
+
+
+def create_embedding_model(
+    embeddings_type: str, model_name: str, use_cuda: bool = False
+) -> EmbeddingModel:
+    """Build the embedding model for an EMBEDDINGS_TYPE value.
+
+    Every caller uses this function, so a shared model has the same
+    configuration as one built by FAISSVectorDatabase.
+    """
+    if embeddings_type == "GOOGLE_GENAI":
+        logging.info("Using Google GenerativeAI embeddings...")
+        return _RetryingGoogleGenerativeAIEmbeddings(
+            model=model_name, task_type="retrieval_document"
+        )
+    if embeddings_type == "GOOGLE_VERTEXAI":
+        logging.info("Using Google VertexAI embeddings...")
+        return VertexAIEmbeddings(model=model_name)
+    if embeddings_type == "HF":
+        logging.info("Using HuggingFace embeddings...")
+        return HuggingFaceEmbeddings(
+            model_name=model_name,
+            multi_process=False,
+            encode_kwargs={"normalize_embeddings": True},
+            model_kwargs={"device": "cuda" if use_cuda else "cpu"},
+        )
+    raise ValueError("Invalid embeddings type specified.")
+
+
 class FAISSVectorDatabase:
     def __init__(
         self,
@@ -80,43 +112,17 @@ class FAISSVectorDatabase:
         distance_strategy: DistanceStrategy = DistanceStrategy.COSINE,
         debug: bool = False,
         use_cuda: bool = False,
-        embedding_model: Optional[
-            Union[
-                HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
-            ]
-        ] = None,
+        embedding_model: Optional[EmbeddingModel] = None,
     ):
         self.embeddings_model_name = embeddings_model_name
 
-        self.embedding_model: Union[
-            HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings
-        ]
-
-        if embedding_model is not None:
-            self.embedding_model = embedding_model
-        elif embeddings_type == "GOOGLE_GENAI":
-            self.embedding_model = _RetryingGoogleGenerativeAIEmbeddings(
-                model=self.embeddings_model_name,
-                task_type="retrieval_document",
+        self.embedding_model: EmbeddingModel = (
+            embedding_model
+            if embedding_model is not None
+            else create_embedding_model(
+                embeddings_type, self.embeddings_model_name, use_cuda
             )
-            logging.info("Using Google GenerativeAI embeddings...")
-
-        elif embeddings_type == "GOOGLE_VERTEXAI":
-            self.embedding_model = VertexAIEmbeddings(model=self.embeddings_model_name)
-            logging.info("Using Google VertexAI embeddings...")
-
-        elif embeddings_type == "HF":
-            model_kwargs = {"device": "cuda"} if use_cuda else {"device": "cpu"}
-            self.embedding_model = HuggingFaceEmbeddings(
-                model_name=self.embeddings_model_name,
-                multi_process=False,
-                encode_kwargs={"normalize_embeddings": True},
-                model_kwargs=model_kwargs,
-            )
-            logging.info("Using HuggingFace embeddings...")
-
-        else:
-            raise ValueError("Invalid embdeddings type specified.")
+        )
 
         self.debug = debug
         self.distance_strategy = distance_strategy

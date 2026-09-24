@@ -5,9 +5,8 @@ from langchain_classic.retrievers import EnsembleRetriever
 from langchain_classic.retrievers import ContextualCompressionRetriever
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_google_vertexai import ChatVertexAI, VertexAIEmbeddings
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_google_vertexai import ChatVertexAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_classic.retrievers.document_compressors import CrossEncoderReranker
 
@@ -15,7 +14,7 @@ from .base_chain import BaseChain
 from .similarity_retriever_chain import SimilarityRetrieverChain
 from .mmr_retriever_chain import MMRRetrieverChain
 from .bm25_retriever_chain import BM25RetrieverChain
-from ..vectorstores.faiss import FAISSVectorDatabase
+from ..vectorstores.faiss import EmbeddingModel, FAISSVectorDatabase
 
 
 class HybridRetrieverChain(BaseChain):
@@ -37,13 +36,7 @@ class HybridRetrieverChain(BaseChain):
         weights: list[float] = [0.33, 0.33, 0.33],
         chunk_size: int = 500,
         contextual_rerank: bool = False,
-        embedding_model: Optional[
-            Union[
-                HuggingFaceEmbeddings,
-                GoogleGenerativeAIEmbeddings,
-                VertexAIEmbeddings,
-            ]
-        ] = None,
+        embedding_model: Optional[EmbeddingModel] = None,
         reranker_model: Optional[HuggingFaceCrossEncoder] = None,
     ):
         super().__init__(
@@ -55,13 +48,7 @@ class HybridRetrieverChain(BaseChain):
 
         self.reranking_model_name: Optional[str] = reranking_model_name
         self.use_cuda: bool = use_cuda
-        self.embedding_model: Optional[
-            Union[
-                HuggingFaceEmbeddings,
-                GoogleGenerativeAIEmbeddings,
-                VertexAIEmbeddings,
-            ]
-        ] = embedding_model
+        self.embedding_model: Optional[EmbeddingModel] = embedding_model
         self.reranker_model: Optional[HuggingFaceCrossEncoder] = reranker_model
 
         self.search_k: int = search_k

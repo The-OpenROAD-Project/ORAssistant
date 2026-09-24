@@ -6,12 +6,10 @@ from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_classic.retrievers import ContextualCompressionRetriever
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
 from ..chains.hybrid_retriever_chain import HybridRetrieverChain
+from ..vectorstores.faiss import create_embedding_model
 from ..tools.format_docs import format_docs
 
 load_dotenv()
@@ -44,35 +42,6 @@ class RetrieverTools:
     ] = None
     tool_descriptions: str = ""
 
-    @staticmethod
-    def _create_embedding_model(
-        embeddings_config: dict[str, str],
-        use_cuda: bool = False,
-    ) -> Union[HuggingFaceEmbeddings, GoogleGenerativeAIEmbeddings, VertexAIEmbeddings]:
-        embeddings_type = embeddings_config["type"]
-        embeddings_model_name = embeddings_config["name"]
-
-        if embeddings_type == "GOOGLE_GENAI":
-            logging.info("Using Google GenerativeAI embeddings...")
-            return GoogleGenerativeAIEmbeddings(
-                model=embeddings_model_name,
-                task_type="retrieval_document",
-            )
-        elif embeddings_type == "GOOGLE_VERTEXAI":
-            logging.info("Using Google VertexAI embeddings...")
-            return VertexAIEmbeddings(model_name=embeddings_model_name)
-        elif embeddings_type == "HF":
-            logging.info("Using HuggingFace embeddings...")
-            model_kwargs = {"device": "cuda"} if use_cuda else {"device": "cpu"}
-            return HuggingFaceEmbeddings(
-                model_name=embeddings_model_name,
-                multi_process=False,
-                encode_kwargs={"normalize_embeddings": True},
-                model_kwargs=model_kwargs,
-            )
-        else:
-            raise ValueError("Invalid embeddings type specified.")
-
     def initialize(
         self,
         embeddings_config: dict[str, str],
@@ -81,7 +50,9 @@ class RetrieverTools:
         fast_mode: bool = False,
     ) -> None:
         # Create shared model instances once
-        embedding_model = self._create_embedding_model(embeddings_config, use_cuda)
+        embedding_model = create_embedding_model(
+            embeddings_config["type"], embeddings_config["name"], use_cuda
+        )
         logging.info("Shared embedding model created.")
 
         reranker_model = HuggingFaceCrossEncoder(model_name=reranking_model_name)

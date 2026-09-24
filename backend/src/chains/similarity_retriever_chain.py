@@ -3,12 +3,11 @@ from typing import Optional, Tuple, Any, Union
 
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_core.documents import Document
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_google_vertexai import ChatVertexAI, VertexAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_vertexai import ChatVertexAI
 from langchain_ollama import ChatOllama
 
-from ..vectorstores.faiss import FAISSVectorDatabase
+from ..vectorstores.faiss import EmbeddingModel, FAISSVectorDatabase
 from .base_chain import BaseChain
 
 
@@ -29,13 +28,7 @@ class SimilarityRetrieverChain(BaseChain):
         embeddings_config: Optional[dict[str, str]] = None,
         use_cuda: bool = False,
         chunk_size: int = 500,
-        embedding_model: Optional[
-            Union[
-                HuggingFaceEmbeddings,
-                GoogleGenerativeAIEmbeddings,
-                VertexAIEmbeddings,
-            ]
-        ] = None,
+        embedding_model: Optional[EmbeddingModel] = None,
     ):
         super().__init__(
             llm_model=llm_model,
@@ -48,13 +41,7 @@ class SimilarityRetrieverChain(BaseChain):
 
         self.embeddings_config: Optional[dict[str, str]] = embeddings_config
         self.use_cuda: bool = use_cuda
-        self.embedding_model: Optional[
-            Union[
-                HuggingFaceEmbeddings,
-                GoogleGenerativeAIEmbeddings,
-                VertexAIEmbeddings,
-            ]
-        ] = embedding_model
+        self.embedding_model: Optional[EmbeddingModel] = embedding_model
 
         self.markdown_docs_path: Optional[list[str]] = markdown_docs_path
         self.other_docs_path: Optional[list[str]] = other_docs_path

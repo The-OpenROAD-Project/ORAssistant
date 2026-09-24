@@ -61,7 +61,7 @@ class TestFAISSVectorDatabase:
 
     def test_init_with_invalid_embeddings_type(self):
         """Test initialization with invalid embeddings type raises error."""
-        with pytest.raises(ValueError, match="Invalid embdeddings type specified"):
+        with pytest.raises(ValueError, match="Invalid embeddings type specified"):
             FAISSVectorDatabase(
                 embeddings_type="INVALID", embeddings_model_name="test-model"
             )
