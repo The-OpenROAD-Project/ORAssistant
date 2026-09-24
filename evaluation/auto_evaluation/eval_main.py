@@ -4,6 +4,7 @@ the model to evaluate on the dataset.
 """
 
 import argparse
+import sys
 import time
 import requests
 import os
@@ -31,6 +32,31 @@ ALL_RETRIEVERS = {
 }
 RETRY_INTERVAL = 5
 RETRY_TIMEOUT = 600
+# A run stops when more than this share of questions get no retrieval context
+# or the answer "invalid". That means the backend is broken, and the judge
+# would only score it 0%.
+MAX_EMPTY_RETRIEVAL_SHARE = 0.10
+
+
+class EmptyRetrievalError(RuntimeError):
+    """Too many backend answers had no retrieval context."""
+
+
+def check_retrieval(results: list[tuple[str, dict]]) -> None:
+    """Raise EmptyRetrievalError if too many (question, response) pairs are empty."""
+    empty = [
+        question
+        for question, response in results
+        if not response["context_sources"]
+        or response["response"].strip().lower() == "invalid"
+    ]
+    if len(empty) > MAX_EMPTY_RETRIEVAL_SHARE * len(results):
+        examples = "; ".join(repr(question) for question in empty[:2])
+        raise EmptyRetrievalError(
+            f"{len(empty)} of {len(results)} questions had no retrieval context "
+            f"or the answer 'invalid' (limit {MAX_EMPTY_RETRIEVAL_SHARE:.0%}). "
+            f"Examples: {examples}"
+        )
 
 
 class EvaluationHarness:
@@ -77,6 +103,7 @@ class EvaluationHarness:
     def evaluate(self, retriever: str, limit: int | None = None):
         retrieval_tcs = []
         response_times = []
+        results = []
 
         # metrics
         precision, recall, hallucination = (
@@ -103,6 +130,11 @@ class EvaluationHarness:
             )
             retrieval_tcs.append(retrieval_tc)
             response_times.append(response_time)
+            results.append((question, response))
+
+        # Check before the judge runs: scoring empty answers costs judge calls
+        # and hides a broken backend behind a 0% score.
+        check_retrieval(results)
 
         evaluate(
             test_cases=retrieval_tcs,
@@ -149,4 +181,7 @@ if __name__ == "__main__":
 
     # Evaluate the model on the dataset
     harness = EvaluationHarness(args.base_url, args.dataset, args.reranker_base_url)
-    harness.evaluate(args.retriever, limit=args.limit)
+    try:
+        harness.evaluate(args.retriever, limit=args.limit)
+    except EmptyRetrievalError as error:
+        sys.exit(f"Retrieval check failed: {error}")
