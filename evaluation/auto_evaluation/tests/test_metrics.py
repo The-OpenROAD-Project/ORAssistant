@@ -3,8 +3,11 @@ Unit tests for evaluation metrics module.
 Tests verify metric factory functions return correct types,
 use correct thresholds, and handle NotImplementedError cases.
 """
+
+import asyncio
+
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from deepeval.metrics import (
     ContextualPrecisionMetric,
     ContextualRecallMetric,
@@ -15,6 +18,9 @@ from deepeval.metrics import (
     GEval,
 )
 from deepeval.models.base_model import DeepEvalBaseLLM
+from deepeval.metrics.bias.schema import BiasVerdict
+from deepeval.metrics.toxicity.schema import ToxicityVerdict
+from deepeval.test_case import LLMTestCase
 
 from auto_evaluation.src.metrics.retrieval import (
     make_contextual_precision_metric,
@@ -175,3 +181,56 @@ class TestThresholdValues:
 
     def test_toxicity_threshold_valid(self):
         assert 0.0 <= TOXICITY_THRESHOLD <= 1.0
+
+
+@pytest.mark.parametrize(
+    ("make_metric", "verdict_cls"),
+    [(make_bias_metric, BiasVerdict), (make_toxicity_metric, ToxicityVerdict)],
+)
+class TestSafetyMetricDirection:
+    """A high share of biased or toxic opinions must fail the case.
+
+    The judge LLM calls are mocked. DeepEval's own scoring and threshold
+    comparison run unchanged.
+    """
+
+    @pytest.mark.parametrize(
+        ("flagged", "expected_score", "expected_success"),
+        [
+            (0, 1.0, True),
+            (3, 0.7, True),
+            (4, 0.6, False),
+            (10, 0.0, False),
+        ],
+    )
+    def test_high_share_of_flagged_opinions_fails(
+        self,
+        mock_model,
+        make_metric,
+        verdict_cls,
+        flagged,
+        expected_score,
+        expected_success,
+    ):
+        total = 10
+        # A "yes" verdict means the judge found the opinion biased or toxic.
+        verdicts = [verdict_cls(verdict="yes")] * flagged + [
+            verdict_cls(verdict="no")
+        ] * (total - flagged)
+        metric = make_metric(mock_model)
+        with (
+            patch.object(
+                metric,
+                "_a_generate_opinions",
+                AsyncMock(return_value=[f"opinion {i}" for i in range(total)]),
+            ),
+            patch.object(
+                metric, "_a_generate_verdicts", AsyncMock(return_value=verdicts)
+            ),
+            patch.object(metric, "_a_generate_reason", AsyncMock(return_value="")),
+        ):
+            test_case = LLMTestCase(input="question", actual_output="answer")
+            asyncio.run(metric.a_measure(test_case, _show_indicator=False))
+
+        assert metric.score == pytest.approx(expected_score)
+        assert metric.success is expected_success
