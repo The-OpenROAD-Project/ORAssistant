@@ -279,6 +279,8 @@ def get_history_str(db: Session | None, conversation_uuid: UUID | None) -> str:
         try:
             history = crud.get_conversation_history(db, conversation_uuid)
         except SQLAlchemyError:
+            # Clear the failed transaction so later writes in this request work.
+            db.rollback()
             logging.error("Failed to retrieve conversation history", exc_info=True)
             return ""
         history_str = ""
@@ -312,27 +314,29 @@ async def get_agent_response(
 
     conversation_uuid = user_input.conversation_uuid
 
-    db_persist = use_db and db is not None
-    if db_persist:
+    # None when the database is disabled or a write fails; history then stays
+    # in memory for this request.
+    persist_db = db if use_db else None
+    if persist_db is not None:
         try:
             conversation = crud.get_or_create_conversation(
-                db,
+                persist_db,
                 conversation_uuid=conversation_uuid,
                 title=user_question[:100] if user_question else None,
             )
             conversation_uuid = conversation.uuid
 
             crud.create_message(
-                db=db,
+                db=persist_db,
                 conversation_uuid=conversation.uuid,
                 role="user",
                 content=user_question,
             )
         except SQLAlchemyError:
             logging.error("Failed to persist user message", exc_info=True)
-            db_persist = False
+            persist_db = None
 
-    if not db_persist:
+    if persist_db is None:
         if conversation_uuid is None:
             from uuid import uuid4
 
@@ -344,7 +348,7 @@ async def get_agent_response(
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db if db_persist else None, conversation_uuid),
+        "chat_history": get_history_str(persist_db, conversation_uuid),
     }
 
     graph = get_graph()
@@ -363,10 +367,10 @@ async def get_agent_response(
         ]
     }
 
-    if db_persist and conversation_uuid:
+    if persist_db is not None and conversation_uuid:
         try:
             crud.create_message(
-                db=db,
+                db=persist_db,
                 conversation_uuid=conversation_uuid,
                 role="assistant",
                 content=llm_response,
@@ -419,27 +423,29 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
     conversation_uuid = user_input.conversation_uuid
 
-    db_persist = use_db and db is not None
-    if db_persist:
+    # None when the database is disabled or a write fails; history then stays
+    # in memory for this request.
+    persist_db = db if use_db else None
+    if persist_db is not None:
         try:
             conversation = crud.get_or_create_conversation(
-                db,
+                persist_db,
                 conversation_uuid=conversation_uuid,
                 title=user_question[:100] if user_question else None,
             )
             conversation_uuid = conversation.uuid
 
             crud.create_message(
-                db=db,
+                db=persist_db,
                 conversation_uuid=conversation.uuid,
                 role="user",
                 content=user_question,
             )
         except SQLAlchemyError:
             logging.error("Failed to persist user message", exc_info=True)
-            db_persist = False
+            persist_db = None
 
-    if not db_persist:
+    if persist_db is None:
         if conversation_uuid is None:
             from uuid import uuid4
 
@@ -451,7 +457,7 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
         "messages": [
             ("user", user_question),
         ],
-        "chat_history": get_history_str(db if db_persist else None, conversation_uuid),
+        "chat_history": get_history_str(persist_db, conversation_uuid),
     }
 
     urls: list[str] = []
@@ -492,13 +498,13 @@ async def get_response_stream(user_input: UserInput, db: Session | None) -> Any:
 
     full_response = "".join(chunks)
 
-    if db_persist and conversation_uuid:
+    if persist_db is not None and conversation_uuid:
         try:
             context_sources_dict: dict[str, Any] = {
                 "sources": [{"source": url, "context": ""} for url in urls]
             }
             crud.create_message(
-                db=db,
+                db=persist_db,
                 conversation_uuid=conversation_uuid,
                 role="assistant",
                 content=full_response,

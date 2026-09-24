@@ -563,3 +563,54 @@ class TestInMemoryChatHistoryBounding:
                 conversations.add_conversation_to_history(uuid4())
 
             assert len(conversations.chat_history) == 10
+
+
+class TestDatabaseFailures:
+    """The chat endpoints keep working when the database fails."""
+
+    def test_history_read_failure_rolls_back(self):
+        from sqlalchemy.exc import SQLAlchemyError
+
+        db = Mock(spec=Session)
+        with patch.object(
+            conversations.crud,
+            "get_conversation_history",
+            side_effect=SQLAlchemyError("DB error"),
+        ):
+            history = conversations.get_history_str(db, uuid4())
+
+        assert history == ""
+        db.rollback.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_stream_keeps_history_in_memory_when_the_db_fails(
+        self, db_session: Session, mock_retriever_graph, sample_user_input: UserInput
+    ):
+        from sqlalchemy.exc import SQLAlchemyError
+
+        async def mock_astream_events(*args, **kwargs):
+            yield {"event": "on_chat_model_end", "data": {}}
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": AIMessageChunk(content="Answer")},
+            }
+
+        mock_retriever_graph.astream_events = mock_astream_events
+        conversation_uuid = sample_user_input.conversation_uuid
+
+        with patch.object(
+            conversations.crud,
+            "create_message",
+            side_effect=SQLAlchemyError("DB error"),
+        ):
+            chunks = [
+                chunk
+                async for chunk in conversations.get_response_stream(
+                    sample_user_input, db_session
+                )
+            ]
+
+        assert any("Answer" in chunk for chunk in chunks)
+        assert conversations.chat_history[conversation_uuid] == [
+            {"User": "What is OpenROAD?", "AI": "Answer"}
+        ]
