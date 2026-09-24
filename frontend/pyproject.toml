@@ -35,7 +35,7 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-  "pytz==2024.1",
+  "pytz==2026.3.post1",
   "mypy==2.3.1",
   "types-requests==2.33.0.20260906",
   "pre-commit==4.6.2",
