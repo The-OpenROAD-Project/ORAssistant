@@ -44,7 +44,7 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-    "mypy==1.10.1",
+    "mypy==2.3.1",
     "ruff==0.16.8",
     "types-requests==2.33.0.20260906",
     "google-api-python-client-stubs==1.40.0",
