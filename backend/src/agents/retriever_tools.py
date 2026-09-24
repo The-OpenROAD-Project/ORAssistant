@@ -55,8 +55,12 @@ class RetrieverTools:
         )
         logging.info("Shared embedding model created.")
 
-        reranker_model = HuggingFaceCrossEncoder(model_name=reranking_model_name)
-        logging.info("Shared reranker model created.")
+        # Only the HuggingFace reranker is a local model worth sharing. The
+        # chains build the Vertex AI reranker as an API client.
+        reranker_model: Optional[HuggingFaceCrossEncoder] = None
+        if os.getenv("RERANKER_TYPE", "HF").upper() != "VERTEX_AI":
+            reranker_model = HuggingFaceCrossEncoder(model_name=reranking_model_name)
+            logging.info("Shared reranker model created.")
 
         markdown_docs_map = {
             "general": [

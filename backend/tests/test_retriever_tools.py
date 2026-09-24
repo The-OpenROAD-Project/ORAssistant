@@ -120,6 +120,25 @@ class TestRetrieverTools:
         # other_docs_path should be empty list
         assert general_kwargs["other_docs_path"] == []
 
+    @patch.dict("os.environ", {"RERANKER_TYPE": "VERTEX_AI"})
+    @patch("src.agents.retriever_tools.HuggingFaceCrossEncoder")
+    @patch("src.agents.retriever_tools.create_embedding_model")
+    @patch("src.agents.retriever_tools.HybridRetrieverChain")
+    def test_initialize_skips_local_reranker_for_vertex_ai(
+        self, mock_hybrid_chain, mock_create_embed, mock_cross_encoder
+    ):
+        """The Vertex AI reranker needs no shared HuggingFace model."""
+        mock_hybrid_chain.return_value = Mock()
+
+        RetrieverTools().initialize(
+            embeddings_config={"type": "HF", "name": "test-model"},
+            reranking_model_name="test-reranker",
+        )
+
+        mock_cross_encoder.assert_not_called()
+        for call in mock_hybrid_chain.call_args_list:
+            assert call.kwargs["reranker_model"] is None
+
     @patch("src.agents.retriever_tools.format_docs")
     def test_retrieve_general_success(self, mock_format_docs):
         """Test successful general retrieval."""
