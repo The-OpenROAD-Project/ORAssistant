@@ -102,3 +102,89 @@ def test_get_or_publications_downloads_each_paper_once(
         "data/pdf/OR_publications/c390.pdf": paper_url,
         "data/pdf/OR_publications/c391.pdf": other_url,
     }
+
+
+def test_repo_commit_env_override_skips_ls_remote(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("OR_REPO_COMMIT", "abc123")
+
+    def fail_run(command, **kwargs):
+        raise AssertionError(f"unexpected command: {command}")
+
+    monkeypatch.setattr(build_docs.subprocess, "run", fail_run)
+
+    assert (
+        build_docs.resolve_repo_commit("OR_REPO_COMMIT", build_docs.OR_REPO_URL)
+        == "abc123"
+    )
+
+
+def test_repo_commit_defaults_to_master_head(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("ORFS_REPO_COMMIT", raising=False)
+    head = "2bf0c95e8bbfc87bf7002690c2f47006cf0a71a7"
+    commands = []
+
+    def fake_ls_remote(command, **kwargs):
+        commands.append(command)
+        return subprocess.CompletedProcess(
+            command, 0, stdout=f"{head}\trefs/heads/master\n", stderr=""
+        )
+
+    monkeypatch.setattr(build_docs.subprocess, "run", fake_ls_remote)
+
+    commit = build_docs.resolve_repo_commit(
+        "ORFS_REPO_COMMIT", build_docs.ORFS_REPO_URL
+    )
+
+    assert commit == head
+    assert commands == [
+        ["git", "ls-remote", build_docs.ORFS_REPO_URL, "refs/heads/master"]
+    ]
+
+
+@pytest.mark.parametrize(
+    "result",
+    [
+        subprocess.CompletedProcess([], 128, stdout="", stderr="fatal: no access"),
+        subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+    ],
+)
+def test_repo_commit_fails_when_master_is_not_resolved(
+    monkeypatch: pytest.MonkeyPatch, result: subprocess.CompletedProcess
+):
+    monkeypatch.delenv("OR_REPO_COMMIT", raising=False)
+    monkeypatch.setattr(build_docs.subprocess, "run", lambda command, **kw: result)
+
+    with pytest.raises(SystemExit) as exit_info:
+        build_docs.resolve_repo_commit("OR_REPO_COMMIT", build_docs.OR_REPO_URL)
+
+    assert exit_info.value.code == 1
+
+
+def test_write_build_info_records_inputs_and_paper_urls(backend_dir: Path):
+    (backend_dir / "data").mkdir()
+    build_docs.source_dict.update(
+        {
+            "data/pdf/OR_publications/c391.pdf": "https://example.org/c391.pdf",
+            "data/pdf/OR_publications/c390.pdf": "https://example.org/c390.pdf",
+            "data/pdf/OpenSTA/OpenSTA_docs.pdf": "https://example.org/OpenSTA.pdf",
+            "data/markdown/OR_docs/general/README.md": "https://example.org/README",
+        }
+    )
+    commits = {"OpenROAD": "a" * 40, "OpenROAD-flow-scripts": "b" * 40}
+
+    build_docs.write_build_info(commits, crawl_date="2026-09-25T12:00:00Z")
+
+    build_info = json.loads((backend_dir / "data/BUILD_INFO.json").read_text())
+    assert build_info == {
+        "crawl_date": "2026-09-25T12:00:00Z",
+        "commits": {
+            "OpenROAD": "a" * 40,
+            "OpenROAD-flow-scripts": "b" * 40,
+            "OpenSTA": build_docs.opensta_repo_commit,
+        },
+        "gh_discussions_revision": build_docs.GH_DISCUSSIONS_REVISION,
+        "paper_urls": [
+            "https://example.org/c390.pdf",
+            "https://example.org/c391.pdf",
+        ],
+    }

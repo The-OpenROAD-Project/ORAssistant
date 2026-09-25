@@ -118,7 +118,9 @@ cd backend
 cp .env.example .env
 ```
 
-**Step 3**: For populating the `data` folder with OR/ORFS docs, OpenSTA docs and Yosys docs, run:
+**Step 3**: For populating the `data` folder with OR/ORFS docs, OpenSTA docs and Yosys docs, run the command below.
+It uses the current OpenROAD and ORFS master, unless you set `OR_REPO_COMMIT` or `ORFS_REPO_COMMIT`.
+It records the commits, the crawl date, and the paper URLs in `data/BUILD_INFO.json`.
 
 ```bash
 python build_docs.py

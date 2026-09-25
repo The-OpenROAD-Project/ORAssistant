@@ -6,6 +6,7 @@ import shutil
 import logging
 import sys
 
+from datetime import datetime, timezone
 from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
@@ -20,11 +21,12 @@ source_dict: dict[str, str] = {}
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(cur_dir)
 
-# Get commit hashes from env
-or_repo_commit = os.getenv("OR_REPO_COMMIT", "ffc5760f2df639cd184c40ceba253c7e02a006d5")
-orfs_repo_commit = os.getenv(
-    "ORFS_REPO_COMMIT", "b94834df01cb58915bc0e8dabf85a314fbd8fb9e"
-)
+OR_REPO_URL = "https://github.com/The-OpenROAD-Project/OpenROAD.git"
+ORFS_REPO_URL = "https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git"
+# The gh_discussions files come from this dataset commit (2024-09-10), not
+# from main, so that a rebuild does not take in a new upload by accident.
+GH_DISCUSSIONS_REVISION = "0cc9586013d96a8e158e83dd6608e9597d4e4883"
+
 opensta_repo_commit = os.getenv(
     "OPENSTA_REPO_COMMIT", "1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5"
 )
@@ -149,6 +151,20 @@ def copy_tree_track_src(src: str, dst: str) -> None:
 
             dst_path = dst_file.split("backend/")[-1]
             update_src(src_file, dst_path)
+
+
+def resolve_repo_commit(env_var: str, url: str) -> str:
+    """Return the commit set in env_var, else the current master HEAD of url."""
+    commit = os.getenv(env_var)
+    if commit:
+        return commit
+
+    command = ["git", "ls-remote", url, "refs/heads/master"]
+    res = subprocess.run(command, capture_output=True, text=True)
+    if res.returncode != 0 or not res.stdout.strip():
+        logging.error(f"Cannot resolve master of {url}: {res.stderr}")
+        sys.exit(1)
+    return res.stdout.split()[0]
 
 
 def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) -> None:
@@ -456,8 +472,31 @@ def write_source_list() -> None:
         src.write(json.dumps(source_dict))
 
 
+def write_build_info(commits: dict[str, str], crawl_date: str) -> None:
+    """Record the inputs of this build in data/BUILD_INFO.json."""
+    paper_urls = sorted(
+        url
+        for path, url in source_dict.items()
+        if path.startswith("data/pdf/OR_publications/")
+    )
+    build_info = {
+        "crawl_date": crawl_date,
+        "commits": {**commits, "OpenSTA": opensta_repo_commit},
+        "gh_discussions_revision": GH_DISCUSSIONS_REVISION,
+        "paper_urls": paper_urls,
+    }
+    with open(f"{cur_dir}/data/BUILD_INFO.json", "w") as f:
+        json.dump(build_info, f, indent=2)
+        f.write("\n")
+
+
 if __name__ == "__main__":
     logging.info("Building knowledge base...")
+    crawl_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    commits = {
+        "OpenROAD": resolve_repo_commit("OR_REPO_COMMIT", OR_REPO_URL),
+        "OpenROAD-flow-scripts": resolve_repo_commit("ORFS_REPO_COMMIT", ORFS_REPO_URL),
+    }
     docs_paths = ["data"]
     purge_folders(folder_paths=docs_paths)
 
@@ -482,13 +521,13 @@ if __name__ == "__main__":
     get_opensta_docs()
 
     clone_repo(
-        url="https://github.com/The-OpenROAD-Project/OpenROAD.git",
-        commit_hash=or_repo_commit,
+        url=OR_REPO_URL,
+        commit_hash=commits["OpenROAD"],
         folder_name="OpenROAD",
     )
     clone_repo(
-        url="https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git",
-        commit_hash=orfs_repo_commit,
+        url=ORFS_REPO_URL,
+        commit_hash=commits["OpenROAD-flow-scripts"],
         folder_name="OpenROAD-flow-scripts",
     )
 
@@ -507,7 +546,7 @@ if __name__ == "__main__":
     snapshot_download(
         repo_id="The-OpenROAD-Project/ORAssistant_RAG_Dataset",
         repo_type="dataset",
-        revision="main",
+        revision=GH_DISCUSSIONS_REVISION,
         allow_patterns=[
             "markdown/gh_discussions/**/*",
             "markdown/gh_discussions/*",
@@ -516,6 +555,7 @@ if __name__ == "__main__":
     )
 
     write_source_list()
+    write_build_info(commits, crawl_date)
 
     repo_paths = ["OpenROAD", "OpenROAD-flow-scripts"]
     purge_folders(folder_paths=repo_paths)
