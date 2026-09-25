@@ -1,42 +1,78 @@
 name: Upload latest documentation
 
+# Build the RAG corpus and upload it to a Hugging Face dataset branch, never to
+# main. Secret CI reads a pinned commit (HF_RAG_REVISION in ci-secret.yaml), so
+# a new corpus is used only after that pin moves to the branch head.
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: Hugging Face dataset branch to write (not main); created if missing
+        required: true
+        type: string
+      or_commit:
+        description: OpenROAD commit to build (empty for the current master)
+        required: false
+        type: string
+        default: ''
+      orfs_commit:
+        description: OpenROAD-flow-scripts commit to build (empty for the current master)
+        required: false
+        type: string
+        default: ''
 
 env:
   HF_RAG_REPO: The-OpenROAD-Project/ORAssistant_RAG_Dataset
-  OR_COMMIT_HASH: ffc5760f2df639cd184c40ceba253c7e02a006d5
-  ORFS_COMMIT_HASH: b94834df01cb58915bc0e8dabf85a314fbd8fb9e
-  OPENSTA_COMMIT_HASH: 1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5
 
 jobs:
   or-manpages:
     runs-on: ubuntu-latest
     steps:
+    - name: Check the branch
+      env:
+        BRANCH: ${{ inputs.branch }}
+      run: |
+        case "$BRANCH" in
+          ''|main|refs/heads/main)
+            echo "::error::Choose a Hugging Face branch other than main"
+            exit 1
+            ;;
+        esac
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+    - name: Install uv
+      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
     - name: Set up prerequisites
       working-directory: ./backend
       run: |
         sudo apt-get update
         sudo apt-get install -y make pandoc git
         make init-dev
-    - name: Populate environment variables
+    - name: Build the corpus
       working-directory: ./backend
-      run: |
-        rm -f .env && touch .env
-        echo "OR_REPO_COMMIT=$OR_COMMIT_HASH" >> .env
-        echo "ORFS_REPO_COMMIT=$ORFS_COMMIT_HASH" >> .env
-        echo "OPENSTA_REPO_COMMIT=$OPENSTA_COMMIT_HASH" >> .env
-    - name: Preprocess docs
-      working-directory: ./backend
+      env:
+        OR_REPO_COMMIT: ${{ inputs.or_commit }}
+        ORFS_REPO_COMMIT: ${{ inputs.orfs_commit }}
       run: |
         . .venv/bin/activate
         python build_docs.py
-    - name: Upload files
+    - name: Upload to the Hugging Face branch
       working-directory: ./backend
+      env:
+        BRANCH: ${{ inputs.branch }}
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
         . .venv/bin/activate
-        huggingface-cli login --token ${{ secrets.HF_TOKEN }}
-        huggingface-cli upload ${{ env.HF_RAG_REPO }} ./data / --repo-type dataset
-        huggingface-cli logout
+        hf repos branch create "$HF_RAG_REPO" "$BRANCH" --repo-type dataset --exist-ok
+        # Delete the old corpus files that this build did not make. README.md
+        # and LICENSE stay; Hugging Face never deletes .gitattributes.
+        hf upload "$HF_RAG_REPO" ./data . --repo-type dataset --revision "$BRANCH" \
+          --delete 'markdown/*' --delete 'html/*' --delete 'pdf/*' --delete '*.json' \
+          --commit-message "Corpus build from ORAssistant $GITHUB_SHA"
+        head=$(git ls-remote "https://huggingface.co/datasets/$HF_RAG_REPO" "refs/heads/$BRANCH" | cut -f1)
+        if [ -z "$head" ]; then
+          echo "::error::Cannot read the head of branch $BRANCH"
+          exit 1
+        fi
+        echo "Branch $BRANCH is at $head"
+        echo "Set HF_RAG_REVISION in ci-secret.yaml to \`$head\` (branch \`$BRANCH\`)." >> "$GITHUB_STEP_SUMMARY"
