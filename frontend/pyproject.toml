@@ -15,7 +15,7 @@ dependencies = [
   "requests==2.34.2",
   "requests-oauthlib==2.0.0",
   "Pillow>=12.2.0",
-  "protobuf>=5.29.6",
+  "protobuf>=7.36.2",
   "google-auth==2.58.0",
   "google-auth-httplib2==0.4.2",
   "google-auth-oauthlib==1.4.1",
