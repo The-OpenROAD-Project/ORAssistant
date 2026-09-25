@@ -26,20 +26,21 @@ def write_data(results_list: list[dict[str, Any]], results_path: str):
     print(f"Results written to {results_path}")
 
 
-def read_deepeval_cache():
+def read_deepeval_cache() -> dict[str, dict[str, float]]:
+    """Print the mean score and pass rate of each metric, and return them."""
     import os
 
     cache_file = ".deepeval/.deepeval-cache.json"
     if not os.path.exists(cache_file):
         print(f"Warning: {cache_file} not found. Skipping cache read.")
-        return
+        return {}
 
-    metric_scores = {
+    metric_scores: dict[str, list[float]] = {
         "Contextual Precision": [],
         "Contextual Recall": [],
         "Hallucination": [],
     }
-    metric_passes = {
+    metric_passes: dict[str, list[bool]] = {
         "Contextual Precision": [],
         "Contextual Recall": [],
         "Hallucination": [],
@@ -61,6 +62,14 @@ def read_deepeval_cache():
     print("Metric Passrates: ")
     for key, value in metric_passes.items():
         print(key, value.count(True) / len(value))
+
+    return {
+        key: {
+            "mean": sum(metric_scores[key]) / len(metric_scores[key]),
+            "pass_rate": metric_passes[key].count(True) / len(metric_passes[key]),
+        }
+        for key in metric_scores
+    }
 
 
 if __name__ == "__main__":

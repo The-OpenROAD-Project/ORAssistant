@@ -340,3 +340,20 @@ def test_commit_comment_posts_when_the_eval_fails() -> None:
     assert "always()" in condition
     assert "needs.resolve.outputs.pr == ''" in condition
     assert "hashFiles('evaluation/auto_evaluation/llm_tests_summary.md')" in condition
+
+
+def test_master_runs_keep_the_results_file_for_90_days() -> None:
+    # A later run reads the last master results file as its baseline.
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    steps = workflow["jobs"]["docker-eval"]["steps"]
+    step = next(s for s in steps if s.get("name") == "Upload evaluation results")
+
+    assert "always()" in step["if"]
+    assert "needs.resolve.outputs.pr == ''" in step["if"]
+    assert step["uses"] == (
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
+    )
+    assert step["with"]["name"] == "eval-results-${{ github.run_id }}"
+    assert step["with"]["path"] == "evaluation/auto_evaluation/eval_results.json"
+    assert step["with"]["retention-days"] == 90

@@ -107,8 +107,11 @@ class TestEvaluationRun:
     @patch("auto_evaluation.eval_main.preprocess.read_deepeval_cache")
     @patch("auto_evaluation.eval_main.evaluate")
     def test_run_logs_metadata_as_hyperparameters(
-        self, deepeval_evaluate, _read_cache, capsys
+        self, deepeval_evaluate, read_cache, capsys, tmp_path, monkeypatch
     ):
+        # The run writes its results file to the working directory.
+        monkeypatch.chdir(tmp_path)
+        read_cache.return_value = {}
         harness = object.__new__(EvaluationHarness)
         harness.eval_model = MagicMock(spec=DeepEvalBaseLLM)
         harness.qns = [{"question": "q", "ground_truth": "a"}]

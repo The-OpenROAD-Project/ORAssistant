@@ -1,5 +1,6 @@
 """Tests for the check that stops an eval run when retrieval comes back empty."""
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -54,7 +55,11 @@ def test_run_passes_at_the_limit() -> None:
 
 def test_harness_stops_before_the_judge_when_retrieval_is_empty(
     capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # A stopped run writes its results file to the working directory.
+    monkeypatch.chdir(tmp_path)
     harness = object.__new__(EvaluationHarness)
     harness.qns = [
         {"question": f"question {i}", "ground_truth": "truth"} for i in range(5)
