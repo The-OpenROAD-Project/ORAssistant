@@ -20,7 +20,7 @@ from auto_evaluation.src.metrics.retrieval import (
     make_hallucination_metric,
 )
 from auto_evaluation.dataset import hf_pull, preprocess
-from auto_evaluation import run_metadata, run_results
+from auto_evaluation import eval_cases, run_metadata, run_results
 from tqdm import tqdm
 
 eval_root_path = os.path.join(os.path.dirname(__file__), "..")
@@ -132,23 +132,33 @@ class EvaluationHarness:
 
         # retrieval test cases
         questions = self.qns[:limit] if limit else self.qns
-        for i, qa_pair in enumerate(tqdm(questions, desc="Evaluating")):
-            question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
-            response, response_time = self.query(retriever, question)
-            response_text = response["response"]
-            context_list = [r["context"] for r in response["context_sources"]]
+        # Write each case record at once, so a stopped run keeps them.
+        with open(eval_cases.CASES_FILE, "w") as cases_file:
+            for index, qa_pair in enumerate(tqdm(questions, desc="Evaluating")):
+                question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
+                response, response_time = self.query(retriever, question)
+                response_text = response["response"]
+                context_list = [r["context"] for r in response["context_sources"]]
 
-            # works for: precision, recall, hallucination
-            retrieval_tc = LLMTestCase(
-                input=question,
-                actual_output=response_text,
-                expected_output=ground_truth,
-                context=context_list,
-                retrieval_context=context_list,
-            )
-            retrieval_tcs.append(retrieval_tc)
-            response_times.append(response_time)
-            results.append((question, response))
+                case = eval_cases.record(index, question, response)
+                eval_cases.append(cases_file, case)
+                # Clear the progress bar first, so the line stays whole.
+                with tqdm.external_write_mode():
+                    print(eval_cases.format_line(case), flush=True)
+
+                # works for: precision, recall, hallucination
+                retrieval_tc = LLMTestCase(
+                    name=f"test_case_{index}",
+                    input=question,
+                    actual_output=response_text,
+                    expected_output=ground_truth,
+                    context=context_list,
+                    retrieval_context=context_list,
+                    metadata={"tool": case["tool"], "sources": case["sources"]},
+                )
+                retrieval_tcs.append(retrieval_tc)
+                response_times.append(response_time)
+                results.append((question, response))
 
         # Print the metadata before the retrieval check, so a stopped run names
         # its setup too. Flush so progress bars on stderr cannot split the line.
@@ -191,7 +201,7 @@ class EvaluationHarness:
             if retriever != "agent-retriever-reranker"
             else f"{self.reranker_base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         )
-        payload = {"query": query, "list_context": True, "list_sources": False}
+        payload = {"query": query, "list_context": True, "list_sources": True}
         time.sleep(5)
         response = requests.post(url, json=payload)
         response.raise_for_status()

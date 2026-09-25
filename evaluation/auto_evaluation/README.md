@@ -33,3 +33,18 @@ and pass rate of each metric. A stopped run has `"status": "stopped"` and
 `"metrics": null`. Secret CI uploads the file from master runs as the
 artifact `eval-results-<run id>` and keeps it 90 days, as a baseline for later
 runs. See `run_results.py` for the schema.
+
+## Case records
+
+Each case prints one line with the retrieval tool that the backend ran and the
+source URLs that it found:
+
+```text
+Case 20: tool=retrieve_cmds sources=[https://a.example,https://b.example]
+```
+
+The index is the 0-based question position in the dataset. The DeepEval test
+case is named `test_case_<index>` and has the tool and sources as metadata.
+The run also writes the same records to `eval_cases.jsonl` in its working
+directory, one JSON line per case, as it goes. The file is not uploaded. See
+`eval_cases.py` for the format.
