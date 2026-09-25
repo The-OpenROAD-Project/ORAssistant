@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 import textwrap
@@ -156,8 +157,8 @@ def test_resolve_rejects_a_conflicting_pr(tmp_path: Path) -> None:
     assert outputs == {}
 
 
-def _workflow_step_script(step_name: str) -> str:
-    lines = WORKFLOW.read_text().splitlines()
+def _workflow_step_script(step_name: str, workflow: Path = WORKFLOW) -> str:
+    lines = workflow.read_text().splitlines()
     step_index = next(
         index
         for index, line in enumerate(lines)
@@ -347,3 +348,93 @@ def test_summary_falls_back_to_the_last_lines(tmp_path: Path) -> None:
 
 def test_summary_is_skipped_without_output(tmp_path: Path) -> None:
     assert not _run_summarize_step(tmp_path, None).exists()
+
+
+def test_docker_eval_pins_the_corpus_revision() -> None:
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    job = workflow["jobs"]["docker-eval"]
+    step = next(s for s in job["steps"] if s.get("name") == "Download HF dataset")
+
+    assert re.fullmatch(r"[0-9a-f]{40}", job["env"]["HF_RAG_REVISION"])
+    assert '--revision "$HF_RAG_REVISION"' in step["run"]
+
+
+def _run_download_step(
+    tmp_path: Path, revision: str, cached: str | None
+) -> tuple[subprocess.CompletedProcess[str], str]:
+    """Run the dataset download step with stubbed uv and hf commands.
+
+    cached is the revision in data/.hf_revision: None leaves data/ absent,
+    and "" leaves an old corpus that has no revision file.
+    """
+    calls = tmp_path / "hf_calls"
+    if cached is not None:
+        (tmp_path / "data/markdown").mkdir(parents=True)
+        (tmp_path / "data/markdown/old.md").write_text("old\n")
+        if cached:
+            (tmp_path / "data/.hf_revision").write_text(cached + "\n")
+    stub = textwrap.dedent(
+        f"""
+        uv() {{ :; }}
+        hf() {{
+          printf '%s\\n' "$*" >> {calls}
+          while [ "$#" -gt 0 ] && [ "$1" != --local-dir ]; do shift; done
+          mkdir -p "$2/markdown"
+          echo new > "$2/markdown/new.md"
+        }}
+        """
+    )
+    script = stub + _workflow_step_script("Download HF dataset")
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env={**os.environ, "HF_RAG_REVISION": revision},
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    return result, calls.read_text() if calls.exists() else ""
+
+
+PINNED = "a" * 40
+
+
+def test_download_fetches_the_pinned_revision_on_a_new_runner(
+    tmp_path: Path,
+) -> None:
+    result, calls = _run_download_step(tmp_path, PINNED, None)
+
+    assert result.returncode == 0, result.stderr
+    assert f"--revision {PINNED} --local-dir ./data" in calls
+    assert (tmp_path / "data/.hf_revision").read_text().strip() == PINNED
+    assert (tmp_path / "data/markdown/new.md").exists()
+
+
+def test_download_keeps_a_cache_at_the_pinned_revision(tmp_path: Path) -> None:
+    result, calls = _run_download_step(tmp_path, PINNED, PINNED)
+
+    assert result.returncode == 0, result.stderr
+    assert calls == ""
+    assert (tmp_path / "data/markdown/old.md").exists()
+
+
+@pytest.mark.parametrize("cached", ["b" * 40, ""], ids=["other", "unknown"])
+def test_download_replaces_a_cache_at_another_revision(
+    tmp_path: Path, cached: str
+) -> None:
+    result, calls = _run_download_step(tmp_path, PINNED, cached)
+
+    assert result.returncode == 0, result.stderr
+    assert calls.count("download") == 1
+    assert not (tmp_path / "data/markdown/old.md").exists()
+    assert (tmp_path / "data/markdown/new.md").exists()
+    assert (tmp_path / "data/.hf_revision").read_text().strip() == PINNED
+
+
+def test_download_fails_without_a_revision(tmp_path: Path) -> None:
+    result, calls = _run_download_step(tmp_path, "", "")
+
+    assert result.returncode != 0
+    assert calls == ""
+    assert (tmp_path / "data/markdown/old.md").exists()
