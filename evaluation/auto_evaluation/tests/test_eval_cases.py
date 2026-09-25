@@ -1,5 +1,6 @@
 """Tests for the retrieval record that the eval keeps for each case."""
 
+import argparse
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -8,7 +9,11 @@ import pytest
 from deepeval.models.base_model import DeepEvalBaseLLM
 
 from auto_evaluation import eval_cases
-from auto_evaluation.eval_main import EmptyRetrievalError, EvaluationHarness
+from auto_evaluation.eval_main import (
+    EmptyRetrievalError,
+    EvaluationHarness,
+    parse_cases,
+)
 
 
 def _answer(sources: list[str], tools: list[str], response: str = "ok") -> dict:
@@ -110,3 +115,67 @@ def test_query_asks_the_backend_for_sources_and_context() -> None:
     payload = post.call_args.kwargs["json"]
     assert payload["list_sources"] is True
     assert payload["list_context"] is True
+
+
+def test_a_case_subset_keeps_the_dataset_indexes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    harness = _harness(4)
+    answer = (_answer(["https://a"], ["retrieve_general"]), 1.0)
+
+    with (
+        patch.object(harness, "query", return_value=answer) as query,
+        patch("auto_evaluation.eval_main.evaluate") as judge,
+    ):
+        harness.evaluate("agent-retriever", metadata={"judge": "j"}, cases=[3, 1])
+
+    asked = [call.args[1] for call in query.call_args_list]
+    assert asked == ["question 1", "question 3"]
+    test_cases = judge.call_args.kwargs["test_cases"]
+    assert [tc.name for tc in test_cases] == ["test_case_1", "test_case_3"]
+    assert [case["index"] for case in _read_cases(tmp_path)] == [1, 3]
+
+
+def test_a_case_outside_the_dataset_stops_before_any_query(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    harness = _harness(4)
+
+    with (
+        patch.object(harness, "query") as query,
+        pytest.raises(ValueError, match="4 is outside"),
+    ):
+        harness.evaluate("agent-retriever", metadata={"judge": "j"}, cases=[1, 4])
+
+    query.assert_not_called()
+
+
+def test_skip_judge_prints_the_cases_and_stops_before_deepeval(
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    harness = _harness(1)
+    answer = (_answer(["https://a"], ["retrieve_cmds"]), 1.0)
+
+    with (
+        patch.object(harness, "query", return_value=answer),
+        patch("auto_evaluation.eval_main.evaluate") as judge,
+    ):
+        harness.evaluate("agent-retriever", metadata={"judge": "j"}, skip_judge=True)
+
+    judge.assert_not_called()
+    assert "Case 0: tool=retrieve_cmds sources=[https://a]" in (
+        capsys.readouterr().out.splitlines()
+    )
+    assert not (tmp_path / "eval_results.json").exists()
+
+
+def test_cases_option_reads_comma_separated_indexes() -> None:
+    assert parse_cases("20,84") == [20, 84]
+    for bad in ["", "20,", "a", "-1"]:
+        with pytest.raises(argparse.ArgumentTypeError):
+            parse_cases(bad)

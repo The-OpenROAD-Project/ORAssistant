@@ -48,3 +48,15 @@ case is named `test_case_<index>` and has the tool and sources as metadata.
 The run also writes the same records to `eval_cases.jsonl` in its working
 directory, one JSON line per case, as it goes. The file is not uploaded. See
 `eval_cases.py` for the format.
+
+## Case subset
+
+`--cases 20,84` evaluates only those 0-based question indexes, so case 84 is
+"What is OpenROAD?". The cases keep their dataset indexes in their names and
+records. `--skip-judge` prints the case records and stops before the
+retrieval check and DeepEval. The backend still needs its Google credentials.
+`llm_tests.sh` gives the arguments after the limit to `eval_main.py`:
+
+```bash
+./llm_tests.sh "" --cases 20,84 --skip-judge
+```
