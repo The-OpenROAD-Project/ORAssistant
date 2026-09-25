@@ -171,11 +171,22 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
     logging.debug("Cloned repo successfully.")
 
 
+def run_build_step(command: str) -> None:
+    """Run a shell build command in the current directory. Exit if it fails."""
+    res = subprocess.run(command, shell=True, capture_output=True)
+    if res.returncode != 0:
+        logging.error(
+            f"'{command}' failed in {os.getcwd()} with exit code {res.returncode}:\n"
+            f"{res.stderr.decode('utf-8', errors='replace')}"
+        )
+        sys.exit(1)
+
+
 def build_or_docs() -> None:
     logging.debug("Starting OR docs build...")
 
     os.chdir(os.path.join(cur_dir, "OpenROAD/docs"))
-    subprocess.run("make html", shell=True, capture_output=True)
+    run_build_step("make html")
 
     logging.debug("Copying OR docs...")
     os.chdir(cur_dir)
@@ -218,8 +229,7 @@ def build_or_docs() -> None:
 def build_orfs_docs() -> None:
     logging.debug("Starting ORFS docs build...")
     os.chdir(os.path.join(cur_dir, "OpenROAD-flow-scripts/docs"))
-
-    subprocess.run("make html", shell=True, capture_output=True)
+    run_build_step("make html")
 
     logging.debug("Copying ORFS docs...")
     os.chdir(cur_dir)
@@ -302,8 +312,7 @@ def build_manpages() -> None:
             continue
     os.chdir(os.path.join(cur_dir, "OpenROAD/docs"))
     num_cores = os.cpu_count()
-    command = f"make clean && make preprocess && make -j{num_cores}"
-    res = subprocess.run(command, shell=True, capture_output=True)
+    run_build_step(f"make clean && make preprocess && make -j{num_cores}")
     logging.debug("Finished building manpages.")
 
     src_dir = os.path.join(cur_dir, "OpenROAD/docs/md")

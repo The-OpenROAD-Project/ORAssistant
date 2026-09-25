@@ -1,4 +1,6 @@
 import json
+import logging
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -35,3 +37,32 @@ def test_write_source_list_keeps_sources_from_earlier_steps(backend_dir: Path):
         ),
         "data/markdown/gh_discussions/Bug/1.md": "https://github.com/discussions/1",
     }
+
+
+@pytest.mark.parametrize(
+    "build_step",
+    [build_docs.build_or_docs, build_docs.build_orfs_docs, build_docs.build_manpages],
+)
+def test_docs_build_step_fails_when_make_fails(
+    backend_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    build_step,
+):
+    for path in ("OpenROAD/docs", "OpenROAD/src", "OpenROAD-flow-scripts/docs"):
+        (backend_dir / path).mkdir(parents=True)
+
+    def fake_run(command, **kwargs):
+        returncode = 2 if command.startswith("make") else 0
+        return subprocess.CompletedProcess(
+            command, returncode, stdout=b"", stderr=b"sphinx: build error"
+        )
+
+    monkeypatch.setattr(build_docs.subprocess, "run", fake_run)
+
+    with caplog.at_level(logging.ERROR), pytest.raises(SystemExit) as exit_info:
+        build_step()
+
+    assert exit_info.value.code == 1
+    assert "exit code 2" in caplog.text
+    assert "sphinx: build error" in caplog.text
