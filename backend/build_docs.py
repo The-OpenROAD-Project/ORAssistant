@@ -171,11 +171,22 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
     logging.debug("Cloned repo successfully.")
 
 
+def run_build_step(command: str) -> None:
+    """Run a shell build command in the current directory. Exit if it fails."""
+    res = subprocess.run(command, shell=True, capture_output=True)
+    if res.returncode != 0:
+        logging.error(
+            f"'{command}' failed in {os.getcwd()} with exit code {res.returncode}:\n"
+            f"{res.stderr.decode('utf-8', errors='replace')}"
+        )
+        sys.exit(1)
+
+
 def build_or_docs() -> None:
     logging.debug("Starting OR docs build...")
 
     os.chdir(os.path.join(cur_dir, "OpenROAD/docs"))
-    subprocess.run("make html", shell=True, capture_output=True)
+    run_build_step("make html")
 
     logging.debug("Copying OR docs...")
     os.chdir(cur_dir)
@@ -218,8 +229,7 @@ def build_or_docs() -> None:
 def build_orfs_docs() -> None:
     logging.debug("Starting ORFS docs build...")
     os.chdir(os.path.join(cur_dir, "OpenROAD-flow-scripts/docs"))
-
-    subprocess.run("make html", shell=True, capture_output=True)
+    run_build_step("make html")
 
     logging.debug("Copying ORFS docs...")
     os.chdir(cur_dir)
@@ -302,8 +312,7 @@ def build_manpages() -> None:
             continue
     os.chdir(os.path.join(cur_dir, "OpenROAD/docs"))
     num_cores = os.cpu_count()
-    command = f"make clean && make preprocess && make -j{num_cores}"
-    res = subprocess.run(command, shell=True, capture_output=True)
+    run_build_step(f"make clean && make preprocess && make -j{num_cores}")
     logging.debug("Finished building manpages.")
 
     src_dir = os.path.join(cur_dir, "OpenROAD/docs/md")
@@ -366,13 +375,14 @@ def get_or_publications() -> None:
     # TODO: verify if this is indeed all publications. New format seem to truncate to 10 latest.
     try:
         html = requests.get(or_publications_url).text
-        soup = BeautifulSoup(html, "lxml")
+        soup = BeautifulSoup(html, "html.parser")
         links = soup.find_all("a")
         papers = []
 
         for link in links:
             href = link.get("href")
-            if href and ".pdf" in href:
+            # The page can link one paper more than once. Download it once.
+            if href and ".pdf" in href and href not in papers:
                 papers.append(href)
 
         for paper_link in papers:
@@ -431,6 +441,19 @@ def get_klayout_docs_html() -> None:
 
     logging.debug("KLayout docs downloaded successfully.")
     track_src(f"{cur_dir}/data/html/klayout_docs")
+
+
+def write_source_list() -> None:
+    """Add the gh_discussions URLs to the source map and write it to disk."""
+    with open(f"{cur_dir}/data/markdown/gh_discussions/mapping.json") as gh_disc:
+        gh_disc_src = json.load(gh_disc)
+    gh_disc_path = "data/markdown/gh_discussions"
+    for file in gh_disc_src.keys():
+        full_path = os.path.join(gh_disc_path, file)
+        source_dict[full_path] = gh_disc_src[file]["url"]
+
+    with open(f"{cur_dir}/data/source_list.json", "w+") as src:
+        src.write(json.dumps(source_dict))
 
 
 if __name__ == "__main__":
@@ -492,16 +515,7 @@ if __name__ == "__main__":
         local_dir="data",
     )
 
-    with open(f"{cur_dir}/data/markdown/gh_discussions/mapping.json") as gh_disc:
-        gh_disc_src = json.load(gh_disc)
-    gh_disc_path = "data/markdown/gh_discussions"
-    source_dict = {}
-    for file in gh_disc_src.keys():
-        full_path = os.path.join(gh_disc_path, file)
-        source_dict[full_path] = gh_disc_src[file]["url"]
-
-    with open("data/source_list.json", "w+") as src:
-        src.write(json.dumps(source_dict))
+    write_source_list()
 
     repo_paths = ["OpenROAD", "OpenROAD-flow-scripts"]
     purge_folders(folder_paths=repo_paths)
