@@ -119,6 +119,7 @@ DB_DISABLED_MSG = "Database is disabled. Conversation management unavailable."
 
 
 def extract_rag_context_sources(output: list) -> list[ContextSource]:
+    return []  # Throwaway: force empty retrieval to test the eval's retrieval check.
     context_sources = []
     for element in output[1:-1]:
         if isinstance(element, dict):
