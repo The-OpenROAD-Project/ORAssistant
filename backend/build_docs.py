@@ -381,7 +381,8 @@ def get_or_publications() -> None:
 
         for link in links:
             href = link.get("href")
-            if href and ".pdf" in href:
+            # The page can link one paper more than once. Download it once.
+            if href and ".pdf" in href and href not in papers:
                 papers.append(href)
 
         for paper_link in papers:

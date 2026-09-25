@@ -66,3 +66,39 @@ def test_docs_build_step_fails_when_make_fails(
     assert exit_info.value.code == 1
     assert "exit code 2" in caplog.text
     assert "sphinx: build error" in caplog.text
+
+
+def test_get_or_publications_downloads_each_paper_once(
+    backend_dir: Path, monkeypatch: pytest.MonkeyPatch
+):
+    paper_url = "https://vlsicad.ucsd.edu/Publications/Conferences/390/c390.pdf"
+    other_url = "https://vlsicad.ucsd.edu/Publications/Conferences/391/c391.pdf"
+    page = f"""
+        <a href="{paper_url}">Paper title</a> <a href="{paper_url}">PDF</a>
+        <a href="{other_url}">PDF</a>
+    """
+    monkeypatch.setattr(
+        build_docs.requests,
+        "get",
+        lambda url: type("Response", (), {"text": page})(),
+    )
+    downloads = []
+
+    def fake_wget(command, **kwargs):
+        _, url, _, output = command
+        downloads.append(url)
+        Path(output).write_bytes(b"%PDF")
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(build_docs.subprocess, "run", fake_wget)
+    pdf_dir = backend_dir / "data/pdf/OR_publications"
+    pdf_dir.mkdir(parents=True)
+
+    build_docs.get_or_publications()
+
+    assert downloads == [paper_url, other_url]
+    assert sorted(p.name for p in pdf_dir.iterdir()) == ["c390.pdf", "c391.pdf"]
+    assert build_docs.source_dict == {
+        "data/pdf/OR_publications/c390.pdf": paper_url,
+        "data/pdf/OR_publications/c391.pdf": other_url,
+    }
