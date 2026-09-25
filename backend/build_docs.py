@@ -433,6 +433,19 @@ def get_klayout_docs_html() -> None:
     track_src(f"{cur_dir}/data/html/klayout_docs")
 
 
+def write_source_list() -> None:
+    """Add the gh_discussions URLs to the source map and write it to disk."""
+    with open(f"{cur_dir}/data/markdown/gh_discussions/mapping.json") as gh_disc:
+        gh_disc_src = json.load(gh_disc)
+    gh_disc_path = "data/markdown/gh_discussions"
+    for file in gh_disc_src.keys():
+        full_path = os.path.join(gh_disc_path, file)
+        source_dict[full_path] = gh_disc_src[file]["url"]
+
+    with open(f"{cur_dir}/data/source_list.json", "w+") as src:
+        src.write(json.dumps(source_dict))
+
+
 if __name__ == "__main__":
     logging.info("Building knowledge base...")
     docs_paths = ["data"]
@@ -492,16 +505,7 @@ if __name__ == "__main__":
         local_dir="data",
     )
 
-    with open(f"{cur_dir}/data/markdown/gh_discussions/mapping.json") as gh_disc:
-        gh_disc_src = json.load(gh_disc)
-    gh_disc_path = "data/markdown/gh_discussions"
-    source_dict = {}
-    for file in gh_disc_src.keys():
-        full_path = os.path.join(gh_disc_path, file)
-        source_dict[full_path] = gh_disc_src[file]["url"]
-
-    with open("data/source_list.json", "w+") as src:
-        src.write(json.dumps(source_dict))
+    write_source_list()
 
     repo_paths = ["OpenROAD", "OpenROAD-flow-scripts"]
     purge_folders(folder_paths=repo_paths)
