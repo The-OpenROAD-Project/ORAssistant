@@ -447,8 +447,13 @@ def get_or_website_html() -> None:
 def get_or_publications() -> None:
     # TODO: verify if this is indeed all publications. New format seem to truncate to 10 latest.
     try:
-        html = requests.get(or_publications_url).text
-        soup = BeautifulSoup(html, "html.parser")
+        response = requests.get(or_publications_url)
+        if response.status_code != 200:
+            logging.error(
+                f"{or_publications_url} returned HTTP {response.status_code}."
+            )
+            sys.exit(1)
+        soup = BeautifulSoup(response.text, "html.parser")
         links = soup.find_all("a")
         papers = []
 
@@ -457,6 +462,9 @@ def get_or_publications() -> None:
             # The page can link one paper more than once. Download it once.
             if href and ".pdf" in href and href not in papers:
                 papers.append(href)
+        if not papers:
+            logging.error(f"Found no papers on {or_publications_url}.")
+            sys.exit(1)
 
         downloads = [(url, url.split("/")[-1]) for url in papers]
         downloads += [(url, name) for url, name in EXTRA_PAPERS if url not in papers]
@@ -470,19 +478,19 @@ def get_or_publications() -> None:
                 paper_name = f"{paper_name.split('.')[0]}_{counter}.pdf"
                 counter += 1
 
-            subprocess.run(
-                [
-                    "wget",
-                    paper_link,
-                    "-O",
-                    f"data/pdf/OR_publications/{paper_name}",
-                ]
-            )
+            paper_path = f"data/pdf/OR_publications/{paper_name}"
+            res = subprocess.run(["wget", paper_link, "-O", paper_path])
+            if res.returncode != 0 or os.path.getsize(paper_path) == 0:
+                logging.error(
+                    f"Download of {paper_link} failed (wget exit code "
+                    f"{res.returncode})."
+                )
+                sys.exit(1)
 
-            source_dict[f"data/pdf/OR_publications/{paper_name}"] = paper_link
+            source_dict[paper_path] = paper_link
 
     except Exception as e:
-        logging.debug(f"Error in downloading OR publications: {e}")
+        logging.error(f"Error in downloading OR publications: {e}")
         sys.exit(1)
 
     logging.debug("OR publications downloaded successfully.")

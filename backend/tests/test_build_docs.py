@@ -68,20 +68,23 @@ def test_docs_build_step_fails_when_make_fails(
     assert "sphinx: build error" in caplog.text
 
 
-def fake_publications_download(monkeypatch: pytest.MonkeyPatch, page: str) -> list[str]:
+def fake_publications_download(
+    monkeypatch: pytest.MonkeyPatch,
+    page: str,
+    status_code: int = 200,
+    wget_returncode: int = 0,
+    pdf_bytes: bytes = b"%PDF",
+) -> list[str]:
     """Serve page as the publications page and fake wget. Return the URLs."""
-    monkeypatch.setattr(
-        build_docs.requests,
-        "get",
-        lambda url: type("Response", (), {"text": page})(),
-    )
+    response = type("Response", (), {"text": page, "status_code": status_code})
+    monkeypatch.setattr(build_docs.requests, "get", lambda url: response())
     downloads = []
 
     def fake_wget(command, **kwargs):
         _, url, _, output = command
         downloads.append(url)
-        Path(output).write_bytes(b"%PDF")
-        return subprocess.CompletedProcess(command, 0)
+        Path(output).write_bytes(pdf_bytes)
+        return subprocess.CompletedProcess(command, wget_returncode)
 
     monkeypatch.setattr(build_docs.subprocess, "run", fake_wget)
     return downloads
@@ -135,6 +138,59 @@ def test_get_or_publications_adds_extra_papers_not_on_the_page(
         "data/pdf/OR_publications/c389.pdf": listed_url,
         "data/pdf/OR_publications/Hier-RTLMP.pdf": extra_url,
     }
+
+
+@pytest.mark.parametrize(
+    "page, status_code, error",
+    [
+        ('<a href="https://example.org/c1.pdf">PDF</a>', 404, "HTTP 404"),
+        ('<a href="https://example.org/about">About</a>', 200, "no papers"),
+    ],
+)
+def test_get_or_publications_fails_without_papers(
+    backend_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    page: str,
+    status_code: int,
+    error: str,
+):
+    downloads = fake_publications_download(monkeypatch, page, status_code)
+    (backend_dir / "data/pdf/OR_publications").mkdir(parents=True)
+
+    with caplog.at_level(logging.ERROR), pytest.raises(SystemExit) as exit_info:
+        build_docs.get_or_publications()
+
+    assert exit_info.value.code == 1
+    assert error in caplog.text
+    assert downloads == []
+
+
+@pytest.mark.parametrize(
+    "wget_returncode, pdf_bytes", [(8, b"<html>404</html>"), (0, b"")]
+)
+def test_get_or_publications_fails_when_a_download_fails(
+    backend_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    wget_returncode: int,
+    pdf_bytes: bytes,
+):
+    monkeypatch.setattr(build_docs, "EXTRA_PAPERS", [])
+    paper_url = "https://example.org/c1.pdf"
+    fake_publications_download(
+        monkeypatch,
+        f'<a href="{paper_url}">PDF</a>',
+        wget_returncode=wget_returncode,
+        pdf_bytes=pdf_bytes,
+    )
+    (backend_dir / "data/pdf/OR_publications").mkdir(parents=True)
+
+    with caplog.at_level(logging.ERROR), pytest.raises(SystemExit) as exit_info:
+        build_docs.get_or_publications()
+
+    assert exit_info.value.code == 1
+    assert paper_url in caplog.text
 
 
 def test_extra_papers_have_unique_pdf_file_names():
