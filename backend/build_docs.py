@@ -1,5 +1,7 @@
+import hashlib
 import json
 import os
+import re
 import subprocess
 import requests
 import shutil
@@ -386,6 +388,46 @@ def get_opensta_docs() -> None:
     track_src(f"{cur_dir}/data/pdf/OpenSTA")
 
 
+# Website listing pages (feeds, blog and category indexes, pagination, events,
+# and the WordPress API) repeat the text of the posts that they link to.
+LISTING_PAGE_RE = re.compile(
+    r"(^|/)((feed|blogs|news-category|wp-json|event)|page/[0-9]+)(/|$)"
+)
+
+
+def prune_or_website(folder: str) -> None:
+    """Remove listing pages and pages with duplicate text from a website crawl.
+
+    The crawl must follow the listing pages to find the posts, so they are
+    removed only after it. When pages have the same words, keep the one under
+    /news/, else the first path in sorted order.
+    """
+    pages_by_text: dict[str, list[str]] = {}
+    for root, _, files in os.walk(folder):
+        for file in files:
+            path = os.path.join(root, file)
+            if LISTING_PAGE_RE.search(os.path.relpath(path, folder)):
+                os.remove(path)
+                continue
+            with open(path, encoding="utf-8", errors="replace") as f:
+                text = BeautifulSoup(f.read(), "html.parser").get_text()
+            # Copies of one post can differ in spaces, punctuation, and
+            # symbols such as a trademark sign. Compare only words and numbers.
+            words = re.sub(r"[\W_]+", "", text.lower())
+            digest = hashlib.sha256(words.encode()).hexdigest()
+            pages_by_text.setdefault(digest, []).append(path)
+
+    for paths in pages_by_text.values():
+        keep = min(
+            paths,
+            key=lambda path: ("/news/" not in os.path.relpath(path, folder), path),
+        )
+        for path in paths:
+            if path != keep:
+                logging.debug(f"Removing {path}: same text as {keep}")
+                os.remove(path)
+
+
 def get_or_website_html() -> None:
     logging.debug("Scraping OR website...")
     try:
@@ -398,6 +440,7 @@ def get_or_website_html() -> None:
         sys.exit(1)
 
     logging.debug("OR website docs downloaded successfully.")
+    prune_or_website(f"{cur_dir}/data/html/or_website")
     track_src(f"{cur_dir}/data/html/or_website")
 
 
