@@ -32,12 +32,14 @@ jobs:
       env:
         BRANCH: ${{ inputs.branch }}
       run: |
-        case "$BRANCH" in
-          ''|main|refs/heads/main)
-            echo "::error::Choose a Hugging Face branch other than main"
-            exit 1
-            ;;
-        esac
+        # A plain lowercase name only, so no form of main or refs/heads/ passes.
+        # LC_ALL=C keeps [a-z] to ASCII lowercase letters.
+        LC_ALL=C
+        pattern='^[a-z0-9][a-z0-9._-]*$'
+        if [[ ! "$BRANCH" =~ $pattern ]] || [ "$BRANCH" = main ]; then
+          echo "::error::Branch '$BRANCH' must match $pattern and must not be main"
+          exit 1
+        fi
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
     - name: Install uv

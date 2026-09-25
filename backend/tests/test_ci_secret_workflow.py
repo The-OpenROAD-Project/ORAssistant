@@ -483,12 +483,18 @@ def _run_upload_script(
     return result, hf_calls
 
 
-@pytest.mark.parametrize("branch", ["", "main", "refs/heads/main"])
+@pytest.mark.parametrize(
+    "branch",
+    [
+        "", "main", "Main", "MAIN", " main", "main ",
+        "refs/heads/main", "refs/heads/main/",
+    ],
+)  # fmt: skip
 def test_upload_rejects_the_main_branch(tmp_path: Path, branch: str) -> None:
     result, _ = _run_upload_script(tmp_path, "Check the branch", branch)
 
     assert result.returncode != 0
-    assert "other than main" in result.stdout
+    assert "::error::" in result.stdout
 
 
 def test_upload_accepts_a_named_branch(tmp_path: Path) -> None:
