@@ -375,7 +375,7 @@ def get_or_publications() -> None:
     # TODO: verify if this is indeed all publications. New format seem to truncate to 10 latest.
     try:
         html = requests.get(or_publications_url).text
-        soup = BeautifulSoup(html, "lxml")
+        soup = BeautifulSoup(html, "html.parser")
         links = soup.find_all("a")
         papers = []
 
