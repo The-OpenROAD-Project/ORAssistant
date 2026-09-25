@@ -33,6 +33,7 @@ creds.json
 temp_test_run_data.json
 **/llm_tests_output.txt
 **/llm_tests_summary.md
+**/eval_results.json
 **/error_log.txt
 
 # backend
