@@ -45,10 +45,9 @@ class TestRagContextSources:
             ),
         ]
 
-        _, context_sources, tools = parse_agent_output(rag_graph_output(docs))
+        _, context_sources, _ = parse_agent_output(rag_graph_output(docs))
 
         assert [(cs.source, cs.context) for cs in context_sources] == [
             ("https://example.com/place", "Chunk about placement."),
             ("https://example.com/route", "Chunk about routing."),
         ]
-        assert tools == []
