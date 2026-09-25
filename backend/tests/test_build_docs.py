@@ -68,15 +68,8 @@ def test_docs_build_step_fails_when_make_fails(
     assert "sphinx: build error" in caplog.text
 
 
-def test_get_or_publications_downloads_each_paper_once(
-    backend_dir: Path, monkeypatch: pytest.MonkeyPatch
-):
-    paper_url = "https://vlsicad.ucsd.edu/Publications/Conferences/390/c390.pdf"
-    other_url = "https://vlsicad.ucsd.edu/Publications/Conferences/391/c391.pdf"
-    page = f"""
-        <a href="{paper_url}">Paper title</a> <a href="{paper_url}">PDF</a>
-        <a href="{other_url}">PDF</a>
-    """
+def fake_publications_download(monkeypatch: pytest.MonkeyPatch, page: str) -> list[str]:
+    """Serve page as the publications page and fake wget. Return the URLs."""
     monkeypatch.setattr(
         build_docs.requests,
         "get",
@@ -91,6 +84,20 @@ def test_get_or_publications_downloads_each_paper_once(
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(build_docs.subprocess, "run", fake_wget)
+    return downloads
+
+
+def test_get_or_publications_downloads_each_paper_once(
+    backend_dir: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(build_docs, "EXTRA_PAPERS", [])
+    paper_url = "https://vlsicad.ucsd.edu/Publications/Conferences/390/c390.pdf"
+    other_url = "https://vlsicad.ucsd.edu/Publications/Conferences/391/c391.pdf"
+    page = f"""
+        <a href="{paper_url}">Paper title</a> <a href="{paper_url}">PDF</a>
+        <a href="{other_url}">PDF</a>
+    """
+    downloads = fake_publications_download(monkeypatch, page)
     pdf_dir = backend_dir / "data/pdf/OR_publications"
     pdf_dir.mkdir(parents=True)
 
@@ -102,6 +109,38 @@ def test_get_or_publications_downloads_each_paper_once(
         "data/pdf/OR_publications/c390.pdf": paper_url,
         "data/pdf/OR_publications/c391.pdf": other_url,
     }
+
+
+def test_get_or_publications_adds_extra_papers_not_on_the_page(
+    backend_dir: Path, monkeypatch: pytest.MonkeyPatch
+):
+    listed_url = "https://vlsicad.ucsd.edu/Publications/Conferences/389/c389.pdf"
+    extra_url = "https://arxiv.org/pdf/2304.11761v2"
+    monkeypatch.setattr(
+        build_docs,
+        "EXTRA_PAPERS",
+        [(listed_url, "RTL-MP.pdf"), (extra_url, "Hier-RTLMP.pdf")],
+    )
+    downloads = fake_publications_download(
+        monkeypatch, f'<a href="{listed_url}">PDF</a>'
+    )
+    pdf_dir = backend_dir / "data/pdf/OR_publications"
+    pdf_dir.mkdir(parents=True)
+
+    build_docs.get_or_publications()
+
+    assert downloads == [listed_url, extra_url]
+    assert sorted(p.name for p in pdf_dir.iterdir()) == ["Hier-RTLMP.pdf", "c389.pdf"]
+    assert build_docs.source_dict == {
+        "data/pdf/OR_publications/c389.pdf": listed_url,
+        "data/pdf/OR_publications/Hier-RTLMP.pdf": extra_url,
+    }
+
+
+def test_extra_papers_have_unique_pdf_file_names():
+    names = [name for _, name in build_docs.EXTRA_PAPERS]
+    assert len(set(names)) == len(names)
+    assert all(name.endswith(".pdf") for name in names)
 
 
 def test_repo_commit_env_override_skips_ls_remote(monkeypatch: pytest.MonkeyPatch):

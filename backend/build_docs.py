@@ -45,6 +45,20 @@ opensta_readme_url = (
     f"{opensta_repo_commit}/README.md"
 )
 or_publications_url = "https://theopenroadproject.org/publications/"
+# Tool papers that the publications page does not list, as (URL, file name).
+# Use author, institution, or arXiv copies with a fixed version.
+EXTRA_PAPERS = [
+    # FastRoute, VLSI Design 2012 (Iowa State University repository copy).
+    (
+        "https://dr.lib.iastate.edu/server/api/core/bitstreams/"
+        "49638cfc-c010-449c-a3f0-da6d4ddb978f/content",
+        "FastRoute_VLSI_Design_2012.pdf",
+    ),
+    # RTL-MP, ISPD 2022 (UCSD VLSI CAD lab copy).
+    ("https://vlsicad.ucsd.edu/Publications/Conferences/389/c389.pdf", "c389.pdf"),
+    # Hier-RTLMP, arXiv 2304.11761 version 2.
+    ("https://arxiv.org/pdf/2304.11761v2", "Hier-RTLMP_arXiv_2304_11761v2.pdf"),
+]
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
@@ -401,8 +415,10 @@ def get_or_publications() -> None:
             if href and ".pdf" in href and href not in papers:
                 papers.append(href)
 
-        for paper_link in papers:
-            paper_name = paper_link.split("/")[-1]
+        downloads = [(url, url.split("/")[-1]) for url in papers]
+        downloads += [(url, name) for url, name in EXTRA_PAPERS if url not in papers]
+
+        for paper_link, paper_name in downloads:
             logging.debug(f"Downloading {paper_name}. . .")
 
             counter = 2
