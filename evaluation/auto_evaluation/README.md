@@ -60,3 +60,6 @@ retrieval check and DeepEval. The backend still needs its Google credentials.
 ```bash
 ./llm_tests.sh "" --cases 20,84 --skip-judge
 ```
+
+The summary averages every case in the DeepEval cache, so run `make clean` in
+`evaluation/` before a subset run. Otherwise earlier cases count too.
