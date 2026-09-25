@@ -41,12 +41,12 @@ opensta_docs_url = (
 )
 yosys_html_url = "https://yosyshq.readthedocs.io/projects/yosys/en/latest"
 klayout_html_url = "https://www.klayout.de/doc.html"
-or_website_url = "https://theopenroadproject.org/"
+or_website_url = "https://openroad.org/"
 opensta_readme_url = (
     "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/"
     f"{opensta_repo_commit}/README.md"
 )
-or_publications_url = "https://theopenroadproject.org/publications/"
+or_publications_url = "https://openroad.org/resources/publications"
 # Tool papers that the publications page does not list, as (URL, file name).
 # Use author, institution, or arXiv copies with a fixed version.
 EXTRA_PAPERS = [
@@ -66,7 +66,15 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 
 def update_src(src_path: str, dst_path: str) -> None:
-    if "OR_docs" in dst_path:
+    # Match website pages first: a page name can contain "yosys" or "klayout".
+    if dst_path.startswith("data/html/or_website/"):
+        page = dst_path.removeprefix("data/html/or_website/")
+        if page.endswith("/index.html"):
+            page = page.removesuffix("index.html")
+        else:
+            page = page.removesuffix(".html")
+        source_dict[dst_path] = f"https://{page}"
+    elif "OR_docs" in dst_path:
         source_dict[dst_path] = (
             f"{or_docs_url}/{src_path.split('_sources/')[-1].replace('.md', '.html')}"
         )
@@ -87,10 +95,6 @@ def update_src(src_path: str, dst_path: str) -> None:
         source_dict[dst_path] = opensta_docs_url
     elif "OpenSTA" in dst_path and "markdown" in dst_path:
         source_dict[dst_path] = opensta_readme_url
-    elif "theopenroadproject" in dst_path:
-        source_dict[dst_path] = (
-            f"https://{dst_path.replace('data/html/or_website/', '').replace('/index.html', '')}"
-        )
     else:
         source_dict[dst_path] = dst_path
 
@@ -388,25 +392,25 @@ def get_opensta_docs() -> None:
     track_src(f"{cur_dir}/data/pdf/OpenSTA")
 
 
-# Website listing pages (feeds, blog and category indexes, pagination, events,
-# and the WordPress API) repeat the text of the posts that they link to.
-LISTING_PAGE_RE = re.compile(
-    r"(^|/)((feed|blogs|news-category|wp-json|event)|page/[0-9]+)(/|$)"
-)
+# The news index, its later pages, and the category pages repeat the text of
+# the posts that they link to.
+LISTING_PAGE_RE = re.compile(r"(^|/)(news|news/[0-9]+|category/[^/]+)\.html$")
 
 
 def prune_or_website(folder: str) -> None:
-    """Remove listing pages and pages with duplicate text from a website crawl.
+    """Keep only the HTML pages of a website crawl that have unique text.
 
     The crawl must follow the listing pages to find the posts, so they are
-    removed only after it. When pages have the same words, keep the one under
-    /news/, else the first path in sorted order.
+    removed only after it. Files that are not HTML, such as robots.txt, are
+    removed too. When pages have the same words, keep the shortest path, as
+    a copy often has a suffix such as "-2".
     """
     pages_by_text: dict[str, list[str]] = {}
     for root, _, files in os.walk(folder):
         for file in files:
             path = os.path.join(root, file)
-            if LISTING_PAGE_RE.search(os.path.relpath(path, folder)):
+            rel_path = os.path.relpath(path, folder)
+            if not file.endswith(".html") or LISTING_PAGE_RE.search(rel_path):
                 os.remove(path)
                 continue
             with open(path, encoding="utf-8", errors="replace") as f:
@@ -418,10 +422,7 @@ def prune_or_website(folder: str) -> None:
             pages_by_text.setdefault(digest, []).append(path)
 
     for paths in pages_by_text.values():
-        keep = min(
-            paths,
-            key=lambda path: ("/news/" not in os.path.relpath(path, folder), path),
-        )
+        keep = min(paths, key=lambda path: (len(path), path))
         for path in paths:
             if path != keep:
                 logging.debug(f"Removing {path}: same text as {keep}")
@@ -432,7 +433,12 @@ def get_or_website_html() -> None:
     logging.debug("Scraping OR website...")
     try:
         subprocess.run(
-            f"wget -r -A.html -P data/html/or_website {or_website_url}",
+            # The site links pages without a file extension. Accept only such
+            # URLs, which skips images, styles, and scripts. Save pages as
+            # .html.
+            "wget -r --adjust-extension"
+            " --accept-regex '^https://openroad\\.org/([^./?#]+/?)*$'"
+            f" -P data/html/or_website {or_website_url}",
             shell=True,
         )
     except Exception as e:

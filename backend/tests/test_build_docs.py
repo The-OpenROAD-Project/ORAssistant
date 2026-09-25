@@ -286,47 +286,61 @@ def test_write_build_info_records_inputs_and_paper_urls(backend_dir: Path):
 
 
 def write_page(site: Path, path: str, body: str) -> None:
-    page = site / path / "index.html"
+    page = site / path
     page.parent.mkdir(parents=True, exist_ok=True)
     page.write_text(f"<html><body>{body}</body></html>")
 
 
 def test_prune_or_website_removes_listing_pages_and_duplicates(tmp_path: Path):
-    site = tmp_path / "theopenroadproject.org"
+    site = tmp_path / "openroad.org"
     article = "<h1>2023 review</h1><p>OpenROAD grew in 2023.</p>"
-    write_page(site, "2023-review", article)
-    write_page(site, "news/2023-review", f"\n  {article}\n")
-    write_page(site, "av1-encoder", "<p>OpenROAD™ builds the encoder.OpenLane too.</p>")
+    write_page(site, "2023-review.html", article)
+    write_page(site, "2023-review-copy.html", f"\n  {article}\n")
     write_page(
-        site, "news/av1-encoder1", "<p>OpenROAD builds the encoder. OpenLane too</p>"
+        site, "av1-encoder.html", "<p>OpenROAD™ builds the encoder.OpenLane.</p>"
     )
-    write_page(site, "news/replace-open-sourcing", "<p>RePlAce is open.</p>")
-    write_page(site, "news/replace-open-sourcing-2", "<p>RePlAce v1.1 is out.</p>")
-    write_page(site, "about-us", "<p>About</p>")
-    write_page(site, "our-team", "<p>About</p>")
-    write_page(site, "events-2024-recap", "<p>Recap of the events.</p>")
-    for listing in (
-        "feed",
-        "blogs",
-        "blogs/page/2",
-        "event",
-        "event/page/10",
-        "news-category/latest-news",
-        "news-category/latest-news/feed",
-        "wp-json",
-    ):
+    write_page(
+        site, "av1-encoder1.html", "<p>OpenROAD builds the encoder. OpenLane</p>"
+    )
+    write_page(site, "replace-open-sourcing.html", "<p>RePlAce is open.</p>")
+    write_page(site, "replace-open-sourcing-2.html", "<p>RePlAce v1.1 is out.</p>")
+    write_page(site, "news-from-dac.html", "<p>News from DAC.</p>")
+    write_page(site, "resources/publications.html", "<p>Papers</p>")
+    write_page(site, "index.html", "<p>Home</p>")
+    write_page(site, "robots.txt", "User-agent: *")
+    for listing in ("news.html", "news/2.html", "category/user-story.html"):
         write_page(site, listing, f"<p>{article} and more posts</p>")
 
     build_docs.prune_or_website(str(tmp_path))
 
-    remaining = sorted(
-        str(p.parent.relative_to(site)) for p in site.rglob("index.html")
-    )
+    remaining = sorted(str(p.relative_to(site)) for p in site.rglob("*") if p.is_file())
     assert remaining == [
-        "about-us",
-        "events-2024-recap",
-        "news/2023-review",
-        "news/av1-encoder1",
-        "news/replace-open-sourcing",
-        "news/replace-open-sourcing-2",
+        "2023-review.html",
+        "av1-encoder.html",
+        "index.html",
+        "news-from-dac.html",
+        "replace-open-sourcing-2.html",
+        "replace-open-sourcing.html",
+        "resources/publications.html",
     ]
+
+
+@pytest.mark.parametrize(
+    "page, url",
+    [
+        ("openroad.org/index.html", "https://openroad.org/"),
+        ("openroad.org/about/history.html", "https://openroad.org/about/history"),
+        (
+            "openroad.org/yosys-in-the-flow.html",
+            "https://openroad.org/yosys-in-the-flow",
+        ),
+    ],
+)
+def test_update_src_maps_website_pages_to_their_urls(
+    backend_dir: Path, page: str, url: str
+):
+    path = f"data/html/or_website/{page}"
+
+    build_docs.update_src(path, path)
+
+    assert build_docs.source_dict == {path: url}
