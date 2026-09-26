@@ -47,23 +47,20 @@ This project helps populate a Google Form for human evaluation based on question
     cd ORAssistant/evaluation/human_evaluation
     ```
 
-2. **Create a Virtual Environment** (optional but recommended):
+2. **Install Dependencies**: the `evaluation` project holds them. Install
+   them with [uv](https://docs.astral.sh/uv/):
     ```sh
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    cd ..
+    make init
+    cd human_evaluation
     ```
 
-3. **Install Dependencies**:
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-4. **Configure Environment Variables**:
+3. **Configure Environment Variables**:
     - Copy the example environment variables file:
         ```sh
-        cp .env.example .env
+        cp .env_example .env
         ```
-    - Edit the `.env_example` file with your configuration:
+    - Edit the `.env` file with your configuration:
 
     ```plaintext
     # Environment configuration example
@@ -90,9 +87,9 @@ This project helps populate a Google Form for human evaluation based on question
 
     ```
 
-5. **Run the Streamlit Application**:
+4. **Run the Streamlit Application**:
     ```sh
-    streamlit run main.py
+    uv run streamlit run main.py
     ```
     
 ### License
