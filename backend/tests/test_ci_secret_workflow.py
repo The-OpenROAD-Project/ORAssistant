@@ -611,3 +611,108 @@ def _push_starts_eval(path: str) -> bool:
 )
 def test_docs_changes_start_no_eval(path: str, starts: bool) -> None:
     assert _push_starts_eval(path) is starts
+
+
+def _results_json(status: str) -> str:
+    return json.dumps({"status": status, "metadata": {}, "metrics": None})
+
+
+def _run_find_baseline_step(
+    tmp_path: Path, runs: list[str], artifacts: dict[str, str]
+) -> tuple[subprocess.CompletedProcess[str], dict[str, str], str]:
+    """Run the baseline search with a stubbed gh CLI.
+
+    runs: run ids, newest first. artifacts: run id -> results status; a run
+    missing from it has no eval-results artifact.
+    """
+    output_file = tmp_path / "github_output"
+    output_file.touch()
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    for run_id, status in artifacts.items():
+        (fixtures / run_id).write_text(_results_json(status))
+    runs_text = "\\n".join(runs)
+    stub = textwrap.dedent(
+        f"""
+        gh() {{
+          case "$1 $2" in
+            "api "*) printf '{runs_text}\\n' ;;
+            "run download")
+              id=$3
+              echo "download $id" >> {tmp_path}/calls
+              [ -f {fixtures}/$id ] || return 1
+              while [ "$1" != -D ]; do shift; done
+              mkdir -p "$2"
+              cp {fixtures}/$id "$2/eval_results.json" ;;
+            *) echo "unexpected gh call: $*" >&2; return 1 ;;
+          esac
+        }}
+        """
+    )
+    script = stub + _workflow_step_script("Find the baseline")
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "RUN_ID": "900",
+            "GITHUB_REPOSITORY": "org/repo",
+            "GITHUB_OUTPUT": str(output_file),
+        },
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    outputs = dict(
+        line.split("=", 1)
+        for line in output_file.read_text().splitlines()
+        if "=" in line
+    )
+    calls = tmp_path / "calls"
+    return result, outputs, calls.read_text() if calls.exists() else ""
+
+
+def test_baseline_is_the_newest_completed_run_with_scores(tmp_path: Path) -> None:
+    # 900 is this run, 800 has no artifact, 700 stopped before the judge.
+    result, outputs, calls = _run_find_baseline_step(
+        tmp_path,
+        ["900", "800", "700", "600", "500"],
+        {"900": "completed", "700": "stopped", "600": "completed", "500": "completed"},
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert outputs == {"run_id": "600"}
+    assert "download 900" not in calls
+    assert "download 500" not in calls
+    status = json.loads((tmp_path / "baseline/eval_results.json").read_text())
+    assert status["status"] == "completed"
+
+
+def test_no_baseline_leaves_no_file(tmp_path: Path) -> None:
+    result, outputs, _ = _run_find_baseline_step(
+        tmp_path, ["800", "700"], {"700": "stopped"}
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert outputs == {}
+    assert not (tmp_path / "baseline").exists()
+
+
+def test_baseline_gate_runs_after_the_eval_on_a_hosted_runner() -> None:
+    yaml = pytest.importorskip("yaml")
+    jobs = yaml.safe_load(WORKFLOW.read_text())["jobs"]
+    gate = jobs["baseline-gate"]
+
+    assert gate["runs-on"] == "ubuntu-latest"
+    assert "docker-eval" in gate["needs"]
+    assert "needs.docker-eval.result == 'success'" in gate["if"]
+    assert gate["permissions"] == {"actions": "read", "contents": "read"}
+    # A PR run reports the gate result, and keeps its results out of the
+    # eval-results artifacts that later runs use as baselines.
+    assert "baseline-gate" in jobs["report"]["needs"]
+    upload = next(
+        s
+        for s in jobs["docker-eval"]["steps"]
+        if s.get("name") == "Upload evaluation output as artifact"
+    )
+    assert "evaluation/auto_evaluation/eval_results.json" in upload["with"]["path"]

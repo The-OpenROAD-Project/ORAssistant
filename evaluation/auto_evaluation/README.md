@@ -34,6 +34,19 @@ and pass rate of each metric. A stopped run has `"status": "stopped"` and
 artifact `eval-results-<run id>` and keeps it 90 days, as a baseline for later
 runs. See `run_results.py` for the schema.
 
+## Baseline gate
+
+After the evaluation, Secret CI compares the results file with the one from
+the newest finished master push run that has scores. The run fails when the
+precision or recall pass rate is more than 5 points below that baseline. The
+job summary shows the baseline, current, and delta of each metric. The gate
+skips, with a notice, when the judge or the dataset differs, because the
+scores are then on a different scale.
+
+A run that fails the gate is the baseline for the next run. So one drop fails
+one run and does not block master; check the failed run before the next merge.
+See `baseline_gate.py`.
+
 ## Case records
 
 Each case prints one line with the retrieval tool that the backend ran and the
