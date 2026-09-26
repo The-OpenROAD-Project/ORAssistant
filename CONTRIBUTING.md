@@ -48,7 +48,15 @@ cp .env.test .env
 make test
 ```
 
-`.env.test` holds placeholder values, so the tests need no credentials.
+`.env.test` holds placeholder values, so the tests make no API calls. Some
+tests import the API, which creates a Vertex AI client, so Google application
+default credentials must exist. Without real ones, a fake `authorized_user`
+file is enough:
+
+```
+echo '{"type": "authorized_user", "client_id": "x", "client_secret": "x", "refresh_token": "x"}' > .venv/fake-adc.json
+export GOOGLE_CLOUD_PROJECT=unit-test GOOGLE_APPLICATION_CREDENTIALS=$PWD/.venv/fake-adc.json
+```
 
 For the Next.js UI, run `yarn lint` and `yarn format` in
 `frontend/nextjs-frontend/`. CI does not check this project.

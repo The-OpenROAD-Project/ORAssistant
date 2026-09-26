@@ -19,7 +19,8 @@ with it.
 - Backend tests run in parallel (`pytest -n auto`). Keep each test on its own
   `tmp_path`, with no shared files or ports.
 - Backend tests read `backend/.env`. Copy `backend/.env.test` to `.env` first,
-  as CI does.
+  as CI does. The tests that import the API also need Google application
+  default credentials; CONTRIBUTING.md shows a fake set.
 - `evaluation/` has two test sets: `unittest` files in `evaluation/tests/` and
   pytest files in `evaluation/auto_evaluation/tests/`. `make check` runs both.
 - `backend/tests/test_ci_secret_workflow.py` tests the workflows in
