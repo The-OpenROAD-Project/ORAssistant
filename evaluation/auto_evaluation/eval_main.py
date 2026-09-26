@@ -20,6 +20,7 @@ from auto_evaluation.src.metrics.retrieval import (
     make_hallucination_metric,
 )
 from auto_evaluation.dataset import hf_pull, preprocess
+from auto_evaluation import run_metadata
 from tqdm import tqdm
 
 eval_root_path = os.path.join(os.path.dirname(__file__), "..")
@@ -32,6 +33,8 @@ ALL_RETRIEVERS = {
 }
 RETRY_INTERVAL = 5
 RETRY_TIMEOUT = 600
+JUDGE_MODEL = "gemini-3.1-pro-preview"
+
 # A run stops when more than this share of questions get no retrieval context
 # or the answer "invalid". That means the backend is broken, and the judge
 # would only score it 0%.
@@ -67,7 +70,7 @@ class EvaluationHarness:
         self.dataset = dataset
         self.reranker_base_url = reranker_base_url
         self.qns = preprocess.read_data(self.dataset)
-        self.eval_model = GoogleGeminiLangChain(model_name="gemini-3.1-pro-preview")
+        self.eval_model = GoogleGeminiLangChain(model_name=JUDGE_MODEL)
         self.log_dir = "logs"
         os.makedirs(self.log_dir, exist_ok=True)
         self.sanity_check()
@@ -100,7 +103,13 @@ class EvaluationHarness:
                 continue
         raise ValueError("Sanity check failed after timeout")
 
-    def evaluate(self, retriever: str, limit: int | None = None):
+    def evaluate(
+        self,
+        retriever: str,
+        limit: int | None = None,
+        *,
+        metadata: dict[str, str],
+    ):
         retrieval_tcs = []
         response_times = []
         results = []
@@ -132,6 +141,10 @@ class EvaluationHarness:
             response_times.append(response_time)
             results.append((question, response))
 
+        # Print the metadata before the retrieval check, so a stopped run names
+        # its setup too. Flush so progress bars on stderr cannot split the line.
+        print(run_metadata.format_line(metadata), flush=True)
+
         # Check before the judge runs: scoring empty answers costs judge calls
         # and hides a broken backend behind a 0% score.
         check_retrieval(results)
@@ -139,6 +152,7 @@ class EvaluationHarness:
         evaluate(
             test_cases=retrieval_tcs,
             metrics=[precision, recall, hallucination],
+            hyperparameters=dict(metadata),
         )
 
         # parse deepeval results
@@ -177,11 +191,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Pull the dataset from huggingface hub
-    hf_pull.main()
+    dataset_revision = hf_pull.main()
 
     # Evaluate the model on the dataset
     harness = EvaluationHarness(args.base_url, args.dataset, args.reranker_base_url)
+    metadata = run_metadata.collect(JUDGE_MODEL, dataset_revision)
     try:
-        harness.evaluate(args.retriever, limit=args.limit)
+        harness.evaluate(args.retriever, limit=args.limit, metadata=metadata)
     except EmptyRetrievalError as error:
         sys.exit(f"Retrieval check failed: {error}")

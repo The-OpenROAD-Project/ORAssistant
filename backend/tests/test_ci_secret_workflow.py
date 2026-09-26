@@ -11,6 +11,7 @@ import pytest
 WORKFLOW = Path(__file__).parents[2] / ".github/workflows/ci-secret.yaml"
 WORKFLOWS_DIR = Path(__file__).parents[2] / ".github/workflows"
 MAKEFILE = Path(__file__).parents[2] / "Makefile"
+SUMMARIZE = Path(__file__).parents[2] / "evaluation/auto_evaluation/summarize_output.sh"
 SECRET_TARGETS = ("backend/src", "evaluation/auto_evaluation/src")
 
 requires_make = pytest.mark.skipif(
@@ -304,6 +305,8 @@ def _run_summarize_step(tmp_path: Path, output: str | None) -> Path:
     """Run the summarize step and return the summary path it may create."""
     work = tmp_path / "evaluation/auto_evaluation"
     work.mkdir(parents=True)
+    # The step calls this script from its working directory.
+    (work / SUMMARIZE.name).symlink_to(SUMMARIZE)
     if output is not None:
         (work / "llm_tests_output.txt").write_text(output)
     result = subprocess.run(
