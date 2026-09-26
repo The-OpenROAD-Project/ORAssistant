@@ -225,6 +225,9 @@ def parse_agent_output(output: list) -> tuple[str, list[ContextSource], list[str
 _rg: Optional[RetrieverGraph] = None
 _rg_started = threading.Event()
 _rg_ready = threading.Event()
+# Set when the build failed, for example on a 429 from the embeddings API.
+# The graph then never becomes ready, and the readiness probe says so.
+_rg_error: Optional[str] = None
 
 
 def get_graph() -> Optional[RetrieverGraph]:
@@ -234,18 +237,23 @@ def get_graph() -> Optional[RetrieverGraph]:
 
 def _initialize_graph() -> None:
     """Build and initialize the RetrieverGraph (runs in background thread)."""
-    global _rg
-    graph = RetrieverGraph(
-        llm_model=llm,
-        embeddings_config=embeddings_config,
-        reranking_model_name=hf_reranker,
-        use_cuda=use_cuda,
-        inbuilt_tool_calling=True,
-        fast_mode=fast_mode,
-        debug=debug,
-        enable_mcp=enable_mcp,
-    )
-    graph.initialize()
+    global _rg, _rg_error
+    try:
+        graph = RetrieverGraph(
+            llm_model=llm,
+            embeddings_config=embeddings_config,
+            reranking_model_name=hf_reranker,
+            use_cuda=use_cuda,
+            inbuilt_tool_calling=True,
+            fast_mode=fast_mode,
+            debug=debug,
+            enable_mcp=enable_mcp,
+        )
+        graph.initialize()
+    except Exception as error:
+        _rg_error = f"{type(error).__name__}: {error}"
+        # Re-raise, so the thread still logs the traceback.
+        raise
     _rg = graph
     _rg_ready.set()
 
@@ -260,17 +268,20 @@ def start_graph_init() -> None:
 
 def reset_graph_state_for_testing() -> None:
     """Reset graph state so tests can simulate a fresh startup."""
-    global _rg
+    global _rg, _rg_error
     _rg = None
+    _rg_error = None
     _rg_started.clear()
     _rg_ready.clear()
 
 
 @router.get("/ready")
 async def ready() -> dict[str, str]:
-    """Readiness probe — returns 'ready' when the graph is fully initialized."""
+    """Readiness probe: "ready", "initializing", or "failed" with the error."""
     if _rg_ready.is_set():
         return {"status": "ready"}
+    if _rg_error is not None:
+        return {"status": "failed", "error": _rg_error}
     return {"status": "initializing"}
 
 

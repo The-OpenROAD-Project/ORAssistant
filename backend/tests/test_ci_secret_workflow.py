@@ -196,6 +196,26 @@ def test_graph_readiness_timeout_fails_the_step() -> None:
     assert "Graph did not become ready" in result.stdout
 
 
+def test_graph_readiness_stops_when_the_start_failed() -> None:
+    # A failed start never becomes ready, so the step must not wait an hour.
+    script = (
+        'curl() { echo \'{"status":"failed","error":"RuntimeError: 429"}\'; }\n'
+        "sleep() { echo slept >&2; }\n"
+    )
+    script += _workflow_step_script("Wait for graph readiness")
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+
+    assert result.returncode != 0
+    assert "Graph initialization failed" in result.stdout
+    assert "RuntimeError: 429" in result.stdout
+    assert "slept" not in result.stderr
+
+
 def _strings(node: object) -> list[str]:
     if isinstance(node, str):
         return [node]
