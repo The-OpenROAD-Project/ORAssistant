@@ -85,12 +85,18 @@ def parse_cases(text: str) -> list[int]:
 class EvaluationHarness:
     # TODO: Use async for EvaluationHarness.
     # TODO: Also requires LLM Engine to be async
-    def __init__(self, base_url: str, dataset: str, reranker_base_url: str = ""):
+    def __init__(
+        self,
+        base_url: str,
+        dataset: str,
+        reranker_base_url: str = "",
+        judge_model: str = JUDGE_MODEL,
+    ):
         self.base_url = base_url
         self.dataset = dataset
         self.reranker_base_url = reranker_base_url
         self.qns = preprocess.read_data(self.dataset)
-        self.eval_model = GoogleGeminiLangChain(model_name=JUDGE_MODEL)
+        self.eval_model = GoogleGeminiLangChain(model_name=judge_model)
         self.log_dir = "logs"
         os.makedirs(self.log_dir, exist_ok=True)
         self.sanity_check()
@@ -242,7 +248,7 @@ class EvaluationHarness:
         return response.json(), response.elapsed.total_seconds() * 1000
 
 
-if __name__ == "__main__":
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluation script")
     parser.add_argument(
         "--base_url", type=str, help="Base URL of the model to evaluate"
@@ -267,14 +273,26 @@ if __name__ == "__main__":
         action="store_true",
         help="Print the case records and stop before DeepEval",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--judge",
+        default=JUDGE_MODEL,
+        help="DeepEval judge model. To change the default, see Judge change "
+        "in the README.",
+    )
+    return parser
+
+
+if __name__ == "__main__":
+    args = build_parser().parse_args()
 
     # Pull the dataset from huggingface hub
     dataset_revision = hf_pull.main()
 
     # Evaluate the model on the dataset
-    harness = EvaluationHarness(args.base_url, args.dataset, args.reranker_base_url)
-    metadata = run_metadata.collect(JUDGE_MODEL, dataset_revision)
+    harness = EvaluationHarness(
+        args.base_url, args.dataset, args.reranker_base_url, args.judge
+    )
+    metadata = run_metadata.collect(args.judge, dataset_revision)
     try:
         harness.evaluate(
             args.retriever,
