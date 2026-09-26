@@ -7,8 +7,8 @@ schema). Run-to-run noise is about 3 points, so a drop of more than MARGIN in
 the precision or recall pass rate fails the run.
 
 The gate skips, with a notice, when there is no baseline, when either run has
-no scores, or when the judge or the dataset differs: scores from a different
-judge or dataset are on a different scale.
+no scores or another schema version, or when the judge or the dataset
+differs: scores from a different judge or dataset are on a different scale.
 
 Usage: python baseline_gate.py --current CURRENT.json [--baseline BASELINE.json]
 The script uses only the standard library, so it runs without the project
@@ -19,6 +19,10 @@ import argparse
 import json
 from dataclasses import dataclass, field
 
+# The results schema that this gate reads. It must equal
+# run_results.SCHEMA_VERSION; a test checks that. The gate does not import it,
+# so that it runs as a plain script.
+SCHEMA_VERSION = 1
 # Largest allowed drop in pass rate, as a fraction: 0.05 is 5 points.
 MARGIN = 0.05
 GATED_METRICS = ("Contextual Precision", "Contextual Recall")
@@ -44,11 +48,14 @@ def compare(current: dict, baseline: dict | None, margin: float = MARGIN) -> Ver
     if baseline is None:
         return _skip("no completed master run with a results file")
     for name, results in (("current run", current), ("baseline", baseline)):
+        version = results.get("schema_version")
+        if version != SCHEMA_VERSION:
+            return _skip(f"the {name} has results schema version {version}")
         if results.get("status") != "completed" or not results.get("metrics"):
             return _skip(f"the {name} has no scores")
     for key in SAME_SCALE_FIELDS:
-        now = current["metadata"].get(key)
-        then = baseline["metadata"].get(key)
+        now = current.get("metadata", {}).get(key)
+        then = baseline.get("metadata", {}).get(key)
         if now != then:
             return _skip(f"{key} {now} differs from the baseline {key} {then}")
 

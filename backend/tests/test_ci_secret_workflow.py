@@ -614,6 +614,8 @@ def test_docs_changes_start_no_eval(path: str, starts: bool) -> None:
 
 
 def _results_json(status: str) -> str:
+    if status == "malformed":
+        return "{not json"
     return json.dumps({"status": status, "metadata": {}, "metrics": None})
 
 
@@ -686,6 +688,15 @@ def test_baseline_is_the_newest_completed_run_with_scores(tmp_path: Path) -> Non
     assert "download 500" not in calls
     status = json.loads((tmp_path / "baseline/eval_results.json").read_text())
     assert status["status"] == "completed"
+
+
+def test_a_results_file_that_does_not_parse_is_skipped(tmp_path: Path) -> None:
+    result, outputs, _ = _run_find_baseline_step(
+        tmp_path, ["800", "700"], {"800": "malformed", "700": "completed"}
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert outputs == {"run_id": "700"}
 
 
 def test_no_baseline_leaves_no_file(tmp_path: Path) -> None:

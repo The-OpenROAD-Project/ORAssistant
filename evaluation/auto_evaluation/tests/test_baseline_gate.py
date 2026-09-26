@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from auto_evaluation import baseline_gate
+from auto_evaluation import baseline_gate, run_results
 
 METADATA = {
     "judge": "gemini-judge",
@@ -112,6 +112,20 @@ def test_a_run_without_scores_skips(current: dict, baseline: dict) -> None:
 
     assert verdict.passed
     assert verdict.skipped
+
+
+def test_the_gate_reads_the_schema_that_runs_write() -> None:
+    assert baseline_gate.SCHEMA_VERSION == run_results.SCHEMA_VERSION
+
+
+def test_another_schema_version_skips() -> None:
+    baseline = {**_results(0.8), "schema_version": 2}
+
+    verdict = baseline_gate.compare(_results(0.1), baseline)
+
+    assert verdict.passed
+    assert verdict.skipped
+    assert "schema version 2" in verdict.lines[0]
 
 
 def test_a_missing_metric_is_skipped_but_others_still_gate() -> None:
