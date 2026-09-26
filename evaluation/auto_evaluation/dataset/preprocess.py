@@ -2,6 +2,15 @@ import csv
 import json
 from typing import Any
 
+# DeepEval 4 flipped HallucinationMetric. Its score is now the share of
+# contexts that the answer does not contradict, and a case passes when the
+# score is at or above the threshold. DeepEval 3 scored the contradicted
+# share, where lower was better. Averages from the two versions are on
+# opposite scales, so the summary names the scale it prints.
+SCORE_NOTES = {
+    "Hallucination": "(share of contexts not contradicted, higher is better)",
+}
+
 
 def read_data(csv_file: str) -> list[dict]:
     questions = []
@@ -57,7 +66,10 @@ def read_deepeval_cache():
 
     print("Average Metric Scores: ")
     for key, value in metric_scores.items():
-        print(key, sum(value) / len(value))
+        line = f"{key} {sum(value) / len(value)}"
+        if key in SCORE_NOTES:
+            line += f" {SCORE_NOTES[key]}"
+        print(line)
     print("Metric Passrates: ")
     for key, value in metric_passes.items():
         print(key, value.count(True) / len(value))
