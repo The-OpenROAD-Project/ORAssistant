@@ -1,11 +1,14 @@
+import hashlib
 import json
 import os
+import re
 import subprocess
 import requests
 import shutil
 import logging
 import sys
 
+from datetime import datetime, timezone
 from shutil import copyfile
 from dotenv import load_dotenv
 from typing import Optional
@@ -20,11 +23,12 @@ source_dict: dict[str, str] = {}
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(cur_dir)
 
-# Get commit hashes from env
-or_repo_commit = os.getenv("OR_REPO_COMMIT", "ffc5760f2df639cd184c40ceba253c7e02a006d5")
-orfs_repo_commit = os.getenv(
-    "ORFS_REPO_COMMIT", "b94834df01cb58915bc0e8dabf85a314fbd8fb9e"
-)
+OR_REPO_URL = "https://github.com/The-OpenROAD-Project/OpenROAD.git"
+ORFS_REPO_URL = "https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git"
+# The gh_discussions files come from this dataset commit (2024-09-10), not
+# from main, so that a rebuild does not take in a new upload by accident.
+GH_DISCUSSIONS_REVISION = "0cc9586013d96a8e158e83dd6608e9597d4e4883"
+
 opensta_repo_commit = os.getenv(
     "OPENSTA_REPO_COMMIT", "1c7f022cd0a02ce71d047aa3dbb64e924b6efbd5"
 )
@@ -37,18 +41,40 @@ opensta_docs_url = (
 )
 yosys_html_url = "https://yosyshq.readthedocs.io/projects/yosys/en/latest"
 klayout_html_url = "https://www.klayout.de/doc.html"
-or_website_url = "https://theopenroadproject.org/"
+or_website_url = "https://openroad.org/"
 opensta_readme_url = (
     "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenSTA/"
     f"{opensta_repo_commit}/README.md"
 )
-or_publications_url = "https://theopenroadproject.org/publications/"
+or_publications_url = "https://openroad.org/resources/publications"
+# Tool papers that the publications page does not list, as (URL, file name).
+# Use author, institution, or arXiv copies with a fixed version.
+EXTRA_PAPERS = [
+    # FastRoute, VLSI Design 2012 (Iowa State University repository copy).
+    (
+        "https://dr.lib.iastate.edu/server/api/core/bitstreams/"
+        "49638cfc-c010-449c-a3f0-da6d4ddb978f/content",
+        "FastRoute_VLSI_Design_2012.pdf",
+    ),
+    # RTL-MP, ISPD 2022 (UCSD VLSI CAD lab copy).
+    ("https://vlsicad.ucsd.edu/Publications/Conferences/389/c389.pdf", "c389.pdf"),
+    # Hier-RTLMP, arXiv 2304.11761 version 2.
+    ("https://arxiv.org/pdf/2304.11761v2", "Hier-RTLMP_arXiv_2304_11761v2.pdf"),
+]
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 
 def update_src(src_path: str, dst_path: str) -> None:
-    if "OR_docs" in dst_path:
+    # Match website pages first: a page name can contain "yosys" or "klayout".
+    if dst_path.startswith("data/html/or_website/"):
+        page = dst_path.removeprefix("data/html/or_website/")
+        if page.endswith("/index.html"):
+            page = page.removesuffix("index.html")
+        else:
+            page = page.removesuffix(".html")
+        source_dict[dst_path] = f"https://{page}"
+    elif "OR_docs" in dst_path:
         source_dict[dst_path] = (
             f"{or_docs_url}/{src_path.split('_sources/')[-1].replace('.md', '.html')}"
         )
@@ -69,10 +95,6 @@ def update_src(src_path: str, dst_path: str) -> None:
         source_dict[dst_path] = opensta_docs_url
     elif "OpenSTA" in dst_path and "markdown" in dst_path:
         source_dict[dst_path] = opensta_readme_url
-    elif "theopenroadproject" in dst_path:
-        source_dict[dst_path] = (
-            f"https://{dst_path.replace('data/html/or_website/', '').replace('/index.html', '')}"
-        )
     else:
         source_dict[dst_path] = dst_path
 
@@ -151,6 +173,20 @@ def copy_tree_track_src(src: str, dst: str) -> None:
             update_src(src_file, dst_path)
 
 
+def resolve_repo_commit(env_var: str, url: str) -> str:
+    """Return the commit set in env_var, else the current master HEAD of url."""
+    commit = os.getenv(env_var)
+    if commit:
+        return commit
+
+    command = ["git", "ls-remote", url, "refs/heads/master"]
+    res = subprocess.run(command, capture_output=True, text=True)
+    if res.returncode != 0 or not res.stdout.strip():
+        logging.error(f"Cannot resolve master of {url}: {res.stderr}")
+        sys.exit(1)
+    return res.stdout.split()[0]
+
+
 def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) -> None:
     target_dir = os.path.join(cur_dir, folder_name)
     logging.debug(f"Cloning repo from {url} to {target_dir}...")
@@ -171,11 +207,22 @@ def clone_repo(url: str, folder_name: str, commit_hash: Optional[str] = None) ->
     logging.debug("Cloned repo successfully.")
 
 
+def run_build_step(command: str) -> None:
+    """Run a shell build command in the current directory. Exit if it fails."""
+    res = subprocess.run(command, shell=True, capture_output=True)
+    if res.returncode != 0:
+        logging.error(
+            f"'{command}' failed in {os.getcwd()} with exit code {res.returncode}:\n"
+            f"{res.stderr.decode('utf-8', errors='replace')}"
+        )
+        sys.exit(1)
+
+
 def build_or_docs() -> None:
     logging.debug("Starting OR docs build...")
 
     os.chdir(os.path.join(cur_dir, "OpenROAD/docs"))
-    subprocess.run("make html", shell=True, capture_output=True)
+    run_build_step("make html")
 
     logging.debug("Copying OR docs...")
     os.chdir(cur_dir)
@@ -218,8 +265,7 @@ def build_or_docs() -> None:
 def build_orfs_docs() -> None:
     logging.debug("Starting ORFS docs build...")
     os.chdir(os.path.join(cur_dir, "OpenROAD-flow-scripts/docs"))
-
-    subprocess.run("make html", shell=True, capture_output=True)
+    run_build_step("make html")
 
     logging.debug("Copying ORFS docs...")
     os.chdir(cur_dir)
@@ -302,8 +348,7 @@ def build_manpages() -> None:
             continue
     os.chdir(os.path.join(cur_dir, "OpenROAD/docs"))
     num_cores = os.cpu_count()
-    command = f"make clean && make preprocess && make -j{num_cores}"
-    res = subprocess.run(command, shell=True, capture_output=True)
+    run_build_step(f"make clean && make preprocess && make -j{num_cores}")
     logging.debug("Finished building manpages.")
 
     src_dir = os.path.join(cur_dir, "OpenROAD/docs/md")
@@ -347,11 +392,53 @@ def get_opensta_docs() -> None:
     track_src(f"{cur_dir}/data/pdf/OpenSTA")
 
 
+# The news index, its later pages, and the category pages repeat the text of
+# the posts that they link to.
+LISTING_PAGE_RE = re.compile(r"(^|/)(news|news/[0-9]+|category/[^/]+)\.html$")
+
+
+def prune_or_website(folder: str) -> None:
+    """Keep only the HTML pages of a website crawl that have unique text.
+
+    The crawl must follow the listing pages to find the posts, so they are
+    removed only after it. Files that are not HTML, such as robots.txt, are
+    removed too. When pages have the same words, keep the shortest path, as
+    a copy often has a suffix such as "-2".
+    """
+    pages_by_text: dict[str, list[str]] = {}
+    for root, _, files in os.walk(folder):
+        for file in files:
+            path = os.path.join(root, file)
+            rel_path = os.path.relpath(path, folder)
+            if not file.endswith(".html") or LISTING_PAGE_RE.search(rel_path):
+                os.remove(path)
+                continue
+            with open(path, encoding="utf-8", errors="replace") as f:
+                text = BeautifulSoup(f.read(), "html.parser").get_text()
+            # Copies of one post can differ in spaces, punctuation, and
+            # symbols such as a trademark sign. Compare only words and numbers.
+            words = re.sub(r"[\W_]+", "", text.lower())
+            digest = hashlib.sha256(words.encode()).hexdigest()
+            pages_by_text.setdefault(digest, []).append(path)
+
+    for paths in pages_by_text.values():
+        keep = min(paths, key=lambda path: (len(path), path))
+        for path in paths:
+            if path != keep:
+                logging.debug(f"Removing {path}: same text as {keep}")
+                os.remove(path)
+
+
 def get_or_website_html() -> None:
     logging.debug("Scraping OR website...")
     try:
         subprocess.run(
-            f"wget -r -A.html -P data/html/or_website {or_website_url}",
+            # The site links pages without a file extension. Accept only such
+            # URLs, which skips images, styles, and scripts. Save pages as
+            # .html.
+            "wget -r --adjust-extension"
+            " --accept-regex '^https://openroad\\.org/([^./?#]+/?)*$'"
+            f" -P data/html/or_website {or_website_url}",
             shell=True,
         )
     except Exception as e:
@@ -359,24 +446,36 @@ def get_or_website_html() -> None:
         sys.exit(1)
 
     logging.debug("OR website docs downloaded successfully.")
+    prune_or_website(f"{cur_dir}/data/html/or_website")
     track_src(f"{cur_dir}/data/html/or_website")
 
 
 def get_or_publications() -> None:
     # TODO: verify if this is indeed all publications. New format seem to truncate to 10 latest.
     try:
-        html = requests.get(or_publications_url).text
-        soup = BeautifulSoup(html, "lxml")
+        response = requests.get(or_publications_url)
+        if response.status_code != 200:
+            logging.error(
+                f"{or_publications_url} returned HTTP {response.status_code}."
+            )
+            sys.exit(1)
+        soup = BeautifulSoup(response.text, "html.parser")
         links = soup.find_all("a")
         papers = []
 
         for link in links:
             href = link.get("href")
-            if href and ".pdf" in href:
+            # The page can link one paper more than once. Download it once.
+            if href and ".pdf" in href and href not in papers:
                 papers.append(href)
+        if not papers:
+            logging.error(f"Found no papers on {or_publications_url}.")
+            sys.exit(1)
 
-        for paper_link in papers:
-            paper_name = paper_link.split("/")[-1]
+        downloads = [(url, url.split("/")[-1]) for url in papers]
+        downloads += [(url, name) for url, name in EXTRA_PAPERS if url not in papers]
+
+        for paper_link, paper_name in downloads:
             logging.debug(f"Downloading {paper_name}. . .")
 
             counter = 2
@@ -385,19 +484,19 @@ def get_or_publications() -> None:
                 paper_name = f"{paper_name.split('.')[0]}_{counter}.pdf"
                 counter += 1
 
-            subprocess.run(
-                [
-                    "wget",
-                    paper_link,
-                    "-O",
-                    f"data/pdf/OR_publications/{paper_name}",
-                ]
-            )
+            paper_path = f"data/pdf/OR_publications/{paper_name}"
+            res = subprocess.run(["wget", paper_link, "-O", paper_path])
+            if res.returncode != 0 or os.path.getsize(paper_path) == 0:
+                logging.error(
+                    f"Download of {paper_link} failed (wget exit code "
+                    f"{res.returncode})."
+                )
+                sys.exit(1)
 
-            source_dict[f"data/pdf/OR_publications/{paper_name}"] = paper_link
+            source_dict[paper_path] = paper_link
 
     except Exception as e:
-        logging.debug(f"Error in downloading OR publications: {e}")
+        logging.error(f"Error in downloading OR publications: {e}")
         sys.exit(1)
 
     logging.debug("OR publications downloaded successfully.")
@@ -433,8 +532,44 @@ def get_klayout_docs_html() -> None:
     track_src(f"{cur_dir}/data/html/klayout_docs")
 
 
+def write_source_list() -> None:
+    """Add the gh_discussions URLs to the source map and write it to disk."""
+    with open(f"{cur_dir}/data/markdown/gh_discussions/mapping.json") as gh_disc:
+        gh_disc_src = json.load(gh_disc)
+    gh_disc_path = "data/markdown/gh_discussions"
+    for file in gh_disc_src.keys():
+        full_path = os.path.join(gh_disc_path, file)
+        source_dict[full_path] = gh_disc_src[file]["url"]
+
+    with open(f"{cur_dir}/data/source_list.json", "w+") as src:
+        src.write(json.dumps(source_dict))
+
+
+def write_build_info(commits: dict[str, str], crawl_date: str) -> None:
+    """Record the inputs of this build in data/BUILD_INFO.json."""
+    paper_urls = sorted(
+        url
+        for path, url in source_dict.items()
+        if path.startswith("data/pdf/OR_publications/")
+    )
+    build_info = {
+        "crawl_date": crawl_date,
+        "commits": {**commits, "OpenSTA": opensta_repo_commit},
+        "gh_discussions_revision": GH_DISCUSSIONS_REVISION,
+        "paper_urls": paper_urls,
+    }
+    with open(f"{cur_dir}/data/BUILD_INFO.json", "w") as f:
+        json.dump(build_info, f, indent=2)
+        f.write("\n")
+
+
 if __name__ == "__main__":
     logging.info("Building knowledge base...")
+    crawl_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    commits = {
+        "OpenROAD": resolve_repo_commit("OR_REPO_COMMIT", OR_REPO_URL),
+        "OpenROAD-flow-scripts": resolve_repo_commit("ORFS_REPO_COMMIT", ORFS_REPO_URL),
+    }
     docs_paths = ["data"]
     purge_folders(folder_paths=docs_paths)
 
@@ -459,13 +594,13 @@ if __name__ == "__main__":
     get_opensta_docs()
 
     clone_repo(
-        url="https://github.com/The-OpenROAD-Project/OpenROAD.git",
-        commit_hash=or_repo_commit,
+        url=OR_REPO_URL,
+        commit_hash=commits["OpenROAD"],
         folder_name="OpenROAD",
     )
     clone_repo(
-        url="https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git",
-        commit_hash=orfs_repo_commit,
+        url=ORFS_REPO_URL,
+        commit_hash=commits["OpenROAD-flow-scripts"],
         folder_name="OpenROAD-flow-scripts",
     )
 
@@ -484,7 +619,7 @@ if __name__ == "__main__":
     snapshot_download(
         repo_id="The-OpenROAD-Project/ORAssistant_RAG_Dataset",
         repo_type="dataset",
-        revision="main",
+        revision=GH_DISCUSSIONS_REVISION,
         allow_patterns=[
             "markdown/gh_discussions/**/*",
             "markdown/gh_discussions/*",
@@ -492,16 +627,8 @@ if __name__ == "__main__":
         local_dir="data",
     )
 
-    with open(f"{cur_dir}/data/markdown/gh_discussions/mapping.json") as gh_disc:
-        gh_disc_src = json.load(gh_disc)
-    gh_disc_path = "data/markdown/gh_discussions"
-    source_dict = {}
-    for file in gh_disc_src.keys():
-        full_path = os.path.join(gh_disc_path, file)
-        source_dict[full_path] = gh_disc_src[file]["url"]
-
-    with open("data/source_list.json", "w+") as src:
-        src.write(json.dumps(source_dict))
+    write_source_list()
+    write_build_info(commits, crawl_date)
 
     repo_paths = ["OpenROAD", "OpenROAD-flow-scripts"]
     purge_folders(folder_paths=repo_paths)

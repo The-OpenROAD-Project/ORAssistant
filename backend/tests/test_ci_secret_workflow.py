@@ -9,6 +9,7 @@ import pytest
 
 
 WORKFLOW = Path(__file__).parents[2] / ".github/workflows/ci-secret.yaml"
+WORKFLOWS_DIR = Path(__file__).parents[2] / ".github/workflows"
 MAKEFILE = Path(__file__).parents[2] / "Makefile"
 SUMMARIZE = Path(__file__).parents[2] / "evaluation/auto_evaluation/summarize_output.sh"
 SECRET_TARGETS = ("backend/src", "evaluation/auto_evaluation/src")
@@ -218,6 +219,29 @@ def test_every_workflow_expression_is_closed() -> None:
 
     assert unclosed == []
     assert workflow["run-name"].endswith("}}")
+
+
+def test_no_workflow_uses_the_gh_pat_secret() -> None:
+    # The GH_PAT owner lost write access; no workflow may depend on it.
+    yaml = pytest.importorskip("yaml")
+    for path in sorted(WORKFLOWS_DIR.glob("*.y*ml")):
+        workflow = yaml.safe_load(path.read_text())
+        offenders = [s for s in _strings(workflow) if "secrets.GH_PAT" in s]
+        assert offenders == [], f"{path.name}: {offenders}"
+
+
+def test_commit_comment_step_uses_the_github_token() -> None:
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    steps = [
+        step
+        for job in workflow["jobs"].values()
+        for step in job.get("steps", [])
+        if step.get("name") == "Create commit comment"
+    ]
+
+    assert len(steps) == 1
+    assert steps[0]["with"]["token"] == "${{ github.token }}"
 
 
 def _run_report_step(

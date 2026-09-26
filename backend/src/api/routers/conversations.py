@@ -124,9 +124,11 @@ def extract_rag_context_sources(output: list) -> list[ContextSource]:
         if isinstance(element, dict):
             for key, value in element.items():
                 if key.startswith("retrieve_") and isinstance(value, dict):
+                    # "context" joins every chunk for the LLM prompt;
+                    # "context_list" holds one text per chunk, in "urls" order.
                     urls = value.get("urls", [])
-                    context = value.get("context", "")
-                    for url in urls:
+                    context_list = value.get("context_list", [])
+                    for url, context in zip(urls, context_list):
                         context_sources.append(
                             ContextSource(context=context, source=url)
                         )
