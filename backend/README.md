@@ -139,7 +139,7 @@ Make sure you are in the backend folder before running the above command.
 **NOTE**: The project does support a `docker-compose` file that would run all of the containers together
 
 ### MCP Commands
-OpenROAD's MCP server is a wrapper around the OpenROAD-flow-scripts. It utilizes the Streamable HTTP transport so it must be launched as a separate process. Run with `python orfs_server.py`
+OpenROAD's MCP server is a wrapper around the OpenROAD-flow-scripts. It utilizes the Streamable HTTP transport so it must be launched as a separate process. Run with `make mcp`
 
 Currently tested with running `python chatbot.py` in another process.
 

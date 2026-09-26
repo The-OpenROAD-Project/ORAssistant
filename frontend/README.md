@@ -18,10 +18,10 @@ For this section, please refer to the [mongodb](./mongoDB.md) documentation for 
 
 ### Install Required Packages
 
-Ensure you have the necessary dependencies installed by running:
+Install the dependencies with [uv](https://docs.astral.sh/uv/). This makes a virtual environment in `frontend/.venv`:
 
 ```bash
-pip install -r requirements.txt
+make init
 ```
 
 ### Run the Streamlit Application
@@ -29,7 +29,7 @@ pip install -r requirements.txt
 Start the Streamlit application by running:
 
 ```bash
-streamlit run streamlit_app.py
+uv run streamlit run streamlit_app.py
 ```
 
 ## Testing Using Mock API
@@ -37,7 +37,7 @@ streamlit run streamlit_app.py
 To test your application using a mock API, you can run the provided mock endpoint script:
 
 ```bash
-python utils/mock_endpoint.py
+uv run python utils/mock_endpoint.py
 ```
 
 This will start a mock API server that simulates responses for testing purposes.

@@ -157,16 +157,16 @@ cd frontend
 cp .env.example .env
 ```
 
-- **Step 2**: Install the necessary requirements. You are encouraged to use a virtual environment for this.
+- **Step 2**: Install the dependencies with [uv](https://docs.astral.sh/uv/). This makes a virtual environment in `frontend/.venv`.
 
 ```bash
-pip install -r requirements.txt
+make init
 ```
 
 - **Step 3**: Run streamlit application
 
 ```bash
-streamlit run streamlit_app.py
+uv run streamlit run streamlit_app.py
 ```
 
 ## Architecture Overview
