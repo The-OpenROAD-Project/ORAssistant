@@ -23,3 +23,13 @@ branch name. A judge or dataset change can move the scores as much as a code
 change, so compare scores only between runs with the same judge and dataset.
 `summarize_output.sh` puts this line above the Aggregate Metrics block in the
 Secret CI comment. See `run_metadata.py` for the meaning of each value.
+
+## Results file
+
+Each run writes `eval_results.json` to its working directory, also when the
+retrieval check stops the run. It holds the schema version, the run status,
+the run metadata, the test count, the empty-context count, and the mean score
+and pass rate of each metric. A stopped run has `"status": "stopped"` and
+`"metrics": null`. Secret CI uploads the file from master runs as the
+artifact `eval-results-<run id>` and keeps it 90 days, as a baseline for later
+runs. See `run_results.py` for the schema.

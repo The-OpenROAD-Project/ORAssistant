@@ -20,7 +20,7 @@ from auto_evaluation.src.metrics.retrieval import (
     make_hallucination_metric,
 )
 from auto_evaluation.dataset import hf_pull, preprocess
-from auto_evaluation import run_metadata
+from auto_evaluation import run_metadata, run_results
 from tqdm import tqdm
 
 eval_root_path = os.path.join(os.path.dirname(__file__), "..")
@@ -44,9 +44,16 @@ MAX_EMPTY_RETRIEVAL_SHARE = 0.10
 class EmptyRetrievalError(RuntimeError):
     """Too many backend answers had no retrieval context."""
 
+    def __init__(self, message: str, empty_count: int):
+        super().__init__(message)
+        self.empty_count = empty_count
 
-def check_retrieval(results: list[tuple[str, dict]]) -> None:
-    """Raise EmptyRetrievalError if too many (question, response) pairs are empty."""
+
+def check_retrieval(results: list[tuple[str, dict]]) -> int:
+    """
+    Return how many (question, response) pairs are empty. Raise
+    EmptyRetrievalError if there are too many.
+    """
     empty = [
         question
         for question, response in results
@@ -58,8 +65,10 @@ def check_retrieval(results: list[tuple[str, dict]]) -> None:
         raise EmptyRetrievalError(
             f"{len(empty)} of {len(results)} questions had no retrieval context "
             f"or the answer 'invalid' (limit {MAX_EMPTY_RETRIEVAL_SHARE:.0%}). "
-            f"Examples: {examples}"
+            f"Examples: {examples}",
+            len(empty),
         )
+    return len(empty)
 
 
 class EvaluationHarness:
@@ -146,8 +155,19 @@ class EvaluationHarness:
         print(run_metadata.format_line(metadata), flush=True)
 
         # Check before the judge runs: scoring empty answers costs judge calls
-        # and hides a broken backend behind a 0% score.
-        check_retrieval(results)
+        # and hides a broken backend behind a 0% score. A stopped run still
+        # writes its results file, so a baseline reader can skip it.
+        try:
+            empty_count = check_retrieval(results)
+        except EmptyRetrievalError as error:
+            run_results.write(
+                run_results.RESULTS_FILE,
+                metadata,
+                len(results),
+                error.empty_count,
+                None,
+            )
+            raise
 
         evaluate(
             test_cases=retrieval_tcs,
@@ -156,7 +176,10 @@ class EvaluationHarness:
         )
 
         # parse deepeval results
-        preprocess.read_deepeval_cache()
+        metrics = preprocess.read_deepeval_cache()
+        run_results.write(
+            run_results.RESULTS_FILE, metadata, len(results), empty_count, metrics
+        )
 
     def query(self, retriever: str, query: str) -> tuple[dict, float]:
         """
