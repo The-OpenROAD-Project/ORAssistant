@@ -63,3 +63,25 @@ retrieval check and DeepEval. The backend still needs its Google credentials.
 
 The summary averages every case in the DeepEval cache, so run `make clean` in
 `evaluation/` before a subset run. Otherwise earlier cases count too.
+
+## Judge change
+
+A new judge model moves the scores on its own, so later runs cannot tell a
+judge change from a code change. Before a pull request changes `JUDGE_MODEL`
+in `eval_main.py`, run both judges on the same commit and dataset, and post
+the delta in the pull request. Run from `evaluation/`, with the backend up:
+
+```bash
+make clean
+(cd auto_evaluation && uv run ./llm_tests.sh 5 --judge OLD_MODEL)
+cp auto_evaluation/eval_results.json old.json
+make clean
+(cd auto_evaluation && uv run ./llm_tests.sh 5 --judge NEW_MODEL)
+cp auto_evaluation/eval_results.json new.json
+uv run python auto_evaluation/compare_results.py old.json new.json
+```
+
+`make clean` between the runs is necessary: the DeepEval cache otherwise
+mixes the scores of both judges. Use a larger limit, or no limit (`""`), for
+the delta that you post. `compare_results.py` exits with 1 when the two files
+come from a different commit or dataset.
