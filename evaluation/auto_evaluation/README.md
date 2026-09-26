@@ -81,7 +81,7 @@ cp auto_evaluation/eval_results.json new.json
 uv run python auto_evaluation/compare_results.py old.json new.json
 ```
 
-`make clean` between the runs is necessary: the DeepEval cache otherwise
-mixes the scores of both judges. Use a larger limit, or no limit (`""`), for
+`make clean` before each run is necessary, because the summary averages
+every case in the DeepEval cache (see Case subset). Use a larger limit, or no limit (`""`), for
 the delta that you post. `compare_results.py` exits with 1 when the two files
 come from a different commit or dataset.
