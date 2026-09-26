@@ -207,6 +207,15 @@ def parse_agent_output(output: list) -> tuple[str, list[ContextSource], list[str
 
     if is_rag_agent:
         context_sources = extract_rag_context_sources(output)
+        # rag_agent can select several tools, but rag_route runs only one
+        # retrieve_* node. Report the node that ran.
+        tools = [
+            key
+            for element in output[1:-1]
+            if isinstance(element, dict)
+            for key in element
+            if key.startswith("retrieve_")
+        ]
     else:
         context_sources, tools = extract_mcp_context_sources(output)
 

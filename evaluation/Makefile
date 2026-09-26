@@ -24,7 +24,7 @@ check:
 .PHONY: clean
 clean:
 	@rm -f llm_tests_output.txt
-	@rm -f **/.deepeval-cache.json
+	@rm -f auto_evaluation/.deepeval/.deepeval-cache.json
 
 .PHONY: llm-tests
 llm-tests: clean

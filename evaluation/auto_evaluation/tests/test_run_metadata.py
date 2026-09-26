@@ -117,7 +117,7 @@ class TestEvaluationRun:
         harness.qns = [{"question": "q", "ground_truth": "a"}]
         harness.query = MagicMock(
             return_value=(
-                {"response": "r", "context_sources": [{"context": "c"}]},
+                {"response": "r", "context_sources": [{"source": "s", "context": "c"}]},
                 1.0,
             )
         )

@@ -27,6 +27,27 @@ def _budget_seen_by_python(env: dict[str, str]) -> set[str]:
     return {line for line in result.stdout.splitlines() if line.startswith("budget=")}
 
 
+def _args_seen_by_python(*script_args: str) -> list[str]:
+    """Run the script with python stubbed, and return the eval_main.py args."""
+    wrapper = (
+        'python() { printf "arg=%s\\n" "$@"; }\nexport -f python\nbash "$0" "$@"\n'
+    )
+    result = subprocess.run(
+        ["bash", "-c", wrapper, str(SCRIPT), *script_args],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
+    prefix = "arg="
+    return [
+        line[len(prefix) :]
+        for line in result.stdout.splitlines()
+        if line.startswith(prefix)
+    ]
+
+
 class LlmTestsScriptTest(unittest.TestCase):
     def test_script_raises_the_deepeval_budget(self) -> None:
         env = {k: v for k, v in os.environ.items() if k != TIMEOUT_VAR}
@@ -37,6 +58,17 @@ class LlmTestsScriptTest(unittest.TestCase):
         env = {**os.environ, TIMEOUT_VAR: "1234"}
 
         self.assertEqual(_budget_seen_by_python(env), {"budget=1234"})
+
+    def test_script_passes_the_limit(self) -> None:
+        args = _args_seen_by_python("5")
+
+        self.assertEqual(args[-2:], ["--limit", "5"])
+
+    def test_script_passes_later_arguments_to_the_eval(self) -> None:
+        args = _args_seen_by_python("", "--cases", "20,84", "--skip-judge")
+
+        self.assertNotIn("--limit", args)
+        self.assertEqual(args[-3:], ["--cases", "20,84", "--skip-judge"])
 
 
 if __name__ == "__main__":

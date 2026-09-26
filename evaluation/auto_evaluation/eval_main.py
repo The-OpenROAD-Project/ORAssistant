@@ -20,7 +20,7 @@ from auto_evaluation.src.metrics.retrieval import (
     make_hallucination_metric,
 )
 from auto_evaluation.dataset import hf_pull, preprocess
-from auto_evaluation import run_metadata, run_results
+from auto_evaluation import eval_cases, run_metadata, run_results
 from tqdm import tqdm
 
 eval_root_path = os.path.join(os.path.dirname(__file__), "..")
@@ -71,6 +71,17 @@ def check_retrieval(results: list[tuple[str, dict]]) -> int:
     return len(empty)
 
 
+def parse_cases(text: str) -> list[int]:
+    """Read the --cases value: comma-separated 0-based question indexes."""
+    try:
+        cases = [int(index) for index in text.split(",")]
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"not a list of indexes: {text!r}")
+    if any(index < 0 for index in cases):
+        raise argparse.ArgumentTypeError(f"an index is negative: {text!r}")
+    return cases
+
+
 class EvaluationHarness:
     # TODO: Use async for EvaluationHarness.
     # TODO: Also requires LLM Engine to be async
@@ -118,7 +129,17 @@ class EvaluationHarness:
         limit: int | None = None,
         *,
         metadata: dict[str, str],
+        cases: list[int] | None = None,
+        skip_judge: bool = False,
     ):
+        """
+        Query the backend for each question and score the answers.
+
+        cases keeps only those 0-based question indexes, in dataset order, and
+        each case keeps its dataset index in its name. skip_judge stops after
+        the queries, before the retrieval check and DeepEval, and writes no
+        results file.
+        """
         retrieval_tcs = []
         response_times = []
         results = []
@@ -130,29 +151,52 @@ class EvaluationHarness:
             make_hallucination_metric(self.eval_model),
         )
 
-        # retrieval test cases
-        questions = self.qns[:limit] if limit else self.qns
-        for i, qa_pair in enumerate(tqdm(questions, desc="Evaluating")):
-            question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
-            response, response_time = self.query(retriever, question)
-            response_text = response["response"]
-            context_list = [r["context"] for r in response["context_sources"]]
+        # retrieval test cases, as 0-based dataset indexes in dataset order
+        if cases is None:
+            indexes = list(range(len(self.qns[:limit] if limit else self.qns)))
+        else:
+            outside = [index for index in cases if index >= len(self.qns)]
+            if outside:
+                raise ValueError(
+                    f"Case {outside[0]} is outside the dataset of "
+                    f"{len(self.qns)} questions"
+                )
+            indexes = sorted(set(cases))
 
-            # works for: precision, recall, hallucination
-            retrieval_tc = LLMTestCase(
-                input=question,
-                actual_output=response_text,
-                expected_output=ground_truth,
-                context=context_list,
-                retrieval_context=context_list,
-            )
-            retrieval_tcs.append(retrieval_tc)
-            response_times.append(response_time)
-            results.append((question, response))
+        # Write each case record at once, so a stopped run keeps them.
+        with open(eval_cases.CASES_FILE, "w") as cases_file:
+            for index in tqdm(indexes, desc="Evaluating"):
+                qa_pair = self.qns[index]
+                question, ground_truth = qa_pair["question"], qa_pair["ground_truth"]
+                response, response_time = self.query(retriever, question)
+                response_text = response["response"]
+                context_list = [r["context"] for r in response["context_sources"]]
+
+                case = eval_cases.record(index, question, response)
+                eval_cases.append(cases_file, case)
+                # Clear the progress bar first, so the line stays whole.
+                with tqdm.external_write_mode():
+                    print(eval_cases.format_line(case), flush=True)
+
+                # works for: precision, recall, hallucination
+                retrieval_tc = LLMTestCase(
+                    name=f"test_case_{index}",
+                    input=question,
+                    actual_output=response_text,
+                    expected_output=ground_truth,
+                    context=context_list,
+                    retrieval_context=context_list,
+                    metadata={"tool": case["tool"], "sources": case["sources"]},
+                )
+                retrieval_tcs.append(retrieval_tc)
+                response_times.append(response_time)
+                results.append((question, response))
 
         # Print the metadata before the retrieval check, so a stopped run names
         # its setup too. Flush so progress bars on stderr cannot split the line.
         print(run_metadata.format_line(metadata), flush=True)
+        if skip_judge:
+            return
 
         # Check before the judge runs: scoring empty answers costs judge calls
         # and hides a broken backend behind a 0% score. A stopped run still
@@ -191,7 +235,7 @@ class EvaluationHarness:
             if retriever != "agent-retriever-reranker"
             else f"{self.reranker_base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         )
-        payload = {"query": query, "list_context": True, "list_sources": False}
+        payload = {"query": query, "list_context": True, "list_sources": True}
         time.sleep(5)
         response = requests.post(url, json=payload)
         response.raise_for_status()
@@ -208,8 +252,20 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dataset", type=str, help="Path to dataset to evaluate on")
     parser.add_argument("--retriever", type=str, help="Retriever to evaluate on")
-    parser.add_argument(
+    subset = parser.add_mutually_exclusive_group()
+    subset.add_argument(
         "--limit", type=int, help="Limit number of questions to evaluate", default=None
+    )
+    subset.add_argument(
+        "--cases",
+        type=parse_cases,
+        help="Evaluate only these 0-based question indexes, for example 20,84",
+        default=None,
+    )
+    parser.add_argument(
+        "--skip-judge",
+        action="store_true",
+        help="Print the case records and stop before DeepEval",
     )
     args = parser.parse_args()
 
@@ -220,6 +276,12 @@ if __name__ == "__main__":
     harness = EvaluationHarness(args.base_url, args.dataset, args.reranker_base_url)
     metadata = run_metadata.collect(JUDGE_MODEL, dataset_revision)
     try:
-        harness.evaluate(args.retriever, limit=args.limit, metadata=metadata)
+        harness.evaluate(
+            args.retriever,
+            limit=args.limit,
+            metadata=metadata,
+            cases=args.cases,
+            skip_judge=args.skip_judge,
+        )
     except EmptyRetrievalError as error:
         sys.exit(f"Retrieval check failed: {error}")

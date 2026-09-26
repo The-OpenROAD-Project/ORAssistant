@@ -33,3 +33,33 @@ and pass rate of each metric. A stopped run has `"status": "stopped"` and
 `"metrics": null`. Secret CI uploads the file from master runs as the
 artifact `eval-results-<run id>` and keeps it 90 days, as a baseline for later
 runs. See `run_results.py` for the schema.
+
+## Case records
+
+Each case prints one line with the retrieval tool that the backend ran and the
+source URLs that it found:
+
+```text
+Case 20: tool=retrieve_cmds sources=[https://a.example,https://b.example]
+```
+
+The index is the 0-based question position in the dataset. The DeepEval test
+case is named `test_case_<index>` and has the tool and sources as metadata.
+The run also writes the same records to `eval_cases.jsonl` in its working
+directory, one JSON line per case, as it goes. The file is not uploaded. See
+`eval_cases.py` for the format.
+
+## Case subset
+
+`--cases 20,84` evaluates only those 0-based question indexes, so case 84 is
+"What is OpenROAD?". The cases keep their dataset indexes in their names and
+records. `--skip-judge` prints the case records and stops before the
+retrieval check and DeepEval. The backend still needs its Google credentials.
+`llm_tests.sh` gives the arguments after the limit to `eval_main.py`:
+
+```bash
+./llm_tests.sh "" --cases 20,84 --skip-judge
+```
+
+The summary averages every case in the DeepEval cache, so run `make clean` in
+`evaluation/` before a subset run. Otherwise earlier cases count too.
