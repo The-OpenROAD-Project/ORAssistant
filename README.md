@@ -233,10 +233,8 @@ To modify the dataset, please refer to [build_docs.py](./backend/build_docs.py)
 
 ## Tests
 
-```
-make format
-make check
-```
+To check a change before a pull request, see
+[Check your change](CONTRIBUTING.md#check-your-change).
 
 The full evaluation (`ORAssistant Secret CI`) runs on every push to `master`.
 To run it against an open pull request before merging, a maintainer starts it
@@ -252,6 +250,11 @@ head, and comments the evaluation output on the PR. The PR must be mergeable.
 Only one evaluation runs at a time for each target: a PR number, or the
 branch. A started evaluation always finishes. Only the newest run waits for
 it; GitHub cancels the evaluation of each older waiting run.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to set up, check, and submit a change.
+Coding agents also read [AGENTS.md](AGENTS.md).
 
 ## Acknowledgements
 
