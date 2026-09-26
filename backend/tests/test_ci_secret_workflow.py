@@ -14,6 +14,7 @@ WORKFLOW = Path(__file__).parents[2] / ".github/workflows/ci-secret.yaml"
 WORKFLOWS_DIR = Path(__file__).parents[2] / ".github/workflows"
 UPLOAD_WORKFLOW = WORKFLOWS_DIR / "upload.yml"
 MAKEFILE = Path(__file__).parents[2] / "Makefile"
+SUMMARIZE = Path(__file__).parents[2] / "evaluation/auto_evaluation/summarize_output.sh"
 SECRET_TARGETS = ("backend/src", "evaluation/auto_evaluation/src")
 
 requires_make = pytest.mark.skipif(
@@ -307,6 +308,8 @@ def _run_summarize_step(tmp_path: Path, output: str | None) -> Path:
     """Run the summarize step and return the summary path it may create."""
     work = tmp_path / "evaluation/auto_evaluation"
     work.mkdir(parents=True)
+    # The step calls this script from its working directory.
+    (work / SUMMARIZE.name).symlink_to(SUMMARIZE)
     if output is not None:
         (work / "llm_tests_output.txt").write_text(output)
     result = subprocess.run(
@@ -531,3 +534,34 @@ def test_upload_replaces_the_corpus_on_the_branch(tmp_path: Path) -> None:
     for path in ["README.md", "LICENSE"]:
         assert not any(fnmatch(path, p) for p in deletes), path
     assert "c" * 40 in (tmp_path / "summary.md").read_text()
+
+
+def test_commit_comment_posts_when_the_eval_fails() -> None:
+    # A failed eval (for example, empty retrieval) must still report its output.
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    steps = workflow["jobs"]["docker-eval"]["steps"]
+    step = next(s for s in steps if s.get("name") == "Create commit comment")
+
+    condition = step["if"]
+
+    assert "always()" in condition
+    assert "needs.resolve.outputs.pr == ''" in condition
+    assert "hashFiles('evaluation/auto_evaluation/llm_tests_summary.md')" in condition
+
+
+def test_master_runs_keep_the_results_file_for_90_days() -> None:
+    # A later run reads the last master results file as its baseline.
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    steps = workflow["jobs"]["docker-eval"]["steps"]
+    step = next(s for s in steps if s.get("name") == "Upload evaluation results")
+
+    assert "always()" in step["if"]
+    assert "needs.resolve.outputs.pr == ''" in step["if"]
+    assert step["uses"] == (
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
+    )
+    assert step["with"]["name"] == "eval-results-${{ github.run_id }}"
+    assert step["with"]["path"] == "evaluation/auto_evaluation/eval_results.json"
+    assert step["with"]["retention-days"] == 90
