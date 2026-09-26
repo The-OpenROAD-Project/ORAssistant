@@ -347,3 +347,17 @@ def test_summary_falls_back_to_the_last_lines(tmp_path: Path) -> None:
 
 def test_summary_is_skipped_without_output(tmp_path: Path) -> None:
     assert not _run_summarize_step(tmp_path, None).exists()
+
+
+def test_commit_comment_posts_when_the_eval_fails() -> None:
+    # A failed eval (for example, empty retrieval) must still report its output.
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    steps = workflow["jobs"]["docker-eval"]["steps"]
+    step = next(s for s in steps if s.get("name") == "Create commit comment")
+
+    condition = step["if"]
+
+    assert "always()" in condition
+    assert "needs.resolve.outputs.pr == ''" in condition
+    assert "hashFiles('evaluation/auto_evaluation/llm_tests_summary.md')" in condition
