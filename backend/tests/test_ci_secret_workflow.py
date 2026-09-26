@@ -582,3 +582,32 @@ def test_master_runs_keep_the_results_file_for_90_days() -> None:
     assert step["with"]["name"] == "eval-results-${{ github.run_id }}"
     assert step["with"]["path"] == "evaluation/auto_evaluation/eval_results.json"
     assert step["with"]["retention-days"] == 90
+
+
+def _push_starts_eval(path: str) -> bool:
+    """Apply the push path filters as GitHub does: the last match wins."""
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    # PyYAML reads the bare key "on" as True.
+    patterns = workflow[True]["push"]["paths"]
+    included = False
+    for pattern in patterns:
+        negated = pattern.startswith("!")
+        if fnmatch(path, pattern.removeprefix("!")):
+            included = not negated
+    return included
+
+
+@pytest.mark.parametrize(
+    ("path", "starts"),
+    [
+        ("backend/src/api/main.py", True),
+        ("evaluation/auto_evaluation/eval_main.py", True),
+        ("Makefile", True),
+        ("backend/README.md", False),
+        ("evaluation/human_evaluation/README.md", False),
+        ("frontend/mongoDB.md", False),
+    ],
+)
+def test_docs_changes_start_no_eval(path: str, starts: bool) -> None:
+    assert _push_starts_eval(path) is starts
