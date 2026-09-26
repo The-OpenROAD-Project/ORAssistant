@@ -1,8 +1,10 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 import textwrap
+from fnmatch import fnmatch
 from pathlib import Path
 
 import pytest
@@ -10,6 +12,7 @@ import pytest
 
 WORKFLOW = Path(__file__).parents[2] / ".github/workflows/ci-secret.yaml"
 WORKFLOWS_DIR = Path(__file__).parents[2] / ".github/workflows"
+UPLOAD_WORKFLOW = WORKFLOWS_DIR / "upload.yml"
 MAKEFILE = Path(__file__).parents[2] / "Makefile"
 SUMMARIZE = Path(__file__).parents[2] / "evaluation/auto_evaluation/summarize_output.sh"
 SECRET_TARGETS = ("backend/src", "evaluation/auto_evaluation/src")
@@ -157,8 +160,8 @@ def test_resolve_rejects_a_conflicting_pr(tmp_path: Path) -> None:
     assert outputs == {}
 
 
-def _workflow_step_script(step_name: str) -> str:
-    lines = WORKFLOW.read_text().splitlines()
+def _workflow_step_script(step_name: str, workflow: Path = WORKFLOW) -> str:
+    lines = workflow.read_text().splitlines()
     step_index = next(
         index
         for index, line in enumerate(lines)
@@ -350,6 +353,187 @@ def test_summary_falls_back_to_the_last_lines(tmp_path: Path) -> None:
 
 def test_summary_is_skipped_without_output(tmp_path: Path) -> None:
     assert not _run_summarize_step(tmp_path, None).exists()
+
+
+def test_docker_eval_pins_the_corpus_revision() -> None:
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    job = workflow["jobs"]["docker-eval"]
+    step = next(s for s in job["steps"] if s.get("name") == "Download HF dataset")
+
+    assert re.fullmatch(r"[0-9a-f]{40}", job["env"]["HF_RAG_REVISION"])
+    assert '--revision "$HF_RAG_REVISION"' in step["run"]
+
+
+def _run_download_step(
+    tmp_path: Path, revision: str
+) -> tuple[subprocess.CompletedProcess[str], str]:
+    """Run the dataset download step with stubbed uv and hf commands."""
+    calls = tmp_path / "hf_calls"
+    stub = textwrap.dedent(
+        f"""
+        uv() {{ :; }}
+        hf() {{
+          printf '%s\\n' "$*" >> {calls}
+          while [ "$#" -gt 0 ] && [ "$1" != --local-dir ]; do shift; done
+          mkdir -p "$2/markdown"
+          echo new > "$2/markdown/new.md"
+        }}
+        """
+    )
+    script = stub + _workflow_step_script("Download HF dataset")
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env={**os.environ, "HF_RAG_REVISION": revision},
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    return result, calls.read_text() if calls.exists() else ""
+
+
+def test_download_fetches_the_pinned_revision(tmp_path: Path) -> None:
+    pinned = "a" * 40
+
+    result, calls = _run_download_step(tmp_path, pinned)
+
+    assert result.returncode == 0, result.stderr
+    assert calls.count("download") == 1
+    assert f"--revision {pinned} --local-dir ./data" in calls
+    # actions/checkout cleans ./data on every run, so no cache marker is kept.
+    assert sorted(p.name for p in (tmp_path / "data").iterdir()) == ["markdown"]
+
+
+def test_download_fails_without_a_revision(tmp_path: Path) -> None:
+    result, calls = _run_download_step(tmp_path, "")
+
+    assert result.returncode != 0
+    assert calls == ""
+
+
+def _upload_workflow() -> dict:
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(UPLOAD_WORKFLOW.read_text())
+    # PyYAML reads the bare key "on" as True.
+    workflow["on"] = workflow.pop(True)
+    return workflow
+
+
+def test_upload_builds_current_master_unless_commits_are_given() -> None:
+    workflow = _upload_workflow()
+    inputs = workflow["on"]["workflow_dispatch"]["inputs"]
+    steps = workflow["jobs"]["or-manpages"]["steps"]
+    build = next(s for s in steps if s.get("name") == "Build the corpus")
+
+    assert inputs["branch"]["required"] is True
+    assert inputs["or_commit"]["default"] == ""
+    assert inputs["orfs_commit"]["default"] == ""
+    # build_docs.py resolves an empty commit to the current master.
+    assert build["env"] == {
+        "OR_REPO_COMMIT": "${{ inputs.or_commit }}",
+        "ORFS_REPO_COMMIT": "${{ inputs.orfs_commit }}",
+    }
+    assert "COMMIT" not in " ".join(workflow.get("env", {}))
+
+
+def test_upload_scripts_take_inputs_through_env() -> None:
+    workflow = _upload_workflow()
+    scripts = [
+        step["run"]
+        for job in workflow["jobs"].values()
+        for step in job["steps"]
+        if "run" in step
+    ]
+
+    assert scripts
+    assert [s for s in scripts if "${{" in s] == []
+
+
+def _run_upload_script(
+    tmp_path: Path, step_name: str, branch: str
+) -> tuple[subprocess.CompletedProcess[str], list[list[str]]]:
+    """Run an upload.yml step with stubbed hf and git commands.
+
+    Return the result and the argument list of each hf call.
+    """
+    calls = tmp_path / "hf_calls"
+    (tmp_path / ".venv/bin").mkdir(parents=True)
+    (tmp_path / ".venv/bin/activate").touch()
+    stub = textwrap.dedent(
+        f"""
+        hf() {{ printf '%s\\n' "$@" --- >> {calls}; }}
+        git() {{ printf '%s\\trefs/heads/%s\\n' {"c" * 40} "$BRANCH"; }}
+        """
+    )
+    script = stub + _workflow_step_script(step_name, UPLOAD_WORKFLOW)
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "BRANCH": branch,
+            "HF_RAG_REPO": "org/dataset",
+            "GITHUB_SHA": "abc123",
+            "GITHUB_STEP_SUMMARY": str(tmp_path / "summary.md"),
+        },
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    text = calls.read_text() if calls.exists() else ""
+    hf_calls = [c.split("\n")[:-1] for c in text.split("---\n") if c]
+    return result, hf_calls
+
+
+@pytest.mark.parametrize(
+    "branch",
+    [
+        "", "main", "Main", "MAIN", " main", "main ",
+        "refs/heads/main", "refs/heads/main/",
+    ],
+)  # fmt: skip
+def test_upload_rejects_the_main_branch(tmp_path: Path, branch: str) -> None:
+    result, _ = _run_upload_script(tmp_path, "Check the branch", branch)
+
+    assert result.returncode != 0
+    assert "::error::" in result.stdout
+
+
+def test_upload_accepts_a_named_branch(tmp_path: Path) -> None:
+    result, _ = _run_upload_script(tmp_path, "Check the branch", "corpus-2026-09")
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_upload_replaces_the_corpus_on_the_branch(tmp_path: Path) -> None:
+    result, hf_calls = _run_upload_script(
+        tmp_path, "Upload to the Hugging Face branch", "corpus-2026-09"
+    )
+
+    assert result.returncode == 0, result.stderr
+    create, upload = hf_calls
+    assert create == [
+        "repos", "branch", "create", "org/dataset", "corpus-2026-09",
+        "--repo-type", "dataset", "--exist-ok",
+    ]  # fmt: skip
+    assert upload[:4] == ["upload", "org/dataset", "./data", "."]
+    assert upload[upload.index("--revision") + 1] == "corpus-2026-09"
+    assert upload[upload.index("--repo-type") + 1] == "dataset"
+    deletes = [upload[i + 1] for i, arg in enumerate(upload) if arg == "--delete"]
+    corpus = [
+        "markdown/OR_docs/tools/gpl.md",
+        "html/or_website/index.html",
+        "pdf/OR_publications/c389.pdf",
+        "source_list.json",
+        "BUILD_INFO.json",
+    ]
+    for path in corpus:
+        assert any(fnmatch(path, p) for p in deletes), path
+    # The dataset card stays. Hugging Face never deletes .gitattributes.
+    for path in ["README.md", "LICENSE"]:
+        assert not any(fnmatch(path, p) for p in deletes), path
+    assert "c" * 40 in (tmp_path / "summary.md").read_text()
 
 
 def test_commit_comment_posts_when_the_eval_fails() -> None:
