@@ -247,6 +247,23 @@ def test_commit_comment_step_uses_the_github_token() -> None:
     assert steps[0]["with"]["token"] == "${{ github.token }}"
 
 
+def test_evals_share_one_queue_per_target() -> None:
+    # Each master push starts a paid eval on the self-hosted runners. One eval
+    # at a time per target; a started eval finishes, and only the newest waits.
+    # The lint jobs stay out of the queue.
+    yaml = pytest.importorskip("yaml")
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    concurrency = workflow["jobs"]["docker-eval"]["concurrency"]
+
+    assert "concurrency" not in workflow
+    assert re.fullmatch(
+        r"\$\{\{ github\.workflow \}\}-eval-"
+        r"\$\{\{ inputs\.pr && format\('pr-\{0\}', inputs\.pr\) \|\| github\.ref \}\}",
+        concurrency["group"],
+    )
+    assert concurrency["cancel-in-progress"] is False
+
+
 def _run_report_step(
     tmp_path: Path, needs: dict[str, object], summary: str | None
 ) -> tuple[subprocess.CompletedProcess[str], str]:
