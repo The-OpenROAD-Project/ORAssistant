@@ -249,6 +249,10 @@ gh workflow run ci-secret.yaml -f pr=<number>
 The run checks out the PR's merge result, posts a `Secret CI` status on the PR
 head, and comments the evaluation output on the PR. The PR must be mergeable.
 
+Only one evaluation runs at a time for each target: a PR number, or the
+branch. A started evaluation always finishes. Only the newest run waits for
+it; GitHub cancels the evaluation of each older waiting run.
+
 ## Acknowledgements
 
 This work is completed as part of the Google Summer of Code 2024 project under the
