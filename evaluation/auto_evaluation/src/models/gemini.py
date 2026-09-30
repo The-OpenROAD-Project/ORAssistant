@@ -21,6 +21,11 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
 
     MAX_GENERATE_ATTEMPTS = 8
     MAX_RETRY_DELAY_SECONDS = 30
+    # A judge call can hang with no error. DeepEval puts no time limit on
+    # the calls of a custom model, so one hung call would use up the budget
+    # of the whole evaluation (see llm_tests.sh). A normal call takes less
+    # than a minute.
+    CALL_TIMEOUT_SECONDS: float = 120
 
     def __init__(self, model_name, *args, **kwargs):
         self._model_name = model_name
@@ -60,13 +65,16 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
 
         for attempt in range(self.MAX_GENERATE_ATTEMPTS):
             try:
-                response = await self.client.aio.models.generate_content(
-                    model=self._model_name,
-                    contents=prompt,
-                    config=config,
+                response = await asyncio.wait_for(
+                    self.client.aio.models.generate_content(
+                        model=self._model_name,
+                        contents=prompt,
+                        config=config,
+                    ),
+                    timeout=self.CALL_TIMEOUT_SECONDS,
                 )
                 break
-            except errors.ServerError:
+            except (errors.ServerError, TimeoutError):
                 if attempt == self.MAX_GENERATE_ATTEMPTS - 1:
                     raise
                 delay = min(2**attempt, self.MAX_RETRY_DELAY_SECONDS)
