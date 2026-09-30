@@ -9,6 +9,20 @@ This repository houses the scripts needed for auto-evaluation.
 the answer `invalid`. That means the backend is broken, and the scores would be
 0%. The message gives the count and two example questions.
 
+## Judge time limit
+
+DeepEval stops the judge step when it passes one time limit for all test
+cases: `DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE` (900 s, set in
+`llm_tests.sh`) plus a short buffer. A normal run needs a few minutes. A
+Gemini call that hangs could use up the full limit, so the judge model stops
+each call after `CALL_TIMEOUT_SECONDS` (120 s) and tries again. If the limit
+still runs out, `eval_main.py` stops with a short message that names the
+judge and the next step, not a traceback.
+
+A run that stops early prints one `Evaluation stopped: ...` line.
+`summarize_output.sh` puts that line, not the end of the output, in the Secret
+CI comment.
+
 ## Run metadata
 
 Each run prints one line before the retrieval check and the DeepEval results,

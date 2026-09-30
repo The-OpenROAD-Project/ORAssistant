@@ -163,6 +163,22 @@ class TestCiSummary:
             "```\n"
         )
 
+    def test_stopped_run_shows_the_reason_not_the_traceback(self, tmp_path):
+        output = (
+            "Run metadata: judge=j backend=b deepeval=d dataset=h orassistant=c\n"
+            "Evaluating test case #69 67%\n"
+            "Traceback (most recent call last):\n"
+            "TimeoutError\n"
+            "Evaluation stopped: the judge j did not score all 100 test cases.\n"
+        )
+
+        assert _summarize(tmp_path, output) == (
+            "```text\n"
+            "Run metadata: judge=j backend=b deepeval=d dataset=h orassistant=c\n"
+            "Evaluation stopped: the judge j did not score all 100 test cases.\n"
+            "```\n"
+        )
+
     def test_summary_without_metadata_keeps_the_aggregate_block(self, tmp_path):
         output = "noise\n+---------+\nAggregate Metrics\nContextual Recall 0.5\n"
 
