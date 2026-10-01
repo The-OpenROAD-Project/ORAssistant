@@ -98,6 +98,47 @@ class DependencyContractsTest(unittest.TestCase):
         self.assertEqual(response, "recovered")
         self.assertEqual(models.attempts, 3)
 
+    @patch("auto_evaluation.src.models.gemini.genai.Client")
+    def test_gemini_model_retries_a_call_that_hangs(self, client: MagicMock) -> None:
+        class HangOnceModels:
+            def __init__(self) -> None:
+                self.attempts = 0
+
+            async def generate_content(self, **_kwargs: object) -> object:
+                self.attempts += 1
+                if self.attempts == 1:
+                    await asyncio.Event().wait()
+                return SimpleNamespace(text="recovered")
+
+        models = HangOnceModels()
+        client.return_value = SimpleNamespace(
+            models=models, aio=SimpleNamespace(models=models)
+        )
+        model = GoogleGeminiLangChain(model_name="gemini-test")
+        model.CALL_TIMEOUT_SECONDS = 0.01
+
+        with patch("asyncio.sleep", new_callable=AsyncMock):
+            response = asyncio.run(model.a_generate("test"))
+
+        self.assertEqual(response, "recovered")
+        self.assertEqual(models.attempts, 2)
+
+    @patch("auto_evaluation.src.models.gemini.genai.Client")
+    def test_gemini_model_stops_when_every_call_hangs(self, client: MagicMock) -> None:
+        async def hang(**_kwargs: object) -> object:
+            return await asyncio.Event().wait()
+
+        models = SimpleNamespace(generate_content=hang)
+        client.return_value = SimpleNamespace(
+            models=models, aio=SimpleNamespace(models=models)
+        )
+        model = GoogleGeminiLangChain(model_name="gemini-test")
+        model.CALL_TIMEOUT_SECONDS = 0.01
+
+        with patch("asyncio.sleep", new_callable=AsyncMock):
+            with self.assertRaises(TimeoutError):
+                asyncio.run(model.a_generate("test"))
+
     def test_evaluation_query_uses_single_slash_path(self) -> None:
         server = socketserver.ThreadingTCPServer(("127.0.0.1", 0), QueryHandler)
         thread = threading.Thread(target=server.serve_forever)

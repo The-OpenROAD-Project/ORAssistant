@@ -12,6 +12,7 @@ import os
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
 from deepeval.evaluate import evaluate
+from deepeval.utils import get_gather_timeout_seconds
 
 from auto_evaluation.src.models.gemini import GoogleGeminiLangChain
 from auto_evaluation.src.metrics.retrieval import (
@@ -40,6 +41,11 @@ JUDGE_MODEL = "gemini-3.1-pro-preview"
 # would only score it 0%.
 MAX_EMPTY_RETRIEVAL_SHARE = 0.10
 
+# A run that stops early prints one line with this prefix. summarize_output.sh
+# puts that line in the Secret CI comment instead of the end of the output.
+STOP_PREFIX = "Evaluation stopped: "
+BUDGET_VAR = "DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE"
+
 
 class EmptyRetrievalError(RuntimeError):
     """Too many backend answers had no retrieval context."""
@@ -47,6 +53,10 @@ class EmptyRetrievalError(RuntimeError):
     def __init__(self, message: str, empty_count: int):
         super().__init__(message)
         self.empty_count = empty_count
+
+
+class JudgeTimeoutError(RuntimeError):
+    """The judge did not score all test cases in the DeepEval time limit."""
 
 
 def check_retrieval(results: list[tuple[str, dict]]) -> int:
@@ -219,11 +229,23 @@ class EvaluationHarness:
             )
             raise
 
-        evaluate(
-            test_cases=retrieval_tcs,
-            metrics=[precision, recall, hallucination],
-            hyperparameters=dict(metadata),
-        )
+        # DeepEval raises a bare TimeoutError, with a long traceback, when the
+        # judge is too slow. Name the cause and the next step instead.
+        try:
+            evaluate(
+                test_cases=retrieval_tcs,
+                metrics=[precision, recall, hallucination],
+                hyperparameters=dict(metadata),
+            )
+        except TimeoutError as error:
+            raise JudgeTimeoutError(
+                f"the judge {self.eval_model.get_model_name()} did not score "
+                f"all {len(retrieval_tcs)} test cases in the DeepEval time "
+                f"limit of {get_gather_timeout_seconds():.0f} s. The backend "
+                "answered the questions; the judge model was slow or did not "
+                "answer. Run the job again. If it fails again, check the "
+                f"Gemini API status and quota, or increase {BUDGET_VAR}."
+            ) from error
 
         # parse deepeval results
         metrics = preprocess.read_deepeval_cache()
@@ -302,4 +324,6 @@ if __name__ == "__main__":
             skip_judge=args.skip_judge,
         )
     except EmptyRetrievalError as error:
-        sys.exit(f"Retrieval check failed: {error}")
+        sys.exit(f"{STOP_PREFIX}the retrieval check failed. {error}")
+    except JudgeTimeoutError as error:
+        sys.exit(f"{STOP_PREFIX}{error}")
