@@ -2,7 +2,8 @@
 FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+# node:26 images no longer ship yarn; install Yarn 1 for yarn.lock.
+RUN npm install -g yarn@1.22.22 && yarn install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM node:26-alpine AS builder
