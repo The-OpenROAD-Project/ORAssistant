@@ -20,7 +20,7 @@ dependencies = [
     "streamlit>=1.64.0",
     "deepeval==4.2.6",
     "langchain-google-vertexai>=3.2.4",
-    "langsmith>=0.14.0",
+    "langsmith>=0.14.1",
     "asyncio==4.0.0",
     "huggingface-hub==0.26.2",
     "instructor[vertexai]==1.12.0",
