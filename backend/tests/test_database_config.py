@@ -31,7 +31,7 @@ class TestGetDatabaseUrl:
         ):
             url = get_database_url()
 
-            assert url == "postgresql://testuser:testpass@localhost:5432/testdb"
+            assert url == "postgresql+psycopg2://testuser:testpass@localhost:5432/testdb"
 
     def test_get_database_url_different_host(self):
         """Test database URL with different host."""
@@ -47,7 +47,29 @@ class TestGetDatabaseUrl:
         ):
             url = get_database_url()
 
-            assert url == "postgresql://user:pass@db.example.com:5433/mydb"
+            assert url == "postgresql+psycopg2://user:pass@db.example.com:5433/mydb"
+
+    def test_get_database_url_uses_installed_driver(self):
+        """The URL must name psycopg2, the driver the backend installs.
+
+        SQLAlchemy 2.1 maps a bare postgresql:// URL to psycopg (v3), which
+        is not installed, so the engine could not be created.
+        """
+        from sqlalchemy.engine import make_url
+
+        with patch.dict(
+            os.environ,
+            {
+                "POSTGRES_USER": "user",
+                "POSTGRES_PASSWORD": "pass",
+                "POSTGRES_HOST": "localhost",
+                "POSTGRES_PORT": "5432",
+                "POSTGRES_DB": "db",
+            },
+        ):
+            dialect = make_url(get_database_url()).get_dialect()
+
+            assert dialect.driver == "psycopg2"
 
 
 class TestIsDatabaseAvailable:
