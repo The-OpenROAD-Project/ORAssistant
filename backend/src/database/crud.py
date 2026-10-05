@@ -1,7 +1,6 @@
 import logging
 from typing import Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
 from .models import Conversation, Message
 from uuid import UUID
@@ -47,7 +46,7 @@ def get_all_conversations(
 ) -> list[Conversation]:
     return (
         db.query(Conversation)
-        .order_by(desc(Conversation.updated_at))
+        .order_by(Conversation.updated_at.desc())
         .offset(skip)
         .limit(limit)
         .all()
