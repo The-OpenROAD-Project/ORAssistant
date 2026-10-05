@@ -23,7 +23,11 @@ def get_database_url() -> str:
     db_port = os.getenv("POSTGRES_PORT")
     db_name = os.getenv("POSTGRES_DB")
 
-    return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    # Name the driver: SQLAlchemy 2.1 maps a bare postgresql:// URL to
+    # psycopg (v3), but this backend installs psycopg2.
+    return (
+        f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    )
 
 
 def is_database_available() -> bool:
