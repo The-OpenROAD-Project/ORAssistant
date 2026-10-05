@@ -16,12 +16,12 @@ dependencies = [
   "requests-oauthlib==2.0.0",
   "Pillow>=12.2.0",
   "protobuf>=7.36.2",
-  "google-auth==2.58.0",
+  "google-auth==2.58.1",
   "google-auth-httplib2==0.4.2",
   "google-auth-oauthlib==1.4.1",
   "gspread==6.2.1",
   "python-dotenv==1.2.3",
-  "pymongo==4.18.1",
+  "pymongo==4.18.2",
   "pygments>=2.21.0",
 ]
 classifiers = [
@@ -35,7 +35,7 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-  "pytz==2026.3.post1",
+  "pytz==2026.4",
   "mypy==2.3.1",
   "types-requests==2.33.0.20260906",
   "pre-commit==4.6.2",
