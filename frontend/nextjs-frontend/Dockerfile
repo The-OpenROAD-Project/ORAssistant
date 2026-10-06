@@ -1,9 +1,11 @@
 # Install dependencies only when needed
 FROM node:26-alpine AS deps
 WORKDIR /app
-COPY package.json yarn.lock ./
-# node:26 images no longer ship yarn; install Yarn 1 for yarn.lock.
-RUN npm install -g yarn@1.22.22 && yarn install --frozen-lockfile
+COPY package.json yarn.lock .yarnrc.yml ./
+# node:26 images ship neither yarn nor corepack. Corepack runs the Yarn
+# release pinned in package.json "packageManager" and checks its hash.
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN npm install -g corepack@0.36.0 && corepack enable && yarn install --immutable
 
 # Rebuild the source code only when needed
 FROM node:26-alpine AS builder
