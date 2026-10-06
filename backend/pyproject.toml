@@ -31,7 +31,7 @@ dependencies = [
     "markdown==3.11",
     "myst-parser==5.1.0",
     "nest-asyncio>=1.6.0",
-"openai==3.19.2",
+"openai==3.20.0",
     "protobuf>=5.29.6",
     "PyJWT>=2.13.0",
     "psycopg2-binary>=2.9.13",
