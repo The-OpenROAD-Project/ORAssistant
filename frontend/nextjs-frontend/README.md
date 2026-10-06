@@ -11,15 +11,21 @@ This is the frontend application for ORAssistant built using Next.js.
 Installation has been tested with:
 
 - Node.js >= `v22.13.0`
-- Yarn package manager >= `v1.22.22`
+- Corepack, which runs the Yarn release pinned in `package.json`. Node.js 24
+  includes it; on Node.js 25 and later, run `npm install -g corepack`.
 
 ### Installation
 
 Install dependencies:
 
 ```bash
+corepack enable
 yarn install
 ```
+
+Yarn does not run dependency install scripts (`enableScripts: false` in
+`.yarnrc.yml`). If a new dependency needs its script, add it under
+`dependenciesMeta` in `package.json` with `built: true`.
 
 ### Development
 
