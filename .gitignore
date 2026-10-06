@@ -43,6 +43,7 @@ faiss_db
 # frontend
 node_modules
 .next
+**/.yarn/install-state.gz
 
 # coverage
 coverage.xml
