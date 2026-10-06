@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useSyncExternalStore,
+} from 'react';
 import {
   PaperAirplaneIcon,
   SunIcon,
@@ -124,6 +130,10 @@ const normalizeContextSources = (raw: unknown): ContextSource[] => {
   return normalizeEntry(raw);
 };
 
+// The theme icon depends on the client theme, so render it only after
+// hydration. The server snapshot is false, the client snapshot is true.
+const subscribeToNothing = () => () => {};
+
 export default function Home() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -137,9 +147,20 @@ export default function Home() {
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false
+  );
   const { width } = useWindowSize();
   const isMobile = width !== undefined && width <= 768;
+
+  // Open the sidebar on desktop and close it on mobile when the layout changes.
+  const [prevIsMobile, setPrevIsMobile] = useState(isMobile);
+  if (isMobile !== prevIsMobile) {
+    setPrevIsMobile(isMobile);
+    setIsSidebarOpen(!isMobile);
+  }
 
   const ensureApiBase = useCallback(() => {
     if (!API_BASE_URL) {
@@ -351,14 +372,8 @@ export default function Home() {
   );
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    setIsSidebarOpen(!isMobile);
-  }, [isMobile]);
-
-  useEffect(() => {
+    // Load the list from the API once. The state changes after the fetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchConversations();
   }, [fetchConversations]);
 
