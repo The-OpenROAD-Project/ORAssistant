@@ -49,6 +49,31 @@ jobs:
     - name: Lint
       run: cd frontend && make check
 
+  lint-nextjs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup node
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+      with:
+        node-version: '26'
+
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+    # Same Corepack and Yarn setup as frontend/nextjs-frontend/Dockerfile.
+    - name: Install deps
+      working-directory: frontend/nextjs-frontend
+      env:
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      run: |
+        npm install -g corepack@0.36.0
+        corepack enable
+        yarn install --immutable
+
+    - name: Lint
+      working-directory: frontend/nextjs-frontend
+      run: yarn lint
+
   lint-evaluation:
     runs-on: ubuntu-latest
     steps:
@@ -105,7 +130,7 @@ jobs:
 
   ci-gate:
     if: always()
-    needs: [lint-backend, lint-frontend, lint-evaluation, test, docker-build]
+    needs: [lint-backend, lint-frontend, lint-nextjs, lint-evaluation, test, docker-build]
     runs-on: ubuntu-latest
     steps:
     - name: Require successful CI jobs

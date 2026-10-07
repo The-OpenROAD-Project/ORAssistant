@@ -59,6 +59,8 @@ export default function SuggestedQuestions({
   }, [latestQuestion, assistantAnswer]);
 
   useEffect(() => {
+    // Refresh the suggestions from the API when the conversation changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSuggestedQuestions();
   }, [fetchSuggestedQuestions]);
 
