@@ -94,6 +94,15 @@ updates:
       npm:
         patterns:
           - "*"
+    # Remove these ignores when eslint-config-next's plugins support eslint 10
+    # and typescript-eslint supports the newer typescript.
+    ignore:
+      - dependency-name: eslint
+        # eslint-plugin-import, -react and -jsx-a11y accept eslint ^9 only.
+        versions: [">=10"]
+      - dependency-name: typescript
+        # typescript-eslint requires typescript <6.1.0.
+        versions: [">=6.1"]
 
   - package-ecosystem: docker
     directories:

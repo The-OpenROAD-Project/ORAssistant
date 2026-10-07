@@ -28,7 +28,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.6.1",
-    "eslint": "^10.11.0",
+    "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
@@ -36,14 +36,14 @@
     "postcss": "^8.5.26",
     "prettier": "^3.9.9",
     "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2"
+    "typescript": "~6.0.3"
   },
   "resolutions": {
     "postcss": "^8.5.26",
     "brace-expansion@^1.1.7": "^1.1.21",
     "brace-expansion@^5.0.8": "^5.0.12",
     "sharp": ">=0.35.0",
-    "@eslint/plugin-kit": ">=0.3.4",
+    "@eslint/plugin-kit": "^0.4.1",
     "ajv": "^6.14.0"
   },
   "packageManager": "yarn@4.18.1+sha512.b2e1e7524f654f2749d32b4ebcb4622473cb5bcbc485df2007e12a154e50162a4d795526768bc5f5b8f81717bfd79deb2472813d86fb5ae2eb551fa9c872b08f"
