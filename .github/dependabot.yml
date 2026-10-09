@@ -1,4 +1,8 @@
 version: 2
+
+# Batch routine updates for weekly review.
+# Security updates remain alert-driven and outside these groups.
+# A high version-update limit prevents the default five-PR bottleneck.
 updates:
   - package-ecosystem: uv
     directories:
@@ -6,8 +10,11 @@ updates:
       - /frontend
       - /frontend/mock-flask-api
     schedule:
-      interval: daily
-    open-pull-requests-limit: 5
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 1000
     cooldown:
       default-days: 7
     groups:
@@ -40,8 +47,11 @@ updates:
   - package-ecosystem: uv
     directory: /evaluation
     schedule:
-      interval: daily
-    open-pull-requests-limit: 5
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 1000
     cooldown:
       default-days: 7
     groups:
@@ -86,14 +96,21 @@ updates:
   - package-ecosystem: npm
     directory: /frontend/nextjs-frontend
     schedule:
-      interval: daily
-    open-pull-requests-limit: 5
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 1000
     cooldown:
       default-days: 7
     groups:
       npm:
+        applies-to: version-updates
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
     # Remove these ignores when eslint-config-next's plugins support eslint 10
     # and typescript-eslint supports the newer typescript.
     ignore:
@@ -111,23 +128,37 @@ updates:
       - /frontend
       - /frontend/nextjs-frontend
     schedule:
-      interval: daily
-    open-pull-requests-limit: 5
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 1000
     cooldown:
       default-days: 7
     groups:
       images:
+        applies-to: version-updates
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
-    open-pull-requests-limit: 5
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 1000
     cooldown:
       default-days: 7
     groups:
       actions:
+        applies-to: version-updates
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
