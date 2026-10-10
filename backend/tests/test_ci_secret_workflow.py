@@ -734,7 +734,7 @@ def test_baseline_gate_runs_after_the_eval_on_a_hosted_runner() -> None:
     jobs = yaml.safe_load(WORKFLOW.read_text())["jobs"]
     gate = jobs["baseline-gate"]
 
-    assert gate["runs-on"] == "ubuntu-latest"
+    assert gate["runs-on"] == "ubuntu-26.04"
     assert "docker-eval" in gate["needs"]
     assert "needs.docker-eval.result == 'success'" in gate["if"]
     assert gate["permissions"] == {"actions": "read", "contents": "read"}
