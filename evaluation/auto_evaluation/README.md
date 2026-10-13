@@ -11,13 +11,16 @@ the answer `invalid`. That means the backend is broken, and the scores would be
 
 ## Judge time limit
 
-DeepEval stops the judge step when it passes one time limit for all test
-cases: `DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE` (900 s, set in
-`llm_tests.sh`) plus a short buffer. A normal run needs a few minutes. A
-Gemini call that hangs could use up the full limit, so the judge model stops
-each call after `CALL_TIMEOUT_SECONDS` (120 s) and tries again. If the limit
-still runs out, `eval_main.py` stops with a short message that names the
-judge and the next step, not a traceback.
+DeepEval gives each active test case a `DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE` budget (900 s, set in `llm_tests.sh`).
+It also gives the whole batch that budget plus a 60 s buffer, including time that cases wait for a concurrency slot.
+The judge model stops each Gemini call after `CALL_TIMEOUT_SECONDS` (120 s) and tries again.
+A `TimeoutError` can come from a case, the batch, or a model request.
+The stop message names the observed exception and the configured case and batch limits.
+The exception alone does not identify which timeout expired.
+
+Each failed model attempt writes a `judge_call_failed` warning with the exception class, integer provider code or `unknown`, attempt count, call budget, elapsed time, and next retry delay.
+The final failed attempt uses `retry_delay_seconds=none`.
+The warning does not include prompts, responses, exception messages, headers, or credentials.
 
 A run that stops early prints one `Evaluation stopped: ...` line.
 `summarize_output.sh` puts that line, not the end of the output, in the Secret

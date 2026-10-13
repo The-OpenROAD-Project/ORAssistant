@@ -3,13 +3,17 @@ Custom DeepEvalLLM wrapper using Google Gemini API (google.genai).
 """
 
 import asyncio
+import logging
 import os
+import time
 from typing import Any, Optional, Type
 
 from google import genai
 from google.genai import errors, types
 from deepeval.models.base_model import DeepEvalBaseLLM
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class Response(BaseModel):
@@ -64,6 +68,7 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
             )
 
         for attempt in range(self.MAX_GENERATE_ATTEMPTS):
+            call_started = time.monotonic()
             try:
                 response = await asyncio.wait_for(
                     self.client.aio.models.generate_content(
@@ -74,10 +79,29 @@ class GoogleGeminiLangChain(DeepEvalBaseLLM):
                     timeout=self.CALL_TIMEOUT_SECONDS,
                 )
                 break
-            except (errors.ServerError, TimeoutError):
-                if attempt == self.MAX_GENERATE_ATTEMPTS - 1:
+            except (errors.ServerError, TimeoutError) as error:
+                delay = (
+                    None
+                    if attempt == self.MAX_GENERATE_ATTEMPTS - 1
+                    else min(2**attempt, self.MAX_RETRY_DELAY_SECONDS)
+                )
+                provider_code = getattr(error, "code", None)
+                if type(provider_code) is not int:
+                    provider_code = "unknown"
+                logger.warning(
+                    "judge_call_failed exception_class=%s provider_code=%s "
+                    "attempt=%d/%d call_timeout_seconds=%g elapsed_ms=%d "
+                    "retry_delay_seconds=%s",
+                    type(error).__name__,
+                    provider_code,
+                    attempt + 1,
+                    self.MAX_GENERATE_ATTEMPTS,
+                    self.CALL_TIMEOUT_SECONDS,
+                    int((time.monotonic() - call_started) * 1000),
+                    "none" if delay is None else delay,
+                )
+                if delay is None:
                     raise
-                delay = min(2**attempt, self.MAX_RETRY_DELAY_SECONDS)
                 await asyncio.sleep(delay)
 
         if schema is not None:

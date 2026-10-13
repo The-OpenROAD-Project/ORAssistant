@@ -27,12 +27,30 @@ def test_judge_timeout_names_the_cause_and_the_next_step(
 
     with (
         patch.object(harness, "query", return_value=(answer, 1.0)),
-        patch("auto_evaluation.eval_main.evaluate", side_effect=TimeoutError),
+        patch(
+            "auto_evaluation.eval_main.evaluate",
+            side_effect=TimeoutError("sensitive exception text"),
+        ),
+        patch(
+            "auto_evaluation.eval_main.get_per_task_timeout_seconds",
+            return_value=900,
+        ),
+        patch(
+            "auto_evaluation.eval_main.get_gather_timeout_seconds",
+            return_value=960,
+        ),
         pytest.raises(JudgeTimeoutError) as error,
     ):
         harness.evaluate("agent-retriever", metadata={"judge": "gemini-judge"})
 
     message = str(error.value)
     assert "the judge gemini-judge did not score all 3 test cases" in message
+    assert "observed exception is TimeoutError" in message
+    assert "configured per-case timeout is 900 s" in message
+    assert "configured gather timeout is 960 s" in message
+    assert "does not identify which timeout expired" in message
+    assert "The backend answered the questions" in message
     assert "Run the job again" in message
     assert "DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE" in message
+    assert "sensitive exception text" not in message
+    assert str(error.value.__cause__) == "sensitive exception text"
