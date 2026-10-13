@@ -78,7 +78,12 @@ class DependencyContractsTest(unittest.TestCase):
                 if self.attempts < 3:
                     raise errors.ServerError(
                         503,
-                        {"error": {"status": "UNAVAILABLE"}},
+                        {
+                            "error": {
+                                "status": "UNAVAILABLE",
+                                "message": "sensitive exception marker",
+                            }
+                        },
                     )
                 return SimpleNamespace(text="recovered")
 
@@ -89,14 +94,25 @@ class DependencyContractsTest(unittest.TestCase):
         )
         model = GoogleGeminiLangChain(model_name="gemini-test")
 
-        with patch(
-            "asyncio.sleep",
-            new_callable=AsyncMock,
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            self.assertLogs(
+                "auto_evaluation.src.models.gemini", level="WARNING"
+            ) as logs,
         ):
-            response = asyncio.run(model.a_generate("test"))
+            response = asyncio.run(model.a_generate("sensitive prompt marker"))
 
         self.assertEqual(response, "recovered")
         self.assertEqual(models.attempts, 3)
+        self.assertIn("ServerError", logs.output[0])
+        self.assertIn("provider_code=503", logs.output[0])
+        self.assertIn("attempt=1/8", logs.output[0])
+        self.assertIn("call_timeout_seconds=120", logs.output[0])
+        self.assertIn("elapsed_ms=", logs.output[0])
+        self.assertIn("retry_delay_seconds=1", logs.output[0])
+        self.assertNotIn("sensitive prompt marker", "\n".join(logs.output))
+        self.assertNotIn("UNAVAILABLE", "\n".join(logs.output))
+        self.assertNotIn("sensitive exception marker", "\n".join(logs.output))
 
     @patch("auto_evaluation.src.models.gemini.genai.Client")
     def test_gemini_model_retries_a_call_that_hangs(self, client: MagicMock) -> None:
@@ -117,15 +133,25 @@ class DependencyContractsTest(unittest.TestCase):
         model = GoogleGeminiLangChain(model_name="gemini-test")
         model.CALL_TIMEOUT_SECONDS = 0.01
 
-        with patch("asyncio.sleep", new_callable=AsyncMock):
-            response = asyncio.run(model.a_generate("test"))
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            self.assertLogs(
+                "auto_evaluation.src.models.gemini", level="WARNING"
+            ) as logs,
+        ):
+            response = asyncio.run(model.a_generate("sensitive prompt marker"))
 
         self.assertEqual(response, "recovered")
         self.assertEqual(models.attempts, 2)
+        self.assertNotIn("sensitive prompt marker", "\n".join(logs.output))
 
     @patch("auto_evaluation.src.models.gemini.genai.Client")
     def test_gemini_model_stops_when_every_call_hangs(self, client: MagicMock) -> None:
+        attempts = 0
+
         async def hang(**_kwargs: object) -> object:
+            nonlocal attempts
+            attempts += 1
             return await asyncio.Event().wait()
 
         models = SimpleNamespace(generate_content=hang)
@@ -135,9 +161,49 @@ class DependencyContractsTest(unittest.TestCase):
         model = GoogleGeminiLangChain(model_name="gemini-test")
         model.CALL_TIMEOUT_SECONDS = 0.01
 
-        with patch("asyncio.sleep", new_callable=AsyncMock):
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            self.assertLogs(
+                "auto_evaluation.src.models.gemini", level="WARNING"
+            ) as logs,
+        ):
             with self.assertRaises(TimeoutError):
-                asyncio.run(model.a_generate("test"))
+                asyncio.run(model.a_generate("sensitive prompt marker"))
+
+        self.assertEqual(attempts, model.MAX_GENERATE_ATTEMPTS)
+        self.assertIn("exception_class=TimeoutError", logs.output[-1])
+        self.assertIn("provider_code=unknown", logs.output[-1])
+        self.assertIn("elapsed_ms=", logs.output[-1])
+        self.assertIn("attempt=8/8", logs.output[-1])
+        self.assertIn("retry_delay_seconds=none", logs.output[-1])
+        self.assertNotIn("sensitive prompt marker", "\n".join(logs.output))
+
+    @patch("auto_evaluation.src.models.gemini.genai.Client")
+    def test_gemini_model_does_not_retry_cancellation(self, client: MagicMock) -> None:
+        async def verify_cancellation() -> int:
+            started = asyncio.Event()
+            attempts = 0
+
+            async def hang(**_kwargs: object) -> object:
+                nonlocal attempts
+                attempts += 1
+                started.set()
+                return await asyncio.Event().wait()
+
+            models = SimpleNamespace(generate_content=hang)
+            client.return_value = SimpleNamespace(
+                models=models, aio=SimpleNamespace(models=models)
+            )
+            model = GoogleGeminiLangChain(model_name="gemini-test")
+            task = asyncio.create_task(model.a_generate("sensitive prompt marker"))
+            await started.wait()
+            task.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await task
+            return attempts
+
+        with self.assertNoLogs("auto_evaluation.src.models.gemini", level="WARNING"):
+            self.assertEqual(asyncio.run(verify_cancellation()), 1)
 
     def test_evaluation_query_uses_single_slash_path(self) -> None:
         server = socketserver.ThreadingTCPServer(("127.0.0.1", 0), QueryHandler)

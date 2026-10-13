@@ -12,7 +12,10 @@ import os
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
 from deepeval.evaluate import evaluate
-from deepeval.utils import get_gather_timeout_seconds
+from deepeval.utils import (
+    get_gather_timeout_seconds,
+    get_per_task_timeout_seconds,
+)
 
 from auto_evaluation.src.models.gemini import GoogleGeminiLangChain
 from auto_evaluation.src.metrics.retrieval import (
@@ -56,7 +59,7 @@ class EmptyRetrievalError(RuntimeError):
 
 
 class JudgeTimeoutError(RuntimeError):
-    """The judge did not score all test cases in the DeepEval time limit."""
+    """The judge did not score all test cases before a timeout."""
 
 
 def check_retrieval(results: list[tuple[str, dict]]) -> int:
@@ -240,11 +243,15 @@ class EvaluationHarness:
         except TimeoutError as error:
             raise JudgeTimeoutError(
                 f"the judge {self.eval_model.get_model_name()} did not score "
-                f"all {len(retrieval_tcs)} test cases in the DeepEval time "
-                f"limit of {get_gather_timeout_seconds():.0f} s. The backend "
-                "answered the questions; the judge model was slow or did not "
-                "answer. Run the job again. If it fails again, check the "
-                f"Gemini API status and quota, or increase {BUDGET_VAR}."
+                f"all {len(retrieval_tcs)} test cases. The observed exception is "
+                f"{type(error).__name__}. The configured per-case timeout is "
+                f"{get_per_task_timeout_seconds():.0f} s and the configured "
+                f"gather timeout is {get_gather_timeout_seconds():.0f} s. "
+                "This error does not identify which timeout expired. "
+                "The backend answered the questions. The judge model was slow or "
+                "did not answer. Run the job again. If it fails again, check "
+                "the Gemini API status and quota, or increase "
+                f"{BUDGET_VAR}."
             ) from error
 
         # parse deepeval results

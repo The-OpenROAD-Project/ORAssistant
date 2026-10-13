@@ -4,10 +4,9 @@ retrievers=(
     "agent-retriever"
 )
 
-# DeepEval bounds the whole async evaluation by one per-task budget (180 s by
-# default) plus a short buffer. Test cases wait behind a concurrency limit, so
-# the full dataset with a slow judge model runs out of time. Keep a caller's
-# value.
+# DeepEval gives each active case this budget and bounds the whole batch by
+# the same budget plus a buffer. Queue time counts against the batch limit.
+# Keep a caller's value.
 export DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE="${DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE:-900}"
 
 # Usage: llm_tests.sh [LIMIT] [EVAL_MAIN_ARGS...]
