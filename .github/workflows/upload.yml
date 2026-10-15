@@ -26,7 +26,7 @@ env:
 
 jobs:
   or-manpages:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Check the branch
       env:
