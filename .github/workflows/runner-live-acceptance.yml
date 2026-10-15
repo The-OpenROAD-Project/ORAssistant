@@ -1,0 +1,105 @@
+name: Runner live acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: Runner slot to validate
+        type: choice
+        options: [general, eval]
+        default: general
+      outcome:
+        description: Finish successfully, fail deliberately, or wait for cancellation
+        type: choice
+        options: [success, failure, hold]
+        default: success
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ${{ inputs.slot == 'eval' && 'self-hosted-ubuntu-26.04-eval' || 'self-hosted-ubuntu-26.04' }}
+    timeout-minutes: 15
+    env:
+      OUTCOME: ${{ inputs.outcome }}
+      SLOT: ${{ inputs.slot }}
+      PROBE_BIND: ${{ inputs.slot == 'eval' && '127.0.0.1:8000:8080' || '127.0.0.1::8080' }}
+      COMPOSE_PROJECT_NAME: runner-live-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Check runner identity and access boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          source /etc/os-release
+          test "$VERSION_ID" = 26.04
+          id
+          case "$SLOT" in
+            general) test "$(id -u)" = 41101 ;;
+            eval) test "$(id -u)" = 41102 ;;
+            *) exit 2 ;;
+          esac
+          test "$(id -un)" = "runner-orassistant-$SLOT"
+          [[ "$RUNNER_NAME" == "github-runner-26-0-orassistant-$SLOT-"* ]]
+          test -x /usr/bin/sudo
+          test -x /usr/bin/sudo.ws
+          printf 'Runner: %s\n' "$RUNNER_NAME"
+          cat /proc/self/cgroup
+          if /usr/bin/sudo -n true || /usr/bin/sudo.ws -n true; then
+            echo 'Public runner obtained host administration' >&2
+            exit 1
+          fi
+          if docker --host unix:///var/run/docker.sock info; then
+            echo 'Public runner accessed host Docker' >&2
+            exit 1
+          fi
+          for account in runner-private-01 runner-orassistant-general runner-orassistant-eval; do
+            other_home=$(getent passwd "$account" | cut -d: -f6)
+            test -n "$other_home"
+            if [ "$other_home" != "$HOME" ]; then
+              test ! -r "$other_home"
+              test ! -x "$other_home"
+            fi
+          done
+          docker info --format '{{json .SecurityOptions}}' | grep -q rootless
+          printf '%s\n' "$GITHUB_RUN_ID" > "$HOME/runner-live-marker"
+      - name: Set up Python 3.10
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: '3.10'
+      - name: Check Python 3.10 SSL
+        run: python -c 'import ssl, sys; print(sys.version); print(ssl.OPENSSL_VERSION)'
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Check Python 3.12 SSL
+        run: python -c 'import ssl, sys; print(sys.version); print(ssl.OPENSSL_VERSION)'
+      - name: Check Compose and leave an owned fixture for lifecycle cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$GITHUB_RUN_ID" > "$RUNNER_TOOL_CACHE/runner-live-marker"
+          compose_file="$RUNNER_TEMP/runner-live.yml"
+          cat > "$compose_file" <<'YAML'
+          services:
+            probe:
+              image: busybox:1.37.0@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e
+              command: [sh, -ec, "mkdir -p /www; printf 'ready\\n' > /www/index.html; exec httpd -f -p 8080 -h /www"]
+              ports: ["${PROBE_BIND}"]
+              healthcheck:
+                test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080"]
+                interval: 2s
+                timeout: 2s
+                retries: 15
+          YAML
+          docker compose -f "$compose_file" up --wait --wait-timeout 60
+          endpoint=$(docker compose -f "$compose_file" port probe 8080)
+          test "$(curl --fail --silent "http://$endpoint")" = ready
+          case "$OUTCOME" in
+            failure) echo 'Expected failure for lifecycle acceptance'; exit 1 ;;
+            hold) echo 'Ready for operator cancellation'; sleep 600 ;;
+            success) echo 'Fixture is ready for automatic generation cleanup' ;;
+            *) exit 2 ;;
+          esac

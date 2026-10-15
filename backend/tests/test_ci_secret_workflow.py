@@ -627,10 +627,31 @@ def _push_starts_eval(path: str) -> bool:
         ("backend/README.md", False),
         ("evaluation/human_evaluation/README.md", False),
         ("frontend/mongoDB.md", False),
+        ("backend/tests/test_ci_secret_workflow.py", False),
     ],
 )
-def test_docs_changes_start_no_eval(path: str, starts: bool) -> None:
+def test_push_paths_start_eval_only_for_application_inputs(
+    path: str, starts: bool
+) -> None:
     assert _push_starts_eval(path) is starts
+
+
+def test_live_acceptance_has_a_manual_unprivileged_workflow_contract() -> None:
+    """Check routing and permissions; real jobs verify runner behavior."""
+    yaml = pytest.importorskip("yaml")
+    source = (WORKFLOWS_DIR / "runner-live-acceptance.yml").read_text()
+    workflow = yaml.safe_load(source)
+
+    assert set(workflow[True]) == {"workflow_dispatch"}
+    assert workflow["permissions"] == {"contents": "read"}
+    assert "secrets." not in source
+    job = workflow["jobs"]["acceptance"]
+    assert "github.event.repository.default_branch" in job["if"]
+    assert job["runs-on"] == (
+        "${{ inputs.slot == 'eval' && 'self-hosted-ubuntu-26.04-eval' "
+        "|| 'self-hosted-ubuntu-26.04' }}"
+    )
+    assert job["timeout-minutes"] == 15
 
 
 def _results_json(status: str) -> str:
