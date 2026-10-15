@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   lint-backend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Setup python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
@@ -30,7 +30,7 @@ jobs:
       run: cd backend && make check
 
   lint-frontend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Setup python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
@@ -50,7 +50,7 @@ jobs:
       run: cd frontend && make check
 
   lint-nextjs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Setup node
       uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
@@ -75,7 +75,7 @@ jobs:
       run: yarn lint
 
   lint-evaluation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Setup python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
@@ -131,7 +131,7 @@ jobs:
   ci-gate:
     if: always()
     needs: [lint-backend, lint-frontend, lint-nextjs, lint-evaluation, test, docker-build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Require successful CI jobs
       env:
