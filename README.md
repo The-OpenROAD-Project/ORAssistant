@@ -236,7 +236,8 @@ To modify the dataset, please refer to [build_docs.py](./backend/build_docs.py)
 To check a change before a pull request, see
 [Check your change](CONTRIBUTING.md#check-your-change).
 
-The full evaluation (`ORAssistant Secret CI`) runs on every push to `master`.
+The full evaluation (`ORAssistant Secret CI`) runs when a push to `master` changes application or evaluation inputs.
+Documentation and the workflow test file do not start a paid evaluation.
 To run it against an open pull request before merging, a maintainer starts it
 by hand with the PR number:
 
@@ -250,6 +251,20 @@ head, and comments the evaluation output on the PR. The PR must be mergeable.
 Only one evaluation runs at a time for each target: a PR number, or the
 branch. A started evaluation always finishes. Only the newest run waits for
 it; GitHub cancels the evaluation of each older waiting run.
+
+The manual `Runner live acceptance` workflow checks the Ubuntu 26.04 runner pool without application secrets or LLM calls.
+Run it from the default branch after the pool passes host verification.
+Choose `general` or `eval` and an outcome of `success`, `failure`, or `hold`.
+The failure outcome deliberately fails, and the hold outcome waits for operator cancellation.
+Each job checks Python 3.10 and 3.12 SSL, rootless Docker Compose, and access restrictions.
+The eval probe binds port 8000 on loopback, so run it only when that slot is idle.
+The job leaves a home marker, a tool-cache marker, and a Compose service for the runner supervisor to remove.
+After each outcome, verify that the old registration and its generation data are gone and a fresh runner is online.
+This fixture does not test application answer quality.
+
+```sh
+gh workflow run runner-live-acceptance.yml --repo The-OpenROAD-Project/ORAssistant --ref master -f slot=general -f outcome=success
+```
 
 ## Contributing
 
