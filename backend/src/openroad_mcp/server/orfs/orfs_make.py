@@ -19,6 +19,31 @@ class ORFSMake(ORFS):
         assert ORFS.server is not None
         ORFS.server.makefile_pointer = f"{ORFS.server.flow_dir}/designs/{ORFS.server.platform}/{ORFS.server.design}/config.mk"
 
+    def _create_dynamic_makefile(self) -> None:
+        """Create dynamic makefile."""
+        assert ORFS.server is not None
+        if not (ORFS.server.design and ORFS.server.platform):
+            logging.warning("no custom design/platform selected!")
+            ORFS.server._get_designs_impl()
+            ORFS.server._get_platforms_impl()
+            ORFS.server._get_default_env()
+        else:
+            pass
+
+        ORFS.server.dynamic_makefile = True
+        ORFS.server.makefile_pointer = f"{ORFS.server.flow_dir}/designs/{ORFS.server.platform}/{ORFS.server.design}/dynamic_config.mk"
+        with open(f"{ORFS.server.makefile_pointer}", "w") as f:
+            for key in ORFS.server.orfs_env.keys():
+                f.write(f"export {key} = {ORFS.server.orfs_env[key]}\n")
+        result = ""
+        for key in ORFS.server.orfs_env.keys():
+            result += f"{key}: {ORFS.server.orfs_env[key]}\n"
+        if result:
+            return result
+        else:
+            return "no env vars"
+
+
     def _get_makefile(self) -> None:
         """Retrieve the current makefile pointer path."""
         assert ORFS.server is not None
@@ -32,7 +57,8 @@ class ORFSMake(ORFS):
         ORFS.server.orfs_env.update(
             {
                 "PLATFORM": f"{ORFS.server.platform}",
-                "DESIGN_NAME": f"{ORFS.server.design}",
+                #"DESIGN_NAME": f"{ORFS.server.design}",
+                "DESIGN_NAME": "riscv", # TODO: temporary fix for default design
                 "DESIGN_NICKNAME": f"{ORFS.server.design}",
                 "VERILOG_FILES": "$(sort $(wildcard ./designs/src/$(DESIGN_NICKNAME)/*.v))",
                 "SDC_FILE": "./designs/$(PLATFORM)/$(DESIGN_NICKNAME)/constraint.sdc",
@@ -77,27 +103,7 @@ class ORFSMake(ORFS):
         Note:
             File is written to: {flow_dir}/designs/{platform}/{design}/dynamic_config.mk
         """
-        assert ORFS.server is not None
-        if not (ORFS.server.design and ORFS.server.platform):
-            logging.warning("no custom design/platform selected!")
-            ORFS.server._get_designs_impl()
-            ORFS.server._get_platforms_impl()
-            ORFS.server._get_default_env()
-        else:
-            pass
-
-        ORFS.server.dynamic_makefile = True
-        ORFS.server.makefile_pointer = f"{ORFS.server.flow_dir}/designs/{ORFS.server.platform}/{ORFS.server.design}/dynamic_config.mk"
-        with open(f"{ORFS.server.makefile_pointer}", "w") as f:
-            for key in ORFS.server.orfs_env.keys():
-                f.write(f"export {key} = {ORFS.server.orfs_env[key]}\n")
-        result = ""
-        for key in ORFS.server.orfs_env.keys():
-            result += f"{key}: {ORFS.server.orfs_env[key]}\n"
-        if result:
-            return result
-        else:
-            return "no env vars"
+        ORFS.server._create_dynamic_makefile()
 
     @staticmethod
     @ORFS.mcp.tool
