@@ -11,7 +11,7 @@ import os
 
 from dotenv import load_dotenv
 from deepeval.test_case import LLMTestCase
-from deepeval.evaluate import evaluate
+from deepeval.evaluate import AsyncConfig, evaluate
 from deepeval.utils import (
     get_gather_timeout_seconds,
     get_per_task_timeout_seconds,
@@ -236,6 +236,7 @@ class EvaluationHarness:
         # judge is too slow. Name the cause and the next step instead.
         try:
             evaluate(
+                async_config=AsyncConfig(max_concurrent=5),
                 test_cases=retrieval_tcs,
                 metrics=[precision, recall, hallucination],
                 hyperparameters=dict(metadata),

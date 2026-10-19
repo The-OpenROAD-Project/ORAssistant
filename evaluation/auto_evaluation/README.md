@@ -11,8 +11,11 @@ the answer `invalid`. That means the backend is broken, and the scores would be
 
 ## Judge time limit
 
-DeepEval gives each active test case a `DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE` budget (900 s, set in `llm_tests.sh`).
-It also gives the whole batch that budget plus a 60 s buffer, including time that cases wait for a concurrency slot.
+DeepEval runs at most five judge cases at once to reduce concurrent requests to the provider.
+It gives each active test case a `DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE` budget (900 s, set in `llm_tests.sh`).
+The whole batch has that budget plus `DEEPEVAL_TASK_GATHER_BUFFER_SECONDS_OVERRIDE` (2700 s), for a total of 3600 s.
+The batch limit includes time that cases wait for a concurrency slot.
+`llm_tests.sh` keeps caller overrides for both budgets.
 The judge model stops each Gemini call after `CALL_TIMEOUT_SECONDS` (120 s) and tries again.
 A `TimeoutError` can come from a case, the batch, or a model request.
 The stop message names the observed exception and the configured case and batch limits.

@@ -6,13 +6,14 @@ from pathlib import Path
 
 SCRIPT = Path(__file__).parents[1] / "auto_evaluation/llm_tests.sh"
 TIMEOUT_VAR = "DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE"
+BUFFER_VAR = "DEEPEVAL_TASK_GATHER_BUFFER_SECONDS_OVERRIDE"
 
 
 def _budget_seen_by_python(env: dict[str, str]) -> set[str]:
     """Run the script with python stubbed by an exported bash function."""
     # A function, not a stub file, so a noexec temporary directory still works.
     wrapper = (
-        f'python() {{ echo "budget=${{{TIMEOUT_VAR}}}"; }}\n'
+        f'python() {{ echo "budget=${{{TIMEOUT_VAR}}} buffer=${{{BUFFER_VAR}}}"; }}\n'
         f'export -f python\nbash "{SCRIPT}"\n'
     )
     result = subprocess.run(
@@ -50,14 +51,14 @@ def _args_seen_by_python(*script_args: str) -> list[str]:
 
 class LlmTestsScriptTest(unittest.TestCase):
     def test_script_raises_the_deepeval_budget(self) -> None:
-        env = {k: v for k, v in os.environ.items() if k != TIMEOUT_VAR}
+        env = {k: v for k, v in os.environ.items() if k not in {TIMEOUT_VAR, BUFFER_VAR}}
 
-        self.assertEqual(_budget_seen_by_python(env), {"budget=900"})
+        self.assertEqual(_budget_seen_by_python(env), {"budget=900 buffer=2700"})
 
     def test_script_keeps_a_caller_budget(self) -> None:
-        env = {**os.environ, TIMEOUT_VAR: "1234"}
+        env = {**os.environ, TIMEOUT_VAR: "1234", BUFFER_VAR: "5678"}
 
-        self.assertEqual(_budget_seen_by_python(env), {"budget=1234"})
+        self.assertEqual(_budget_seen_by_python(env), {"budget=1234 buffer=5678"})
 
     def test_script_passes_the_limit(self) -> None:
         args = _args_seen_by_python("5")
