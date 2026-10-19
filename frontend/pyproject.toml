@@ -7,21 +7,21 @@ name = "ora-frontend"
 version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
-  "fastapi[standard]>=0.142.2",
-  "pyarrow>=25.0.1",
+  "fastapi[standard]>=0.143.0",
+  "pyarrow>=26.0.0",
   "starlette>=1.7.0",
   "gitpython>=3.2.0",
-  "streamlit>=1.64.0",
+  "streamlit>=1.65.0",
   "requests==2.34.2",
   "requests-oauthlib==2.0.0",
   "Pillow>=12.2.0",
   "protobuf>=7.36.2",
-  "google-auth==2.59.1",
+  "google-auth==2.61.0",
   "google-auth-httplib2==0.4.4",
   "google-auth-oauthlib==1.5.0",
   "gspread==6.2.1",
   "python-dotenv==1.2.4",
-  "pymongo==4.18.2",
+  "pymongo==4.18.3",
   "pygments>=2.21.0",
 ]
 classifiers = [
@@ -35,11 +35,11 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-  "pytz==2026.4",
+  "pytz==2026.5",
   "mypy==2.4.0",
-  "types-requests==2.33.0.20260906",
+  "types-requests==2.33.0.20261006",
   "pre-commit==4.6.2",
-  "ruff==0.16.10",
+  "ruff==0.17.0",
   "types-Flask-Cors==6.0.0.20250809",
 ]
 
