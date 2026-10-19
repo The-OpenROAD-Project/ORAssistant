@@ -66,7 +66,7 @@ dev = [
     "ruff==0.16.10",
     "types-beautifulsoup4==4.12.0.20250516",
     "types-markdown==3.10.2.20260712",
-    "types-requests==2.33.0.20260906",
+    "types-requests==2.33.0.20261006",
     "types-tqdm==4.70.0.20260906",
 ]
 
