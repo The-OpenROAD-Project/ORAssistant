@@ -51,7 +51,9 @@ def _args_seen_by_python(*script_args: str) -> list[str]:
 
 class LlmTestsScriptTest(unittest.TestCase):
     def test_script_raises_the_deepeval_budget(self) -> None:
-        env = {k: v for k, v in os.environ.items() if k not in {TIMEOUT_VAR, BUFFER_VAR}}
+        env = {
+            k: v for k, v in os.environ.items() if k not in {TIMEOUT_VAR, BUFFER_VAR}
+        }
 
         self.assertEqual(_budget_seen_by_python(env), {"budget=900 buffer=2700"})
 
