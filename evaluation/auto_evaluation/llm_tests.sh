@@ -4,10 +4,10 @@ retrievers=(
     "agent-retriever"
 )
 
-# DeepEval gives each active case this budget and bounds the whole batch by
-# the same budget plus a buffer. Queue time counts against the batch limit.
-# Keep a caller's value.
+# Five judge cases run at once. Keep the active-case deadline and allow
+# queued cases up to one hour for the whole batch. Keep caller overrides.
 export DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE="${DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE:-900}"
+export DEEPEVAL_TASK_GATHER_BUFFER_SECONDS_OVERRIDE="${DEEPEVAL_TASK_GATHER_BUFFER_SECONDS_OVERRIDE:-2700}"
 
 # Usage: llm_tests.sh [LIMIT] [EVAL_MAIN_ARGS...]
 # An empty LIMIT runs all questions. Later arguments go to eval_main.py, for
