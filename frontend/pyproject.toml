@@ -8,7 +8,7 @@ version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi[standard]>=0.142.2",
-  "pyarrow>=25.0.1",
+  "pyarrow>=26.0.0",
   "starlette>=1.7.0",
   "gitpython>=3.2.0",
   "streamlit>=1.64.0",
