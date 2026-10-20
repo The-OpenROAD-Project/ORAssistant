@@ -245,6 +245,11 @@ def test_eval_inputs_are_checked_before_any_other_step() -> None:
             assert "resolve" in job["needs"], name
 
 
+# The check step caps a judge id at 64 characters.
+LONGEST_JUDGE = "gemini-" + "x" * 57
+ALL_CASES = ",".join(str(index) for index in range(100))
+
+
 def _run_check_inputs_step(
     tmp_path: Path, judge: str = "", limit: str = "", cases: str = ""
 ) -> tuple[subprocess.CompletedProcess[str], dict[str, str]]:
@@ -324,18 +329,30 @@ def test_check_inputs_names_the_status(
     assert outputs["status_label"] == label
 
 
-def test_a_long_case_list_fits_the_status_description(tmp_path: Path) -> None:
-    cases = ",".join(str(index) for index in range(100))
-
-    result, outputs = _run_check_inputs_step(tmp_path, cases=cases)
+@pytest.mark.parametrize(
+    ("inputs", "label"),
+    [
+        ({"judge": LONGEST_JUDGE, "limit": "100"}, f"judge {LONGEST_JUDGE}, limit 100"),
+        (
+            {"judge": LONGEST_JUDGE, "cases": ALL_CASES},
+            f"judge {LONGEST_JUDGE}, 100 cases",
+        ),
+        ({"cases": ALL_CASES}, "100 cases"),
+    ],
+)
+def test_the_status_description_names_every_input(
+    tmp_path: Path, inputs: dict[str, str], label: str
+) -> None:
+    result, outputs = _run_check_inputs_step(tmp_path, **inputs)
 
     assert result.returncode == 0, result.stderr
-    assert outputs["eval_args"] == f"--cases {cases}"
+    assert outputs["status_label"] == label
     # GitHub rejects a status description longer than 140 characters, and
     # the steps add " running", " success", or " failure".
-    assert len(outputs["status_label"]) + len(" failure") <= 140
-    assert outputs["status_label"].startswith("cases 0,1,2,")
-    assert outputs["status_label"].endswith("...")
+    assert len(label) + len(" failure") <= 140
+    # The eval still gets the whole case list.
+    if "cases" in inputs:
+        assert outputs["eval_args"].endswith(f"--cases {ALL_CASES}")
 
 
 def _status_env(tmp_path: Path, inputs: dict[str, str]) -> dict[str, str]:
@@ -376,6 +393,7 @@ def test_pr_status_steps_get_the_status_from_the_check() -> None:
         {"judge": "a judge"},
         {"judge": "judge;rm"},
         {"judge": "judge\n--limit"},
+        {"judge": LONGEST_JUDGE + "x"},
         {"limit": "0"},
         {"limit": "05"},
         {"limit": "-1"},

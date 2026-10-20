@@ -248,7 +248,8 @@ gh workflow run ci-secret.yaml -f pr=<number>
 The run checks out the PR's merge result, posts a `Secret CI` status on the PR
 head, and comments the evaluation output on the PR. The PR must be mergeable.
 
-A manual run also takes the optional inputs `judge` (a judge model id),
+A manual run also takes the optional inputs `judge` (a judge model id of at
+most 64 characters),
 `limit` (the first N questions, 1-100), and `cases` (0-based question indexes
 from 0-99, for example `20,84`). Empty inputs run every question with the default judge.
 A PR run with any of these inputs posts its status as `Secret CI (custom)`,
