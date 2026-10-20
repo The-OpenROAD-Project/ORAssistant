@@ -175,6 +175,9 @@ def test_dispatch_inputs_default_to_a_full_run() -> None:
         assert inputs[name]["required"] is False
         assert inputs[name]["type"] == "string"
         assert inputs[name]["default"] == ""
+    # The check step caps both at the dataset size.
+    assert "1-100" in inputs["limit"]["description"]
+    assert "0-99" in inputs["cases"]["description"]
 
 
 def test_secret_scripts_take_inputs_through_env() -> None:
@@ -246,7 +249,9 @@ def _run_check_inputs_step(
         ({}, ""),
         ({"judge": "gemini-4.0-pro"}, "--judge gemini-4.0-pro"),
         ({"limit": "5"}, "--limit 5"),
+        ({"limit": "100"}, "--limit 100"),
         ({"cases": "20"}, "--cases 20"),
+        ({"cases": "0,99"}, "--cases 0,99"),
         (
             {"judge": "new-judge", "cases": "0,20,84"},
             "--judge new-judge --cases 0,20,84",
@@ -274,6 +279,12 @@ def test_check_inputs_builds_the_eval_args(
         {"limit": "05"},
         {"limit": "-1"},
         {"limit": "5 "},
+        # The dataset has 100 questions: limit 1-100, cases 0-99.
+        {"limit": "101"},
+        {"limit": "1000"},
+        {"cases": "100"},
+        {"cases": "500"},
+        {"cases": "1,100"},
         {"cases": "1,"},
         {"cases": ",1"},
         {"cases": "1, 2"},
