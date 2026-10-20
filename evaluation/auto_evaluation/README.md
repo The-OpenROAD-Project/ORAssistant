@@ -61,7 +61,8 @@ the newest finished master push run that has scores. The run fails when the
 precision or recall pass rate is more than 5 points below that baseline. The
 job summary shows the baseline, current, and delta of each metric. The gate
 skips, with a notice, when the judge or the dataset differs, because the
-scores are then on a different scale.
+scores are then on a different scale. It also skips when the test count
+differs from the baseline, as in a run with a limit or a case list.
 
 A run that fails the gate is the baseline for the next run. So one drop fails
 one run and does not block master; check the failed run before the next merge.
@@ -94,6 +95,9 @@ retrieval check and DeepEval. The backend still needs its Google credentials.
 ./llm_tests.sh "" --cases 20,84 --skip-judge
 ```
 
+`make llm-tests` in `evaluation/` gives `EVAL_ARGS` to `eval_main.py` in the
+same way, for example `make llm-tests EVAL_ARGS='--cases 20,84'`.
+
 The summary averages every case in the DeepEval cache, so run `make clean` in
 `evaluation/` before a subset run. Otherwise earlier cases count too.
 
@@ -118,3 +122,27 @@ uv run python auto_evaluation/compare_results.py old.json new.json
 every case in the DeepEval cache (see Case subset). Use a larger limit, or no limit (`""`), for
 the delta that you post. `compare_results.py` exits with 1 when the two files
 come from a different commit or dataset.
+
+To compare in Secret CI instead, start two runs on the same branch with the
+`judge` and `limit` inputs. Leave out `pr`: a run without it uploads its
+results as the artifact `eval-results-<run id>`, with the file
+`eval_results.json`. Only one eval runs at a time for each branch, and a newer
+run replaces an eval that waits, so start the second run after the first eval
+finishes. Each run also comments its summary on the commit. Run from
+`evaluation/`:
+
+```bash
+gh workflow run ci-secret.yaml --ref BRANCH -f judge=OLD_MODEL -f limit=5
+gh run list --workflow ci-secret.yaml --event workflow_dispatch --limit 1
+gh run watch OLD_RUN_ID
+gh workflow run ci-secret.yaml --ref BRANCH -f judge=NEW_MODEL -f limit=5
+gh run list --workflow ci-secret.yaml --event workflow_dispatch --limit 1
+gh run watch NEW_RUN_ID
+gh run download OLD_RUN_ID -n eval-results-OLD_RUN_ID -D old
+gh run download NEW_RUN_ID -n eval-results-NEW_RUN_ID -D new
+uv run python auto_evaluation/compare_results.py old/eval_results.json new/eval_results.json
+```
+
+The `cases` input takes 0-based question indexes, as `--cases` does, for
+example `-f cases=20,84`. Set `limit` or `cases`, not both. The baseline gate
+skips a run with either input, because its scores cover only some cases.

@@ -160,6 +160,160 @@ def test_resolve_rejects_a_conflicting_pr(tmp_path: Path) -> None:
     assert outputs == {}
 
 
+def _secret_workflow() -> dict:
+    yaml = pytest.importorskip("yaml")
+    workflow: dict = yaml.safe_load(WORKFLOW.read_text())
+    # PyYAML reads the bare key "on" as True.
+    workflow["on"] = workflow.pop(True)
+    return workflow
+
+
+def test_dispatch_inputs_default_to_a_full_run() -> None:
+    inputs = _secret_workflow()["on"]["workflow_dispatch"]["inputs"]
+
+    for name in ("judge", "limit", "cases"):
+        assert inputs[name]["required"] is False
+        assert inputs[name]["type"] == "string"
+        assert inputs[name]["default"] == ""
+
+
+def test_secret_scripts_take_inputs_through_env() -> None:
+    scripts = [
+        step["run"]
+        for job in _secret_workflow()["jobs"].values()
+        for step in job["steps"]
+        if "run" in step
+    ]
+
+    assert scripts
+    assert [s for s in scripts if "inputs." in s] == []
+
+
+def test_eval_inputs_are_checked_before_any_other_step() -> None:
+    jobs = _secret_workflow()["jobs"]
+    first = jobs["resolve"]["steps"][0]
+
+    assert first["name"] == "Check the eval inputs"
+    assert first["env"] == {
+        "JUDGE": "${{ inputs.judge }}",
+        "LIMIT": "${{ inputs.limit }}",
+        "CASES": "${{ inputs.cases }}",
+    }
+    assert jobs["resolve"]["outputs"]["eval_args"] == (
+        "${{ steps.eval_args.outputs.eval_args }}"
+    )
+    # Every other job waits for resolve, so a bad input stops the paid jobs.
+    for name, job in jobs.items():
+        if name != "resolve":
+            assert "resolve" in job["needs"], name
+
+
+def _run_check_inputs_step(
+    tmp_path: Path, judge: str = "", limit: str = "", cases: str = ""
+) -> tuple[subprocess.CompletedProcess[str], dict[str, str]]:
+    output_file = tmp_path / "github_output"
+    output_file.touch()
+    result = subprocess.run(
+        [
+            "bash",
+            "-eo",
+            "pipefail",
+            "-c",
+            _workflow_step_script("Check the eval inputs"),
+        ],
+        env={
+            **os.environ,
+            "JUDGE": judge,
+            "LIMIT": limit,
+            "CASES": cases,
+            "GITHUB_OUTPUT": str(output_file),
+        },
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    outputs = dict(
+        line.split("=", 1)
+        for line in output_file.read_text().splitlines()
+        if "=" in line
+    )
+    return result, outputs
+
+
+@pytest.mark.parametrize(
+    ("inputs", "eval_args"),
+    [
+        ({}, ""),
+        ({"judge": "gemini-4.0-pro"}, "--judge gemini-4.0-pro"),
+        ({"limit": "5"}, "--limit 5"),
+        ({"cases": "20"}, "--cases 20"),
+        (
+            {"judge": "new-judge", "cases": "0,20,84"},
+            "--judge new-judge --cases 0,20,84",
+        ),
+    ],
+)
+def test_check_inputs_builds_the_eval_args(
+    tmp_path: Path, inputs: dict[str, str], eval_args: str
+) -> None:
+    result, outputs = _run_check_inputs_step(tmp_path, **inputs)
+
+    assert result.returncode == 0, result.stderr
+    assert outputs == {"eval_args": eval_args}
+
+
+@pytest.mark.parametrize(
+    "inputs",
+    [
+        {"judge": "Gemini"},
+        {"judge": "-judge"},
+        {"judge": "a judge"},
+        {"judge": "judge;rm"},
+        {"judge": "judge\n--limit"},
+        {"limit": "0"},
+        {"limit": "05"},
+        {"limit": "-1"},
+        {"limit": "5 "},
+        {"cases": "1,"},
+        {"cases": ",1"},
+        {"cases": "1, 2"},
+        {"cases": "-1"},
+        {"limit": "5", "cases": "1,2"},
+    ],
+)
+def test_check_inputs_rejects_a_bad_value(
+    tmp_path: Path, inputs: dict[str, str]
+) -> None:
+    result, outputs = _run_check_inputs_step(tmp_path, **inputs)
+
+    assert result.returncode != 0
+    assert "::error::" in result.stdout
+    assert outputs == {}
+
+
+def test_the_eval_gets_the_checked_args_through_make(tmp_path: Path) -> None:
+    jobs = _secret_workflow()["jobs"]
+    step = next(
+        s for s in jobs["docker-eval"]["steps"] if s.get("name") == "Run LLM CI"
+    )
+    script = 'make() { printf "%s\\n" "$@"; }\n' + _workflow_step_script("Run LLM CI")
+
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        env={**os.environ, "EVAL_ARGS": "--judge new-judge --limit 5"},
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert step["env"]["EVAL_ARGS"] == "${{ needs.resolve.outputs.eval_args }}"
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.splitlines() == [
+        "llm-tests",
+        "EVAL_ARGS=--judge new-judge --limit 5",
+    ]
+
+
 def _workflow_step_script(step_name: str, workflow: Path = WORKFLOW) -> str:
     lines = workflow.read_text().splitlines()
     step_index = next(

@@ -9,6 +9,8 @@ the precision or recall pass rate fails the run.
 The gate skips, with a notice, when there is no baseline, when either run has
 no scores or another schema version, or when the judge or the dataset
 differs: scores from a different judge or dataset are on a different scale.
+It also skips when the test counts differ, because then one run scored only a
+subset of the cases (a --limit or --cases run).
 
 Usage: python baseline_gate.py --current CURRENT.json [--baseline BASELINE.json]
 The script uses only the standard library, so it runs without the project
@@ -58,6 +60,14 @@ def compare(current: dict, baseline: dict | None, margin: float = MARGIN) -> Ver
         then = baseline.get("metadata", {}).get(key)
         if now != then:
             return _skip(f"{key} {now} differs from the baseline {key} {then}")
+    # Same dataset, so a different count means a run with a limit or a case
+    # list. A pass rate over a few cases is not comparable with a full run.
+    now, then = current.get("test_count"), baseline.get("test_count")
+    if now != then:
+        return _skip(
+            f"the run has {now} test cases and the baseline has {then}, "
+            "so one of them is a subset run"
+        )
 
     verdict = Verdict(
         lines=[f"Baseline: orassistant {baseline['metadata'].get('orassistant')}"]
