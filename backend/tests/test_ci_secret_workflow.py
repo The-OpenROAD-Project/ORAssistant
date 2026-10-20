@@ -542,9 +542,14 @@ def test_evals_share_one_queue_per_target() -> None:
     concurrency = workflow["jobs"]["docker-eval"]["concurrency"]
 
     assert "concurrency" not in workflow
+    # A full run (no judge, limit, or cases; every push run) keeps the group
+    # of one target. A custom run gets the same group with a -custom suffix,
+    # so it never cancels or replaces a waiting full run.
     assert re.fullmatch(
         r"\$\{\{ github\.workflow \}\}-eval-"
-        r"\$\{\{ inputs\.pr && format\('pr-\{0\}', inputs\.pr\) \|\| github\.ref \}\}",
+        r"\$\{\{ inputs\.pr && format\('pr-\{0\}', inputs\.pr\) \|\| github\.ref \}\}"
+        r"\$\{\{ \(inputs\.judge \|\| inputs\.limit \|\| inputs\.cases\) "
+        r"&& '-custom' \|\| '' \}\}",
         concurrency["group"],
     )
     assert concurrency["cancel-in-progress"] is False

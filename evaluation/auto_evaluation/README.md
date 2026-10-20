@@ -126,9 +126,11 @@ come from a different commit or dataset.
 To compare in Secret CI instead, start two runs on the same branch with the
 `judge` and `limit` inputs. Leave out `pr`: a run without it uploads its
 results as the artifact `eval-results-<run id>`, with the file
-`eval_results.json`. Only one eval runs at a time for each branch, and a newer
-run replaces an eval that waits, so start the second run after the first eval
-finishes. Each run also comments its summary on the commit. The `gh run list`
+`eval_results.json`. A run with `judge`, `limit`, or `cases` is a custom run.
+Custom runs have their own queue, so they do not cancel a full run. Only one
+custom eval runs at a time for each branch, and a newer custom run replaces
+an eval that waits. So start the second run after the first eval finishes.
+Each run also comments its summary on the commit. The `gh run list`
 filters show only your runs on BRANCH, so another person's run is not picked.
 `gh run list --user` does not accept `@me`, so the commands look up your
 login. A new run can take a few seconds to show in the list. Run from

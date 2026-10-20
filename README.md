@@ -259,6 +259,8 @@ sets the `Secret CI` status. See
 Only one evaluation runs at a time for each target: a PR number, or the
 branch. A started evaluation always finishes. Only the newest run waits for
 it; GitHub cancels the evaluation of each older waiting run.
+A run with `judge`, `limit`, or `cases` waits in its own queue for the target.
+So it never cancels a full run, but it can run beside one.
 
 The manual `Runner live acceptance` workflow checks the Ubuntu 26.04 runner pool without application secrets or LLM calls.
 Run it from the default branch after the pool passes host verification.
