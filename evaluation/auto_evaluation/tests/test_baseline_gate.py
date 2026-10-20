@@ -93,6 +93,18 @@ def test_a_different_judge_or_dataset_skips(field: str) -> None:
     assert any(field in line and "other" in line for line in verdict.lines)
 
 
+def test_a_subset_run_skips() -> None:
+    # A run with a limit or a case list scores fewer cases than the baseline.
+    current = {**_results(0.1, 0.1), "test_count": 5}
+
+    verdict = baseline_gate.compare(current, _results(0.8, 0.7))
+
+    assert verdict.passed
+    assert verdict.skipped
+    assert "5 test cases" in verdict.lines[0]
+    assert "100" in verdict.lines[0]
+
+
 def test_no_baseline_skips() -> None:
     verdict = baseline_gate.compare(_results(), None)
 

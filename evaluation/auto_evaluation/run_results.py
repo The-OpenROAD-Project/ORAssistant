@@ -12,7 +12,7 @@ Schema version 1:
       "schema_version": 1,
       "status": "completed",
       "metadata": {
-        "judge": "gemini-3.1-pro-preview",
+        "judge": "gemini-3.8-flash",
         "backend": "gemini:3.6_flash",
         "deepeval": "4.2.3",
         "dataset": "<Hugging Face commit>",

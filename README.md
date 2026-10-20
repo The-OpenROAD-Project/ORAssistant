@@ -248,9 +248,20 @@ gh workflow run ci-secret.yaml -f pr=<number>
 The run checks out the PR's merge result, posts a `Secret CI` status on the PR
 head, and comments the evaluation output on the PR. The PR must be mergeable.
 
+A manual run also takes the optional inputs `judge` (a judge model id of at
+most 64 characters),
+`limit` (the first N questions, 1-100), and `cases` (0-based question indexes
+from 0-99, for example `20,84`). Empty inputs run every question with the default judge.
+A PR run with any of these inputs posts its status as `Secret CI (custom)`,
+with the inputs in the description. Only a full run with the default judge
+sets the `Secret CI` status. See
+[Judge change](evaluation/auto_evaluation/README.md#judge-change).
+
 Only one evaluation runs at a time for each target: a PR number, or the
 branch. A started evaluation always finishes. Only the newest run waits for
 it; GitHub cancels the evaluation of each older waiting run.
+A run with `judge`, `limit`, or `cases` waits in its own queue for the target.
+So it never cancels a full run, but it can run beside one.
 
 The manual `Runner live acceptance` workflow checks the Ubuntu 26.04 runner pool without application secrets or LLM calls.
 Run it from the default branch after the pool passes host verification.

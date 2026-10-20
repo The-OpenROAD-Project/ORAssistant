@@ -78,9 +78,16 @@ def test_seed_credentials_rejects_an_empty_value(tmp_path: Path) -> None:
 
 
 def _run_resolve_step(
-    tmp_path: Path, pr: str, pr_json: dict[str, object] | None
+    tmp_path: Path,
+    pr: str,
+    pr_json: dict[str, object] | None,
+    inputs: dict[str, str] | None = None,
 ) -> tuple[subprocess.CompletedProcess[str], dict[str, str]]:
-    """Run the resolve step with a stubbed gh CLI and return its outputs."""
+    """Run the resolve step with a stubbed gh CLI and return its outputs.
+
+    inputs are the eval inputs (judge, limit, cases) of the run.
+    """
+    status_env = _status_env(tmp_path, inputs or {})
     output_file = tmp_path / "github_output"
     output_file.touch()
     stub = textwrap.dedent(
@@ -100,6 +107,7 @@ def _run_resolve_step(
         ["bash", "-eo", "pipefail", "-c", script],
         env={
             **os.environ,
+            **status_env,
             "PR": pr,
             "GITHUB_SHA": "abc123",
             "GITHUB_REPOSITORY": "org/repo",
@@ -136,6 +144,32 @@ def test_resolve_targets_the_pr_merge_ref(tmp_path: Path) -> None:
     assert outputs == {"ref": "refs/pull/42/merge", "pr": "42", "head_sha": "feed"}
     assert "statuses/feed" in result.stdout
     assert "state=pending" in result.stdout
+    assert "context=Secret CI -f" in result.stdout
+    assert "description=Full suite running" in result.stdout
+
+
+@requires_jq
+@pytest.mark.parametrize(
+    ("inputs", "label"),
+    [
+        ({"limit": "1"}, "limit 1"),
+        ({"cases": "20,84"}, "cases 20,84"),
+        ({"judge": "new-judge"}, "judge new-judge"),
+    ],
+)
+def test_resolve_marks_a_custom_pr_run(
+    tmp_path: Path, inputs: dict[str, str], label: str
+) -> None:
+    # Only a full run with the default judge may set the "Secret CI" status.
+    pr_json = {"state": "open", "mergeable": True, "head": {"sha": "feed"}}
+
+    result, outputs = _run_resolve_step(tmp_path, "42", pr_json, inputs)
+
+    assert result.returncode == 0, result.stderr
+    assert outputs["pr"] == "42"
+    assert "context=Secret CI (custom) -f" in result.stdout
+    assert "context=Secret CI -f" not in result.stdout
+    assert f"description={label} running" in result.stdout
 
 
 @requires_jq
@@ -158,6 +192,259 @@ def test_resolve_rejects_a_conflicting_pr(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert "not mergeable" in result.stdout
     assert outputs == {}
+
+
+def _secret_workflow() -> dict:
+    yaml = pytest.importorskip("yaml")
+    workflow: dict = yaml.safe_load(WORKFLOW.read_text())
+    # PyYAML reads the bare key "on" as True.
+    workflow["on"] = workflow.pop(True)
+    return workflow
+
+
+def test_dispatch_inputs_default_to_a_full_run() -> None:
+    inputs = _secret_workflow()["on"]["workflow_dispatch"]["inputs"]
+
+    for name in ("judge", "limit", "cases"):
+        assert inputs[name]["required"] is False
+        assert inputs[name]["type"] == "string"
+        assert inputs[name]["default"] == ""
+    # The check step caps both at the dataset size.
+    assert "1-100" in inputs["limit"]["description"]
+    assert "0-99" in inputs["cases"]["description"]
+
+
+def test_secret_scripts_take_inputs_through_env() -> None:
+    scripts = [
+        step["run"]
+        for job in _secret_workflow()["jobs"].values()
+        for step in job["steps"]
+        if "run" in step
+    ]
+
+    assert scripts
+    assert [s for s in scripts if "inputs." in s] == []
+
+
+def test_eval_inputs_are_checked_before_any_other_step() -> None:
+    jobs = _secret_workflow()["jobs"]
+    first = jobs["resolve"]["steps"][0]
+
+    assert first["name"] == "Check the eval inputs"
+    assert first["env"] == {
+        "JUDGE": "${{ inputs.judge }}",
+        "LIMIT": "${{ inputs.limit }}",
+        "CASES": "${{ inputs.cases }}",
+    }
+    assert jobs["resolve"]["outputs"]["eval_args"] == (
+        "${{ steps.eval_args.outputs.eval_args }}"
+    )
+    # Every other job waits for resolve, so a bad input stops the paid jobs.
+    for name, job in jobs.items():
+        if name != "resolve":
+            assert "resolve" in job["needs"], name
+
+
+# The check step caps a judge id at 64 characters.
+LONGEST_JUDGE = "gemini-" + "x" * 57
+ALL_CASES = ",".join(str(index) for index in range(100))
+
+
+def _run_check_inputs_step(
+    tmp_path: Path, judge: str = "", limit: str = "", cases: str = ""
+) -> tuple[subprocess.CompletedProcess[str], dict[str, str]]:
+    output_file = tmp_path / "github_output"
+    output_file.touch()
+    result = subprocess.run(
+        [
+            "bash",
+            "-eo",
+            "pipefail",
+            "-c",
+            _workflow_step_script("Check the eval inputs"),
+        ],
+        env={
+            **os.environ,
+            "JUDGE": judge,
+            "LIMIT": limit,
+            "CASES": cases,
+            "GITHUB_OUTPUT": str(output_file),
+        },
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    outputs = dict(
+        line.split("=", 1)
+        for line in output_file.read_text().splitlines()
+        if "=" in line
+    )
+    return result, outputs
+
+
+@pytest.mark.parametrize(
+    ("inputs", "eval_args"),
+    [
+        ({}, ""),
+        ({"judge": "gemini-4.0-pro"}, "--judge gemini-4.0-pro"),
+        ({"limit": "5"}, "--limit 5"),
+        ({"limit": "100"}, "--limit 100"),
+        ({"cases": "20"}, "--cases 20"),
+        ({"cases": "0,99"}, "--cases 0,99"),
+        (
+            {"judge": "new-judge", "cases": "0,20,84"},
+            "--judge new-judge --cases 0,20,84",
+        ),
+    ],
+)
+def test_check_inputs_builds_the_eval_args(
+    tmp_path: Path, inputs: dict[str, str], eval_args: str
+) -> None:
+    result, outputs = _run_check_inputs_step(tmp_path, **inputs)
+
+    assert result.returncode == 0, result.stderr
+    assert outputs["eval_args"] == eval_args
+
+
+@pytest.mark.parametrize(
+    ("inputs", "context", "label"),
+    [
+        ({}, "Secret CI", "Full suite"),
+        ({"judge": "new-judge"}, "Secret CI (custom)", "judge new-judge"),
+        ({"limit": "1"}, "Secret CI (custom)", "limit 1"),
+        (
+            {"judge": "new-judge", "cases": "20,84"},
+            "Secret CI (custom)",
+            "judge new-judge, cases 20,84",
+        ),
+    ],
+)
+def test_check_inputs_names_the_status(
+    tmp_path: Path, inputs: dict[str, str], context: str, label: str
+) -> None:
+    result, outputs = _run_check_inputs_step(tmp_path, **inputs)
+
+    assert result.returncode == 0, result.stderr
+    assert outputs["status_context"] == context
+    assert outputs["status_label"] == label
+
+
+@pytest.mark.parametrize(
+    ("inputs", "label"),
+    [
+        ({"judge": LONGEST_JUDGE, "limit": "100"}, f"judge {LONGEST_JUDGE}, limit 100"),
+        (
+            {"judge": LONGEST_JUDGE, "cases": ALL_CASES},
+            f"judge {LONGEST_JUDGE}, 100 cases",
+        ),
+        ({"cases": ALL_CASES}, "100 cases"),
+    ],
+)
+def test_the_status_description_names_every_input(
+    tmp_path: Path, inputs: dict[str, str], label: str
+) -> None:
+    result, outputs = _run_check_inputs_step(tmp_path, **inputs)
+
+    assert result.returncode == 0, result.stderr
+    assert outputs["status_label"] == label
+    # GitHub rejects a status description longer than 140 characters, and
+    # the steps add " running", " success", or " failure".
+    assert len(label) + len(" failure") <= 140
+    # The eval still gets the whole case list.
+    if "cases" in inputs:
+        assert outputs["eval_args"].endswith(f"--cases {ALL_CASES}")
+
+
+def _status_env(tmp_path: Path, inputs: dict[str, str]) -> dict[str, str]:
+    """Return the status env that the check step gives the PR status steps."""
+    work = tmp_path / "check-inputs"
+    work.mkdir()
+    result, outputs = _run_check_inputs_step(work, **inputs)
+    assert result.returncode == 0, result.stderr
+    return {
+        "STATUS_CONTEXT": outputs["status_context"],
+        "STATUS_LABEL": outputs["status_label"],
+    }
+
+
+def test_pr_status_steps_get_the_status_from_the_check() -> None:
+    jobs = _secret_workflow()["jobs"]
+    resolve = jobs["resolve"]
+    target = next(s for s in resolve["steps"] if s.get("id") == "target")
+    report = next(
+        s
+        for s in jobs["report"]["steps"]
+        if s.get("name") == "Report the result on the pull request"
+    )
+
+    for key in ("status_context", "status_label"):
+        assert resolve["outputs"][key] == f"${{{{ steps.eval_args.outputs.{key} }}}}"
+        assert target["env"][key.upper()] == f"${{{{ steps.eval_args.outputs.{key} }}}}"
+        assert report["env"][key.upper()] == f"${{{{ needs.resolve.outputs.{key} }}}}"
+    assert '"Secret CI"' not in target["run"]
+    assert '"Secret CI"' not in report["run"]
+
+
+@pytest.mark.parametrize(
+    "inputs",
+    [
+        {"judge": "Gemini"},
+        {"judge": "-judge"},
+        {"judge": "a judge"},
+        {"judge": "judge;rm"},
+        {"judge": "judge\n--limit"},
+        {"judge": LONGEST_JUDGE + "x"},
+        # eval_main.py drops a repeated index, so the case count would be wrong.
+        {"cases": "0,0,1"},
+        {"cases": "7,07"},
+        {"limit": "0"},
+        {"limit": "05"},
+        {"limit": "-1"},
+        {"limit": "5 "},
+        # The dataset has 100 questions: limit 1-100, cases 0-99.
+        {"limit": "101"},
+        {"limit": "1000"},
+        {"cases": "100"},
+        {"cases": "500"},
+        {"cases": "1,100"},
+        {"cases": "1,"},
+        {"cases": ",1"},
+        {"cases": "1, 2"},
+        {"cases": "-1"},
+        {"limit": "5", "cases": "1,2"},
+    ],
+)
+def test_check_inputs_rejects_a_bad_value(
+    tmp_path: Path, inputs: dict[str, str]
+) -> None:
+    result, outputs = _run_check_inputs_step(tmp_path, **inputs)
+
+    assert result.returncode != 0
+    assert "::error::" in result.stdout
+    assert outputs == {}
+
+
+def test_the_eval_gets_the_checked_args_through_make(tmp_path: Path) -> None:
+    jobs = _secret_workflow()["jobs"]
+    step = next(
+        s for s in jobs["docker-eval"]["steps"] if s.get("name") == "Run LLM CI"
+    )
+    script = 'make() { printf "%s\\n" "$@"; }\n' + _workflow_step_script("Run LLM CI")
+
+    result = subprocess.run(
+        ["bash", "-eo", "pipefail", "-c", script],
+        env={**os.environ, "EVAL_ARGS": "--judge new-judge --limit 5"},
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert step["env"]["EVAL_ARGS"] == "${{ needs.resolve.outputs.eval_args }}"
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.splitlines() == [
+        "llm-tests",
+        "EVAL_ARGS=--judge new-judge --limit 5",
+    ]
 
 
 def _workflow_step_script(step_name: str, workflow: Path = WORKFLOW) -> str:
@@ -276,18 +563,32 @@ def test_evals_share_one_queue_per_target() -> None:
     concurrency = workflow["jobs"]["docker-eval"]["concurrency"]
 
     assert "concurrency" not in workflow
-    assert re.fullmatch(
-        r"\$\{\{ github\.workflow \}\}-eval-"
-        r"\$\{\{ inputs\.pr && format\('pr-\{0\}', inputs\.pr\) \|\| github\.ref \}\}",
-        concurrency["group"],
+    # A full run (no judge, limit, or cases; every push run) keeps the group
+    # of one target. A custom run (any of them set) gets "custom-" before
+    # "eval-", where no ref can put it, so a custom run never cancels or
+    # replaces a waiting full run.
+    marker = "${{ (inputs.judge || inputs.limit || inputs.cases) && 'custom-' || '' }}"
+    target = "${{ inputs.pr && format('pr-{0}', inputs.pr) || github.ref }}"
+    group = concurrency["group"]
+    assert group.count(marker) == 1
+    assert group.replace(marker, "") == f"${{{{ github.workflow }}}}-eval-{target}"
+    assert group.replace(marker, "custom-") == (
+        f"${{{{ github.workflow }}}}-custom-eval-{target}"
     )
     assert concurrency["cancel-in-progress"] is False
 
 
 def _run_report_step(
-    tmp_path: Path, needs: dict[str, object], summary: str | None
+    tmp_path: Path,
+    needs: dict[str, object],
+    summary: str | None,
+    inputs: dict[str, str] | None = None,
 ) -> tuple[subprocess.CompletedProcess[str], str]:
-    """Run the PR report step with a gh stub that records its arguments."""
+    """Run the PR report step with a gh stub that records its arguments.
+
+    inputs are the eval inputs (judge, limit, cases) of the run.
+    """
+    status_env = _status_env(tmp_path, inputs or {})
     calls = tmp_path / "gh_calls"
     if summary is not None:
         (tmp_path / "evaluation-output").mkdir()
@@ -299,6 +600,7 @@ def _run_report_step(
         cwd=tmp_path,
         env={
             **os.environ,
+            **status_env,
             "NEEDS_JSON": json.dumps(needs),
             "PR": "42",
             "HEAD_SHA": "feed",
@@ -319,11 +621,37 @@ def test_report_posts_success_and_the_summary(tmp_path: Path) -> None:
     result, calls = _run_report_step(tmp_path, needs, "Aggregate Metrics\n")
 
     assert result.returncode == 0, result.stderr
-    assert "statuses/feed -f state=success -f context=Secret CI" in calls
+    assert "statuses/feed -f state=success -f context=Secret CI -f" in calls
+    assert "description=Full suite success" in calls
     assert "pr comment 42 --repo org/repo --body-file comment.md" in calls
     comment = (tmp_path / "comment.md").read_text()
     assert comment.startswith("Secret CI success: https://example.test/run")
     assert "Aggregate Metrics" in comment
+
+
+@requires_jq
+@pytest.mark.parametrize(
+    ("inputs", "label"),
+    [
+        ({"limit": "1"}, "limit 1"),
+        ({"cases": "20,84"}, "cases 20,84"),
+        ({"judge": "new-judge"}, "judge new-judge"),
+    ],
+)
+def test_report_keeps_a_custom_run_off_the_full_status(
+    tmp_path: Path, inputs: dict[str, str], label: str
+) -> None:
+    # A green subset or other-judge run must not turn "Secret CI" green.
+    needs = {"resolve": {"result": "success"}, "docker-eval": {"result": "success"}}
+
+    result, calls = _run_report_step(tmp_path, needs, "Aggregate Metrics\n", inputs)
+
+    assert result.returncode == 0, result.stderr
+    assert "-f context=Secret CI (custom) -f" in calls
+    assert "-f context=Secret CI -f" not in calls
+    assert f"description={label} success" in calls
+    comment = (tmp_path / "comment.md").read_text()
+    assert comment.startswith("Secret CI (custom) success: https://example.test/run")
 
 
 @requires_jq

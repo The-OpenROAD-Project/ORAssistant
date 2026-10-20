@@ -37,7 +37,7 @@ ALL_RETRIEVERS = {
 }
 RETRY_INTERVAL = 5
 RETRY_TIMEOUT = 600
-JUDGE_MODEL = "gemini-3.1-pro-preview"
+JUDGE_MODEL = "gemini-3.8-flash"
 
 # A run stops when more than this share of questions get no retrieval context
 # or the answer "invalid". That means the backend is broken, and the judge
