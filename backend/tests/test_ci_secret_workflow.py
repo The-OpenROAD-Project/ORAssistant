@@ -394,6 +394,9 @@ def test_pr_status_steps_get_the_status_from_the_check() -> None:
         {"judge": "judge;rm"},
         {"judge": "judge\n--limit"},
         {"judge": LONGEST_JUDGE + "x"},
+        # eval_main.py drops a repeated index, so the case count would be wrong.
+        {"cases": "0,0,1"},
+        {"cases": "7,07"},
         {"limit": "0"},
         {"limit": "05"},
         {"limit": "-1"},
@@ -561,14 +564,16 @@ def test_evals_share_one_queue_per_target() -> None:
 
     assert "concurrency" not in workflow
     # A full run (no judge, limit, or cases; every push run) keeps the group
-    # of one target. A custom run gets the same group with a -custom suffix,
-    # so it never cancels or replaces a waiting full run.
-    assert re.fullmatch(
-        r"\$\{\{ github\.workflow \}\}-eval-"
-        r"\$\{\{ inputs\.pr && format\('pr-\{0\}', inputs\.pr\) \|\| github\.ref \}\}"
-        r"\$\{\{ \(inputs\.judge \|\| inputs\.limit \|\| inputs\.cases\) "
-        r"&& '-custom' \|\| '' \}\}",
-        concurrency["group"],
+    # of one target. A custom run (any of them set) gets "custom-" before
+    # "eval-", where no ref can put it, so a custom run never cancels or
+    # replaces a waiting full run.
+    marker = "${{ (inputs.judge || inputs.limit || inputs.cases) && 'custom-' || '' }}"
+    target = "${{ inputs.pr && format('pr-{0}', inputs.pr) || github.ref }}"
+    group = concurrency["group"]
+    assert group.count(marker) == 1
+    assert group.replace(marker, "") == f"${{{{ github.workflow }}}}-eval-{target}"
+    assert group.replace(marker, "custom-") == (
+        f"${{{{ github.workflow }}}}-custom-eval-{target}"
     )
     assert concurrency["cancel-in-progress"] is False
 

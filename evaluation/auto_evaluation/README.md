@@ -151,7 +151,7 @@ uv run python auto_evaluation/compare_results.py old/eval_results.json new/eval_
 
 The `cases` input takes 0-based question indexes, as `--cases` does, for
 example `-f cases=20,84`. The dataset has 100 questions, so the workflow
-accepts a `limit` from 1 to 100 and each case from 0 to 99. Set `limit` or
+accepts a `limit` from 1 to 100 and each case from 0 to 99, once. Set `limit` or
 `cases`, not both. The baseline gate skips a run whose case count differs
 from the baseline, because its scores cover only some cases. A run with
 `limit=100`, or with all 100 cases, still gates.
