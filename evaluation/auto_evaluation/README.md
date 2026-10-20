@@ -62,7 +62,7 @@ precision or recall pass rate is more than 5 points below that baseline. The
 job summary shows the baseline, current, and delta of each metric. The gate
 skips, with a notice, when the judge or the dataset differs, because the
 scores are then on a different scale. It also skips when the test count
-differs from the baseline, as in a run with a limit or a case list.
+differs from the baseline, for example in a run with `--limit 5`.
 
 A run that fails the gate is the baseline for the next run. So one drop fails
 one run and does not block master; check the failed run before the next merge.
@@ -152,5 +152,6 @@ uv run python auto_evaluation/compare_results.py old/eval_results.json new/eval_
 The `cases` input takes 0-based question indexes, as `--cases` does, for
 example `-f cases=20,84`. The dataset has 100 questions, so the workflow
 accepts a `limit` from 1 to 100 and each case from 0 to 99. Set `limit` or
-`cases`, not both. The baseline gate
-skips a run with either input, because its scores cover only some cases.
+`cases`, not both. The baseline gate skips a run whose case count differs
+from the baseline, because its scores cover only some cases. A run with
+`limit=100`, or with all 100 cases, still gates.
