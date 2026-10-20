@@ -250,7 +250,10 @@ head, and comments the evaluation output on the PR. The PR must be mergeable.
 
 A manual run also takes the optional inputs `judge` (a judge model id),
 `limit` (the first N questions, 1-100), and `cases` (0-based question indexes
-from 0-99, for example `20,84`). Empty inputs run every question with the default judge. See
+from 0-99, for example `20,84`). Empty inputs run every question with the default judge.
+A PR run with any of these inputs posts its status as `Secret CI (custom)`,
+with the inputs in the description. Only a full run with the default judge
+sets the `Secret CI` status. See
 [Judge change](evaluation/auto_evaluation/README.md#judge-change).
 
 Only one evaluation runs at a time for each target: a PR number, or the
