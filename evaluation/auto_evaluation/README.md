@@ -128,15 +128,19 @@ To compare in Secret CI instead, start two runs on the same branch with the
 results as the artifact `eval-results-<run id>`, with the file
 `eval_results.json`. Only one eval runs at a time for each branch, and a newer
 run replaces an eval that waits, so start the second run after the first eval
-finishes. Each run also comments its summary on the commit. Run from
+finishes. Each run also comments its summary on the commit. The `gh run list`
+filters show only your runs on BRANCH, so another person's run is not picked.
+`gh run list --user` does not accept `@me`, so the commands look up your
+login. A new run can take a few seconds to show in the list. Run from
 `evaluation/`:
 
 ```bash
+me=$(gh api user --jq .login)
 gh workflow run ci-secret.yaml --ref BRANCH -f judge=OLD_MODEL -f limit=5
-gh run list --workflow ci-secret.yaml --event workflow_dispatch --limit 1
+gh run list --workflow ci-secret.yaml --event workflow_dispatch --branch BRANCH --user "$me" --limit 1
 gh run watch OLD_RUN_ID
 gh workflow run ci-secret.yaml --ref BRANCH -f judge=NEW_MODEL -f limit=5
-gh run list --workflow ci-secret.yaml --event workflow_dispatch --limit 1
+gh run list --workflow ci-secret.yaml --event workflow_dispatch --branch BRANCH --user "$me" --limit 1
 gh run watch NEW_RUN_ID
 gh run download OLD_RUN_ID -n eval-results-OLD_RUN_ID -D old
 gh run download NEW_RUN_ID -n eval-results-NEW_RUN_ID -D new
