@@ -23,7 +23,7 @@ check:
 
 .PHONY: clean
 clean:
-	@rm -f llm_tests_output.txt
+	@rm -f auto_evaluation/llm_tests_output.txt
 	@rm -f auto_evaluation/.deepeval/.deepeval-cache.json
 
 # More eval_main.py arguments for llm-tests, for example
