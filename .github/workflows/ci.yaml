@@ -74,6 +74,10 @@ jobs:
       working-directory: frontend/nextjs-frontend
       run: yarn lint
 
+    - name: Check formatting
+      working-directory: frontend/nextjs-frontend
+      run: yarn format-check
+
   lint-evaluation:
     runs-on: ubuntu-26.04
     steps:

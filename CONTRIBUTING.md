@@ -61,8 +61,24 @@ echo '{"type": "authorized_user", "client_id": "x", "client_secret": "x", "refre
 export GOOGLE_CLOUD_PROJECT=unit-test GOOGLE_APPLICATION_CREDENTIALS=$PWD/.venv/fake-adc.json
 ```
 
-For the Next.js UI, run `yarn lint` and `yarn format` in
-`frontend/nextjs-frontend/`. CI does not check this project.
+For the Next.js UI, run these from `frontend/nextjs-frontend/`:
+
+```
+yarn lint
+```
+
+```
+yarn format-check
+```
+
+To fix formatting, run:
+
+```
+yarn format
+```
+
+Both CI workflows check Next.js lint and formatting.
+Secret CI runs these checks on matching `master` pushes and manual dispatches.
 
 When you change a dependency, update the lock file with `make lock` in that
 project's directory.

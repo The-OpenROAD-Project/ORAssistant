@@ -12,6 +12,7 @@ import pytest
 
 WORKFLOW = Path(__file__).parents[2] / ".github/workflows/ci-secret.yaml"
 WORKFLOWS_DIR = Path(__file__).parents[2] / ".github/workflows"
+PR_WORKFLOW = WORKFLOWS_DIR / "ci.yaml"
 UPLOAD_WORKFLOW = WORKFLOWS_DIR / "upload.yml"
 MAKEFILE = Path(__file__).parents[2] / "Makefile"
 SUMMARIZE = Path(__file__).parents[2] / "evaluation/auto_evaluation/summarize_output.sh"
@@ -576,6 +577,31 @@ def test_evals_share_one_queue_per_target() -> None:
         f"${{{{ github.workflow }}}}-custom-eval-{target}"
     )
     assert concurrency["cancel-in-progress"] is False
+
+
+@pytest.mark.parametrize("workflow_path", [PR_WORKFLOW, WORKFLOW])
+def test_nextjs_checks_are_required_for_the_ci_result(workflow_path: Path) -> None:
+    # Structural workflow contract: local tests cannot run GitHub's job scheduler.
+    yaml = pytest.importorskip("yaml")
+    jobs = yaml.safe_load(workflow_path.read_text())["jobs"]
+    job = jobs["lint-nextjs"]
+    commands = {
+        step.get("run"): step.get("working-directory")
+        for step in job["steps"]
+        if "run" in step
+    }
+
+    assert commands["yarn lint"] == "frontend/nextjs-frontend"
+    assert commands["yarn format-check"] == "frontend/nextjs-frontend"
+    result_job = "report" if workflow_path == WORKFLOW else "ci-gate"
+    assert "lint-nextjs" in jobs[result_job]["needs"]
+    if workflow_path == WORKFLOW:
+        assert "resolve" in job["needs"]
+        checkout = next(
+            step for step in job["steps"] if "actions/checkout@" in step.get("uses", "")
+        )
+        assert checkout["with"]["ref"] == "${{ needs.resolve.outputs.ref }}"
+        assert "lint-nextjs" in jobs["docker-eval"]["needs"]
 
 
 def _run_report_step(
