@@ -10,7 +10,7 @@ dependencies = [
   "fastapi[standard]>=0.143.0",
   "pyarrow>=26.0.0",
   "starlette>=1.7.0",
-  "gitpython>=3.2.0",
+  "gitpython>=3.2.1",
   "streamlit>=1.66.1",
   "requests==2.34.2",
   "requests-oauthlib==2.0.0",
