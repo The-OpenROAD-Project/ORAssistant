@@ -33,16 +33,19 @@ export default function SuggestedQuestions({
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${CHAT_ENDPOINT}/helpers/suggestedQuestions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          latest_question: latestQuestion,
-          assistant_answer: assistantAnswer,
-        }),
-      });
+      const response = await fetch(
+        `${CHAT_ENDPOINT}/helpers/suggestedQuestions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            latest_question: latestQuestion,
+            assistant_answer: assistantAnswer,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

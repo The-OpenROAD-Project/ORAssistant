@@ -38,11 +38,14 @@ const MessageList: React.FC<MessageListProps> = ({
       {messages.map((message, index) => {
         const isUser = message.role === 'user';
         const prevMessage = index > 0 ? messages[index - 1] : null;
-        const isNewConversationPair = isUser && prevMessage?.role === 'assistant';
+        const isNewConversationPair =
+          isUser && prevMessage?.role === 'assistant';
 
         return (
           <div key={message.id} className={isNewConversationPair ? 'mt-8' : ''}>
-            <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`}>
+            <div
+              className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`}
+            >
               <div
                 className={`${
                   isUser

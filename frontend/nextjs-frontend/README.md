@@ -33,11 +33,25 @@ To run the development server:
 
 ```bash
 yarn dev
+```
 
-# Format and lint
+To format the source:
+
+```bash
 yarn format
+```
+
+To check formatting and lint without changing files:
+
+```bash
+yarn format-check
+```
+
+```bash
 yarn lint
 ```
+
+CI runs both checks on pull requests and matching `master` pushes.
 
 ## Configuration
 
