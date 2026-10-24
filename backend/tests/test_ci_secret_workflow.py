@@ -982,6 +982,21 @@ def test_live_acceptance_has_a_manual_unprivileged_workflow_contract() -> None:
     assert job["timeout-minutes"] == 15
 
 
+@pytest.mark.parametrize("name", ["ci.yaml", "ci-secret.yaml"])
+def test_only_the_paid_eval_uses_a_self_hosted_runner(name: str) -> None:
+    """The self-hosted pool is shared; GitHub-hosted runners do the rest."""
+    yaml = pytest.importorskip("yaml")
+    jobs = yaml.safe_load((WORKFLOWS_DIR / name).read_text())["jobs"]
+
+    for job_name, job in jobs.items():
+        expected = (
+            "self-hosted-ubuntu-26.04-eval"
+            if job_name == "docker-eval"
+            else "ubuntu-26.04"
+        )
+        assert job["runs-on"] == expected, job_name
+
+
 def _results_json(status: str) -> str:
     if status == "malformed":
         return "{not json"
