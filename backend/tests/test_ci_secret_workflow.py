@@ -541,6 +541,24 @@ def test_no_workflow_uses_the_gh_pat_secret() -> None:
         assert offenders == [], f"{path.name}: {offenders}"
 
 
+def test_every_job_sets_its_token_permissions() -> None:
+    # The repository default token can write. A job with no permissions block,
+    # in the job or in the workflow, gets that token.
+    yaml = pytest.importorskip("yaml")
+    open_jobs: list[str] = []
+    for path in sorted(WORKFLOWS_DIR.glob("*.y*ml")):
+        workflow = yaml.safe_load(path.read_text())
+        default = workflow.get("permissions")
+        assert default in (None, {"contents": "read"}), path.name
+        open_jobs += [
+            f"{path.name}: {name}"
+            for name, job in workflow["jobs"].items()
+            if job.get("permissions", default) is None
+        ]
+
+    assert open_jobs == []
+
+
 def test_commit_comment_step_uses_the_github_token() -> None:
     yaml = pytest.importorskip("yaml")
     workflow = yaml.safe_load(WORKFLOW.read_text())

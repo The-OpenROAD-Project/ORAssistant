@@ -4,6 +4,11 @@ run-name: ${{ github.actor }} started CI
 on:
   pull_request:
 
+# The jobs only read the code. Without this block, the token gets the
+# repository default, which can write.
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: bash

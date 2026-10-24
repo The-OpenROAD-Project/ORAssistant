@@ -21,6 +21,10 @@ on:
         type: string
         default: ''
 
+# The job reads the code and writes only to Hugging Face, with HF_TOKEN.
+permissions:
+  contents: read
+
 env:
   HF_RAG_REPO: The-OpenROAD-Project/ORAssistant_RAG_Dataset
 
