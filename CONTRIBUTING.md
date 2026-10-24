@@ -48,9 +48,6 @@ cp .env.test .env
 make test
 ```
 
-CI limits the automatic test pool to eight workers on shared runners.
-This prevents worker detection from using the full host CPU count.
-
 `.env.test` holds placeholder values, so the tests make no API calls. Some
 tests import the API, which creates a Vertex AI client, so Google application
 default credentials must exist. Without real ones, a fake `authorized_user`
