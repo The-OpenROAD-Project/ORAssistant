@@ -51,7 +51,8 @@ yarn format-check
 yarn lint
 ```
 
-CI runs both checks on pull requests and matching `master` pushes.
+CI runs both checks on pull requests, matching `master` pushes, and manual
+Secret CI dispatches.
 
 ## Configuration
 
