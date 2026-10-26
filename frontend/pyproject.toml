@@ -39,7 +39,7 @@ test = [
   "pytz==2026.5",
   "mypy==2.4.0",
   "types-requests==2.33.0.20261006",
-  "pre-commit==4.6.2",
+  "pre-commit==4.7.0",
   "ruff==0.17.0",
   "types-Flask-Cors==6.0.0.20250809",
 ]
