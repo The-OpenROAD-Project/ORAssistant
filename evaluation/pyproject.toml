@@ -46,7 +46,7 @@ classifiers = [
 test = [
     "mypy==2.4.0",
     "pytest==9.1.1",
-    "ruff==0.17.0",
+    "ruff==0.17.1",
     "types-requests==2.33.0.20261006",
     "google-api-python-client-stubs==1.40.0",
     "types-tqdm==4.70.0.20260906",
