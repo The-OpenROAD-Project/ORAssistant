@@ -7,7 +7,7 @@ name = "ora-frontend"
 version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
-  "fastapi[standard]>=0.143.0",
+  "fastapi[standard]>=0.146.0",
   "pyarrow>=26.0.0",
   "starlette>=1.7.0",
   "gitpython>=3.2.1",
