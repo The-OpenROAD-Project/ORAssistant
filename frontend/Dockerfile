@@ -1,4 +1,4 @@
-FROM python:3.14.8-slim
+FROM python:3.15.0-slim
 
 WORKDIR /ORAssistant-frontend
 
