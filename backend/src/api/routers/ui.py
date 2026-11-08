@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Request, Response
+from fastapi.responses import StreamingResponse
+from starlette.background import BackgroundTask
 import httpx
 import os
 
@@ -9,14 +11,20 @@ client = httpx.AsyncClient(base_url=BACKEND_ENDPOINT)
 
 
 @router.post("/chat")
-async def proxy_chat(request: Request) -> Response:
+async def proxy_chat(request: Request) -> StreamingResponse:
     data = await request.json()
     # TODO: set this route dynamically
-    resp = await client.post("/conversations/agent-retriever", json=data)
-    return Response(
-        content=resp.content,
+    backend_request = client.build_request(
+        "POST", "/conversations/agent-retriever", json=data
+    )
+    # Forward each chunk as it arrives, so "stream": true in the body
+    # reaches the caller as a live event stream.
+    resp = await client.send(backend_request, stream=True)
+    return StreamingResponse(
+        resp.aiter_bytes(),
         status_code=resp.status_code,
         media_type=resp.headers.get("content-type"),
+        background=BackgroundTask(resp.aclose),
     )
 
 
