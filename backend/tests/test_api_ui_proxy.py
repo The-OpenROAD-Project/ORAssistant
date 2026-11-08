@@ -195,3 +195,13 @@ async def test_client_disconnect_closes_the_backend_response(spec_version):
             pass  # Starlette raises this for a disconnect on ASGI spec 2.4.
 
     assert stream.closed
+
+
+def test_backend_client_waits_for_a_slow_answer():
+    # Structural check: MockTransport ignores timeouts, so this reads the
+    # client settings. The answer and each streamed chunk can take longer
+    # than httpx's 5 s default, but a down backend must still fail fast.
+    timeout = ui.client.timeout
+
+    assert timeout.read is not None and timeout.read >= 60
+    assert (timeout.connect, timeout.write, timeout.pool) == (5.0, 5.0, 5.0)

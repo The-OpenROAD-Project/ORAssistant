@@ -8,7 +8,13 @@ import os
 router = APIRouter(prefix="/ui", tags=["ui"])
 
 BACKEND_ENDPOINT = os.getenv("BACKEND_ENDPOINT", "http://localhost:8000")
-client = httpx.AsyncClient(base_url=BACKEND_ENDPOINT)
+# The read timeout limits the wait for each chunk. A JSON answer arrives
+# only after the whole generation, and the first streamed token waits for
+# retrieval, so 5 s would cut both. The other limits stay at 5 s, so a
+# down backend still fails fast.
+client = httpx.AsyncClient(
+    base_url=BACKEND_ENDPOINT, timeout=httpx.Timeout(5.0, read=300.0)
+)
 
 
 class _BackendStreamResponse(StreamingResponse):
