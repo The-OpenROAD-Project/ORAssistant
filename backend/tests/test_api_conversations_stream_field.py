@@ -43,20 +43,26 @@ ANSWER_UPDATES = [
 
 
 @pytest.fixture
-def client():
-    graph = MagicMock()
-    graph.graph.astream_events = answer_events
-    graph.graph.stream.return_value = iter(ANSWER_UPDATES)
-    conversations._rg = graph
-    conversations._rg_started.set()
-    conversations._rg_ready.set()
-
+def starting_client():
+    """Client for an app whose graph has not finished its startup."""
+    conversations.reset_graph_state_for_testing()
     app = FastAPI()
     app.include_router(conversations.router)
     # No database: the endpoint keeps history in memory.
     app.dependency_overrides[conversations.get_optional_db] = lambda: None
     yield TestClient(app)
     conversations.reset_graph_state_for_testing()
+
+
+@pytest.fixture
+def client(starting_client):
+    graph = MagicMock()
+    graph.graph.astream_events = answer_events
+    graph.graph.stream.return_value = iter(ANSWER_UPDATES)
+    conversations._rg = graph
+    conversations._rg_started.set()
+    conversations._rg_ready.set()
+    return starting_client
 
 
 def test_stream_true_returns_an_event_stream(client):
@@ -89,3 +95,20 @@ def test_stream_absent_or_false_returns_the_json_answer(client, stream_field):
         "context_sources": [{"source": "https://example.com/doc", "context": ""}],
         "tools": ["retrieve_general"],
     }
+
+
+def test_stream_true_before_the_graph_is_ready_reports_the_error_in_band(
+    starting_client,
+):
+    # Same as POST /agent-retriever/stream: the stream has already started,
+    # so the error is a stream message, not a 503 as for a JSON answer.
+    response = starting_client.post(
+        "/conversations/agent-retriever",
+        json={"query": "What is OpenROAD?", "stream": True},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert response.text == (
+        "Error: Graph is still initializing. Please retry shortly.\n\n"
+    )
