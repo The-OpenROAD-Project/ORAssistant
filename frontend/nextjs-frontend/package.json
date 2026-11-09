@@ -11,7 +11,7 @@
     "format-check": "prettier --check ."
   },
   "dependencies": {
-    "@babel/runtime": "^8.0.10",
+    "@babel/runtime": "^8.1.0",
     "@heroicons/react": "^2.2.0",
     "@types/react-syntax-highlighter": "^15.5.13",
     "next": "^16.4.4",
