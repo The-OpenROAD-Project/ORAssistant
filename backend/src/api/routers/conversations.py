@@ -327,11 +327,22 @@ def get_optional_db(db: Session = Depends(get_db)) -> Session | None:
     return db if use_db else None
 
 
-@router.post("/agent-retriever", response_model=ChatResponse)
+@router.post(
+    "/agent-retriever",
+    response_model=ChatResponse,
+    responses={200: {"content": {"text/event-stream": {}}}},
+)
 async def get_agent_response(
     user_input: UserInput, db: Session | None = Depends(get_optional_db)
-) -> ChatResponse:
-    """Processes a user query using the retriever agent, maintains conversation context, and returns the generated response along with relevant context sources and tools used."""
+) -> ChatResponse | StreamingResponse:
+    """Processes a user query using the retriever agent, maintains conversation context, and returns the generated response along with relevant context sources and tools used.
+
+    With "stream": true in the body, the response is the same event stream
+    as POST /agent-retriever/stream.
+    """
+    if user_input.stream:
+        return await get_agent_response_streaming(user_input, db)
+
     user_question = user_input.query
 
     conversation_uuid = user_input.conversation_uuid

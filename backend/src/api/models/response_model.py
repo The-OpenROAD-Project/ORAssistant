@@ -8,6 +8,9 @@ class UserInput(BaseModel):
     query: str
     list_sources: bool = False
     list_context: bool = False
+    # Used only by POST /conversations/agent-retriever: true selects an event
+    # stream. POST /conversations/agent-retriever/stream always streams.
+    stream: bool = False
     conversation_uuid: Optional[UUID] = None
 
 
