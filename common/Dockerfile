@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20260810
+FROM ubuntu:26.04
 
 WORKDIR /app
 
