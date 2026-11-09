@@ -158,10 +158,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^8.0.10":
-  version: 8.0.10
-  resolution: "@babel/runtime@npm:8.0.10"
-  checksum: 10c0/c1a66577491f2beed448df8847051307d83ed3c1c22332bb338499d44542f2702227b2b546bbcfde8b1690e6f32de7ae4e8bee7d8b2e330d045caf6a766bfcf8
+"@babel/runtime@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "@babel/runtime@npm:8.1.0"
+  checksum: 10c0/4531254e3a031cb392b5a363eecce35592c944c656fb7a3a7ac619cbcc05007a8ceca56e3f438aabca17a5ef0d1d18ab54957cd6c5d16a0f2d088850b10a1a83
   languageName: node
   linkType: hard
 
@@ -4412,7 +4412,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "orassistant-chat@workspace:."
   dependencies:
-    "@babel/runtime": "npm:^8.0.10"
+    "@babel/runtime": "npm:^8.1.0"
     "@heroicons/react": "npm:^2.2.0"
     "@tailwindcss/postcss": "npm:^4.3.3"
     "@types/node": "npm:^26.6.6"
