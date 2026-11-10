@@ -27,6 +27,7 @@ updates:
           - "pytest"
           - "pytest-*"
           - "types-*"
+          - "*-stubs"
         update-types:
           - patch
       python-runtime:
@@ -40,6 +41,7 @@ updates:
           - "pytest"
           - "pytest-*"
           - "types-*"
+          - "*-stubs"
         update-types:
           - minor
           - patch
@@ -64,6 +66,7 @@ updates:
           - "pytest"
           - "pytest-*"
           - "types-*"
+          - "*-stubs"
         update-types:
           - patch
       python-runtime:
@@ -77,6 +80,7 @@ updates:
           - "pytest"
           - "pytest-*"
           - "types-*"
+          - "*-stubs"
         update-types:
           - minor
           - patch
