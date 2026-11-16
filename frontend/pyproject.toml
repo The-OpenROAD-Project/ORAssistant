@@ -38,7 +38,7 @@ classifiers = [
 test = [
   "pytz==2026.6",
   "mypy==2.4.1",
-  "types-requests==2.33.0.20261006",
+  "types-requests==2.33.0.20261030",
   "pre-commit==4.7.0",
   "ruff==0.17.3",
   "types-Flask-Cors==6.0.0.20250809",
