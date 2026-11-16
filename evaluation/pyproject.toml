@@ -49,7 +49,7 @@ test = [
     "ruff==0.17.3",
     "types-requests==2.33.0.20261006",
     "google-api-python-client-stubs==1.40.0",
-    "types-tqdm==4.70.0.20260906",
+    "types-tqdm==4.70.0.20261106",
 ]
 
 [tool.hatch.build.targets.wheel]
