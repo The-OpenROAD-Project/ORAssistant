@@ -1271,7 +1271,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "certifi", specifier = ">=2026.10.19" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.162.4" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.163.1" },
     { name = "gitpython", specifier = ">=3.2.1" },
     { name = "google-auth", specifier = "==2.62.2" },
     { name = "google-auth-httplib2", specifier = "==0.4.4" },
