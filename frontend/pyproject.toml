@@ -21,7 +21,7 @@ dependencies = [
   "google-auth-oauthlib==1.5.0",
   "gspread==6.2.1",
   "python-dotenv==1.2.4",
-  "pymongo==4.19.0",
+  "pymongo==4.20.0",
   "pygments>=2.21.0",
   "certifi>=2026.10.19",
 ]
