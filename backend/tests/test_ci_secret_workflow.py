@@ -574,14 +574,16 @@ def test_commit_comment_step_uses_the_github_token() -> None:
 
 
 def test_evals_share_one_queue_per_target() -> None:
-    # Each master push starts a paid eval on the self-hosted runners. One eval
-    # at a time per target; a started eval finishes, and only the newest waits.
-    # The lint jobs stay out of the queue.
+    # Each master push starts a paid eval on the self-hosted runners. Queue at
+    # the workflow level so runs enter the queue before lint or test finish
+    # jitter can reorder them. One run executes at a time per target; a
+    # started run finishes, and the last run to enter the queue waits.
     yaml = pytest.importorskip("yaml")
     workflow = yaml.safe_load(WORKFLOW.read_text())
-    concurrency = workflow["jobs"]["docker-eval"]["concurrency"]
+    concurrency = workflow["concurrency"]
 
-    assert "concurrency" not in workflow
+    for job_name, job in workflow["jobs"].items():
+        assert "concurrency" not in job, job_name
     # A full run (no judge, limit, or cases; every push run) keeps the group
     # of one target. A custom run (any of them set) gets "custom-" before
     # "eval-", where no ref can put it, so a custom run never cancels or
