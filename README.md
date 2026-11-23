@@ -257,9 +257,9 @@ with the inputs in the description. Only a full run with the default judge
 sets the `Secret CI` status. See
 [Judge change](evaluation/auto_evaluation/README.md#judge-change).
 
-Only one evaluation runs at a time for each target: a PR number, or the
-branch. A started evaluation always finishes. Only the newest run waits for
-it; GitHub cancels the evaluation of each older waiting run.
+Only one Secret CI run executes at a time for each target: a PR number, or the branch.
+A started run always finishes.
+Only the newest run waits for it, so GitHub cancels each older waiting run before its jobs start.
 A run with `judge`, `limit`, or `cases` waits in its own queue for the target.
 So it never cancels a full run, but it can run beside one.
 
