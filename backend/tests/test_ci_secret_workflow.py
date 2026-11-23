@@ -575,8 +575,8 @@ def test_commit_comment_step_uses_the_github_token() -> None:
 
 def test_evals_share_one_queue_per_target() -> None:
     # Each master push starts a paid eval on the self-hosted runners. Queue at
-    # the workflow level so run creation order decides which run waits, instead
-    # of lint or test finish jitter. One run executes at a time per target; a
+    # the workflow level so runs enter the queue before lint or test finish
+    # jitter can reorder them. One run executes at a time per target; a
     # started run finishes, and the last run to enter the queue waits.
     yaml = pytest.importorskip("yaml")
     workflow = yaml.safe_load(WORKFLOW.read_text())

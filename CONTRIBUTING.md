@@ -75,7 +75,8 @@ yarn format
 ```
 
 Both CI workflows check Next.js lint and formatting.
-Secret CI runs these checks on matching `master` pushes and manual dispatches that start (superseded waiting runs cancel before jobs start).
+Pull request CI runs these checks independently on every PR.
+Secret CI runs them in each matching `master` push and manual dispatch that leaves the queue, while waiting runs sit behind an active run in the same group and superseded ones cancel before jobs start.
 
 When you change a dependency, update the lock file with `make lock` in that
 project's directory.
