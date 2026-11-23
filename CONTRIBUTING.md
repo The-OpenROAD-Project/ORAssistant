@@ -75,7 +75,7 @@ yarn format
 ```
 
 Both CI workflows check Next.js lint and formatting.
-Secret CI runs these checks on matching `master` pushes and manual dispatches.
+Secret CI runs these checks on matching `master` pushes and manual dispatches that start (superseded waiting runs cancel before jobs start).
 
 When you change a dependency, update the lock file with `make lock` in that
 project's directory.

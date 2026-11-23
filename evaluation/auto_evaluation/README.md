@@ -128,8 +128,8 @@ To compare in Secret CI instead, start two runs on the same branch with the
 results as the artifact `eval-results-<run id>`, with the file
 `eval_results.json`. A run with `judge`, `limit`, or `cases` is a custom run.
 Custom runs have their own queue, so they do not cancel a full run. Only one
-custom eval runs at a time for each branch, and a newer custom run replaces
-an eval that waits. So start the second run after the first eval finishes.
+custom run executes at a time for each branch, and a later custom run replaces
+a waiting one. So start the second run after the first run finishes.
 Each run also comments its summary on the commit. The `gh run list`
 filters show only your runs on BRANCH, so another person's run is not picked.
 `gh run list --user` does not accept `@me`, so the commands look up your

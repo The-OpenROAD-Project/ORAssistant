@@ -259,7 +259,8 @@ sets the `Secret CI` status. See
 
 Only one Secret CI run executes at a time for each target: a PR number, or the branch.
 A started run always finishes.
-Only the newest run waits for it, so GitHub cancels each older waiting run before its jobs start.
+The last run to enter the queue replaces any waiting run and cancels it before its jobs start.
+A waiting PR run posts its pending status only after it leaves the queue.
 A run with `judge`, `limit`, or `cases` waits in its own queue for the target.
 So it never cancels a full run, but it can run beside one.
 
